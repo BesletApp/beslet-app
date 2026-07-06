@@ -14,7 +14,7 @@ The APK will be at:
 build/app/outputs/flutter-apk/app-release.apk
 
 ### Step 3 — Upload APK to GitHub Releases
-1. Go to github.com/GITHUB_USERNAME/beslet-releases
+1. Go to github.com/Amanuel-616/beslet-releases
 2. Click Releases → Create a new release
 3. Tag: v1.1.0 (match your version number)
 4. Title: Beslet v1.1.0

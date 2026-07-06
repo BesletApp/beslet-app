@@ -8,6 +8,8 @@ class ChartSection extends ConsumerStatefulWidget {
   final List<double> weeklyXp;
   final List<double> dailyXp;
   final bool isDark;
+  final double? dailyGoal;
+  final double? weeklyGoal;
 
   const ChartSection({
     super.key,
@@ -15,6 +17,8 @@ class ChartSection extends ConsumerStatefulWidget {
     required this.weeklyXp,
     required this.dailyXp,
     required this.isDark,
+    this.dailyGoal,
+    this.weeklyGoal,
   });
 
   @override
@@ -143,8 +147,9 @@ class _ChartSectionState extends ConsumerState<ChartSection> {
               ),
               extraLinesData: ExtraLinesData(
                 horizontalLines: [
+                  if (widget.dailyGoal != null && widget.dailyGoal! > 0)
                   HorizontalLine(
-                    y: 50,
+                    y: widget.dailyGoal!,
                     color: AppColors.primary,
                     strokeWidth: 1,
                     dashArray: [4, 4],
@@ -155,7 +160,7 @@ class _ChartSectionState extends ConsumerState<ChartSection> {
                         fontSize: 8,
                         color: AppColors.primary,
                       ),
-                      labelResolver: (_) => 'goal 50',
+                      labelResolver: (_) => 'goal ${widget.dailyGoal!.round()}',
                     ),
                   ),
                 ],
@@ -257,8 +262,9 @@ class _ChartSectionState extends ConsumerState<ChartSection> {
               ),
               extraLinesData: ExtraLinesData(
                 horizontalLines: [
+                  if (widget.weeklyGoal != null && widget.weeklyGoal! > 0)
                   HorizontalLine(
-                    y: 350,
+                    y: widget.weeklyGoal!,
                     color: AppColors.primary,
                     strokeWidth: 1,
                     dashArray: [4, 4],
@@ -269,7 +275,7 @@ class _ChartSectionState extends ConsumerState<ChartSection> {
                         fontSize: 8,
                         color: AppColors.primary,
                       ),
-                      labelResolver: (_) => 'goal 350',
+                      labelResolver: (_) => 'goal ${widget.weeklyGoal!.round()}',
                     ),
                   ),
                 ],

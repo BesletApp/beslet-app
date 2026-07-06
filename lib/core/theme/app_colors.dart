@@ -36,6 +36,12 @@ class AppColors {
   static const Color textMutedLight = Color(0xFF999999);
   static const Color borderLightTheme = Color(0xFFD4C9B8);
 
+  // Semantic colors — 4-phase palette for visual hierarchy
+  static const Color spiritualPurple = Color(0xFF9C27B0);
+  static const Color progressGreen = Color(0xFF4CAF50);
+  static const Color audioBlue = Color(0xFF2196F3);
+  static const Color warningOrange = Color(0xFFFF6F00);
+
   // Gold gradients
   static const LinearGradient gradientGold = LinearGradient(
     colors: [Color(0xFFE0B04A), Color(0xFFC8942E), Color(0xFFD4A03A)],

@@ -10,12 +10,13 @@ import '../../features/home/home_screen.dart';
 import '../../features/habits/habits_screen.dart';
 import '../../features/spiritual/prayer_screen.dart';
 import '../../features/spiritual/bible_screen.dart';
+import '../../features/spiritual/reflection_journal_screen.dart';
 import '../../features/skills/skills_screen.dart';
 import '../../features/progress/progress_screen.dart';
-import '../../features/community/community_screen.dart';
 import '../../features/reflection/reflection_screen.dart';
 import '../../features/fellowship/fellowship_screen.dart';
-import '../../features/family/family_screen.dart';
+import '../../features/tasks/daily_todo_screen.dart';
+import '../../features/tasks/goals_screen.dart';
 import '../../features/profile/profile_screen.dart';
 import '../../features/settings/settings_screen.dart';
 
@@ -55,16 +56,20 @@ class AppRouter {
             GoRoute(path: '/skills', builder: (_, __) => const SkillsScreen()),
             GoRoute(path: '/reflection', builder: (_, __) => const ReflectionScreen()),
             GoRoute(path: '/fellowship', builder: (_, __) => const FellowshipScreen()),
-            GoRoute(path: '/family', builder: (_, __) => const FamilyScreen()),
+            GoRoute(path: '/daily-todo', builder: (_, __) => const DailyTodoScreen()),
+            GoRoute(path: '/goals', builder: (_, __) => const GoalsScreen()),
           ]),
           StatefulShellBranch(routes: [
-            GoRoute(path: '/bible', builder: (_, __) => const BibleScreen()),
+            GoRoute(path: '/bible', builder: (_, state) {
+              final book = state.uri.queryParameters['book'];
+              final chStr = state.uri.queryParameters['chapter'];
+              final chapter = chStr != null ? int.tryParse(chStr) : null;
+              return BibleScreen(initialBookId: book, initialChapter: chapter);
+            }),
+            GoRoute(path: '/bible/journal', builder: (_, __) => const ReflectionJournalScreen()),
           ]),
           StatefulShellBranch(routes: [
             GoRoute(path: '/progress', builder: (_, __) => const ProgressScreen()),
-          ]),
-          StatefulShellBranch(routes: [
-            GoRoute(path: '/community', builder: (_, __) => const CommunityScreen()),
           ]),
           StatefulShellBranch(routes: [
             GoRoute(path: '/profile', builder: (_, __) => const ProfileScreen()),

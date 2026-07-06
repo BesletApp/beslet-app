@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 import '../database/app_database.dart';
 import 'database_provider.dart';
 import 'tracking_provider.dart';
+import 'streak_provider.dart';
 
 final todayBibleReadProvider = FutureProvider<BibleRead?>((ref) async {
   final db = ref.watch(databaseProvider);
@@ -60,6 +61,9 @@ class BibleNotifier extends AsyncNotifier<void> {
     ref.invalidate(bibleStreakProvider);
     ref.invalidate(bibleReadDaysProvider);
     ref.invalidate(trackingDataProvider);
+    ref.invalidate(streakStateProvider);
+    ref.invalidate(streakLogsProvider);
+    ref.invalidate(streakWeekDataProvider);
   }
 }
 

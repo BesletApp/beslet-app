@@ -4,7 +4,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 class UpdateChecker {
   static const String versionUrl =
-      'https://raw.githubusercontent.com/GITHUB_USERNAME/beslet-releases/main/version.json';
+      'https://raw.githubusercontent.com/Amanuel-616/beslet-releases/main/version.json';
 
   static Future<UpdateInfo?> checkForUpdate() async {
     try {

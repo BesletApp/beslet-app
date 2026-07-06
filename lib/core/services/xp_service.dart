@@ -4,6 +4,8 @@ class XpService {
   static const int prayerComplete = 15;
   static const int skillSession = 5;
   static const int reflectionComplete = 15;
+  static const int todoComplete = 5;
+  static const int allTodosBonus = 10;
 
   static int calculateLevel(int xp) {
     if (xp < 100) return 0;
@@ -33,5 +35,20 @@ class XpService {
     final xpNeeded = nextLevelXp - currentLevelXp;
     if (xpNeeded <= 0) return 1.0;
     return (xpInLevel / xpNeeded).clamp(0.0, 1.0);
+  }
+
+  static int xpToNextLevel(int xp) {
+    final level = calculateLevel(xp);
+    final nextLevelXp = xpForNextLevel(level);
+    final remaining = nextLevelXp - xp;
+    return remaining > 0 ? remaining : 0;
+  }
+
+  static String nextActionSuggestion(int xp) {
+    final remaining = xpToNextLevel(xp);
+    if (remaining <= 20) return 'Read 1 chapter -> +20 XP';
+    if (remaining <= 35) return 'Read + pray -> +35 XP';
+    if (remaining <= 50) return "Complete today's rhythm -> +50 XP";
+    return 'Keep showing up daily to grow';
   }
 }

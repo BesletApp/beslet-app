@@ -25,8 +25,8 @@ final profileProvider = FutureProvider<UserProfile>((ref) async {
   final skillMinutes = allSkills.fold(0, (int s, r) => s + r.minutes);
 
   final fellow = await db.select(db.fellowshipLogs).get();
-  final family = await db.select(db.familyTimeLogs).get();
-  final familyMinutes = (family.fold(0.0, (double s, r) => s + r.hours) * 60).round();
+  final todos = await db.select(db.todoItems).get();
+  final todosCompleted = todos.where((t) => t.isCompleted).length;
 
   return UserProfile(
     displayName: user.name,
@@ -39,11 +39,13 @@ final profileProvider = FutureProvider<UserProfile>((ref) async {
     level: track.level,
     growthLevel: growthLevel,
     xp: track.totalXp,
+    totalXp: track.totalXp,
+    badges: track.badges,
     pillars: PillarStats(
       spiritualDays: totalDaysActive,
       skillMinutes: skillMinutes,
       fellowshipLogs: fellow.length,
-      familyMinutes: familyMinutes,
+      todosCompleted: todosCompleted,
     ),
   );
 });

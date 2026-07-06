@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/providers/tracking_provider.dart';
+import '../../shared/widgets/error_card.dart';
 import '../../core/providers/analytics_provider.dart';
-import 'widgets/stat_card.dart';
+import '../../core/providers/streak_provider.dart';
+import '../../core/services/xp_service.dart';
+import '../../core/services/summer_service.dart';
+import '../../core/services/scripture_service.dart';
 import 'widgets/streak_card.dart';
 import 'widgets/chart_section.dart';
 import 'widgets/achievement_card.dart';
+
+const _phaseNames = ['Discipline', 'Faith', 'Obedience', 'Impact'];
 
 class ProgressScreen extends ConsumerWidget {
   const ProgressScreen({super.key});
@@ -15,12 +22,9 @@ class ProgressScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.background : AppColors.backgroundLight;
-    final primaryText =
-        isDark ? AppColors.textPrimary : AppColors.textPrimaryLight;
+    final primaryText = isDark ? AppColors.textPrimary : AppColors.textPrimaryLight;
     final surface = isDark ? AppColors.surface : AppColors.backgroundLight;
-    final card = isDark ? AppColors.card : AppColors.cardLight;
-    final border =
-        isDark ? AppColors.border : AppColors.borderLightTheme;
+    final border = isDark ? AppColors.border : AppColors.borderLightTheme;
 
     final trackingAsync = ref.watch(trackingDataProvider);
     final completionsAsync = ref.watch(weeklyPillarCompletionsProvider);
@@ -28,58 +32,88 @@ class ProgressScreen extends ConsumerWidget {
     final weeklyXpAsync = ref.watch(weeklyXpProvider);
     final dailyXpAsync = ref.watch(dailyXpProvider);
     final bestStreakAsync = ref.watch(overallBestStreakProvider);
+    final streakStateAsync = ref.watch(streakStateProvider);
+    final reflectionAsync = ref.watch(reflectionProvider);
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return trackingAsync.when(
-      loading: () => Scaffold(
-        backgroundColor: bg,
-        body: const Center(child: CircularProgressIndicator()),
-      ),
-      error: (e, _) => Scaffold(
-        backgroundColor: bg,
-        body: Center(child: Text('$e')),
-      ),
+      loading: () => Scaffold(backgroundColor: bg, body: const Center(child: CircularProgressIndicator())),
+      error: (e, _) => Scaffold(backgroundColor: bg, body: ErrorCard(message: 'Could not load stats')),
       data: (tracking) {
-        final completions =
-            completionsAsync.valueOrNull ?? <String, List<bool>>{};
+        final completions = completionsAsync.valueOrNull ?? <String, List<bool>>{};
         final sanctityScore = sanctityAsync.valueOrNull ?? 0.0;
-        final weeklyXp = weeklyXpAsync.valueOrNull ?? [0, 0, 0, 0];
+        final weeklyXp = weeklyXpAsync.valueOrNull ?? [0.0, 0.0, 0.0, 0.0];
         final dailyXp = dailyXpAsync.valueOrNull ?? List.filled(7, 0.0);
         final bestStreak = bestStreakAsync.valueOrNull ?? 0;
+        final reflection = reflectionAsync.valueOrNull;
 
-        final weekDays = List.generate(
-            7,
-            (i) => completions.values
-                .any((pillar) => i < pillar.length && pillar[i]));
+        final weekDays = List.generate(7, (i) =>
+            completions.values.any((pillar) => i < pillar.length && pillar[i]));
+
+        final streakState = streakStateAsync.valueOrNull;
+        final isBroken = streakState?.isBroken ?? false;
+
+        final daysElapsed = SummerService.daysElapsed;
+        final totalDays = SummerService.totalSummerDays;
+        final phaseIdx = ScriptureService.getPhase(daysElapsed);
+
+        final todayPillars = {
+          'bible': completions['bible']?.isNotEmpty == true ? completions['bible']!.last : false,
+          'prayer': completions['prayer']?.isNotEmpty == true ? completions['prayer']!.last : false,
+          'fellowship': completions['fellowship']?.isNotEmpty == true ? completions['fellowship']!.last : false,
+          'tasks': completions['tasks']?.isNotEmpty == true ? completions['tasks']!.last : false,
+        };
+
+        final dailyAvg = dailyXp.where((v) => v > 0).isEmpty
+            ? 50.0 : (dailyXp.reduce((a, b) => a + b) / dailyXp.where((v) => v > 0).length) * 1.2;
+        final weeklyAvg = weeklyXp.where((v) => v > 0).isEmpty
+            ? 350.0 : (weeklyXp.reduce((a, b) => a + b) / weeklyXp.where((v) => v > 0).length) * 1.2;
+
+        void onRepair() {
+          final messenger = ScaffoldMessenger.of(context);
+          ref.read(streakNotifierProvider.notifier).attemptRepair().then((_) {
+            messenger.showSnackBar(const SnackBar(
+              content: Text('Streak repaired!', style: TextStyle(fontFamily: 'Inter')),
+              backgroundColor: AppColors.success, behavior: SnackBarBehavior.floating, duration: Duration(seconds: 2),
+            ));
+          }).catchError((_) {
+            messenger.showSnackBar(const SnackBar(
+              content: Text('Repair failed — do double today (pray twice or read 2 chapters)',
+                  style: TextStyle(fontFamily: 'Inter')),
+              backgroundColor: AppColors.warning, behavior: SnackBarBehavior.floating, duration: Duration(seconds: 3),
+            ));
+          });
+        }
 
         return Scaffold(
           backgroundColor: bg,
           body: SafeArea(
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
               children: [
-                _buildTopBar(context, isDark, primaryText, surface),
+                _buildHeader(tracking, primaryText, surface),
                 const SizedBox(height: 20),
-                _buildStatRow(
-                    context, tracking, weeklyXp, isDark, card, border),
+                _buildLevelHero(tracking, primaryText, surface),
+                const SizedBox(height: 16),
+                _buildPillarPulse(context, tracking, todayPillars, border),
+                const SizedBox(height: 16),
+                _buildPhaseJourney(daysElapsed, totalDays, phaseIdx, border),
                 const SizedBox(height: 12),
                 StreakCard(
-                  streak: tracking.streak,
-                  bestStreak: bestStreak,
-                  weekDays: weekDays,
-                  sanctityScore: sanctityScore,
-                  isDark: isDark,
+                  streak: tracking.streak, bestStreak: bestStreak, weekDays: weekDays,
+                  sanctityScore: sanctityScore, isDark: isDark, isBroken: isBroken, onRepair: onRepair,
                 ),
+                if (reflection == null) ...[
+                  const SizedBox(height: 12),
+                  _buildReflectionPrompt(context),
+                ],
                 const SizedBox(height: 12),
                 ChartSection(
-                  weeklyCompletions: completions,
-                  weeklyXp: weeklyXp,
-                  dailyXp: dailyXp,
-                  isDark: isDark,
+                  weeklyCompletions: completions, weeklyXp: weeklyXp, dailyXp: dailyXp,
+                  isDark: isDark, dailyGoal: dailyAvg, weeklyGoal: weeklyAvg,
                 ),
                 const SizedBox(height: 14),
-                _buildAchievementsHeader(context, primaryText),
-                const SizedBox(height: 10),
-                _buildAchievementsGrid(context, tracking, isDark),
+                _buildAchievementsSection(tracking, screenWidth),
               ],
             ),
           ),
@@ -88,118 +122,272 @@ class ProgressScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildTopBar(
-      BuildContext context, bool isDark, Color primaryText, Color surface) {
+  Widget _buildHeader(TrackingData tracking, Color primaryText, Color surface) {
     return Row(
       children: [
-        GestureDetector(
-          onTap: () => Navigator.of(context).pop(),
-          child: Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: surface,
-              borderRadius: BorderRadius.circular(12),
+        Text('Growth', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: primaryText)),
+        const Spacer(),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(color: surface, borderRadius: BorderRadius.circular(12)),
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            const Icon(Icons.local_fire_department, size: 16, color: AppColors.warning),
+            const SizedBox(width: 4),
+            Text('${tracking.streak}', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: primaryText)),
+            const SizedBox(width: 4),
+            Text('day', style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
+          ]),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLevelHero(TrackingData tracking, Color primaryText, Color surface) {
+    final xpRemaining = XpService.xpToNextLevel(tracking.totalXp);
+    final progress = tracking.levelProgress;
+    final suggestion = XpService.nextActionSuggestion(tracking.totalXp);
+
+    final levelIcons = [Icons.eco, Icons.spa, Icons.forest, Icons.park, Icons.star];
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppColors.primary.withValues(alpha: 0.12), AppColors.primary.withValues(alpha: 0.03)],
+          begin: Alignment.topLeft, end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Container(
+            width: 42, height: 42,
+            decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)),
+            child: Icon(levelIcons[tracking.level.clamp(0, 4)], size: 22, color: AppColors.primary),
+          ),
+          const SizedBox(width: 12),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(tracking.levelName, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: primaryText)),
+            Text('Level ${tracking.level}', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+          ])),
+          Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+            Text('${tracking.totalXp}', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.primary, height: 1)),
+            Text('XP total', style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
+          ]),
+        ]),
+        const SizedBox(height: 14),
+        Row(children: [
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(3),
+              child: LinearProgressIndicator(
+                value: progress,
+                backgroundColor: AppColors.border,
+                valueColor: const AlwaysStoppedAnimation(AppColors.primary),
+                minHeight: 6,
+              ),
             ),
-            child: Icon(Icons.chevron_left,
-                size: 20, color: primaryText),
           ),
-        ),
-        const Spacer(),
-        Text('Progress',
-            style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-                color: primaryText)),
-        const Spacer(),
-      ],
+          const SizedBox(width: 10),
+          Text('${(progress * 100).round()}%', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.primary)),
+        ]),
+        const SizedBox(height: 6),
+        Row(children: [
+          Text('$xpRemaining XP to next level', style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
+          const Spacer(),
+          Text(suggestion, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.primary)),
+        ]),
+      ]),
     );
   }
 
-  Widget _buildStatRow(BuildContext context, TrackingData tracking,
-      List<double> weeklyXp, bool isDark, Color card, Color border) {
-    final primaryText =
-        isDark ? AppColors.textPrimary : AppColors.textPrimaryLight;
-    final secondaryText =
-        isDark ? AppColors.textSecondary : AppColors.textSecondaryLight;
-    final mutedText =
-        isDark ? AppColors.textMuted : AppColors.textMutedLight;
-
-    return Row(
-      children: [
-        Expanded(
-          child: StatCard(
-            backgroundColor: card,
-            accentColor: AppColors.primary,
-            icon: const Icon(Icons.emoji_events),
-            iconBg: AppColors.primary.withValues(alpha: 0.15),
-            iconColor: AppColors.primary,
-            value: '${tracking.level}',
-            valueColor: AppColors.primary,
-            label: 'Level',
-            labelColor: mutedText,
-            subtitle: tracking.levelName,
-            subtitleColor: secondaryText,
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: StatCard(
-            backgroundColor: card,
-            accentColor: AppColors.primary,
-            icon: const Icon(Icons.bolt),
-            iconBg: AppColors.primary.withValues(alpha: 0.15),
-            iconColor: AppColors.primary,
-            value: '${tracking.totalXp}',
-            valueColor: primaryText,
-            label: 'Total XP',
-            labelColor: mutedText,
-            subtitle:
-                '+${weeklyXp.isNotEmpty ? weeklyXp[0].round() : 0} this week',
-            subtitleColor: AppColors.primary,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAchievementsHeader(BuildContext context, Color primaryText) {
-    return Text('Achievements',
-        style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w500,
-            color: primaryText));
-  }
-
-  Widget _buildAchievementsGrid(
-      BuildContext context, TrackingData tracking, bool isDark) {
-    final badges = tracking.badges;
-    final earnedIds = badges.map((b) => b['id'] as String).toSet();
-
-    const allAchievements = [
-      ('first_step', 'First Step', '🌱', 'Complete your first habit'),
-      ('week_streak', 'Faithful Week', '🔥', '7-day streak'),
-      ('month_streak', '30-Day Streak', '👑', '30-day streak'),
-      ('prayer_warrior', 'Prayer Warrior', '🙏', '100 prayer minutes'),
-      ('bible_week', 'Scripture Scholar', '📖', '7 days of Bible'),
-      ('mature', 'Maturity', '✨', 'Reach Mature level'),
+  Widget _buildPillarPulse(BuildContext context, TrackingData tracking, Map<String, bool> todayPillars, Color border) {
+    final pillars = [
+      _PillarData(Icons.menu_book, 'Bible', todayPillars['bible'] == true, AppColors.spiritualPurple, '/prayer'),
+      _PillarData(Icons.water_drop, 'Pray', todayPillars['prayer'] == true, AppColors.spiritualPurple, '/prayer'),
+      _PillarData(Icons.code, 'Skill', tracking.skillsMinutes > 0, AppColors.primary, '/skills'),
+      _PillarData(Icons.people, 'Fellowship', todayPillars['fellowship'] == true, AppColors.primary, '/fellowship'),
+      _PillarData(Icons.checklist, 'Tasks',
+          tracking.todosTotal > 0 && tracking.todosDone >= tracking.todosTotal, AppColors.progressGreen, '/daily-todo'),
     ];
 
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: allAchievements.map((a) {
-        return SizedBox(
-          width: (MediaQuery.of(context).size.width - 42) / 2,
-          child: AchievementCard(
-            icon: a.$3,
-            name: a.$2,
-            subtitle: a.$4,
-            unlocked: earnedIds.contains(a.$1),
-            isDark: isDark,
+    final statusLabels = [
+      todayPillars['bible'] == true ? '✓' : '✗',
+      todayPillars['prayer'] == true ? '✓' : '✗',
+      tracking.skillsMinutes > 0 ? '${tracking.skillsMinutes}m' : '✗',
+      todayPillars['fellowship'] == true ? '✓' : '✗',
+      tracking.todosTotal > 0 ? '${tracking.todosDone}/${tracking.todosTotal}' : '✗',
+    ];
+
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text("Today's Rhythm", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textMuted)),
+      const SizedBox(height: 8),
+      Row(children: List.generate(5, (i) {
+        final p = pillars[i];
+        return Expanded(
+          child: GestureDetector(
+            onTap: () => context.go(p.route),
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 2),
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                color: p.isComplete ? p.color.withValues(alpha: 0.1) : AppColors.card,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: p.isComplete ? p.color.withValues(alpha: 0.3) : border, width: 0.5),
+              ),
+              child: Column(children: [
+                Icon(p.icon, size: 16, color: p.isComplete ? p.color : AppColors.textMuted),
+                const SizedBox(height: 4),
+                Text(statusLabels[i],
+                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700,
+                        color: p.isComplete ? p.color : AppColors.textMuted)),
+                Text(p.label, style: TextStyle(fontSize: 8, color: AppColors.textSecondary)),
+              ]),
+            ),
           ),
         );
-      }).toList(),
+      })),
+    ]);
+  }
+
+  Widget _buildPhaseJourney(int daysElapsed, int totalDays, int phaseIdx, Color border) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: border, width: 0.5),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          const Icon(Icons.timeline, size: 16, color: AppColors.primary),
+          const SizedBox(width: 6),
+          Text('Summer Journey', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+          const Spacer(),
+          Text('Day $daysElapsed of $totalDays', style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
+        ]),
+        const SizedBox(height: 12),
+        Row(children: List.generate(4, (i) {
+          final isPast = i < phaseIdx;
+          final isCurrent = i == phaseIdx;
+          return Expanded(
+            child: Column(children: [
+              Row(children: [
+                if (i > 0)
+                  Expanded(
+                    child: Container(
+                      height: 2,
+                      color: i <= phaseIdx ? AppColors.primary : border,
+                    ),
+                  ),
+                Container(
+                  width: isCurrent ? 26 : 20, height: isCurrent ? 26 : 20,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isPast ? AppColors.primary : (isCurrent ? AppColors.card : border.withValues(alpha: 0.3)),
+                    border: Border.all(
+                      color: isCurrent ? AppColors.primary : (isPast ? AppColors.primary : border),
+                      width: isCurrent ? 2.5 : 1.5,
+                    ),
+                  ),
+                  child: isPast
+                      ? const Icon(Icons.check, size: 12, color: Color(0xFF0A0A0A))
+                      : (isCurrent ? const Icon(Icons.eco, size: 13, color: AppColors.primary) : null),
+                ),
+                if (i < 3)
+                  Expanded(
+                    child: Container(
+                      height: 2,
+                      color: i < phaseIdx ? AppColors.primary : border,
+                    ),
+                  ),
+              ]),
+              const SizedBox(height: 6),
+              Text(_phaseNames[i],
+                  style: TextStyle(fontSize: 8, fontWeight: FontWeight.w600,
+                      color: isCurrent ? AppColors.primary : AppColors.textMuted)),
+            ]),
+          );
+        })),
+        const SizedBox(height: 8),
+        Center(
+          child: Text('Phase ${phaseIdx + 1}: ${_phaseNames[phaseIdx]}',
+              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.primary)),
+        ),
+      ]),
     );
   }
+
+  Widget _buildReflectionPrompt(BuildContext context) {
+    return GestureDetector(
+      onTap: () => context.go('/reflection'),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.primary.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+        ),
+        child: Row(children: [
+          Container(
+            width: 36, height: 36,
+            decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
+            child: const Icon(Icons.edit_note, size: 18, color: AppColors.primary),
+          ),
+          const SizedBox(width: 10),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Text('Weekly Reflection', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+            Text('What grew? What slipped? Next focus?', style: TextStyle(fontSize: 10, color: AppColors.textSecondary)),
+          ])),
+          const Icon(Icons.chevron_right, size: 18, color: AppColors.textMuted),
+        ]),
+      ),
+    );
+  }
+
+  Widget _buildAchievementsSection(TrackingData tracking, double screenWidth) {
+    const allAchievements = [
+      ('first_step', 'First Step', Icons.flag, 'Complete your first habit'),
+      ('week_streak', 'Faithful Week', Icons.local_fire_department, '7-day streak'),
+      ('month_streak', '30-Day Streak', Icons.workspace_premium, '30-day streak'),
+      ('prayer_warrior', 'Prayer Warrior', Icons.water_drop, '100 prayer minutes'),
+      ('bible_week', 'Scripture Scholar', Icons.menu_book, '7 days of Bible'),
+      ('hardcore', 'Hardcore', Icons.shield, 'All 5 pillars in a day'),
+      ('mature', 'Maturity', Icons.emoji_events, 'Reach Mature level'),
+    ];
+
+    final earnedIds = tracking.badges.map((b) => b['id'] as String).toSet();
+    final earned = allAchievements.where((a) => earnedIds.contains(a.$1)).length;
+
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Row(children: [
+        Text('Milestones', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        const Spacer(),
+        Text('$earned/${allAchievements.length} unlocked', style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
+      ]),
+      const SizedBox(height: 10),
+      Wrap(
+        spacing: 10, runSpacing: 10,
+        children: allAchievements.map((a) {
+          return SizedBox(
+            width: (screenWidth - 42) / 2,
+            child: AchievementCard(
+              icon: a.$3, name: a.$2, subtitle: a.$4,
+              unlocked: earnedIds.contains(a.$1), isDark: false,
+            ),
+          );
+        }).toList(),
+      ),
+    ]);
+  }
+}
+
+class _PillarData {
+  final IconData icon;
+  final String label;
+  final bool isComplete;
+  final Color color;
+  final String route;
+  const _PillarData(this.icon, this.label, this.isComplete, this.color, this.route);
 }

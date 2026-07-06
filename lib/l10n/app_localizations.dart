@@ -122,6 +122,12 @@ abstract class AppLocalizations {
   /// **'Progress'**
   String get progress;
 
+  /// No description provided for @growth.
+  ///
+  /// In en, this message translates to:
+  /// **'Growth'**
+  String get growth;
+
   /// No description provided for @community.
   ///
   /// In en, this message translates to:
@@ -883,6 +889,180 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Arba Minch University · Computer Science'**
   String get userSubtitle;
+
+  /// No description provided for @dailyTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Tasks'**
+  String get dailyTasks;
+
+  /// No description provided for @myTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'My Tasks'**
+  String get myTasks;
+
+  /// No description provided for @planYourDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning! Plan your day'**
+  String get planYourDay;
+
+  /// No description provided for @setIntentions.
+  ///
+  /// In en, this message translates to:
+  /// **'Set your intentions for today'**
+  String get setIntentions;
+
+  /// No description provided for @quickAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick add'**
+  String get quickAdd;
+
+  /// No description provided for @addTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Task'**
+  String get addTask;
+
+  /// No description provided for @reviewYourDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Time to review your day!'**
+  String get reviewYourDay;
+
+  /// No description provided for @eveningReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Evening Review'**
+  String get eveningReview;
+
+  /// No description provided for @tasksDoneOf.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {total} tasks done'**
+  String tasksDoneOf(Object done, Object total);
+
+  /// No description provided for @myGoals.
+  ///
+  /// In en, this message translates to:
+  /// **'My Goals'**
+  String get myGoals;
+
+  /// No description provided for @addGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Goal'**
+  String get addGoal;
+
+  /// No description provided for @editSuggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Quick Add'**
+  String get editSuggestions;
+
+  /// No description provided for @carryToTomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'→ Tomorrow'**
+  String get carryToTomorrow;
+
+  /// No description provided for @skipTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get skipTask;
+
+  /// No description provided for @taskXpEarned.
+  ///
+  /// In en, this message translates to:
+  /// **'{title} done! +5 XP'**
+  String taskXpEarned(Object title);
+
+  /// No description provided for @allDoneBonus.
+  ///
+  /// In en, this message translates to:
+  /// **'All tasks complete! +10 XP bonus'**
+  String get allDoneBonus;
+
+  /// No description provided for @howWasYourDay.
+  ///
+  /// In en, this message translates to:
+  /// **'How was your day?'**
+  String get howWasYourDay;
+
+  /// No description provided for @doneForToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Done for today'**
+  String get doneForToday;
+
+  /// No description provided for @noTasksPlanned.
+  ///
+  /// In en, this message translates to:
+  /// **'No tasks planned for today'**
+  String get noTasksPlanned;
+
+  /// No description provided for @planTomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan tomorrow to stay on track!'**
+  String get planTomorrow;
+
+  /// No description provided for @tasksCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} tasks completed'**
+  String tasksCompleted(Object count);
+
+  /// No description provided for @firstTaskWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Your first task is waiting'**
+  String get firstTaskWaiting;
+
+  /// No description provided for @noDownloads.
+  ///
+  /// In en, this message translates to:
+  /// **'No downloaded chapters yet'**
+  String get noDownloads;
+
+  /// No description provided for @downloads.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloads'**
+  String get downloads;
+
+  /// No description provided for @editProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Profile'**
+  String get editProfile;
+
+  /// No description provided for @displayName.
+  ///
+  /// In en, this message translates to:
+  /// **'Display Name'**
+  String get displayName;
+
+  /// No description provided for @profileSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated!'**
+  String get profileSaved;
+
+  /// No description provided for @languageChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Language changed — restart app to fully apply'**
+  String get languageChanged;
+
+  /// No description provided for @noBadgesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep going to earn badges'**
+  String get noBadgesYet;
 }
 
 class _AppLocalizationsDelegate

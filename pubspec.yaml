@@ -23,13 +23,14 @@ dependencies:
   path: ^1.9.1
   uuid: ^4.5.1
   wakelock_plus: ^1.2.10
-  jni: 1.0.0
   home_widget: ^0.7.0
   timezone: ^0.10.1
   file_picker: ^8.1.7
   http: ^1.2.0
+  flutter_tts: ^4.2.2
   package_info_plus: ^9.0.1
   url_launcher: ^6.3.1
+  audioplayers: ^6.1.0
 
 hooks:
   user_defines:
@@ -42,12 +43,14 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   build_runner: ^2.4.14
   drift_dev: ^2.22.1
+  flutter_launcher_icons: ^0.14.1
 
 flutter:
   uses-material-design: true
   generate: true
   assets:
     - assets/images/
+    - assets/data/
   fonts:
     - family: NotoSansEthiopic
       fonts:
@@ -66,3 +69,12 @@ flutter:
           weight: 600
         - asset: assets/fonts/CormorantGaramond-Bold.ttf
           weight: 700
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/Untitled design.png"
+  adaptive_icon_background: "#1A1A2E"
+  adaptive_icon_foreground: "assets/images/Untitled design.png"
+  min_sdk_android: 21
+  remove_alpha_ios: true

@@ -5,9 +5,7 @@ import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 import 'app.dart';
 import 'core/router/app_router.dart';
-import 'core/config.dart';
 import 'core/services/notification_service.dart';
-import 'core/services/telegram_bible_service.dart';
 import 'core/services/widget_service.dart';
 import 'core/services/prayer_reminder_service.dart';
 import 'core/services/prayer_alarm_sound_service.dart';
@@ -32,6 +30,5 @@ void main() async {
   ));
   try { await WidgetService.updateWidgetData(); } catch (_) {}
   try { await PrayerReminderService.updatePrayerNotificationContent(); } catch (_) {}
-  TelegramBibleService.setBaseUrl(AppConfig.bridgeUrl);
   runApp(const ProviderScope(child: BesletApp()));
 }

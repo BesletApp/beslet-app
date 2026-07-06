@@ -2,28 +2,78 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../l10n/app_localizations.dart';
 import '../theme/app_colors.dart';
+import '../../features/spiritual/widgets/mini_player_bar.dart';
 
-class AppShell extends StatelessWidget {
+class AppShell extends StatefulWidget {
   final StatefulNavigationShell navigationShell;
 
   const AppShell({super.key, required this.navigationShell});
 
   @override
+  State<AppShell> createState() => _AppShellState();
+}
+
+class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
+  late final AnimationController _bounceCtrl;
+  late final Animation<double> _bounceAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _bounceCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    _bounceAnim = CurvedAnimation(
+      parent: _bounceCtrl,
+      curve: Curves.elasticOut,
+    );
+  }
+
+  @override
+  void dispose() {
+    _bounceCtrl.dispose();
+    super.dispose();
+  }
+
+  Widget _buildIcon(IconData icon, bool selected) {
+    return AnimatedBuilder(
+      animation: _bounceAnim,
+      builder: (_, child) => Transform.scale(
+        scale: selected ? 1.0 + _bounceAnim.value * 0.15 : 1.0,
+        child: child,
+      ),
+      child: Icon(icon, color: selected ? AppColors.primary : AppColors.textMuted),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
+    final currentIndex = widget.navigationShell.currentIndex;
+
     return Scaffold(
-      body: navigationShell,
+      body: Column(
+        children: [
+          Expanded(child: widget.navigationShell),
+          const MiniPlayerBar(),
+        ],
+      ),
       bottomNavigationBar: NavigationBar(
-        selectedIndex: navigationShell.currentIndex,
-        onDestinationSelected: (index) => navigationShell.goBranch(index),
+        selectedIndex: currentIndex,
+        onDestinationSelected: (index) {
+          if (index != currentIndex) {
+            widget.navigationShell.goBranch(index);
+            _bounceCtrl.forward(from: 0);
+          }
+        },
         backgroundColor: AppColors.card,
         indicatorColor: AppColors.primary.withValues(alpha: 0.2),
         destinations: [
-          NavigationDestination(icon: const Icon(Icons.home_outlined, color: AppColors.textMuted), selectedIcon: const Icon(Icons.home, color: AppColors.primary), label: l.home),
-          NavigationDestination(icon: const Icon(Icons.menu_book_outlined, color: AppColors.textMuted), selectedIcon: const Icon(Icons.menu_book, color: AppColors.primary), label: l.bible),
-          NavigationDestination(icon: const Icon(Icons.bar_chart_outlined, color: AppColors.textMuted), selectedIcon: const Icon(Icons.bar_chart, color: AppColors.primary), label: l.progress),
-          NavigationDestination(icon: const Icon(Icons.people_outline, color: AppColors.textMuted), selectedIcon: const Icon(Icons.people, color: AppColors.primary), label: l.community),
-          NavigationDestination(icon: const Icon(Icons.person_outline, color: AppColors.textMuted), selectedIcon: const Icon(Icons.person, color: AppColors.primary), label: l.profile),
+          NavigationDestination(icon: _buildIcon(Icons.today_outlined, currentIndex == 0), selectedIcon: _buildIcon(Icons.today, currentIndex == 0), label: l.today),
+          NavigationDestination(icon: _buildIcon(Icons.menu_book_outlined, currentIndex == 1), selectedIcon: _buildIcon(Icons.menu_book, currentIndex == 1), label: l.bible),
+          NavigationDestination(icon: _buildIcon(Icons.bar_chart_outlined, currentIndex == 2), selectedIcon: _buildIcon(Icons.bar_chart, currentIndex == 2), label: l.growth),
+          NavigationDestination(icon: _buildIcon(Icons.person_outline, currentIndex == 3), selectedIcon: _buildIcon(Icons.person, currentIndex == 3), label: l.profile),
         ],
       ),
     );

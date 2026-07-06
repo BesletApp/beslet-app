@@ -7,6 +7,8 @@ class StreakCard extends StatelessWidget {
   final List<bool> weekDays;
   final double sanctityScore;
   final bool isDark;
+  final bool isBroken;
+  final VoidCallback? onRepair;
 
   const StreakCard({
     super.key,
@@ -15,13 +17,15 @@ class StreakCard extends StatelessWidget {
     required this.weekDays,
     required this.sanctityScore,
     required this.isDark,
+    this.isBroken = false,
+    this.onRepair,
   });
 
   @override
   Widget build(BuildContext context) {
     const labels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
     final bg = isDark ? AppColors.cardElevated : AppColors.cardLight;
-    final dotDone = isDark ? AppColors.primary : AppColors.primary;
+    final dotDone = isDark ? AppColors.progressGreen : AppColors.progressGreen;
     final dotMiss = isDark ? AppColors.border : AppColors.borderLightTheme;
     final primaryText = isDark ? AppColors.textPrimary : AppColors.textPrimaryLight;
     final secondaryText = isDark ? AppColors.textSecondary : AppColors.textSecondaryLight;
@@ -102,6 +106,25 @@ class StreakCard extends StatelessWidget {
                         style: TextStyle(
                             fontSize: 11,
                             color: mutedText)),
+                    if (isBroken) ...[
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          icon: const Icon(Icons.replay, size: 14),
+                          label: const Text('Repair Streak',
+                              style: TextStyle(fontSize: 12)),
+                          onPressed: onRepair,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.warningOrange,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 6),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),

@@ -247,71 +247,74 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
           ),
 
           Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                AnimatedBuilder(
-                  animation: Listenable.merge([_mainController, _glowController]),
-                  builder: (_, __) {
-                    return Transform.scale(
-                      scale: _iconScale.value,
-                      child: Container(
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: AppColors.primary.withValues(alpha: 0.6),
-                            width: 2,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.primary.withValues(
-                                alpha: 0.3 * _glowPulse.value,
-                              ),
-                              blurRadius: 20 + 15 * _glowPulse.value,
-                              spreadRadius: 2 * _glowPulse.value,
+            child: Padding(
+              padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 20, bottom: MediaQuery.of(context).padding.bottom + 20),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  AnimatedBuilder(
+                    animation: Listenable.merge([_mainController, _glowController]),
+                    builder: (_, __) {
+                      return Transform.scale(
+                        scale: _iconScale.value,
+                        child: Container(
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: AppColors.primary.withValues(alpha: 0.6),
+                              width: 2,
                             ),
-                          ],
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primary.withValues(
+                                  alpha: 0.3 * _glowPulse.value,
+                                ),
+                                blurRadius: 20 + 15 * _glowPulse.value,
+                                spreadRadius: 2 * _glowPulse.value,
+                              ),
+                            ],
+                          ),
+                          child: const Center(
+                            child: Icon(Icons.eco, size: 40, color: AppColors.primary),
+                          ),
                         ),
-                        child: const Center(
-                          child: Icon(Icons.eco, size: 40, color: AppColors.primary),
-                        ),
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  SlideTransition(
+                    position: _titleSlide,
+                    child: FadeTransition(
+                      opacity: _titleFade,
+                      child: const Text(
+                        'ብስለት',
+                        style: AppTextStyles.amharicDisplay,
                       ),
-                    );
-                  },
-                ),
-
-                const SizedBox(height: 32),
-
-                SlideTransition(
-                  position: _titleSlide,
-                  child: FadeTransition(
-                    opacity: _titleFade,
-                    child: const Text(
-                      'ብስለት',
-                      style: AppTextStyles.amharicDisplay,
                     ),
                   ),
-                ),
 
-                const SizedBox(height: 8),
+                  const SizedBox(height: 8),
 
-                FadeTransition(
-                  opacity: _subtitleFade,
-                  child: Text(
-                    'Maturity',
-                    style: AppTextStyles.displayMedium.copyWith(
-                      color: AppColors.textSecondary,
+                  FadeTransition(
+                    opacity: _subtitleFade,
+                    child: Text(
+                      'Maturity',
+                      style: AppTextStyles.displayMedium.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
 
           Positioned(
-            bottom: 60,
+            bottom: MediaQuery.of(context).padding.bottom + 40,
             left: 0,
             right: 0,
             child: SlideTransition(

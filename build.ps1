@@ -15,7 +15,7 @@ if (Test-Path "build\jni") {
 
 # Run flutter build
 Write-Host "Building release $Target for arm64..." -ForegroundColor Cyan
-flutter build $Target --release --target-platform android-arm64
+flutter build $Target --release --target-platform android-arm64 --split-debug-info=debug-info/ --obfuscate
 if ($LASTEXITCODE -ne 0) { throw "Build failed" }
 
 # Install if device connected

@@ -13,13 +13,19 @@ import 'tables/reflection_table.dart';
 import 'tables/challenge_table.dart';
 import 'tables/fellowship_table.dart';
 import 'tables/family_table.dart';
+import 'tables/goal_table.dart';
+import 'tables/todo_table.dart';
+import 'tables/daily_reflection_table.dart';
+import 'tables/streak_log_table.dart';
+import 'tables/streak_freeze_table.dart';
+import 'tables/bible_sessions_table.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Users, Habits, Completions, PrayerLogs, BibleReads, Skills, SkillSessions, Reflections, Challenges, ChallengeParticipants, FellowshipLogs, FamilyTimeLogs])
+@DriftDatabase(tables: [Users, Habits, Completions, PrayerLogs, BibleReads, Skills, SkillSessions, Reflections, Challenges, ChallengeParticipants, FellowshipLogs, FamilyTimeLogs, Goals, TodoItems, DailyReflections, StreakLog, StreakFrozen, BibleSessions])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
-  @override int get schemaVersion => 5;
+  @override int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration {
@@ -38,6 +44,24 @@ class AppDatabase extends _$AppDatabase {
         }
         if (from < 5) {
           await m.addColumn(bibleReads, bibleReads.durationMinutes);
+        }
+        if (from < 6) {
+          await m.createTable(goals);
+          await m.createTable(todoItems);
+        }
+        if (from < 7) {
+          await m.createTable(dailyReflections);
+        }
+        if (from < 8) {
+          await m.createTable(streakLog);
+          await m.createTable(streakFrozen);
+        }
+        if (from < 9) {
+          await m.createTable(bibleSessions);
+          await customStatement('CREATE TABLE IF NOT EXISTS bible_book_cache (book_id TEXT PRIMARY KEY, json_data TEXT NOT NULL, cached_at TEXT NOT NULL)');
+        }
+        if (from < 10) {
+          await customStatement('DROP TABLE IF EXISTS bible_book_cache');
         }
       },
     );

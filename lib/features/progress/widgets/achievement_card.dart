@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 
 class AchievementCard extends StatelessWidget {
-  final String icon;
+  final IconData icon;
   final String name;
   final String subtitle;
   final bool unlocked;
@@ -46,7 +46,7 @@ class AchievementCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
             ),
             child: Center(
-              child: Text(icon, style: const TextStyle(fontSize: 17)),
+              child: Icon(icon, size: 17, color: unlocked ? AppColors.primary : mutedText),
             ),
           ),
           const SizedBox(width: 10),

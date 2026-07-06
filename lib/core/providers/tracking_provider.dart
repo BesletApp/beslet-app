@@ -12,10 +12,15 @@ class TrackingData {
   final int level;
   final String levelName;
   final int streak;
+  final int bestStreak;
+  final int freezeTokens;
+  final bool streakAtRisk;
   final int prayerMinutes;
   final int bibleDays;
   final int habitsDone;
   final int skillsMinutes;
+  final int todosDone;
+  final int todosTotal;
   final List<Map<String, dynamic>> badges;
   final double levelProgress;
 
@@ -24,10 +29,15 @@ class TrackingData {
     required this.level,
     required this.levelName,
     required this.streak,
+    required this.bestStreak,
+    required this.freezeTokens,
+    required this.streakAtRisk,
     required this.prayerMinutes,
     required this.bibleDays,
     required this.habitsDone,
     required this.skillsMinutes,
+    required this.todosDone,
+    required this.todosTotal,
     required this.badges,
     required this.levelProgress,
   });
@@ -54,30 +64,51 @@ final trackingDataProvider = FutureProvider<TrackingData>((ref) async {
   final sessions = await (db.select(db.skillSessions)..where((t) => t.date.equals(today))).get();
   final skillsMinutes = sessions.fold(0, (int sum, s) => sum + s.minutes);
 
-  final weekReflections = await (db.select(db.reflections)..where((t) => t.weekStart.equals(startOfWeek))).get();
-  final reflectionDone = weekReflections.isNotEmpty ? 1 : 0;
+    final weekReflections = await (db.select(db.reflections)..where((t) => t.weekStart.equals(startOfWeek))).get();
+    final reflectionDone = weekReflections.isNotEmpty ? 1 : 0;
 
-  final totalXp = habitsDone * XpService.habitComplete +
-      bibleDays * XpService.bibleRead +
-      prayerDaysThisWeek * XpService.prayerComplete +
-      skillsMinutes * XpService.skillSession +
-      reflectionDone * XpService.reflectionComplete;
+    final todayTodosAll = await (db.select(db.todoItems)..where((t) => t.date.equals(today))).get();
+    final todayTodos = todayTodosAll.where((t) => !t.isSkipped).toList();
+    final todosDone = todayTodos.where((t) => t.isCompleted).length;
+    final todosTotal = todayTodos.length;
+    final allTodosDone = todosTotal > 0 && todosDone >= todosTotal;
+    final todoXp = todosDone * XpService.todoComplete + (allTodosDone ? XpService.allTodosBonus : 0);
+
+    final totalXp = habitsDone * XpService.habitComplete +
+        bibleDays * XpService.bibleRead +
+        prayerDaysThisWeek * XpService.prayerComplete +
+        skillsMinutes * XpService.skillSession +
+        reflectionDone * XpService.reflectionComplete +
+        todoXp;
 
   final level = XpService.calculateLevel(totalXp);
   final levelName = XpService.getLevelName(level);
   final levelProgress = XpService.xpProgress(totalXp);
 
-  final badges = BadgeService.checkBadges(totalXp, streak, prayerMinutes, bibleDays);
+  final todosCompletedAll = (await db.select(db.todoItems).get()).where((t) => t.isCompleted).length;
+
+  final frozenRows = await db.select(db.streakFrozen).get();
+  final bestStreak = frozenRows.isNotEmpty ? frozenRows.first.bestStreak : 0;
+  final freezeTokens = frozenRows.isNotEmpty ? frozenRows.first.count : 0;
+  final todayAnchor = await StreakService.didAnchorOnDate(db, today);
+  final streakAtRisk = frozenRows.isNotEmpty && !todayAnchor;
+
+  final badges = BadgeService.checkBadges(totalXp, streak, prayerMinutes, bibleDays, todosCompleted: todosCompletedAll, unifiedStreak: bestStreak);
 
   return TrackingData(
     totalXp: totalXp,
     level: level,
     levelName: levelName,
     streak: streak,
+    bestStreak: bestStreak,
+    freezeTokens: freezeTokens,
+    streakAtRisk: streakAtRisk,
     prayerMinutes: prayerMinutes,
     bibleDays: bibleDays,
     habitsDone: habitsDone,
     skillsMinutes: skillsMinutes,
+    todosDone: todosDone,
+    todosTotal: todosTotal,
     badges: badges,
     levelProgress: levelProgress,
   );

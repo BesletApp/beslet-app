@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import '../database/app_database.dart';
 import 'database_provider.dart';
 import 'tracking_provider.dart';
+import 'streak_provider.dart';
 
 final todayPrayerLogProvider = FutureProvider<PrayerLog?>((ref) async {
   final db = ref.watch(databaseProvider);
@@ -48,6 +49,9 @@ class PrayerNotifier extends AsyncNotifier<void> {
     ref.invalidate(todayPrayerLogProvider);
     ref.invalidate(prayerDaysThisWeekProvider);
     ref.invalidate(trackingDataProvider);
+    ref.invalidate(streakStateProvider);
+    ref.invalidate(streakLogsProvider);
+    ref.invalidate(streakWeekDataProvider);
   }
 }
 

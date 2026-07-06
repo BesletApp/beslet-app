@@ -4,55 +4,174 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/services/scripture_service.dart';
+import '../../core/services/study_data.dart';
 import '../../core/providers/bible_read_provider.dart';
+import '../../core/providers/bible_session_provider.dart';
 import '../../core/providers/user_provider.dart';
-import '../../l10n/app_localizations.dart';
+import '../../core/providers/audio_player_provider.dart';
+import '../../core/providers/download_provider.dart';
+import '../../core/services/audio_bible_service.dart';
+import '../../shared/widgets/error_card.dart';
+import 'widgets/audio_player_bar.dart';
+import 'widgets/verse_list_view.dart';
+import 'widgets/lectio_divina_card.dart';
+import 'widgets/phase_bar.dart';
+import 'widgets/chapter_picker.dart';
+import 'widgets/download_sheet.dart';
 
 class BibleScreen extends ConsumerStatefulWidget {
-  const BibleScreen({super.key});
+  final String? initialBookId;
+  final int? initialChapter;
+
+  const BibleScreen({super.key, this.initialBookId, this.initialChapter});
   @override
   ConsumerState<BibleScreen> createState() => _BibleScreenState();
 }
 
 class _BibleScreenState extends ConsumerState<BibleScreen> {
-  bool _showReflect = false;
-  final _noteController = TextEditingController();
+  int? _viewingDay;
   static const int _totalDays = 90;
   static const int _phaseCount = 4;
-  static const int _daysPerPhase = _totalDays ~/ _phaseCount;
   List<BiblePlanEntry>? _cachedPlan;
+  String? _selectedLang;
+  String? _pickedBookId;
+  int? _pickedChapter;
+  bool _downloaded = false;
+  bool _audioLoaded = false;
+
+  String get _effectiveLang {
+    final locale = Localizations.localeOf(context).languageCode;
+    if (_selectedLang != null) return _selectedLang!;
+    return locale == 'am' ? 'am' : 'en';
+  }
+
+  bool get _isAm => _effectiveLang == 'am';
 
   @override
-  void dispose() {
-    _noteController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    if (widget.initialBookId != null && widget.initialChapter != null) {
+      _pickedBookId = widget.initialBookId;
+      _pickedChapter = widget.initialChapter;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _loadAudio();
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant BibleScreen old) {
+    super.didUpdateWidget(old);
+    if (widget.initialBookId != old.initialBookId || widget.initialChapter != old.initialChapter) {
+      if (widget.initialBookId != null && widget.initialChapter != null) {
+        setState(() {
+          _pickedBookId = widget.initialBookId;
+          _pickedChapter = widget.initialChapter;
+          _viewingDay = null;
+        });
+      }
+      _loadAudio();
+    }
+  }
+
+  void _loadAudio() {
+    final parsed = _resolveParsed();
+    if (parsed == null) return;
+    final state = ref.read(audioPlayerProvider);
+    if (state.chapter?.bookId == parsed.bookId && state.chapter?.chapter == parsed.chapter && state.verseTexts.isNotEmpty && state.chapter?.isAmharic == _isAm) return;
+    _audioLoaded = true;
+    ref.read(audioPlayerProvider.notifier).prepare(AudioChapterInfo(
+      bookId: parsed.bookId,
+      chapter: parsed.chapter,
+      reference: _refText,
+      bookName: _isAm ? ScriptureService.bookMap[parsed.bookId]?.nameAm ?? parsed.bookId : ScriptureService.bookMap[parsed.bookId]?.nameEn ?? parsed.bookId,
+      isAmharic: _isAm,
+    ));
+    _refreshDownloaded();
+  }
+
+  Future<void> _refreshDownloaded() async {
+    final parsed = _resolveParsed();
+    if (parsed == null) return;
+    await ref.read(downloadListProvider.notifier).refresh();
+    final downloads = ref.read(downloadListProvider);
+    final d = downloads.any((dl) => dl.bookId == parsed.bookId && dl.chapter == parsed.chapter);
+    if (mounted) {
+      final currentParsed = _resolveParsed();
+      if (currentParsed?.bookId == parsed.bookId && currentParsed?.chapter == parsed.chapter) {
+        setState(() => _downloaded = d);
+      }
+    }
+  }
+
+  String get _refText {
+    if (_pickedBookId != null && _pickedChapter != null) {
+      final book = ScriptureService.bookMap[_pickedBookId]!;
+      return '${_isAm ? book.nameAm : book.nameEn} $_pickedChapter';
+    }
+    final plan = _cachedPlan;
+    if (plan == null || plan.isEmpty) return '';
+    final day = _viewingDay ?? (ScriptureService.getTodaysReading(_planId).day);
+    final entry = day <= plan.length ? plan[day - 1] : plan.last;
+    return entry.reference;
+  }
+
+  ({String bookId, int chapter})? _resolveParsed() {
+    if (_pickedBookId != null && _pickedChapter != null) return (bookId: _pickedBookId!, chapter: _pickedChapter!);
+    final plan = _cachedPlan;
+    if (plan == null || plan.isEmpty) return null;
+    final day = _viewingDay ?? (ScriptureService.getTodaysReading(_planId).day);
+    final entry = day <= plan.length ? plan[day - 1] : plan.last;
+    return ScriptureService.parseReference(entry.reference);
+  }
+
+  String get _planId {
+    final user = ref.read(userProvider).valueOrNull;
+    return user?.biblePlan ?? 'nt';
   }
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
-    final isAm = Localizations.localeOf(context).languageCode == 'am';
     final userAsync = ref.watch(userProvider);
     final todayRead = ref.watch(todayBibleReadProvider);
     final streakAsync = ref.watch(bibleStreakProvider);
+    final chaptersAsync = ref.watch(bibleChaptersReadProvider);
+    final coverageAsync = ref.watch(bibleCoverageProvider);
+    final completedBooksAsync = ref.watch(bibleBooksCompletedProvider);
+    final readDaysAsync = ref.watch(bibleReadDaysProvider);
     final streak = streakAsync.valueOrNull ?? 0;
     final isRead = todayRead.valueOrNull != null;
+    final chaptersRead = chaptersAsync.valueOrNull ?? 0;
+    final coverage = coverageAsync.valueOrNull;
+    final completedBooks = completedBooksAsync.valueOrNull ?? [];
+    final readDays = readDaysAsync.valueOrNull ?? {};
 
     return userAsync.when(
       loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error: (e, _) => Scaffold(body: Center(child: Text('$e'))),
+      error: (e, _) => Scaffold(body: ErrorCard(message: 'Could not load Bible plan')),
       data: (user) {
         final planId = user.biblePlan;
         _cachedPlan ??= ScriptureService.getPlan(planId, days: _totalDays);
+        if (!_audioLoaded) _loadAudio();
         final plan = _cachedPlan!;
-        final reading = ScriptureService.getTodaysReading(planId);
-        final verse = ScriptureService.getDailyScripture();
-        final day = reading.day;
-        final phase = ScriptureService.getPhase(day);
-        final phaseNames = isAm ? ScriptureService.phaseNamesAm : ScriptureService.phaseNamesEn;
-        final theme = isAm
-            ? ScriptureService.getTheme(reading.reference)
-            : ScriptureService.getThemeEn(reading.reference);
+        final todaysReading = _viewingDay == null ? ScriptureService.getTodaysReading(planId) : null;
+        final effectiveDay = _viewingDay ?? (todaysReading?.day ?? 1);
+        final parsed = _resolveParsed();
+
+        String theme;
+        bool isToday;
+        if (_pickedBookId != null && _pickedChapter != null) {
+          final book = ScriptureService.bookMap[_pickedBookId]!;
+          theme = _isAm ? book.themeAm : book.themeEn;
+          isToday = false;
+        } else {
+          final reading = effectiveDay <= plan.length ? plan[effectiveDay - 1] : plan.last;
+          theme = _isAm ? ScriptureService.getTheme(reading.reference) : ScriptureService.getThemeEn(reading.reference);
+          isToday = _viewingDay == null;
+        }
+
+        final phase = ScriptureService.getPhase(effectiveDay);
+        final phaseNames = _isAm ? ScriptureService.phaseNamesAm : ScriptureService.phaseNamesEn;
 
         return Scaffold(
           backgroundColor: AppColors.background,
@@ -64,12 +183,32 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
               onPressed: () => context.go('/'),
             ),
             title: Text(
-              isAm ? 'መጽሐፍ ቅዱስ' : 'Bible',
+              _isAm ? 'መጽሐፍ ቅዱስ' : 'Bible',
               style: AppTextStyles.displaySmall.copyWith(fontSize: 20),
             ),
             actions: [
+              _buildLangToggle(),
+                if (_viewingDay != null)
+                IconButton(
+                  icon: const Icon(Icons.today, color: AppColors.textSecondary, size: 20),
+                  tooltip: _isAm ? 'የዛሬው ንባብ' : "Today's Reading",
+                  onPressed: () {
+                    setState(() { _viewingDay = null; _pickedBookId = null; _pickedChapter = null; _downloaded = false; });
+                    _loadAudio();
+                  },
+                ),
+              IconButton(
+                icon: const Icon(Icons.menu_book, color: AppColors.textSecondary, size: 20),
+                tooltip: _isAm ? 'መጻሕፍት' : 'Books',
+                onPressed: () => _showBookPicker(context),
+              ),
+              IconButton(
+                icon: const Icon(Icons.auto_stories, color: AppColors.textSecondary, size: 20),
+                tooltip: _isAm ? 'ማስታወሻ ደብተር' : 'Journal',
+                onPressed: () => context.go('/bible/journal'),
+              ),
               Padding(
-                padding: const EdgeInsets.only(right: 12),
+                padding: const EdgeInsets.only(right: 4),
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
@@ -83,9 +222,8 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
                       const Icon(Icons.whatshot, color: AppColors.primary, size: 16),
                       const SizedBox(width: 4),
                       Text(
-                        '$streak-${l.streak}',
-                        style: const TextStyle(
-                            color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.w600),
+                        '$streak-${_isAm ? 'ቀን' : 'day'}',
+                        style: const TextStyle(color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),
@@ -94,13 +232,44 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
             ],
           ),
           body: ListView(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
             children: [
-              _buildHeroCard(context, ref, reading, isRead, phase, phaseNames, theme, isAm),
-              const SizedBox(height: 20),
-              _buildVerseBlock(verse, isAm),
-              const SizedBox(height: 20),
-              _buildPhaseBar(day, phase, phaseNames, isRead, isAm, plan),
+              _buildStats(chaptersRead, coverage, completedBooks.length, effectiveDay, isToday),
+              const SizedBox(height: 16),
+              _buildChapterHeader(_refText, theme, phase, phaseNames, effectiveDay, isToday, parsed),
+              const SizedBox(height: 16),
+              AudioPlayerBar(isAm: _isAm),
+              const SizedBox(height: 16),
+              VerseListView(isAm: _isAm),
+              const SizedBox(height: 16),
+              _buildActions(isRead, isToday, parsed),
+              const SizedBox(height: 16),
+              if (parsed != null)
+                LectioDivinaCard(
+                  bookId: parsed.bookId,
+                  chapter: parsed.chapter,
+                  isAm: _isAm,
+                  planDay: _pickedBookId == null ? '${todaysReading?.day ?? effectiveDay}' : null,
+                ),
+              if (_pickedBookId == null) ...[
+                const SizedBox(height: 16),
+                PhaseBar(
+                  day: effectiveDay,
+                  phaseIdx: phase,
+                  phaseNames: phaseNames,
+                  isAm: _isAm,
+                  plan: plan,
+                  totalDays: _totalDays,
+                  phaseCount: _phaseCount,
+                  onDaySelected: (d) {
+                    setState(() { _viewingDay = d; _pickedBookId = null; _pickedChapter = null; _downloaded = false; });
+                    _loadAudio();
+                  },
+                ),
+                const SizedBox(height: 16),
+                _buildAttendanceMonth(readDays),
+              ],
+              const SizedBox(height: 100),
             ],
           ),
         );
@@ -108,307 +277,448 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
     );
   }
 
-  Widget _buildHeroCard(
-    BuildContext context,
-    WidgetRef ref,
-    BiblePlanEntry reading,
-    bool isRead,
-    int phase,
-    List<String> phaseNames,
-    String theme,
-    bool isAm,
-  ) {
-    final label = isAm ? 'ቀን ${reading.day} ከ$_totalDays' : 'Day ${reading.day} of $_totalDays';
-    final phaseLabel = isAm
-        ? '${phaseNames[phase]} · ክፍል ${phase + 1} ከ$_phaseCount'
-        : '${phaseNames[phase]} · Phase ${phase + 1} of $_phaseCount';
+  Widget _buildStats(int chaptersRead, ({double otPercent, double ntPercent, double totalPercent})? coverage, int booksDone, int effectiveDay, bool isToday) {
+    final subtitle = !isToday
+        ? (_isAm ? 'ቀን $effectiveDay እየተመለከቱ ነው' : 'Viewing day $effectiveDay')
+        : (_isAm
+            ? '$chaptersRead ምዕራፎች · $booksDone መጻሕፍት ${coverage != null ? '· ${(coverage.totalPercent * 100).round()}%' : ''}'
+            : '$chaptersRead ch. · $booksDone books ${coverage != null ? '· ${(coverage.totalPercent * 100).round()}%' : ''}');
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(children: [
+        Icon(!isToday ? Icons.calendar_today : Icons.library_books, size: 14, color: AppColors.primary),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(subtitle, style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary, fontSize: 10)),
+        ),
+        if (coverage != null && isToday) ...[
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 50,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(2),
+              child: LinearProgressIndicator(
+                value: coverage.totalPercent,
+                backgroundColor: AppColors.border,
+                valueColor: const AlwaysStoppedAnimation(AppColors.primary),
+                minHeight: 3,
+              ),
+            ),
+          ),
+        ],
+      ]),
+    );
+  }
+
+  Widget _buildLangToggle() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.card,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppColors.border, width: 0.5),
+        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          _langChip('AMH', 'am'),
+          Container(width: 1, height: 16, color: AppColors.border),
+          _langChip('ENG', 'en'),
+        ]),
+      ),
+    );
+  }
+
+  Widget _langChip(String label, String lang) {
+    final active = _effectiveLang == lang;
+    return GestureDetector(
+      onTap: () {
+        if (_effectiveLang != lang) {
+          setState(() { _selectedLang = lang; _downloaded = false; });
+          _loadAudio();
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: active ? AppColors.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            color: active ? const Color(0xFF07090E) : AppColors.textMuted,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChapterHeader(String refText, String theme, int phase, List<String> phaseNames, int effectiveDay, bool isToday, ({String bookId, int chapter})? parsed) {
+    return Container(
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: AppColors.gradientGoldSoft,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _badge(label, AppColors.primary.withValues(alpha: 0.15), AppColors.primary),
-              _badge(phaseLabel, AppColors.card.withValues(alpha: 0.5), AppColors.textSecondary),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            reading.reference,
-            style: AppTextStyles.displayMedium.copyWith(fontSize: 24, color: AppColors.primary),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.card.withValues(alpha: 0.4),
-              borderRadius: BorderRadius.circular(8),
-              border: Border(
-                left: BorderSide(color: AppColors.primary.withValues(alpha: 0.3), width: 2),
-              ),
-            ),
-            child: Text(
-              theme,
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary, fontSize: 13),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: isRead
-                      ? null
-                      : () async {
-                          await ref.read(bibleNotifierProvider.notifier)
-                              .markAsRead(reading.reference,
-                                  note: _noteController.text.isNotEmpty ? _noteController.text : null);
-                        },
-                  icon: Icon(isRead ? Icons.check_circle : Icons.check, size: 18),
-                  label: Text(
-                    isRead
-                        ? '${isAm ? "ተነቧል" : "Done"} ✓'
-                        : '${isAm ? "አንብቤያለሁ" : "Mark as read"} · +20 XP',
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                  style: isRead
-                      ? ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.success.withValues(alpha: 0.2),
-                          foregroundColor: AppColors.success,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        )
-                      : ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: const Color(0xFF0A0A0A),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => setState(() => _showReflect = !_showReflect),
-                  icon: Icon(_showReflect ? Icons.expand_less : Icons.edit_note, size: 18),
-                  label: Text(isAm ? 'አስተንትን' : 'Reflect', style: const TextStyle(fontSize: 12)),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: _showReflect ? AppColors.primary : AppColors.textSecondary,
-                    side: BorderSide(
-                      color: _showReflect ? AppColors.primary : AppColors.primary.withValues(alpha: 0.4),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          if (_showReflect) ...[
-            const SizedBox(height: 12),
-            TextField(
-              controller: _noteController,
-              maxLines: 3,
-              style: AppTextStyles.bodyMedium.copyWith(fontSize: 13),
-              decoration: InputDecoration(
-                hintText: isAm ? 'ሐሳብህን ጻፍ...' : 'Write your thoughts...',
-                hintStyle: TextStyle(color: AppColors.textMuted.withValues(alpha: 0.5), fontSize: 13),
-                filled: true,
-                fillColor: AppColors.card.withValues(alpha: 0.5),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: AppColors.primary.withValues(alpha: 0.4)),
-                ),
-              ),
-            ),
-          ],
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        if (isToday && _pickedBookId == null) ...[
+          Row(children: [
+            _badge('${_isAm ? 'ቀን' : 'Day'} $effectiveDay ${_isAm ? 'ከ' : 'of'} $_totalDays', AppColors.primary.withValues(alpha: 0.15), AppColors.primary),
+            const SizedBox(width: 6),
+            _badge('${phaseNames[phase]} · ${_isAm ? 'ክፍል' : 'Phase'} ${phase + 1} ${_isAm ? 'ከ' : 'of'} $_phaseCount', AppColors.card.withValues(alpha: 0.5), AppColors.textSecondary),
+          ]),
+          const SizedBox(height: 10),
         ],
-      ),
-    );
-  }
-
-  Widget _buildVerseBlock(Scripture verse, bool isAm) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.format_quote, color: AppColors.primary, size: 16),
-              const SizedBox(width: 6),
-              Text(
-                isAm ? 'የቀኑ ቅዱስ ቃል' : 'Verse of the Day',
-                style: const TextStyle(
-                    fontFamily: 'Inter', fontSize: 10, fontWeight: FontWeight.w800,
-                    color: AppColors.primary, letterSpacing: 1.5),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          if (verse.textAm != null) ...[
-            Text(
-              '"${verse.textAm}"',
-              style: AppTextStyles.amharicBody.copyWith(fontSize: 20, color: AppColors.textPrimary, height: 1.5),
-            ),
-            const SizedBox(height: 8),
-          ],
-          Text(
-            '"${verse.text}"',
-            style: AppTextStyles.bodyMedium.copyWith(
-              fontStyle: FontStyle.italic,
-              color: verse.textAm != null ? AppColors.textSecondary : AppColors.textPrimary,
-              fontSize: verse.textAm != null ? 13 : 16,
-              height: 1.6,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Container(height: 1, width: 40, color: AppColors.primary),
-          const SizedBox(height: 8),
-          Text(
-            verse.reference,
-            style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary, fontSize: 13),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPhaseBar(int day, int phaseIdx, List<String> phaseNames, bool isRead, bool isAm, List<BiblePlanEntry> plan) {
-    final phaseColors = [
-      const Color(0xFF4CAF50),
-      const Color(0xFF2196F3),
-      const Color(0xFFFF6F00),
-      const Color(0xFF9C27B0),
-    ];
-    final phaseStart = phaseIdx * _daysPerPhase + 1;
-    final phaseEnd = phaseIdx == _phaseCount - 1 ? _totalDays : (phaseIdx + 1) * _daysPerPhase;
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.calendar_view_week, size: 14, color: AppColors.primary),
-              const SizedBox(width: 6),
-              Text(
-                isAm ? 'የ$_totalDays ቀን እቅድ' : '$_totalDays-Day Plan',
-                style: const TextStyle(
-                  fontFamily: 'Inter', fontSize: 11, fontWeight: FontWeight.w700,
-                  color: AppColors.primary, letterSpacing: 1,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: List.generate(_phaseCount, (i) {
-              final active = i == phaseIdx;
-              final done = i < phaseIdx;
-              return Expanded(
-                child: Container(
-                  height: 4,
-                  margin: EdgeInsets.only(right: i < _phaseCount - 1 ? 4 : 0),
-                  decoration: BoxDecoration(
-                    color: done ? phaseColors[i] : (active ? phaseColors[i].withValues(alpha: 0.6) : AppColors.border.withValues(alpha: 0.4)),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              );
-            }),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: List.generate(_phaseCount, (i) {
-              final active = i == phaseIdx;
-              final start = i * _daysPerPhase + 1;
-              final end = i == _phaseCount - 1 ? _totalDays : (i + 1) * _daysPerPhase;
-              return Expanded(
-                child: Text(
-                  '${phaseNames[i]}\n${isAm ? "ቀን $start-$end" : "D$start-$end"}',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: 'Inter', fontSize: 9,
-                    fontWeight: active ? FontWeight.w700 : FontWeight.w500,
-                    color: active ? AppColors.textPrimary : AppColors.textMuted,
-                  ),
-                ),
-              );
-            }),
-          ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 4,
-            runSpacing: 4,
-            children: List.generate(phaseEnd - phaseStart + 1, (i) {
-              final d = phaseStart + i;
-              final isCurrentDay = d == day;
-              final isEarlierDay = d < day;
-              final phaseForDay = ScriptureService.getPhase(d);
-              return Container(
-                width: 26,
-                height: 26,
+        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(refText, style: AppTextStyles.displayMedium.copyWith(fontSize: 22, color: AppColors.primary)),
+              const SizedBox(height: 8),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isEarlierDay ? phaseColors[phaseForDay].withValues(alpha: 0.3) : (isCurrentDay ? phaseColors[phaseIdx] : AppColors.border.withValues(alpha: 0.2)),
-                  border: Border.all(
-                    color: isCurrentDay ? phaseColors[phaseIdx] : Colors.transparent,
-                    width: 2,
-                  ),
+                  color: AppColors.card.withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border(left: BorderSide(color: AppColors.primary.withValues(alpha: 0.3), width: 2)),
                 ),
-                alignment: Alignment.center,
-                child: Text(
-                  '$d',
-                  style: TextStyle(
-                    fontFamily: 'Inter', fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    color: isEarlierDay ? AppColors.textPrimary : (isCurrentDay ? Colors.white : AppColors.textMuted),
-                  ),
-                ),
-              );
-            }),
+                child: Text(theme, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary, fontSize: 12)),
+              ),
+            ]),
           ),
-        ],
+          if (parsed != null) ...[
+            const SizedBox(width: 8),
+            Column(children: [
+              _iconBtn(Icons.download, _downloaded ? (_isAm ? 'ተከማችቷል' : 'Downloaded') : (_isAm ? 'አውርድ' : 'Download'), () {
+                showModalBottomSheet(
+                  context: context,
+                  backgroundColor: Colors.transparent,
+                  isScrollControlled: true,
+                  builder: (_) => DownloadSheet(
+                    currentBookId: parsed.bookId,
+                    currentChapter: parsed.chapter,
+                    isAmharic: _isAm,
+                    isAlreadyDownloaded: _downloaded,
+                    onDownloaded: () {
+                      if (mounted) {
+                        setState(() => _downloaded = true);
+                        _loadAudio();
+                        ref.read(downloadListProvider.notifier).refresh();
+                      }
+                    },
+                  ),
+                );
+              }),
+              const SizedBox(height: 8),
+              _iconBtn(Icons.info_outline, _isAm ? 'የመጽሐፉ መረጃ' : 'Book Info', () => _showBookInfo(context, parsed)),
+            ]),
+          ],
+        ]),
+      ]),
+    );
+  }
+
+  Widget _iconBtn(IconData icon, String tooltip, VoidCallback onTap) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppColors.card.withValues(alpha: 0.5),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Icon(icon, size: 18, color: AppColors.textSecondary),
+        ),
       ),
     );
   }
 
   Widget _badge(String text, Color bg, Color fg) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: fg.withValues(alpha: 0.3)),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-            fontFamily: 'Inter', fontSize: 11, color: fg, fontWeight: FontWeight.w600),
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(10)),
+      child: Text(text, style: TextStyle(color: fg, fontSize: 9, fontWeight: FontWeight.w600)),
     );
+  }
+
+  Widget _buildActions(bool isRead, bool isToday, ({String bookId, int chapter})? parsed) {
+    final canMarkRead = isToday || _pickedBookId != null;
+
+    if (canMarkRead) {
+      final alreadyRead = isRead;
+      return Row(children: [
+        Expanded(
+          child: alreadyRead
+              ? Container(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: AppColors.progressGreen.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: AppColors.progressGreen.withValues(alpha: 0.3)),
+                  ),
+                  child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    Icon(Icons.check_circle, size: 16, color: AppColors.progressGreen),
+                    const SizedBox(width: 6),
+                    Text('${_isAm ? 'ተከናውኗል' : 'Done'} ✓ +20 XP', style: TextStyle(fontSize: 12, color: AppColors.progressGreen, fontWeight: FontWeight.w600)),
+                  ]),
+                )
+              : ElevatedButton.icon(
+                  onPressed: () {
+                    final book = parsed != null ? ScriptureService.bookMap[parsed.bookId] : null;
+                    final refStr = book != null ? '${_isAm ? book.nameAm : book.nameEn} ${parsed!.chapter}' : '';
+                    if (refStr.isNotEmpty) ref.read(bibleNotifierProvider.notifier).markAsRead(refStr);
+                  },
+                  icon: const Icon(Icons.check, size: 16),
+                  label: Text(_isAm ? 'ዛሬ አንብቤዋለሁ +20' : 'Mark Read +20', style: const TextStyle(fontSize: 12)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.progressGreen,
+                    foregroundColor: const Color(0xFF07090E),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+        ),
+      ]);
+    }
+
+    return Row(children: [
+      Expanded(
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: AppColors.card,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Icon(Icons.lock_outline, size: 14, color: AppColors.textMuted),
+            const SizedBox(width: 6),
+            Text(_isAm ? 'የዛሬ ብቻ' : 'Today only', style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
+          ]),
+        ),
+      ),
+    ]);
+  }
+
+  void _showBookPicker(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      isScrollControlled: true,
+      builder: (ctx) {
+        return SizedBox(
+          height: MediaQuery.of(ctx).size.height * 0.85,
+          child: _BookChapterPicker(
+            isAm: _isAm,
+            onSelected: (bookId, chapter) {
+              Navigator.pop(ctx);
+              setState(() {
+                _pickedBookId = bookId;
+                _pickedChapter = chapter;
+                _viewingDay = null;
+                _downloaded = false;
+              });
+              _loadAudio();
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  void _showBookInfo(BuildContext context, ({String bookId, int chapter}) parsed) {
+    final bookInfo = StudyData.getContext(parsed.bookId, _isAm);
+    final book = ScriptureService.bookMap[parsed.bookId];
+    if (book == null) return;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (_) {
+        return Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(children: [
+                Icon(Icons.info_outline, size: 20, color: AppColors.primary),
+                const SizedBox(width: 8),
+                Text(
+                  _isAm ? book.nameAm : book.nameEn,
+                  style: AppTextStyles.displaySmall.copyWith(fontSize: 20, color: AppColors.textPrimary),
+                ),
+              ]),
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppColors.card,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(bookInfo, style: AppTextStyles.bodyMedium.copyWith(fontSize: 13, color: AppColors.textPrimary, height: 1.6)),
+                  const SizedBox(height: 10),
+                  Text(
+                    _isAm ? 'ቁልፍ ጭብጥ' : 'Key Theme',
+                    style: AppTextStyles.bodySmall.copyWith(color: AppColors.primary, fontSize: 10, fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _isAm ? book.themeAm : book.themeEn,
+                    style: AppTextStyles.bodyMedium.copyWith(fontSize: 12, color: AppColors.textSecondary),
+                  ),
+                ]),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                _isAm ? 'ለጥልቅ ጥናት፦ Blue Letter Bible፣ BibleHub ይጠቀሙ' : 'For deeper study: Blue Letter Bible, BibleHub',
+                style: AppTextStyles.bodySmall.copyWith(fontSize: 10, color: AppColors.textMuted),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAttendanceMonth(Set<int> readDays) {
+    final now = DateTime.now();
+    final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
+    final firstWeekday = DateTime(now.year, now.month, 1).weekday % 7;
+    final today = now.day;
+    final labels = _isAm ? ['ሰኞ', 'ማክ', 'ረቡ', 'ሐሙ', 'አርብ', 'ቅዳ', 'እሁድ'] : ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Icon(Icons.calendar_month, size: 14, color: AppColors.primary),
+          const SizedBox(width: 6),
+          Text(
+            _isAm ? '${_monthsAm[now.month - 1]} ንባብ' : '${_monthsEn[now.month - 1]} Reading',
+            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textSecondary),
+          ),
+        ]),
+        const SizedBox(height: 12),
+        Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: labels.map((l) => SizedBox(
+          width: 28, child: Text(l, textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: AppColors.textMuted))),
+        ).toList()),
+        const SizedBox(height: 6),
+        ...List.generate((firstWeekday + daysInMonth + 6) ~/ 7, (row) {
+          return Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: List.generate(7, (col) {
+            final day = row * 7 + col - firstWeekday + 1;
+            if (day < 1 || day > daysInMonth) return const SizedBox(width: 28, height: 28);
+            final isRead = readDays.contains(day);
+            final isToday2 = day == today;
+            return Container(
+              width: 28, height: 28,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isRead ? AppColors.progressGreen.withValues(alpha: 0.25) : (isToday2 ? AppColors.cardElevated : Colors.transparent),
+                border: isToday2 ? Border.all(color: AppColors.primary, width: 1.5) : null,
+              ),
+              child: Center(child: Text(
+                '$day',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: isToday2 ? FontWeight.w700 : FontWeight.w400,
+                  color: isRead ? AppColors.progressGreen : (isToday2 ? AppColors.primary : AppColors.textMuted),
+                ),
+              )),
+            );
+          }));
+        }),
+      ]),
+    );
+  }
+
+  static const _monthsEn = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  static const _monthsAm = ['ጃንዩ', 'ፌብሩ', 'ማርች', 'ኤፕሪ', 'ሜይ', 'ጁን', 'ጁላይ', 'ኦገስ', 'ሴፕቴ', 'ኦክቶ', 'ኖቬም', 'ዲሴም'];
+}
+
+class _BookChapterPicker extends ConsumerStatefulWidget {
+  final bool isAm;
+  final void Function(String bookId, int chapter) onSelected;
+  const _BookChapterPicker({required this.isAm, required this.onSelected});
+  @override
+  ConsumerState<_BookChapterPicker> createState() => _BookChapterPickerState();
+}
+
+class _BookChapterPickerState extends ConsumerState<_BookChapterPicker> {
+  BibleBook? _selectedBook;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(children: [
+      Container(
+        padding: const EdgeInsets.all(16),
+        child: Row(children: [
+          IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: _selectedBook != null ? () => setState(() => _selectedBook = null) : () => Navigator.pop(context),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            _selectedBook != null
+                ? (widget.isAm ? _selectedBook!.nameAm : _selectedBook!.nameEn)
+                : (widget.isAm ? 'መጻሕፍት' : 'Books'),
+            style: AppTextStyles.displaySmall.copyWith(fontSize: 18),
+          ),
+        ]),
+      ),
+      const Divider(height: 1),
+      Expanded(
+        child: _selectedBook == null
+            ? ListView(children: ScriptureService.sections.map((s) => _buildSection(s)).toList())
+            : ChapterPicker(book: _selectedBook!, onSelected: (ch) => widget.onSelected(_selectedBook!.id, ch)),
+      ),
+    ]);
+  }
+
+  Widget _buildSection(BibleSection s) {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Padding(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
+        child: Text(
+          widget.isAm ? s.nameAm : s.nameEn,
+          style: AppTextStyles.bodySmall.copyWith(fontSize: 11, color: AppColors.textMuted, fontWeight: FontWeight.w700),
+        ),
+      ),
+      ...s.books.map((b) => ListTile(
+        dense: true,
+        title: Text(widget.isAm ? b.nameAm : b.nameEn, style: const TextStyle(fontSize: 15)),
+        subtitle: Text(
+          widget.isAm ? b.themeAm : b.themeEn,
+          style: TextStyle(fontSize: 10, color: AppColors.textMuted),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        trailing: const Icon(Icons.chevron_right, size: 18),
+        onTap: () => setState(() => _selectedBook = b),
+      )),
+    ]);
   }
 }

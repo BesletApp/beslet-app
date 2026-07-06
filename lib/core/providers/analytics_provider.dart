@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../services/xp_service.dart';
 import 'database_provider.dart';
 
 String _dateStr(DateTime d) =>
@@ -15,20 +16,25 @@ final weeklyPillarCompletionsProvider =
   final bibles = await db.select(db.bibleReads).get();
   final skills = await db.select(db.skillSessions).get();
   final fellowships = await db.select(db.fellowshipLogs).get();
-  final families = await db.select(db.familyTimeLogs).get();
+  final allTodos = await db.select(db.todoItems).get();
 
   final prayerDates = prayers.map((l) => l.date).toSet();
   final bibleDates = bibles.map((l) => l.date).toSet();
   final skillDates = skills.map((l) => l.date).toSet();
   final fellowshipDates = fellowships.map((l) => l.date).toSet();
-  final familyDates = families.map((l) => l.date).toSet();
+  final todoByDate = <String, int>{};
+  for (final t in allTodos) {
+    if (t.isCompleted && !t.isSkipped) {
+      todoByDate.update(t.date, (v) => v + 1, ifAbsent: () => 1);
+    }
+  }
 
   return {
     'prayer': weekStrs.map((d) => prayerDates.contains(d)).toList(),
     'bible': weekStrs.map((d) => bibleDates.contains(d)).toList(),
     'skills': weekStrs.map((d) => skillDates.contains(d)).toList(),
     'fellowship': weekStrs.map((d) => fellowshipDates.contains(d)).toList(),
-    'family': weekStrs.map((d) => familyDates.contains(d)).toList(),
+    'tasks': weekStrs.map((d) => (todoByDate[d] ?? 0) > 0).toList(),
   };
 });
 
@@ -72,17 +78,16 @@ final sanctityScoreProvider = FutureProvider<double>((ref) async {
   final fellowships = await (db.select(db.fellowshipLogs)
         ..where((t) => t.date.equals(today)))
       .get();
-  final families =
-      await (db.select(db.familyTimeLogs)..where((t) => t.date.equals(today)))
-          .get();
+  final todayTodos = await (db.select(db.todoItems)..where((t) => t.date.equals(today))).get();
+  final hasTodos = todayTodos.any((t) => t.isCompleted);
 
-  const weights = {'prayer': 0.25, 'bible': 0.25, 'skills': 0.20, 'fellowship': 0.15, 'family': 0.15};
+  const weights = {'prayer': 0.25, 'bible': 0.25, 'skills': 0.20, 'fellowship': 0.15, 'tasks': 0.15};
   double score = 0;
   if (prayers.isNotEmpty) score += weights['prayer']!;
   if (bibles.isNotEmpty) score += weights['bible']!;
   if (skills.isNotEmpty) score += weights['skills']!;
   if (fellowships.isNotEmpty) score += weights['fellowship']!;
-  if (families.isNotEmpty) score += weights['family']!;
+  if (hasTodos) score += weights['tasks']!;
   return score;
 });
 
@@ -94,7 +99,7 @@ final weeklyXpProvider = FutureProvider<List<double>>((ref) async {
   final allBibles = await db.select(db.bibleReads).get();
   final allSkills = await db.select(db.skillSessions).get();
   final allFellowships = await db.select(db.fellowshipLogs).get();
-  final allFamilies = await db.select(db.familyTimeLogs).get();
+  final allTodos = await db.select(db.todoItems).get();
 
   final prayerDates = allPrayers.map((l) => l.date).toSet();
   final bibleDates = allBibles.map((l) => l.date).toSet();
@@ -103,7 +108,12 @@ final weeklyXpProvider = FutureProvider<List<double>>((ref) async {
     skillMinByDate.update(s.date, (v) => v + s.minutes, ifAbsent: () => s.minutes);
   }
   final fellowshipDates = allFellowships.map((l) => l.date).toSet();
-  final familyDates = allFamilies.map((l) => l.date).toSet();
+  final todoDoneByDate = <String, int>{};
+  for (final t in allTodos) {
+    if (t.isCompleted && !t.isSkipped) {
+      todoDoneByDate.update(t.date, (v) => v + 1, ifAbsent: () => 1);
+    }
+  }
 
   return List.generate(4, (i) {
     double xp = 0;
@@ -113,7 +123,8 @@ final weeklyXpProvider = FutureProvider<List<double>>((ref) async {
       if (bibleDates.contains(day)) xp += 20;
       if (skillMinByDate.containsKey(day)) xp += skillMinByDate[day]! * 5;
       if (fellowshipDates.contains(day)) xp += 10;
-      if (familyDates.contains(day)) xp += 10;
+      final td = todoDoneByDate[day] ?? 0;
+      if (td > 0) xp += td * XpService.todoComplete;
     }
     return xp;
   });
@@ -129,7 +140,7 @@ final dailyXpProvider = FutureProvider<List<double>>((ref) async {
   final allBibles = await db.select(db.bibleReads).get();
   final allSkills = await db.select(db.skillSessions).get();
   final allFellowships = await db.select(db.fellowshipLogs).get();
-  final allFamilies = await db.select(db.familyTimeLogs).get();
+  final allTodos = await db.select(db.todoItems).get();
 
   final prayerDates = allPrayers.map((l) => l.date).toSet();
   final bibleDates = allBibles.map((l) => l.date).toSet();
@@ -138,7 +149,12 @@ final dailyXpProvider = FutureProvider<List<double>>((ref) async {
     skillMinByDate.update(s.date, (v) => v + s.minutes, ifAbsent: () => s.minutes);
   }
   final fellowshipDates = allFellowships.map((l) => l.date).toSet();
-  final familyDates = allFamilies.map((l) => l.date).toSet();
+  final todoDoneByDate = <String, int>{};
+  for (final t in allTodos) {
+    if (t.isCompleted && !t.isSkipped) {
+      todoDoneByDate.update(t.date, (v) => v + 1, ifAbsent: () => 1);
+    }
+  }
 
   return weekStrs.map((day) {
     double xp = 0;
@@ -146,7 +162,8 @@ final dailyXpProvider = FutureProvider<List<double>>((ref) async {
     if (bibleDates.contains(day)) xp += 20;
     if (skillMinByDate.containsKey(day)) xp += skillMinByDate[day]! * 5;
     if (fellowshipDates.contains(day)) xp += 10;
-    if (familyDates.contains(day)) xp += 10;
+    final td = todoDoneByDate[day] ?? 0;
+    if (td > 0) xp += td * XpService.todoComplete;
     return xp;
   }).toList();
 });

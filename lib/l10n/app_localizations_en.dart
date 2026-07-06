@@ -21,6 +21,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get progress => 'Progress';
 
   @override
+  String get growth => 'Growth';
+
+  @override
   String get community => 'Community';
 
   @override
@@ -428,4 +431,97 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get userSubtitle => 'Arba Minch University · Computer Science';
+
+  @override
+  String get dailyTasks => 'Daily Tasks';
+
+  @override
+  String get myTasks => 'My Tasks';
+
+  @override
+  String get planYourDay => 'Good morning! Plan your day';
+
+  @override
+  String get setIntentions => 'Set your intentions for today';
+
+  @override
+  String get quickAdd => 'Quick add';
+
+  @override
+  String get addTask => 'Add Task';
+
+  @override
+  String get reviewYourDay => 'Time to review your day!';
+
+  @override
+  String get eveningReview => 'Evening Review';
+
+  @override
+  String tasksDoneOf(Object done, Object total) {
+    return '$done of $total tasks done';
+  }
+
+  @override
+  String get myGoals => 'My Goals';
+
+  @override
+  String get addGoal => 'Add Goal';
+
+  @override
+  String get editSuggestions => 'Edit Quick Add';
+
+  @override
+  String get carryToTomorrow => '→ Tomorrow';
+
+  @override
+  String get skipTask => 'Skip';
+
+  @override
+  String taskXpEarned(Object title) {
+    return '$title done! +5 XP';
+  }
+
+  @override
+  String get allDoneBonus => 'All tasks complete! +10 XP bonus';
+
+  @override
+  String get howWasYourDay => 'How was your day?';
+
+  @override
+  String get doneForToday => 'Done for today';
+
+  @override
+  String get noTasksPlanned => 'No tasks planned for today';
+
+  @override
+  String get planTomorrow => 'Plan tomorrow to stay on track!';
+
+  @override
+  String tasksCompleted(Object count) {
+    return '$count tasks completed';
+  }
+
+  @override
+  String get firstTaskWaiting => 'Your first task is waiting';
+
+  @override
+  String get noDownloads => 'No downloaded chapters yet';
+
+  @override
+  String get downloads => 'Downloads';
+
+  @override
+  String get editProfile => 'Edit Profile';
+
+  @override
+  String get displayName => 'Display Name';
+
+  @override
+  String get profileSaved => 'Profile updated!';
+
+  @override
+  String get languageChanged => 'Language changed — restart app to fully apply';
+
+  @override
+  String get noBadgesYet => 'Keep going to earn badges';
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
@@ -24,11 +25,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final _languageKey = GlobalKey();
   final _remindersKey = GlobalKey();
   final _aboutKey = GlobalKey();
+  String _reminderTime = '20:00';
 
   @override
   void initState() {
     super.initState();
+    _loadReminderTime();
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSection());
+  }
+
+  Future<void> _loadReminderTime() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) setState(() => _reminderTime = prefs.getString('reminderTime') ?? '20:00');
   }
 
   void _scrollToSection() {
@@ -99,11 +107,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             leading: const Icon(Icons.access_time, color: AppColors.primary),
             title: Text(isAm ? 'ዕለታዊ ማሳሰቢያ' : 'Daily reading reminder', style: AppTextStyles.bodyMedium),
             subtitle: Text(isAm ? 'በየቀኑ ለማንበብ ያስታውስሃል' : 'Reminds you to read daily', style: AppTextStyles.bodySmall),
-            trailing: Text('20:00', style: const TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.primary)),
+            trailing: Text(_reminderTime, style: const TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.primary)),
             contentPadding: EdgeInsets.zero,
             onTap: () async {
-              final time = await showTimePicker(context: context, initialTime: const TimeOfDay(hour: 20, minute: 0));
-              // notification service integration point
+              final parts = _reminderTime.split(':');
+              final initial = TimeOfDay(hour: int.tryParse(parts[0]) ?? 20, minute: int.tryParse(parts[1]) ?? 0);
+              final time = await showTimePicker(context: context, initialTime: initial);
+              if (time != null) {
+                final formatted = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.setString('reminderTime', formatted);
+                if (mounted) setState(() => _reminderTime = formatted);
+              }
             },
           ),
         ),
@@ -118,7 +133,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             const SizedBox(height: 8),
             Text(isAm ? 'በአርባ ምንጭ ዩኒቨርሲቲ ውስጥ ላሉ ክርስቲያን ተማሪዎች የበጋ የ90 ቀን የመንፈሳዊ እድገት መተግበሪያ።' : 'A 90-day summer spiritual growth app for Christian students at Arba Minch University and beyond.', style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary, height: 1.4)),
             const SizedBox(height: 12),
-            Text('Made with love by Amanuel Lamesa · Computer Science, AMU', style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textMuted)),
+            Text('Made by Amanuel Lamesa', style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textMuted)),
             Text('Summer 2026 · v1.0', style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textMuted)),
             const SizedBox(height: 16),
             SizedBox(
@@ -154,6 +169,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         final db = ref.read(databaseProvider);
         await db.update(db.users).replace(user.copyWith(lang: code));
         ref.invalidate(userProvider);
+        if (context.mounted) {
+          final l = AppLocalizations.of(context)!;
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(l.languageChanged, style: const TextStyle(fontFamily: 'Inter')),
+            backgroundColor: AppColors.primary,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3),
+          ));
+        }
       },
     );
   }

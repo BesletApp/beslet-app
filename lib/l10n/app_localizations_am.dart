@@ -21,6 +21,9 @@ class AppLocalizationsAm extends AppLocalizations {
   String get progress => 'እድገት';
 
   @override
+  String get growth => 'እድገት';
+
+  @override
   String get community => 'ማህበረሰብ';
 
   @override
@@ -426,4 +429,97 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get userSubtitle => 'አርባ ምንጭ ዩኒቨርሲቲ · ኮምፒውተር ሳይንስ';
+
+  @override
+  String get dailyTasks => 'ዕለታዊ ተግባራት';
+
+  @override
+  String get myTasks => 'ተግባሮቼ';
+
+  @override
+  String get planYourDay => 'እንደምን አደሩ! ዛሬን ያቅዱ';
+
+  @override
+  String get setIntentions => 'ለዛሬ ዕቅድዎን ያዘጋጁ';
+
+  @override
+  String get quickAdd => 'ፈጣን መጨመሪያ';
+
+  @override
+  String get addTask => 'ተግባር ያክሉ';
+
+  @override
+  String get reviewYourDay => 'ቀንዎን ይገምግሙ!';
+
+  @override
+  String get eveningReview => 'የማታ ግምገማ';
+
+  @override
+  String tasksDoneOf(Object done, Object total) {
+    return '$done ከ$total ተግባራት ተከናውነዋል';
+  }
+
+  @override
+  String get myGoals => 'ግቦቼ';
+
+  @override
+  String get addGoal => 'ግብ ያክሉ';
+
+  @override
+  String get editSuggestions => 'ፈጣን ሀሳቦችን ያስተካክሉ';
+
+  @override
+  String get carryToTomorrow => '→ ነገ ይሸጋገር';
+
+  @override
+  String get skipTask => 'ዝለል';
+
+  @override
+  String taskXpEarned(Object title) {
+    return '$title ተከናውኗል! +5 ነጥብ';
+  }
+
+  @override
+  String get allDoneBonus => 'ሁሉም ተግባራት ተከናውነዋል! +10 ነጥብ ቦነስ';
+
+  @override
+  String get howWasYourDay => 'ቀንዎ እንዴት ነበር?';
+
+  @override
+  String get doneForToday => 'ለዛሬ በቂ';
+
+  @override
+  String get noTasksPlanned => 'ለዛሬ ምንም የታቀዱ ተግባራት የሉም';
+
+  @override
+  String get planTomorrow => 'ነገ ለመዘጋጀት ዛሬ ያቅዱ!';
+
+  @override
+  String tasksCompleted(Object count) {
+    return '$count ተግባራት ተከናውነዋል';
+  }
+
+  @override
+  String get firstTaskWaiting => 'የመጀመሪያ ተግባርህ እየተጠበቀ ነው';
+
+  @override
+  String get noDownloads => 'ገና ምንም የወረዱ ምዕራፎች የሉም';
+
+  @override
+  String get downloads => 'ማውረዶች';
+
+  @override
+  String get editProfile => 'መገለጫ አስተካክል';
+
+  @override
+  String get displayName => 'የሚታይ ስም';
+
+  @override
+  String get profileSaved => 'መገለጫ ተዘምኗል!';
+
+  @override
+  String get languageChanged => 'ቋንቋ ተለውጧል — ሙሉ ለውጥ ለማየት እንደገና ያስጀምሩ';
+
+  @override
+  String get noBadgesYet => 'ሜዳሊያ ለማግኘት ቀጥል';
 }
