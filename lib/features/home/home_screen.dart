@@ -16,8 +16,11 @@ import '../../core/providers/bible_read_provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../core/providers/fellowship_provider.dart';
 import '../../core/providers/todo_provider.dart';
+import '../../core/providers/streak_provider.dart';
+import '../../core/providers/soul_log_provider.dart';
 import '../../services/update_checker.dart';
 import '../../shared/widgets/error_card.dart';
+import '../../core/services/streak_service.dart';
 
 class _PillarData {
   final String icon;
@@ -43,9 +46,11 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+  bool _isAm = false;
   bool _celebrated = false;
   bool _widgetUpdated = false;
   bool _showCommunity = false;
+  bool _soulExpanded = false;
 
   @override
   void initState() {
@@ -154,6 +159,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final todayFellowship = ref.watch(todayFellowshipProvider);
     final todayTodoStats = ref.watch(todayTodoStatsProvider);
 
+    _isAm = Localizations.localeOf(context).languageCode == 'am';
+    final streakState = ref.watch(streakStateProvider).valueOrNull;
+    final todaySoulLog = ref.watch(todaySoulLogProvider).valueOrNull;
     final l = AppLocalizations.of(context)!;
     return userAsync.when(
       loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
@@ -206,6 +214,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   _buildCompactHeader(context, user, daysElapsed, totalDays, daysRemaining, inSummer, l),
                   const SizedBox(height: 20),
                   _buildVerseHero(context),
+                  const SizedBox(height: 20),
+                  if (streakState?.isSabbathToday == true) ...[
+                    _buildSabbathBlessing(context, l),
+                    const SizedBox(height: 20),
+                  ],
+                  _buildSoulCheckIn(context, todaySoulLog, l),
                   const SizedBox(height: 20),
                   _buildLitPath(context, bibleRead, prayed, todoStats, todayXp, tracking, daysElapsed, totalDays, l),
                   if (_showCommunity) ...[
@@ -331,6 +345,142 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ));
   }
 
+  Widget _buildSoulCheckIn(BuildContext context, SoulLogData? todayLog, AppLocalizations l) {
+    if (todayLog case final log?) {
+      return _buildSoulCheckInDone(log, l);
+    }
+    return _buildSoulCheckInPrompt(l);
+  }
+
+  Widget _buildSoulCheckInDone(SoulLogData log, AppLocalizations l) {
+    final isAm = _isAm;
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: () => _editSoulCheckIn(log),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(children: [
+            Text(_moodEmoji(log.mood), style: const TextStyle(fontSize: 20)),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                isAm ? 'ዛሬ እንዴት ነህ: ${_moodLabel(log.mood, isAm)}' : 'How you are today: ${_moodLabel(log.mood, isAm)}',
+                style: AppTextStyles.labelLarge.copyWith(color: AppColors.textSecondary),
+              ),
+            ),
+            const Icon(Icons.edit_square, size: 18, color: AppColors.textMuted),
+          ]),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSoulCheckInPrompt(AppLocalizations l) {
+    final isAm = _isAm;
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(children: [
+        InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: () => setState(() => _soulExpanded = !_soulExpanded),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(children: [
+              const Text('💭', style: TextStyle(fontSize: 20)),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(isAm ? 'ነፍስህ እንዴት ናት?' : 'How\'s your soul?',
+                    style: AppTextStyles.labelLarge.copyWith(color: AppColors.textPrimary)),
+              ),
+              Icon(_soulExpanded ? Icons.expand_less : Icons.expand_more, color: AppColors.textMuted),
+            ]),
+          ),
+        ),
+        if (_soulExpanded) ...[
+          const Divider(height: 1, color: AppColors.border),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(children: [
+              Text(isAm ? 'ልብህ ላይ ያለው ምንድን ነው?' : 'What is on your heart?',
+                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted)),
+              const SizedBox(height: 12),
+              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+                _moodBtn(1, '😢'), _moodBtn(2, '😕'), _moodBtn(3, '😐'),
+                _moodBtn(4, '🙂'), _moodBtn(5, '😊'),
+              ]),
+            ]),
+          ),
+        ],
+      ]),
+    );
+  }
+
+  Widget _moodBtn(int mood, String emoji) {
+    return GestureDetector(
+      onTap: () => _logSoulCheckIn(mood),
+      child: Container(
+        width: 44, height: 44,
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Center(child: Text(emoji, style: const TextStyle(fontSize: 22))),
+      ),
+    );
+  }
+
+  String _moodEmoji(int mood) {
+    return ['😢', '😕', '😐', '🙂', '😊'][mood.clamp(1, 5) - 1];
+  }
+
+  String _moodLabel(int mood, bool isAm) {
+    const labels = ['', 'Struggling', 'Down', 'Okay', 'Good', 'Great'];
+    const amLabels = ['', 'እየታገልሁ ነው', 'አዝኛለሁ', 'እሺ', 'ጥሩ', 'በጣም ጥሩ'];
+    return isAm ? amLabels[mood.clamp(0, 5)] : labels[mood.clamp(0, 5)];
+  }
+
+  Future<void> _logSoulCheckIn(int mood) async {
+    await ref.read(soulLogNotifierProvider.notifier).logCheckIn(mood);
+    setState(() => _soulExpanded = false);
+  }
+
+  void _editSoulCheckIn(SoulLogData log) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.card,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Text(_isAm ? 'ስሜትህን ለውጥ' : 'Update your mood',
+                style: AppTextStyles.labelLarge),
+            const SizedBox(height: 16),
+            Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+              _moodBtn(1, '😢'), _moodBtn(2, '😕'), _moodBtn(3, '😐'),
+              _moodBtn(4, '🙂'), _moodBtn(5, '😊'),
+            ]),
+            const SizedBox(height: 8),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(_isAm ? 'ተው' : 'Cancel')),
+          ]),
+        ),
+      ),
+    );
+  }
+
   Widget _buildCompactHeader(BuildContext context, User user, int daysElapsed, int totalDays, int daysRemaining, bool inSummer, AppLocalizations l) {
     final hour = DateTime.now().hour;
     final greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
@@ -416,11 +566,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         label: 'Prayer',
         purpose: 'Pour out your heart',
         isComplete: step2done,
-        isLocked: !step1done,
+        isLocked: false,
         isCurrent: currentStep == 1,
         accent: AppColors.spiritualPurple,
-        actionLabel: step2done ? null : (step1done ? 'Start Prayer →' : null),
-        onAction: step1done && !step2done ? () => context.go('/prayer') : null,
+        actionLabel: step2done ? null : 'Start Prayer →',
+        onAction: !step2done ? () => context.go('/prayer') : null,
         onView: step2done ? () => context.go('/prayer') : null,
       ),
       Padding(
@@ -444,11 +594,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         label: "Today's Tasks",
         purpose: 'Walk in obedience',
         isComplete: step3done,
-        isLocked: !step2done,
+        isLocked: false,
         isCurrent: currentStep == 2,
         accent: AppColors.progressGreen,
-        actionLabel: step3done ? null : (step2done ? (todoStats.total == 0 ? 'Plan →' : 'Do →') : null),
-        onAction: step2done && !step3done ? () => context.go('/daily-todo') : null,
+        actionLabel: step3done ? null : (todoStats.total == 0 ? 'Plan →' : 'Do →'),
+        onAction: !step3done ? () => context.go('/daily-todo') : null,
         onView: step3done ? () => context.go('/daily-todo') : null,
       ),
       const SizedBox(height: 16),
@@ -542,9 +692,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Column(children: [
         Row(children: [
           Row(children: [
-            const Text('🔥', style: TextStyle(fontSize: 14)),
+            Text(StreakService.growthEmoji(streak), style: const TextStyle(fontSize: 14)),
             const SizedBox(width: 4),
-            Text('$streak-day', style: AppTextStyles.bodySmall.copyWith(fontSize: 11, color: AppColors.textPrimary)),
+            Text('$streak days', style: AppTextStyles.bodySmall.copyWith(fontSize: 11, color: AppColors.textPrimary)),
           ]),
           const SizedBox(width: 16),
           Container(width: 1, height: 12, color: AppColors.border),
@@ -584,6 +734,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           const SizedBox(width: 8),
           Text('Day $daysElapsed of $totalDays', style: AppTextStyles.bodySmall.copyWith(fontSize: 9, color: AppColors.textMuted)),
         ]),
+      ]),
+    );
+  }
+
+  Widget _buildSabbathBlessing(BuildContext context, AppLocalizations l) {
+    final isAm = _isAm;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(colors: [Color(0xFF2E7D32), Color(0xFF1B5E20)]),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 8, offset: const Offset(0, 2))],
+      ),
+      child: Column(children: [
+        Text(isAm ? '🕊️ የእረፍት ቀን' : '🕊️ Sabbath Rest',
+            style: const TextStyle(fontFamily: 'Inter', fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white)),
+        const SizedBox(height: 8),
+        Text(
+          isAm
+            ? '"ወደ እኔ የደከማችሁ የተሸከማችሁም ሁሉ ኑ፤ እኔም አሳርፋችኋለሁ።" — ማቴዎስ 11፥28'
+            : '"Come to me, all who labor and are heavy laden, and I will give you rest." — Matthew 11:28',
+          style: const TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w400, color: Color(0xFFE8F5E9)),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 6),
+        Text(
+          isAm ? 'እግዚአብሔር ዛሬ እንድታርፍ ይጋብዝሃል። ዘንድሮ ሥራ አልጠበቀብህም። 🌱' : 'God invites you to rest today. No tasks expected. 🌱',
+          style: const TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w400, color: Color(0xFFC8E6C9)),
+          textAlign: TextAlign.center,
+        ),
       ]),
     );
   }

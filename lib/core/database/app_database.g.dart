@@ -86,6 +86,18 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _sabbathDayMeta = const VerificationMeta(
+    'sabbathDay',
+  );
+  @override
+  late final GeneratedColumn<int> sabbathDay = GeneratedColumn<int>(
+    'sabbath_day',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(-1),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -95,6 +107,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     lang,
     biblePlan,
     createdAt,
+    sabbathDay,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -149,6 +162,12 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     } else if (isInserting) {
       context.missing(_createdAtMeta);
     }
+    if (data.containsKey('sabbath_day')) {
+      context.handle(
+        _sabbathDayMeta,
+        sabbathDay.isAcceptableOrUnknown(data['sabbath_day']!, _sabbathDayMeta),
+      );
+    }
     return context;
   }
 
@@ -186,6 +205,10 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
         DriftSqlType.string,
         data['${effectivePrefix}created_at'],
       )!,
+      sabbathDay: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}sabbath_day'],
+      )!,
     );
   }
 
@@ -203,6 +226,7 @@ class User extends DataClass implements Insertable<User> {
   final String lang;
   final String biblePlan;
   final String createdAt;
+  final int sabbathDay;
   const User({
     required this.id,
     required this.name,
@@ -211,6 +235,7 @@ class User extends DataClass implements Insertable<User> {
     required this.lang,
     required this.biblePlan,
     required this.createdAt,
+    required this.sabbathDay,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -222,6 +247,7 @@ class User extends DataClass implements Insertable<User> {
     map['lang'] = Variable<String>(lang);
     map['bible_plan'] = Variable<String>(biblePlan);
     map['created_at'] = Variable<String>(createdAt);
+    map['sabbath_day'] = Variable<int>(sabbathDay);
     return map;
   }
 
@@ -234,6 +260,7 @@ class User extends DataClass implements Insertable<User> {
       lang: Value(lang),
       biblePlan: Value(biblePlan),
       createdAt: Value(createdAt),
+      sabbathDay: Value(sabbathDay),
     );
   }
 
@@ -250,6 +277,7 @@ class User extends DataClass implements Insertable<User> {
       lang: serializer.fromJson<String>(json['lang']),
       biblePlan: serializer.fromJson<String>(json['biblePlan']),
       createdAt: serializer.fromJson<String>(json['createdAt']),
+      sabbathDay: serializer.fromJson<int>(json['sabbathDay']),
     );
   }
   @override
@@ -263,6 +291,7 @@ class User extends DataClass implements Insertable<User> {
       'lang': serializer.toJson<String>(lang),
       'biblePlan': serializer.toJson<String>(biblePlan),
       'createdAt': serializer.toJson<String>(createdAt),
+      'sabbathDay': serializer.toJson<int>(sabbathDay),
     };
   }
 
@@ -274,6 +303,7 @@ class User extends DataClass implements Insertable<User> {
     String? lang,
     String? biblePlan,
     String? createdAt,
+    int? sabbathDay,
   }) => User(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -282,6 +312,7 @@ class User extends DataClass implements Insertable<User> {
     lang: lang ?? this.lang,
     biblePlan: biblePlan ?? this.biblePlan,
     createdAt: createdAt ?? this.createdAt,
+    sabbathDay: sabbathDay ?? this.sabbathDay,
   );
   User copyWithCompanion(UsersCompanion data) {
     return User(
@@ -292,6 +323,9 @@ class User extends DataClass implements Insertable<User> {
       lang: data.lang.present ? data.lang.value : this.lang,
       biblePlan: data.biblePlan.present ? data.biblePlan.value : this.biblePlan,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      sabbathDay: data.sabbathDay.present
+          ? data.sabbathDay.value
+          : this.sabbathDay,
     );
   }
 
@@ -304,14 +338,23 @@ class User extends DataClass implements Insertable<User> {
           ..write('onboarded: $onboarded, ')
           ..write('lang: $lang, ')
           ..write('biblePlan: $biblePlan, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('sabbathDay: $sabbathDay')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, name, goals, onboarded, lang, biblePlan, createdAt);
+  int get hashCode => Object.hash(
+    id,
+    name,
+    goals,
+    onboarded,
+    lang,
+    biblePlan,
+    createdAt,
+    sabbathDay,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -322,7 +365,8 @@ class User extends DataClass implements Insertable<User> {
           other.onboarded == this.onboarded &&
           other.lang == this.lang &&
           other.biblePlan == this.biblePlan &&
-          other.createdAt == this.createdAt);
+          other.createdAt == this.createdAt &&
+          other.sabbathDay == this.sabbathDay);
 }
 
 class UsersCompanion extends UpdateCompanion<User> {
@@ -333,6 +377,7 @@ class UsersCompanion extends UpdateCompanion<User> {
   final Value<String> lang;
   final Value<String> biblePlan;
   final Value<String> createdAt;
+  final Value<int> sabbathDay;
   const UsersCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
@@ -341,6 +386,7 @@ class UsersCompanion extends UpdateCompanion<User> {
     this.lang = const Value.absent(),
     this.biblePlan = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.sabbathDay = const Value.absent(),
   });
   UsersCompanion.insert({
     this.id = const Value.absent(),
@@ -350,6 +396,7 @@ class UsersCompanion extends UpdateCompanion<User> {
     this.lang = const Value.absent(),
     this.biblePlan = const Value.absent(),
     required String createdAt,
+    this.sabbathDay = const Value.absent(),
   }) : createdAt = Value(createdAt);
   static Insertable<User> custom({
     Expression<int>? id,
@@ -359,6 +406,7 @@ class UsersCompanion extends UpdateCompanion<User> {
     Expression<String>? lang,
     Expression<String>? biblePlan,
     Expression<String>? createdAt,
+    Expression<int>? sabbathDay,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -368,6 +416,7 @@ class UsersCompanion extends UpdateCompanion<User> {
       if (lang != null) 'lang': lang,
       if (biblePlan != null) 'bible_plan': biblePlan,
       if (createdAt != null) 'created_at': createdAt,
+      if (sabbathDay != null) 'sabbath_day': sabbathDay,
     });
   }
 
@@ -379,6 +428,7 @@ class UsersCompanion extends UpdateCompanion<User> {
     Value<String>? lang,
     Value<String>? biblePlan,
     Value<String>? createdAt,
+    Value<int>? sabbathDay,
   }) {
     return UsersCompanion(
       id: id ?? this.id,
@@ -388,6 +438,7 @@ class UsersCompanion extends UpdateCompanion<User> {
       lang: lang ?? this.lang,
       biblePlan: biblePlan ?? this.biblePlan,
       createdAt: createdAt ?? this.createdAt,
+      sabbathDay: sabbathDay ?? this.sabbathDay,
     );
   }
 
@@ -415,6 +466,9 @@ class UsersCompanion extends UpdateCompanion<User> {
     if (createdAt.present) {
       map['created_at'] = Variable<String>(createdAt.value);
     }
+    if (sabbathDay.present) {
+      map['sabbath_day'] = Variable<int>(sabbathDay.value);
+    }
     return map;
   }
 
@@ -427,7 +481,8 @@ class UsersCompanion extends UpdateCompanion<User> {
           ..write('onboarded: $onboarded, ')
           ..write('lang: $lang, ')
           ..write('biblePlan: $biblePlan, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('sabbathDay: $sabbathDay')
           ..write(')'))
         .toString();
   }
@@ -6647,6 +6702,355 @@ class StreakFrozenCompanion extends UpdateCompanion<StreakFrozenData> {
   }
 }
 
+class $SoulLogTable extends SoulLog with TableInfo<$SoulLogTable, SoulLogData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SoulLogTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _dateMeta = const VerificationMeta('date');
+  @override
+  late final GeneratedColumn<String> date = GeneratedColumn<String>(
+    'date',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _moodMeta = const VerificationMeta('mood');
+  @override
+  late final GeneratedColumn<int> mood = GeneratedColumn<int>(
+    'mood',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, date, mood, note, createdAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'soul_log';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SoulLogData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('date')) {
+      context.handle(
+        _dateMeta,
+        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dateMeta);
+    }
+    if (data.containsKey('mood')) {
+      context.handle(
+        _moodMeta,
+        mood.isAcceptableOrUnknown(data['mood']!, _moodMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_moodMeta);
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SoulLogData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SoulLogData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      date: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}date'],
+      )!,
+      mood: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}mood'],
+      )!,
+      note: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $SoulLogTable createAlias(String alias) {
+    return $SoulLogTable(attachedDatabase, alias);
+  }
+}
+
+class SoulLogData extends DataClass implements Insertable<SoulLogData> {
+  final String id;
+  final String date;
+  final int mood;
+  final String? note;
+  final String createdAt;
+  const SoulLogData({
+    required this.id,
+    required this.date,
+    required this.mood,
+    this.note,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['date'] = Variable<String>(date);
+    map['mood'] = Variable<int>(mood);
+    if (!nullToAbsent || note != null) {
+      map['note'] = Variable<String>(note);
+    }
+    map['created_at'] = Variable<String>(createdAt);
+    return map;
+  }
+
+  SoulLogCompanion toCompanion(bool nullToAbsent) {
+    return SoulLogCompanion(
+      id: Value(id),
+      date: Value(date),
+      mood: Value(mood),
+      note: note == null && nullToAbsent ? const Value.absent() : Value(note),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory SoulLogData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SoulLogData(
+      id: serializer.fromJson<String>(json['id']),
+      date: serializer.fromJson<String>(json['date']),
+      mood: serializer.fromJson<int>(json['mood']),
+      note: serializer.fromJson<String?>(json['note']),
+      createdAt: serializer.fromJson<String>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'date': serializer.toJson<String>(date),
+      'mood': serializer.toJson<int>(mood),
+      'note': serializer.toJson<String?>(note),
+      'createdAt': serializer.toJson<String>(createdAt),
+    };
+  }
+
+  SoulLogData copyWith({
+    String? id,
+    String? date,
+    int? mood,
+    Value<String?> note = const Value.absent(),
+    String? createdAt,
+  }) => SoulLogData(
+    id: id ?? this.id,
+    date: date ?? this.date,
+    mood: mood ?? this.mood,
+    note: note.present ? note.value : this.note,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  SoulLogData copyWithCompanion(SoulLogCompanion data) {
+    return SoulLogData(
+      id: data.id.present ? data.id.value : this.id,
+      date: data.date.present ? data.date.value : this.date,
+      mood: data.mood.present ? data.mood.value : this.mood,
+      note: data.note.present ? data.note.value : this.note,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SoulLogData(')
+          ..write('id: $id, ')
+          ..write('date: $date, ')
+          ..write('mood: $mood, ')
+          ..write('note: $note, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, date, mood, note, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SoulLogData &&
+          other.id == this.id &&
+          other.date == this.date &&
+          other.mood == this.mood &&
+          other.note == this.note &&
+          other.createdAt == this.createdAt);
+}
+
+class SoulLogCompanion extends UpdateCompanion<SoulLogData> {
+  final Value<String> id;
+  final Value<String> date;
+  final Value<int> mood;
+  final Value<String?> note;
+  final Value<String> createdAt;
+  final Value<int> rowid;
+  const SoulLogCompanion({
+    this.id = const Value.absent(),
+    this.date = const Value.absent(),
+    this.mood = const Value.absent(),
+    this.note = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SoulLogCompanion.insert({
+    required String id,
+    required String date,
+    required int mood,
+    this.note = const Value.absent(),
+    required String createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       date = Value(date),
+       mood = Value(mood),
+       createdAt = Value(createdAt);
+  static Insertable<SoulLogData> custom({
+    Expression<String>? id,
+    Expression<String>? date,
+    Expression<int>? mood,
+    Expression<String>? note,
+    Expression<String>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (date != null) 'date': date,
+      if (mood != null) 'mood': mood,
+      if (note != null) 'note': note,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SoulLogCompanion copyWith({
+    Value<String>? id,
+    Value<String>? date,
+    Value<int>? mood,
+    Value<String?>? note,
+    Value<String>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return SoulLogCompanion(
+      id: id ?? this.id,
+      date: date ?? this.date,
+      mood: mood ?? this.mood,
+      note: note ?? this.note,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (date.present) {
+      map['date'] = Variable<String>(date.value);
+    }
+    if (mood.present) {
+      map['mood'] = Variable<int>(mood.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<String>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SoulLogCompanion(')
+          ..write('id: $id, ')
+          ..write('date: $date, ')
+          ..write('mood: $mood, ')
+          ..write('note: $note, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $BibleSessionsTable extends BibleSessions
     with TableInfo<$BibleSessionsTable, BibleSession> {
   @override
@@ -7294,6 +7698,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final $StreakLogTable streakLog = $StreakLogTable(this);
   late final $StreakFrozenTable streakFrozen = $StreakFrozenTable(this);
+  late final $SoulLogTable soulLog = $SoulLogTable(this);
   late final $BibleSessionsTable bibleSessions = $BibleSessionsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
@@ -7317,6 +7722,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     dailyReflections,
     streakLog,
     streakFrozen,
+    soulLog,
     bibleSessions,
   ];
 }
@@ -7330,6 +7736,7 @@ typedef $$UsersTableCreateCompanionBuilder =
       Value<String> lang,
       Value<String> biblePlan,
       required String createdAt,
+      Value<int> sabbathDay,
     });
 typedef $$UsersTableUpdateCompanionBuilder =
     UsersCompanion Function({
@@ -7340,6 +7747,7 @@ typedef $$UsersTableUpdateCompanionBuilder =
       Value<String> lang,
       Value<String> biblePlan,
       Value<String> createdAt,
+      Value<int> sabbathDay,
     });
 
 class $$UsersTableFilterComposer extends Composer<_$AppDatabase, $UsersTable> {
@@ -7382,6 +7790,11 @@ class $$UsersTableFilterComposer extends Composer<_$AppDatabase, $UsersTable> {
 
   ColumnFilters<String> get createdAt => $composableBuilder(
     column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get sabbathDay => $composableBuilder(
+    column: $table.sabbathDay,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -7429,6 +7842,11 @@ class $$UsersTableOrderingComposer
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get sabbathDay => $composableBuilder(
+    column: $table.sabbathDay,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$UsersTableAnnotationComposer
@@ -7460,6 +7878,11 @@ class $$UsersTableAnnotationComposer
 
   GeneratedColumn<String> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<int> get sabbathDay => $composableBuilder(
+    column: $table.sabbathDay,
+    builder: (column) => column,
+  );
 }
 
 class $$UsersTableTableManager
@@ -7497,6 +7920,7 @@ class $$UsersTableTableManager
                 Value<String> lang = const Value.absent(),
                 Value<String> biblePlan = const Value.absent(),
                 Value<String> createdAt = const Value.absent(),
+                Value<int> sabbathDay = const Value.absent(),
               }) => UsersCompanion(
                 id: id,
                 name: name,
@@ -7505,6 +7929,7 @@ class $$UsersTableTableManager
                 lang: lang,
                 biblePlan: biblePlan,
                 createdAt: createdAt,
+                sabbathDay: sabbathDay,
               ),
           createCompanionCallback:
               ({
@@ -7515,6 +7940,7 @@ class $$UsersTableTableManager
                 Value<String> lang = const Value.absent(),
                 Value<String> biblePlan = const Value.absent(),
                 required String createdAt,
+                Value<int> sabbathDay = const Value.absent(),
               }) => UsersCompanion.insert(
                 id: id,
                 name: name,
@@ -7523,6 +7949,7 @@ class $$UsersTableTableManager
                 lang: lang,
                 biblePlan: biblePlan,
                 createdAt: createdAt,
+                sabbathDay: sabbathDay,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
@@ -11611,6 +12038,203 @@ typedef $$StreakFrozenTableProcessedTableManager =
       StreakFrozenData,
       PrefetchHooks Function()
     >;
+typedef $$SoulLogTableCreateCompanionBuilder =
+    SoulLogCompanion Function({
+      required String id,
+      required String date,
+      required int mood,
+      Value<String?> note,
+      required String createdAt,
+      Value<int> rowid,
+    });
+typedef $$SoulLogTableUpdateCompanionBuilder =
+    SoulLogCompanion Function({
+      Value<String> id,
+      Value<String> date,
+      Value<int> mood,
+      Value<String?> note,
+      Value<String> createdAt,
+      Value<int> rowid,
+    });
+
+class $$SoulLogTableFilterComposer
+    extends Composer<_$AppDatabase, $SoulLogTable> {
+  $$SoulLogTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get mood => $composableBuilder(
+    column: $table.mood,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SoulLogTableOrderingComposer
+    extends Composer<_$AppDatabase, $SoulLogTable> {
+  $$SoulLogTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get mood => $composableBuilder(
+    column: $table.mood,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SoulLogTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SoulLogTable> {
+  $$SoulLogTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<int> get mood =>
+      $composableBuilder(column: $table.mood, builder: (column) => column);
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<String> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$SoulLogTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SoulLogTable,
+          SoulLogData,
+          $$SoulLogTableFilterComposer,
+          $$SoulLogTableOrderingComposer,
+          $$SoulLogTableAnnotationComposer,
+          $$SoulLogTableCreateCompanionBuilder,
+          $$SoulLogTableUpdateCompanionBuilder,
+          (
+            SoulLogData,
+            BaseReferences<_$AppDatabase, $SoulLogTable, SoulLogData>,
+          ),
+          SoulLogData,
+          PrefetchHooks Function()
+        > {
+  $$SoulLogTableTableManager(_$AppDatabase db, $SoulLogTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SoulLogTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SoulLogTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SoulLogTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> date = const Value.absent(),
+                Value<int> mood = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+                Value<String> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SoulLogCompanion(
+                id: id,
+                date: date,
+                mood: mood,
+                note: note,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String date,
+                required int mood,
+                Value<String?> note = const Value.absent(),
+                required String createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => SoulLogCompanion.insert(
+                id: id,
+                date: date,
+                mood: mood,
+                note: note,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SoulLogTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SoulLogTable,
+      SoulLogData,
+      $$SoulLogTableFilterComposer,
+      $$SoulLogTableOrderingComposer,
+      $$SoulLogTableAnnotationComposer,
+      $$SoulLogTableCreateCompanionBuilder,
+      $$SoulLogTableUpdateCompanionBuilder,
+      (SoulLogData, BaseReferences<_$AppDatabase, $SoulLogTable, SoulLogData>),
+      SoulLogData,
+      PrefetchHooks Function()
+    >;
 typedef $$BibleSessionsTableCreateCompanionBuilder =
     BibleSessionsCompanion Function({
       required String id,
@@ -11954,6 +12578,8 @@ class $AppDatabaseManager {
       $$StreakLogTableTableManager(_db, _db.streakLog);
   $$StreakFrozenTableTableManager get streakFrozen =>
       $$StreakFrozenTableTableManager(_db, _db.streakFrozen);
+  $$SoulLogTableTableManager get soulLog =>
+      $$SoulLogTableTableManager(_db, _db.soulLog);
   $$BibleSessionsTableTableManager get bibleSessions =>
       $$BibleSessionsTableTableManager(_db, _db.bibleSessions);
 }

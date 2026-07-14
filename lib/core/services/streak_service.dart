@@ -10,6 +10,7 @@ class StreakState {
   final bool isAtRisk;
   final bool isBroken;
   final String? brokenDate;
+  final bool isSabbathToday;
   final List<bool> weekDays;
 
   StreakState({
@@ -19,6 +20,7 @@ class StreakState {
     required this.isAtRisk,
     required this.isBroken,
     this.brokenDate,
+    this.isSabbathToday = false,
     required this.weekDays,
   });
 }
@@ -34,6 +36,10 @@ class StreakService {
   static Future<StreakState> checkAndUpdate(AppDatabase db) async {
     final today = DateTime.now().toIso8601String().substring(0, 10);
     final todayAnchor = await didAnchorOnDate(db, today);
+
+    final users = await db.select(db.users).get();
+    final sabbathDay = users.isNotEmpty ? users.first.sabbathDay : -1;
+    final isSabbath = sabbathDay >= 0 && DateTime.now().weekday == sabbathDay;
 
     final freezeRows = await db.select(db.streakFrozen).get();
     StreakFrozenData freeze;
@@ -63,19 +69,27 @@ class StreakService {
             .write(const StreakFrozenCompanion(brokenDate: Value(null)));
       }
     } else if (!todayAnchor && todayLog.isEmpty) {
-      final yesterday = DateTime.now().subtract(const Duration(days: 1)).toIso8601String().substring(0, 10);
-      final yesterdayCounted = allLogs.any((l) => l.date == yesterday && (l.counted || l.freezeUsed));
-
-      if (yesterdayCounted && freeze.count > 0) {
+      if (isSabbath) {
+        // Sabbath grace — auto-freeze without consuming a token
         await db.into(db.streakLog).insert(StreakLogCompanion.insert(
           id: const Uuid().v4(), date: today, counted: true, freezeUsed: true,
-          anchorType: 'freeze', createdAt: DateTime.now().toIso8601String(),
+          anchorType: 'sabbath', createdAt: DateTime.now().toIso8601String(),
         ));
-        await (db.update(db.streakFrozen)..where((t) => t.id.equals(freeze.id)))
-            .write(StreakFrozenCompanion(count: Value(freeze.count - 1)));
-      } else if (yesterdayCounted && freeze.count <= 0) {
-        await (db.update(db.streakFrozen)..where((t) => t.id.equals(freeze.id)))
-            .write(StreakFrozenCompanion(brokenDate: Value(today)));
+      } else {
+        final yesterday = DateTime.now().subtract(const Duration(days: 1)).toIso8601String().substring(0, 10);
+        final yesterdayCounted = allLogs.any((l) => l.date == yesterday && (l.counted || l.freezeUsed));
+
+        if (yesterdayCounted && freeze.count > 0) {
+          await db.into(db.streakLog).insert(StreakLogCompanion.insert(
+            id: const Uuid().v4(), date: today, counted: true, freezeUsed: true,
+            anchorType: 'freeze', createdAt: DateTime.now().toIso8601String(),
+          ));
+          await (db.update(db.streakFrozen)..where((t) => t.id.equals(freeze.id)))
+              .write(StreakFrozenCompanion(count: Value(freeze.count - 1)));
+        } else if (yesterdayCounted && freeze.count <= 0) {
+          await (db.update(db.streakFrozen)..where((t) => t.id.equals(freeze.id)))
+              .write(StreakFrozenCompanion(brokenDate: Value(today)));
+        }
       }
     }
 
@@ -129,43 +143,28 @@ class StreakService {
       currentStreak: currentStreak,
       bestStreak: finalFreeze.bestStreak,
       freezeTokens: finalFreeze.count,
-      isAtRisk: !todayAnchor,
+      isAtRisk: !todayAnchor && !isSabbath,
       isBroken: finalFreeze.brokenDate != null,
       brokenDate: finalFreeze.brokenDate,
+      isSabbathToday: isSabbath,
       weekDays: weekDays,
     );
   }
 
-  static Future<bool> repairStreak(AppDatabase db) async {
-    final today = DateTime.now().toIso8601String().substring(0, 10);
-    final freezeRows = await db.select(db.streakFrozen).get();
-    if (freezeRows.isEmpty) return false;
-    final freeze = freezeRows.first;
-    if (freeze.brokenDate == null) return false;
-
-    final broken = DateTime.tryParse(freeze.brokenDate!);
-    if (broken == null) return false;
-    if (DateTime.now().difference(broken).inHours > 24) return false;
-
-    final prayers = await (db.select(db.prayerLogs)..where((t) => t.date.equals(today))).get();
-    final reads = await (db.select(db.bibleReads)..where((t) => t.date.equals(today))).get();
-    if (prayers.length + reads.length < 2) return false;
-
-    await db.into(db.streakLog).insert(StreakLogCompanion.insert(
-      id: const Uuid().v4(), date: freeze.brokenDate!, counted: true, freezeUsed: false,
-      anchorType: 'repair', createdAt: DateTime.now().toIso8601String(),
-    ));
-    await (db.update(db.streakFrozen)..where((t) => t.id.equals(freeze.id)))
-        .write(const StreakFrozenCompanion(brokenDate: Value(null)));
-    return true;
+  static Color growthColor(int streak) {
+    if (streak >= 90) return const Color(0xFF4CAF50);
+    if (streak >= 30) return const Color(0xFF66BB6A);
+    if (streak >= 14) return const Color(0xFF81C784);
+    if (streak >= 7) return const Color(0xFFA5D6A7);
+    return const Color(0xFFC8E6C9);
   }
 
-  static Color flameColor(int streak) {
-    if (streak >= 90) return const Color(0xFFB388FF);
-    if (streak >= 30) return const Color(0xFFFFD700);
-    if (streak >= 14) return const Color(0xFFFF8C00);
-    if (streak >= 7) return const Color(0xFFFF5722);
-    return const Color(0xFFF44336);
+  static String growthEmoji(int streak) {
+    if (streak >= 90) return '🌳';
+    if (streak >= 30) return '🌿';
+    if (streak >= 14) return '🌱';
+    if (streak >= 7) return '🌰';
+    return '🌱';
   }
 
   static int calculateStreak(List<String> dates) {

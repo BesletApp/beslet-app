@@ -91,7 +91,10 @@ final trackingDataProvider = FutureProvider<TrackingData>((ref) async {
   final bestStreak = frozenRows.isNotEmpty ? frozenRows.first.bestStreak : 0;
   final freezeTokens = frozenRows.isNotEmpty ? frozenRows.first.count : 0;
   final todayAnchor = await StreakService.didAnchorOnDate(db, today);
-  final streakAtRisk = frozenRows.isNotEmpty && !todayAnchor;
+  final users = await db.select(db.users).get();
+  final sabbathDay = users.isNotEmpty ? users.first.sabbathDay : -1;
+  final isSabbath = sabbathDay >= 0 && DateTime.now().weekday == sabbathDay;
+  final streakAtRisk = frozenRows.isNotEmpty && !todayAnchor && !isSabbath;
 
   final badges = BadgeService.checkBadges(totalXp, streak, prayerMinutes, bibleDays, todosCompleted: todosCompletedAll, unifiedStreak: bestStreak);
 

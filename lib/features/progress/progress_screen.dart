@@ -5,7 +5,6 @@ import '../../core/theme/app_colors.dart';
 import '../../core/providers/tracking_provider.dart';
 import '../../shared/widgets/error_card.dart';
 import '../../core/providers/analytics_provider.dart';
-import '../../core/providers/streak_provider.dart';
 import '../../core/services/xp_service.dart';
 import '../../core/services/summer_service.dart';
 import '../../core/services/scripture_service.dart';
@@ -32,7 +31,6 @@ class ProgressScreen extends ConsumerWidget {
     final weeklyXpAsync = ref.watch(weeklyXpProvider);
     final dailyXpAsync = ref.watch(dailyXpProvider);
     final bestStreakAsync = ref.watch(overallBestStreakProvider);
-    final streakStateAsync = ref.watch(streakStateProvider);
     final reflectionAsync = ref.watch(reflectionProvider);
     final screenWidth = MediaQuery.of(context).size.width;
 
@@ -50,9 +48,6 @@ class ProgressScreen extends ConsumerWidget {
         final weekDays = List.generate(7, (i) =>
             completions.values.any((pillar) => i < pillar.length && pillar[i]));
 
-        final streakState = streakStateAsync.valueOrNull;
-        final isBroken = streakState?.isBroken ?? false;
-
         final daysElapsed = SummerService.daysElapsed;
         final totalDays = SummerService.totalSummerDays;
         final phaseIdx = ScriptureService.getPhase(daysElapsed);
@@ -68,22 +63,6 @@ class ProgressScreen extends ConsumerWidget {
             ? 50.0 : (dailyXp.reduce((a, b) => a + b) / dailyXp.where((v) => v > 0).length) * 1.2;
         final weeklyAvg = weeklyXp.where((v) => v > 0).isEmpty
             ? 350.0 : (weeklyXp.reduce((a, b) => a + b) / weeklyXp.where((v) => v > 0).length) * 1.2;
-
-        void onRepair() {
-          final messenger = ScaffoldMessenger.of(context);
-          ref.read(streakNotifierProvider.notifier).attemptRepair().then((_) {
-            messenger.showSnackBar(const SnackBar(
-              content: Text('Streak repaired!', style: TextStyle(fontFamily: 'Inter')),
-              backgroundColor: AppColors.success, behavior: SnackBarBehavior.floating, duration: Duration(seconds: 2),
-            ));
-          }).catchError((_) {
-            messenger.showSnackBar(const SnackBar(
-              content: Text('Repair failed — do double today (pray twice or read 2 chapters)',
-                  style: TextStyle(fontFamily: 'Inter')),
-              backgroundColor: AppColors.warning, behavior: SnackBarBehavior.floating, duration: Duration(seconds: 3),
-            ));
-          });
-        }
 
         return Scaffold(
           backgroundColor: bg,
@@ -101,7 +80,7 @@ class ProgressScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
                 StreakCard(
                   streak: tracking.streak, bestStreak: bestStreak, weekDays: weekDays,
-                  sanctityScore: sanctityScore, isDark: isDark, isBroken: isBroken, onRepair: onRepair,
+                  sanctityScore: sanctityScore, isDark: isDark,
                 ),
                 if (reflection == null) ...[
                   const SizedBox(height: 12),
@@ -113,7 +92,7 @@ class ProgressScreen extends ConsumerWidget {
                   isDark: isDark, dailyGoal: dailyAvg, weeklyGoal: weeklyAvg,
                 ),
                 const SizedBox(height: 14),
-                _buildAchievementsSection(tracking, screenWidth),
+                _buildAchievementsSection(tracking, screenWidth, isDark),
               ],
             ),
           ),
@@ -346,7 +325,7 @@ class ProgressScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildAchievementsSection(TrackingData tracking, double screenWidth) {
+  Widget _buildAchievementsSection(TrackingData tracking, double screenWidth, bool isDark) {
     const allAchievements = [
       ('first_step', 'First Step', Icons.flag, 'Complete your first habit'),
       ('week_streak', 'Faithful Week', Icons.local_fire_department, '7-day streak'),
@@ -374,7 +353,7 @@ class ProgressScreen extends ConsumerWidget {
             width: (screenWidth - 42) / 2,
             child: AchievementCard(
               icon: a.$3, name: a.$2, subtitle: a.$4,
-              unlocked: earnedIds.contains(a.$1), isDark: false,
+              unlocked: earnedIds.contains(a.$1), isDark: isDark,
             ),
           );
         }).toList(),

@@ -8,5 +8,6 @@ class Users extends Table {
   TextColumn get lang => text().withDefault(const Constant('en'))();
   TextColumn get biblePlan => text().withDefault(const Constant('nt'))();
   TextColumn get createdAt => text()();
+  IntColumn get sabbathDay => integer().withDefault(const Constant(-1))();
   @override Set<Column> get primaryKey => {id};
 }

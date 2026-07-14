@@ -18,14 +18,15 @@ import 'tables/todo_table.dart';
 import 'tables/daily_reflection_table.dart';
 import 'tables/streak_log_table.dart';
 import 'tables/streak_freeze_table.dart';
+import 'tables/soul_log_table.dart';
 import 'tables/bible_sessions_table.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Users, Habits, Completions, PrayerLogs, BibleReads, Skills, SkillSessions, Reflections, Challenges, ChallengeParticipants, FellowshipLogs, FamilyTimeLogs, Goals, TodoItems, DailyReflections, StreakLog, StreakFrozen, BibleSessions])
+@DriftDatabase(tables: [Users, Habits, Completions, PrayerLogs, BibleReads, Skills, SkillSessions, Reflections, Challenges, ChallengeParticipants, FellowshipLogs, FamilyTimeLogs, Goals, TodoItems, DailyReflections, StreakLog, StreakFrozen, SoulLog, BibleSessions])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
-  @override int get schemaVersion => 10;
+  @override int get schemaVersion => 12;
 
   @override
   MigrationStrategy get migration {
@@ -62,6 +63,12 @@ class AppDatabase extends _$AppDatabase {
         }
         if (from < 10) {
           await customStatement('DROP TABLE IF EXISTS bible_book_cache');
+        }
+        if (from < 11) {
+          await m.addColumn(users, users.sabbathDay);
+        }
+        if (from < 12) {
+          await m.createTable(soulLog);
         }
       },
     );

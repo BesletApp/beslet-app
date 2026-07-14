@@ -32,8 +32,6 @@ class StreakNotifier extends AsyncNotifier<void> {
   @override FutureOr<void> build() {}
 
   Future<void> attemptRepair() async {
-    final db = ref.read(databaseProvider);
-    await StreakService.repairStreak(db);
     ref.invalidate(streakStateProvider);
     ref.invalidate(trackingDataProvider);
   }

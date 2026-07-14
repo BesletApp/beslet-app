@@ -5,6 +5,7 @@ import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 import 'core/providers/theme_provider.dart';
 import 'core/providers/locale_provider.dart';
+import 'core/services/notification_service.dart';
 import 'l10n/app_localizations.dart';
 
 class BesletApp extends ConsumerWidget {
@@ -13,6 +14,7 @@ class BesletApp extends ConsumerWidget {
   @override Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
     final locale = ref.watch(localeProvider);
+    NotificationService.setLanguage(locale.languageCode == 'am');
     return MaterialApp.router(
       title: 'ብስለት — Maturity',
       debugShowCheckedModeBanner: false,

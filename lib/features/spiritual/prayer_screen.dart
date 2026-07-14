@@ -353,11 +353,53 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
       const SizedBox(height: 12),
       GestureDetector(
         onTap: () => setState(() => _timerExpanded = !_timerExpanded),
-        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Icon(_timerExpanded ? Icons.expand_less : Icons.timer_outlined, size: 16, color: AppColors.textMuted),
-          const SizedBox(width: 4),
-          Text(l.trackTime, style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted)),
-        ]),
+        child: AnimatedCrossFade(
+          firstChild: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Icon(Icons.timer_outlined, size: 16, color: AppColors.textMuted),
+            const SizedBox(width: 4),
+            Text(l.trackTime, style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted)),
+          ]),
+          secondChild: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.card,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.border.withValues(alpha: 0.5)),
+            ),
+            child: Column(children: [
+              Row(children: [
+                const Text('🕊️', style: TextStyle(fontSize: 20)),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    Localizations.localeOf(context).languageCode == 'am'
+                        ? 'ልብህን ለእግዚአብሔር አፍስስ'
+                        : 'Pour out your heart to God — Psalm 62:8',
+                    style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary)),
+                ),
+              ]),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  icon: const Icon(Icons.timer_outlined, size: 14),
+                  label: Text(
+                    Localizations.localeOf(context).languageCode == 'am'
+                        ? 'ሰዓት ቆጣሪ' : 'Optional: Track time',
+                    style: const TextStyle(fontSize: 12)),
+                  onPressed: () => setState(() => _timerExpanded = true),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.textMuted,
+                    side: BorderSide(color: AppColors.border),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                  ),
+                ),
+              ),
+            ]),
+          ),
+          crossFadeState: _timerExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+          duration: const Duration(milliseconds: 200),
+        ),
       ),
       AnimatedCrossFade(
         firstChild: const SizedBox.shrink(),

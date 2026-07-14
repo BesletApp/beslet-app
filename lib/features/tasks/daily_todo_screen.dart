@@ -16,6 +16,7 @@ class DailyTodoScreen extends ConsumerStatefulWidget {
 }
 
 class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
+  bool _isAm = false;
   final _addCtrl = TextEditingController();
   final _evalCtrl = TextEditingController();
   final _focusNode = FocusNode();
@@ -51,6 +52,8 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
     final statsAsync = ref.watch(todayTodoStatsProvider);
     final period = _timePeriod();
     final isEvening = period == 'evening';
+    _isAm = Localizations.localeOf(context).languageCode == 'am';
+    final isAm = _isAm;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -58,12 +61,12 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
         backgroundColor: AppColors.background,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/home')),
-        title: Text(_appbarTitle(),
+        title: Text(_appbarTitle(isAm),
             style: const TextStyle(fontFamily: 'Inter', fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
         actions: [
           TextButton.icon(
             icon: const Icon(Icons.flag, size: 18),
-            label: const Text('Goals', style: TextStyle(fontSize: 13)),
+            label: Text(isAm ? 'ግቦች' : 'Goals', style: const TextStyle(fontSize: 13)),
             onPressed: () => context.go('/goals'),
             style: TextButton.styleFrom(
               foregroundColor: AppColors.primary,
@@ -87,15 +90,15 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
           final allDone = stats.total > 0 && stats.completed >= stats.total;
 
           return Column(children: [
-            _buildGreeting(stats, isEvening, allDone),
+            _buildGreeting(stats, isEvening, allDone, isAm),
             const SizedBox(height: 12),
             _buildStreakBar(),
             const SizedBox(height: 10),
-            _buildProgressCard(stats, isEvening, allDone),
+            _buildProgressCard(stats, isEvening, allDone, isAm),
             const SizedBox(height: 16),
             Expanded(
               child: todos.isEmpty
-                  ? _buildEmptyState(isEvening)
+                  ? _buildEmptyState(isEvening, isAm)
                   : ListView(
                       padding: EdgeInsets.zero,
                       children: [
@@ -106,10 +109,10 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-              child: _buildAddRow(),
+              child: _buildAddRow(isAm),
             ),
             if (isEvening && todos.isNotEmpty) ...[
-              _buildEveningReflection(),
+              _buildEveningReflection(isAm),
               const SizedBox(height: 16),
             ],
           ]);
@@ -118,14 +121,14 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
     );
   }
 
-  String _appbarTitle() {
+  String _appbarTitle(bool isAm) {
     final hour = DateTime.now().hour;
-    if (hour < 12) return '🌅 Plan Today';
-    if (hour < 18) return '📋 My Tasks';
-    return '🌙 Evening Review';
+    if (hour < 12) return isAm ? '🌅 ዛሬን እቅድ' : '🌅 Plan Today';
+    if (hour < 18) return isAm ? '📋 ሥራዬ' : '📋 My Tasks';
+    return isAm ? '🌙 የማታ ግምገማ' : '🌙 Evening Review';
   }
 
-  Widget _buildGreeting(TodoStats stats, bool isEvening, bool allDone) {
+  Widget _buildGreeting(TodoStats stats, bool isEvening, bool allDone, bool isAm) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
       child: Row(children: [
@@ -133,8 +136,8 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
         const SizedBox(width: 8),
         Text(
           isEvening
-              ? 'Time to reflect'
-              : (stats.total == 0 ? 'What will you do today?' : '${stats.completed}/${stats.total} done'),
+              ? (isAm ? 'ለማሰላሰል ጊዜ' : 'Time to reflect')
+              : (stats.total == 0 ? (isAm ? 'ዛሬ ምን ታደርጋለህ?' : 'What will you do today?') : '${stats.completed}/${stats.total} ${isAm ? 'ተከናውኗል' : 'done'}'),
           style: AppTextStyles.labelLarge),
         const Spacer(),
         if (stats.total > 0)
@@ -151,7 +154,7 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
     );
   }
 
-  Widget _buildProgressCard(TodoStats stats, bool isEvening, bool allDone) {
+  Widget _buildProgressCard(TodoStats stats, bool isEvening, bool allDone, bool isAm) {
     final progress = stats.total > 0 ? stats.completed / stats.total : 0.0;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -183,14 +186,14 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(
                 stats.total == 0
-                    ? (isEvening ? 'No tasks planned' : 'What will you do today?')
-                    : (allDone ? 'All done! 🎉' : '${stats.total - stats.completed} remaining'),
+                    ? (isEvening ? (isAm ? 'ምንም ሥራ አልታቀደም' : 'No tasks planned') : (isAm ? 'ዛሬ ምን ታደርጋለህ?' : 'What will you do today?'))
+                    : (allDone ? (isAm ? 'ሁሉም ተከናውኗል! 🎉' : 'All done! 🎉') : '${stats.total - stats.completed} ${isAm ? 'ቀርቷል' : 'remaining'}'),
                 style: AppTextStyles.labelLarge),
               const SizedBox(height: 2),
               Text(
                 stats.total == 0
-                    ? (isEvening ? 'Plan tomorrow' : 'Tap + or a suggestion below')
-                    : (allDone ? 'Great work today!' : 'Keep going'),
+                    ? (isEvening ? (isAm ? 'ነገ እቅድ' : 'Plan tomorrow') : (isAm ? "+ ወይም ሀሳብ ምረጥ" : 'Tap + or a suggestion below'))
+                    : (allDone ? (isAm ? 'ጥሩ ሥራ!' : 'Great work today!') : (isAm ? 'ቀጥል' : 'Keep going')),
                 style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary, fontSize: 11)),
             ]),
           ),
@@ -199,7 +202,7 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
     );
   }
 
-  Widget _buildEmptyState(bool isEvening) {
+  Widget _buildEmptyState(bool isEvening, bool isAm) {
     if (isEvening) {
       return Center(
         child: Padding(
@@ -207,21 +210,21 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
           child: Column(mainAxisSize: MainAxisSize.min, children: [
             const Text('🌙', style: TextStyle(fontSize: 48)),
             const SizedBox(height: 12),
-            Text('No tasks planned', style: AppTextStyles.displaySmall.copyWith(fontSize: 18)),
+            Text(isAm ? 'ምንም ሥራ አልታቀደም' : 'No tasks planned', style: AppTextStyles.displaySmall.copyWith(fontSize: 18)),
             const SizedBox(height: 4),
-            Text('Tap + below to plan tomorrow', style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary)),
+            Text(isAm ? 'ነገ ለማቀድ + ን መታ ያድርጉ' : 'Tap + below to plan tomorrow', style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary)),
           ]),
         ),
       );
     }
     if (_suggestions.isEmpty) {
       return Center(
-        child: Text('Tap + to add your first task', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+        child: Text(isAm ? 'የመጀመሪያ ሥራዎን ለመጨመር + ን ይጫኑ' : 'Tap + to add your first task', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
       );
     }
     return Center(
       child: Column(mainAxisSize: MainAxisSize.min, children: [
-        Text('Quick add', style: AppTextStyles.labelSmall.copyWith(color: AppColors.textMuted, fontSize: 10)),
+        Text(isAm ? 'ፈጣን መጨመር' : 'Quick add', style: AppTextStyles.labelSmall.copyWith(color: AppColors.textMuted, fontSize: 10)),
         const SizedBox(height: 12),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -237,8 +240,6 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
       ]),
     );
   }
-
-  // removed old layout widgets — replaced by _buildGreeting, _buildProgressCard, _buildEmptyState
 
   Widget _buildTodoTile(TodoItem todo, bool isReadOnly) {
     final isDone = todo.isCompleted;
@@ -300,7 +301,7 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
     );
   }
 
-  Widget _buildAddRow() {
+  Widget _buildAddRow(bool isAm) {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -314,10 +315,10 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
             focusNode: _focusNode,
             style: AppTextStyles.bodyMedium,
             decoration: InputDecoration(
-              hintText: 'What do you want to do?',
+              hintText: isAm ? 'ምን መሥራት ትፈልጋለህ?' : 'What do you want to do?',
               hintStyle: TextStyle(color: AppColors.textMuted),
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+              contentPadding: EdgeInsets.symmetric(horizontal: 16),
             ),
             onSubmitted: (_) => _addFromField(),
           ),
@@ -330,7 +331,7 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
     );
   }
 
-  Widget _buildEveningReflection() {
+  Widget _buildEveningReflection(bool isAm) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Container(
@@ -341,14 +342,14 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
           border: Border.all(color: AppColors.border),
         ),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('How was your day?', style: AppTextStyles.labelLarge.copyWith(fontSize: 14)),
+          Text(isAm ? 'ቀንህ እንዴት አለፈ?' : 'How was your day?', style: AppTextStyles.labelLarge.copyWith(fontSize: 14)),
           const SizedBox(height: 8),
           TextField(
             controller: _evalCtrl,
             style: AppTextStyles.bodyMedium,
             maxLines: 3,
             decoration: InputDecoration(
-              hintText: 'Write a short reflection...',
+              hintText: isAm ? 'አጭር ማሰላሰያ ጻፍ...' : 'Write a short reflection...',
               hintStyle: TextStyle(color: AppColors.textMuted),
               filled: true, fillColor: AppColors.surface,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -360,7 +361,7 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
             child: ElevatedButton(
               onPressed: _saveAndFinishEvening,
               style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12)),
-              child: const Text('Done for today'),
+              child: Text(isAm ? 'ለዛሬ በቃ' : 'Done for today'),
             ),
           ),
         ]),
@@ -372,12 +373,12 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
     if (_evalCtrl.text.trim().isNotEmpty) {
       ref.read(todoNotifierProvider.notifier).saveReflection(_evalCtrl.text.trim());
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Reflection saved! 🌙', style: AppTextStyles.bodyMedium),
+        content: Text(_isAm ? 'ማሰላሰያ ተቀምጧል! 🌙' : 'Reflection saved! 🌙', style: AppTextStyles.bodyMedium),
         backgroundColor: AppColors.success, behavior: SnackBarBehavior.floating,
       ));
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('No reflection written — see you tomorrow!', style: AppTextStyles.bodyMedium),
+        content: Text(_isAm ? 'ምንም ማሰላሰያ አልተጻፈም — ነገ እንገናኛለን!' : 'No reflection written — see you tomorrow!', style: AppTextStyles.bodyMedium),
         backgroundColor: AppColors.primary, behavior: SnackBarBehavior.floating,
       ));
     }
@@ -401,11 +402,11 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
     ref.read(todoNotifierProvider.notifier).toggleTodo(id);
     if (becomingDone) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('$title done! +5 XP', style: AppTextStyles.bodyMedium),
+        content: Text('$title ${_isAm ? 'ተከናውኗል! +5 XP' : 'done! +5 XP'}', style: AppTextStyles.bodyMedium),
         backgroundColor: AppColors.success, behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 5),
         action: SnackBarAction(
-          label: 'Undo',
+          label: _isAm ? 'ቀልብስ' : 'Undo',
           textColor: Colors.white,
           onPressed: () {
             ref.read(todoNotifierProvider.notifier).toggleTodo(id);
@@ -418,7 +419,7 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
   void _carry(TodoItem todo) {
     ref.read(todoNotifierProvider.notifier).carryToTomorrow(todo.id);
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text('Moved "${todo.title}" to tomorrow', style: AppTextStyles.bodyMedium),
+      content: Text(_isAm ? '"${todo.title}" ወደ ነገ ተዛወረ' : 'Moved "${todo.title}" to tomorrow', style: AppTextStyles.bodyMedium),
       backgroundColor: AppColors.primary, behavior: SnackBarBehavior.floating,
     ));
   }
@@ -440,7 +441,7 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
           child: Column(mainAxisSize: MainAxisSize.min, children: [
             ListTile(
               leading: const Icon(Icons.today, color: AppColors.primary),
-              title: const Text('Move to tomorrow'),
+              title: Text(_isAm ? 'ወደ ነገ አንቀሳቅስ' : 'Move to tomorrow'),
               onTap: () { Navigator.pop(ctx); _carry(todo); },
             ),
           ]),
@@ -456,8 +457,6 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
       currentStreak: s.currentStreak,
       freezeTokens: s.freezeTokens,
       weekDays: s.weekDays,
-      isAtRisk: s.isAtRisk,
-      isBroken: s.isBroken,
     );
   }
 
@@ -467,7 +466,7 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.card,
-        title: Text('Edit Quick Add', style: AppTextStyles.labelLarge),
+        title: Text(_isAm ? 'ፈጣን መጨመር አርትዕ' : 'Edit Quick Add', style: AppTextStyles.labelLarge),
         content: SizedBox(
           width: double.maxFinite,
           child: TextField(
@@ -475,7 +474,7 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
             style: AppTextStyles.bodyMedium,
             maxLines: 8,
             decoration: InputDecoration(
-              hintText: 'One suggestion per line',
+              hintText: _isAm ? 'በአንድ መስመር አንድ ሀሳብ' : 'One suggestion per line',
               hintStyle: TextStyle(color: AppColors.textMuted),
               filled: true, fillColor: AppColors.surface,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -483,13 +482,13 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(_isAm ? 'ተው' : 'Cancel')),
           ElevatedButton(onPressed: () {
             final lines = ctrl.text.split('\n').map((l) => l.trim()).where((l) => l.isNotEmpty).toList();
             saveSuggestions(lines);
             setState(() => _suggestions = lines);
             Navigator.pop(ctx);
-          }, child: const Text('Save')),
+          }, child: Text(_isAm ? 'አስቀምጥ' : 'Save')),
         ],
       ),
     );

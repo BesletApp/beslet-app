@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/services/streak_service.dart';
 
 class StreakCard extends StatelessWidget {
   final int streak;
@@ -7,8 +8,6 @@ class StreakCard extends StatelessWidget {
   final List<bool> weekDays;
   final double sanctityScore;
   final bool isDark;
-  final bool isBroken;
-  final VoidCallback? onRepair;
 
   const StreakCard({
     super.key,
@@ -17,8 +16,6 @@ class StreakCard extends StatelessWidget {
     required this.weekDays,
     required this.sanctityScore,
     required this.isDark,
-    this.isBroken = false,
-    this.onRepair,
   });
 
   @override
@@ -73,9 +70,9 @@ class StreakCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Text('🔥', style: TextStyle(fontSize: 20)),
+              Text(StreakService.growthEmoji(streak), style: const TextStyle(fontSize: 20)),
               const SizedBox(width: 8),
-              const Text('Consistency Streak',
+              const Text('Days of Consistency',
                   style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
@@ -106,25 +103,6 @@ class StreakCard extends StatelessWidget {
                         style: TextStyle(
                             fontSize: 11,
                             color: mutedText)),
-                    if (isBroken) ...[
-                      const SizedBox(height: 8),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          icon: const Icon(Icons.replay, size: 14),
-                          label: const Text('Repair Streak',
-                              style: TextStyle(fontSize: 12)),
-                          onPressed: onRepair,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.warningOrange,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 6),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10)),
-                          ),
-                        ),
-                      ),
-                    ],
                   ],
                 ),
               ),

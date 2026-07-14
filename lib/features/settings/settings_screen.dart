@@ -10,6 +10,8 @@ import '../../core/providers/theme_provider.dart';
 import '../../core/providers/user_provider.dart';
 import '../../core/providers/database_provider.dart';
 import '../../core/database/app_database.dart';
+import '../../core/services/notification_service.dart';
+import '../../core/providers/streak_provider.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   final String? section;
@@ -98,6 +100,31 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
         ),
         const SizedBox(height: 24),
+        Text(isAm ? '🕊️ የእረፍት ቀን' : '🕊️ Sabbath Rest', style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.border)),
+          child: userAsync.when(
+            data: (user) => ListTile(
+              leading: const Icon(Icons.weekend, color: AppColors.primary),
+              title: Text(isAm ? 'የእረፍት ቀንህን ምረጥ' : 'Choose your rest day', style: AppTextStyles.bodyMedium),
+              subtitle: Text(
+                user.sabbathDay == -1
+                    ? (isAm ? 'አልተመረጠም። እረፍት የሌለበት ቀን' : 'Not set — no rest day')
+                    : (isAm ? _dayName(user.sabbathDay, isAm) : _dayName(user.sabbathDay, isAm)),
+                style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary)),
+              trailing: Text(
+                user.sabbathDay == -1 ? (isAm ? '--' : '--') : _dayName(user.sabbathDay, isAm),
+                style: const TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.primary)),
+              contentPadding: EdgeInsets.zero,
+              onTap: () => _pickSabbathDay(context, ref, user),
+            ),
+            loading: () => const SizedBox(height: 48, child: Center(child: CircularProgressIndicator())),
+            error: (e, _) => Text('$e'),
+          ),
+        ),
+        const SizedBox(height: 24),
         Text(key: _remindersKey, l.reminders, style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
         const SizedBox(height: 12),
         Container(
@@ -117,7 +144,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 final formatted = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
                 final prefs = await SharedPreferences.getInstance();
                 await prefs.setString('reminderTime', formatted);
-                if (mounted) setState(() => _reminderTime = formatted);
+                await NotificationService.scheduleDailyReminder(time.hour, time.minute);
+                if (mounted) {
+                  setState(() => _reminderTime = formatted);
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(isAm ? 'ማሳሰቢያ ተቀናብሯል በ$formatted' : 'Reminder set at $formatted'),
+                    backgroundColor: AppColors.success, behavior: SnackBarBehavior.floating, duration: Duration(seconds: 2),
+                  ));
+                }
               }
             },
           ),
@@ -168,6 +202,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       onTap: isSelected ? null : () async {
         final db = ref.read(databaseProvider);
         await db.update(db.users).replace(user.copyWith(lang: code));
+        NotificationService.setLanguage(code == 'am');
         ref.invalidate(userProvider);
         if (context.mounted) {
           final l = AppLocalizations.of(context)!;
@@ -180,5 +215,43 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         }
       },
     );
+  }
+
+  String _dayName(int day, bool isAm) {
+    const names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const amNames = ['ሰኞ', 'ማክሰኞ', 'ረቡዕ', 'ሐሙስ', 'አርብ', 'ቅዳሜ', 'እሁድ'];
+    if (day < 0 || day > 6) return isAm ? 'አልተመረጠም' : 'Not set';
+    return isAm ? amNames[day] : names[day];
+  }
+
+  Future<void> _pickSabbathDay(BuildContext context, WidgetRef ref, User user) async {
+    final isAm = Localizations.localeOf(context).languageCode == 'am';
+    final day = await showDialog<int>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        backgroundColor: AppColors.card,
+        title: Text(isAm ? 'የእረፍት ቀንህን ምረጥ' : 'Choose your rest day', style: AppTextStyles.labelLarge),
+        children: List.generate(8, (i) {
+          if (i == 7) {
+            return SimpleDialogOption(
+              onPressed: () => Navigator.pop(ctx, -1),
+              child: Text(isAm ? 'የለም (የእረፍት ቀን የለም)' : 'None (no rest day)',
+                  style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textMuted)),
+            );
+          }
+          return SimpleDialogOption(
+            onPressed: () => Navigator.pop(ctx, i),
+            child: Text('${_dayName(i, isAm)}${i == 6 ? (isAm ? ' (እሁድ)' : ' (Sunday)') : ''}',
+                style: AppTextStyles.bodyMedium),
+          );
+        }),
+      ),
+    );
+    if (day != null && day != user.sabbathDay) {
+      final db = ref.read(databaseProvider);
+      await db.update(db.users).replace(user.copyWith(sabbathDay: day));
+      ref.invalidate(userProvider);
+      ref.invalidate(streakStateProvider);
+    }
   }
 }
