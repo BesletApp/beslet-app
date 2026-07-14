@@ -51,3 +51,6 @@ debug-info/
 # Keystore — never commit the signing key
 *.jks
 *.keystore
+
+# Server subproject (embedded git repo)
+/server/
