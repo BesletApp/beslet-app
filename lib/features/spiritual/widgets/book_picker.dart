@@ -12,6 +12,7 @@ class BookPicker extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final c = AppColors.of(context);
     final isAm = Localizations.localeOf(context).languageCode == 'am';
     final completedAsync = ref.watch(bookCompletionProvider);
 
@@ -36,7 +37,7 @@ class BookPicker extends ConsumerWidget {
                 Text(
                   isAm ? section.nameAm : section.nameEn,
                   style: AppTextStyles.labelLarge.copyWith(
-                    color: AppColors.textSecondary, fontSize: 13,
+                    color: c.textSecondary, fontSize: 13,
                   ),
                 ),
               ]),
@@ -67,6 +68,7 @@ class _BookTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = AppColors.of(context);
     final done = (completed[book.id] ?? 0) >= book.chapters;
     return Padding(
       padding: const EdgeInsets.only(bottom: 2),
@@ -87,13 +89,13 @@ class _BookTile extends StatelessWidget {
                   Text(
                     isAm ? book.nameAm : book.nameEn,
                     style: AppTextStyles.bodyMedium.copyWith(
-                      color: done ? AppColors.progressGreen : AppColors.textPrimary,
+                      color: done ? AppColors.progressGreen : c.textPrimary,
                       fontWeight: done ? FontWeight.w600 : FontWeight.w400,
                     ),
                   ),
                   Text(
                     isAm ? book.themeAm : book.themeEn,
-                    style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted, fontSize: 10),
+                    style: AppTextStyles.bodySmall.copyWith(color: c.textMuted, fontSize: 10),
                     maxLines: 1, overflow: TextOverflow.ellipsis,
                   ),
                 ]),
@@ -101,7 +103,7 @@ class _BookTile extends StatelessWidget {
               Text(
                 done ? '✓ ${book.chapters}' : '${completed[book.id] ?? 0}/${book.chapters}',
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: done ? AppColors.progressGreen : AppColors.textMuted,
+                  color: done ? AppColors.progressGreen : c.textMuted,
                   fontSize: 11,
                 ),
               ),

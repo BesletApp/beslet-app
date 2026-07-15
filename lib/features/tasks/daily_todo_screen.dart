@@ -56,13 +56,13 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
     final isAm = _isAm;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.of(context).background,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.of(context).background,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/home')),
         title: Text(_appbarTitle(isAm),
-            style: const TextStyle(fontFamily: 'Inter', fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+            style: TextStyle(fontFamily: 'Inter', fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.of(context).textPrimary)),
         actions: [
           TextButton.icon(
             icon: const Icon(Icons.flag, size: 18),
@@ -76,7 +76,7 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.tune, color: AppColors.textMuted),
+            icon: Icon(Icons.tune, color: AppColors.of(context).textMuted),
             tooltip: 'Edit Suggestions',
             onPressed: _showEditSuggestions,
           ),
@@ -160,11 +160,11 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: stats.total == 0 ? null : AppColors.card,
+        color: stats.total == 0 ? null : AppColors.of(context).card,
         gradient: stats.total == 0 ? AppColors.gradientGoldSoft : null,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: allDone ? AppColors.success.withValues(alpha: 0.3) : AppColors.border,
+          color: allDone ? AppColors.success.withValues(alpha: 0.3) : AppColors.of(context).border,
         ),
       ),
       child: Column(children: [
@@ -174,7 +174,7 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
               CircularProgressIndicator(
                 value: progress,
                 strokeWidth: 3,
-                backgroundColor: AppColors.border,
+                backgroundColor: AppColors.of(context).border,
                 valueColor: AlwaysStoppedAnimation(allDone ? AppColors.success : AppColors.primary),
               ),
               Text(stats.total > 0 ? '${stats.completed}' : '0',
@@ -194,7 +194,7 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
                 stats.total == 0
                     ? (isEvening ? (isAm ? 'ነገ እቅድ' : 'Plan tomorrow') : (isAm ? "+ ወይም ሀሳብ ምረጥ" : 'Tap + or a suggestion below'))
                     : (allDone ? (isAm ? 'ጥሩ ሥራ!' : 'Great work today!') : (isAm ? 'ቀጥል' : 'Keep going')),
-                style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary, fontSize: 11)),
+                style: AppTextStyles.bodySmall.copyWith(color: AppColors.of(context).textSecondary, fontSize: 11)),
             ]),
           ),
         ]),
@@ -212,19 +212,19 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
             const SizedBox(height: 12),
             Text(isAm ? 'ምንም ሥራ አልታቀደም' : 'No tasks planned', style: AppTextStyles.displaySmall.copyWith(fontSize: 18)),
             const SizedBox(height: 4),
-            Text(isAm ? 'ነገ ለማቀድ + ን መታ ያድርጉ' : 'Tap + below to plan tomorrow', style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary)),
+            Text(isAm ? 'ነገ ለማቀድ + ን መታ ያድርጉ' : 'Tap + below to plan tomorrow', style: AppTextStyles.bodySmall.copyWith(color: AppColors.of(context).textSecondary)),
           ]),
         ),
       );
     }
     if (_suggestions.isEmpty) {
       return Center(
-        child: Text(isAm ? 'የመጀመሪያ ሥራዎን ለመጨመር + ን ይጫኑ' : 'Tap + to add your first task', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+        child: Text(isAm ? 'የመጀመሪያ ሥራዎን ለመጨመር + ን ይጫኑ' : 'Tap + to add your first task', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.of(context).textSecondary)),
       );
     }
     return Center(
       child: Column(mainAxisSize: MainAxisSize.min, children: [
-        Text(isAm ? 'ፈጣን መጨመር' : 'Quick add', style: AppTextStyles.labelSmall.copyWith(color: AppColors.textMuted, fontSize: 10)),
+        Text(isAm ? 'ፈጣን መጨመር' : 'Quick add', style: AppTextStyles.labelSmall.copyWith(color: AppColors.of(context).textMuted, fontSize: 10)),
         const SizedBox(height: 12),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -266,9 +266,9 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             decoration: BoxDecoration(
-              color: AppColors.card,
+              color: AppColors.of(context).card,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: isDone ? AppColors.primary.withValues(alpha: 0.4) : AppColors.border),
+              border: Border.all(color: isDone ? AppColors.primary.withValues(alpha: 0.4) : AppColors.of(context).border),
             ),
             child: ListTile(
               leading: GestureDetector(
@@ -280,7 +280,7 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
                     shape: BoxShape.circle,
                     color: isDone ? AppColors.success : Colors.transparent,
                     border: Border.all(
-                      color: isDone ? AppColors.success : AppColors.textMuted,
+                      color: isDone ? AppColors.success : AppColors.of(context).textMuted,
                       width: isDone ? 0 : 2,
                     ),
                   ),
@@ -292,7 +292,7 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
               title: Text(todo.title,
                   style: AppTextStyles.bodyMedium.copyWith(
                     decoration: isDone ? TextDecoration.lineThrough : null,
-                    color: isDone ? AppColors.textMuted : AppColors.textPrimary,
+                    color: isDone ? AppColors.of(context).textMuted : AppColors.of(context).textPrimary,
                   )),
             ),
           ),
@@ -304,9 +304,9 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
   Widget _buildAddRow(bool isAm) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.of(context).surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.of(context).border),
       ),
       child: Row(children: [
         Expanded(
@@ -316,7 +316,7 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
             style: AppTextStyles.bodyMedium,
             decoration: InputDecoration(
               hintText: isAm ? 'ምን መሥራት ትፈልጋለህ?' : 'What do you want to do?',
-              hintStyle: TextStyle(color: AppColors.textMuted),
+              hintStyle: TextStyle(color: AppColors.of(context).textMuted),
               border: InputBorder.none,
               contentPadding: EdgeInsets.symmetric(horizontal: 16),
             ),
@@ -337,9 +337,9 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.card,
+          color: AppColors.of(context).card,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: AppColors.of(context).border),
         ),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(isAm ? 'ቀንህ እንዴት አለፈ?' : 'How was your day?', style: AppTextStyles.labelLarge.copyWith(fontSize: 14)),
@@ -350,8 +350,8 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
             maxLines: 3,
             decoration: InputDecoration(
               hintText: isAm ? 'አጭር ማሰላሰያ ጻፍ...' : 'Write a short reflection...',
-              hintStyle: TextStyle(color: AppColors.textMuted),
-              filled: true, fillColor: AppColors.surface,
+              hintStyle: TextStyle(color: AppColors.of(context).textMuted),
+              filled: true, fillColor: AppColors.of(context).surface,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
             ),
           ),
@@ -431,7 +431,7 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
   void _showTaskActions(TodoItem todo) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.card,
+      backgroundColor: AppColors.of(context).card,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
@@ -465,7 +465,7 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.card,
+        backgroundColor: AppColors.of(context).card,
         title: Text(_isAm ? 'ፈጣን መጨመር አርትዕ' : 'Edit Quick Add', style: AppTextStyles.labelLarge),
         content: SizedBox(
           width: double.maxFinite,
@@ -475,8 +475,8 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
             maxLines: 8,
             decoration: InputDecoration(
               hintText: _isAm ? 'በአንድ መስመር አንድ ሀሳብ' : 'One suggestion per line',
-              hintStyle: TextStyle(color: AppColors.textMuted),
-              filled: true, fillColor: AppColors.surface,
+              hintStyle: TextStyle(color: AppColors.of(context).textMuted),
+              filled: true, fillColor: AppColors.of(context).surface,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
             ),
           ),

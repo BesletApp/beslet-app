@@ -290,7 +290,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
                     position: _titleSlide,
                     child: FadeTransition(
                       opacity: _titleFade,
-                      child: const Text(
+                      child: Text(
                         'ብስለት',
                         style: AppTextStyles.amharicDisplay,
                       ),

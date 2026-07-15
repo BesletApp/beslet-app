@@ -134,13 +134,13 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
     await showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.card,
+        backgroundColor: AppColors.of(context).card,
         title: Text(isAm ? 'ፍቃድ ያስፈልጋል' : 'Permission needed', style: AppTextStyles.labelLarge),
         content: Text(
           status == PrayerAlarmPermissionStatus.exactAlarmDenied
               ? (isAm ? '«Alarms & reminders» ያንቁ።' : 'Turn on "Alarms & reminders".')
               : (isAm ? 'ማሳሰቢያዎችን ያንቁ።' : 'Enable notifications for Beslet.'),
-          style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+          style: AppTextStyles.bodyMedium.copyWith(color: AppColors.of(context).textSecondary),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: Text(isAm ? 'ይቅር' : 'Cancel')),
@@ -221,12 +221,12 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(isAm ? 'የማንቂያ ድምፅ' : 'Alarm tone', style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted)),
+        Text(isAm ? 'የማንቂያ ድምፅ' : 'Alarm tone', style: AppTextStyles.bodySmall.copyWith(color: AppColors.of(context).textMuted)),
         const SizedBox(height: 6),
         Row(children: [
           const Icon(Icons.music_note, size: 16, color: AppColors.primary),
           const SizedBox(width: 6),
-          Expanded(child: Text(toneLabel, style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary), maxLines: 1, overflow: TextOverflow.ellipsis)),
+          Expanded(child: Text(toneLabel, style: AppTextStyles.bodySmall.copyWith(color: AppColors.of(context).textSecondary), maxLines: 1, overflow: TextOverflow.ellipsis)),
         ]),
         const SizedBox(height: 10),
         Row(children: [
@@ -235,7 +235,7 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
               onPressed: _pickAlarmSound,
               icon: const Icon(Icons.library_music, size: 16),
               label: Text(isAm ? 'ከስልክ ምረጥ' : 'From phone', style: AppTextStyles.bodySmall.copyWith(color: AppColors.primary)),
-              style: OutlinedButton.styleFrom(foregroundColor: AppColors.primary, side: const BorderSide(color: AppColors.border), padding: const EdgeInsets.symmetric(vertical: 10)),
+              style: OutlinedButton.styleFrom(foregroundColor: AppColors.primary, side: BorderSide(color: AppColors.of(context).border), padding: const EdgeInsets.symmetric(vertical: 10)),
             ),
           ),
           const SizedBox(width: 8),
@@ -243,7 +243,7 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
             Expanded(
               child: OutlinedButton(
                 onPressed: _useDefaultSound,
-                style: OutlinedButton.styleFrom(foregroundColor: AppColors.textSecondary, side: const BorderSide(color: AppColors.border), padding: const EdgeInsets.symmetric(vertical: 10)),
+                style: OutlinedButton.styleFrom(foregroundColor: AppColors.of(context).textSecondary, side: BorderSide(color: AppColors.of(context).border), padding: const EdgeInsets.symmetric(vertical: 10)),
                 child: Text(isAm ? 'ነባሪ' : 'Default', style: AppTextStyles.bodySmall),
               ),
             ),
@@ -343,7 +343,7 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
           decoration: InputDecoration(
             hintText: l.notePlaceholder,
             hintStyle: AppTextStyles.bodySmall,
-            filled: true, fillColor: AppColors.card,
+            filled: true, fillColor: AppColors.of(context).card,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           ),
@@ -355,16 +355,16 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
         onTap: () => setState(() => _timerExpanded = !_timerExpanded),
         child: AnimatedCrossFade(
           firstChild: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Icon(Icons.timer_outlined, size: 16, color: AppColors.textMuted),
+            Icon(Icons.timer_outlined, size: 16, color: AppColors.of(context).textMuted),
             const SizedBox(width: 4),
-            Text(l.trackTime, style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted)),
+            Text(l.trackTime, style: AppTextStyles.bodySmall.copyWith(color: AppColors.of(context).textMuted)),
           ]),
           secondChild: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.card,
+              color: AppColors.of(context).card,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border.withValues(alpha: 0.5)),
+              border: Border.all(color: AppColors.of(context).border.withValues(alpha: 0.5)),
             ),
             child: Column(children: [
               Row(children: [
@@ -375,7 +375,7 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
                     Localizations.localeOf(context).languageCode == 'am'
                         ? 'ልብህን ለእግዚአብሔር አፍስስ'
                         : 'Pour out your heart to God — Psalm 62:8',
-                    style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary)),
+                    style: AppTextStyles.bodyMedium.copyWith(color: AppColors.of(context).textPrimary)),
                 ),
               ]),
               const SizedBox(height: 12),
@@ -389,8 +389,8 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
                     style: const TextStyle(fontSize: 12)),
                   onPressed: () => setState(() => _timerExpanded = true),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.textMuted,
-                    side: BorderSide(color: AppColors.border),
+                    foregroundColor: AppColors.of(context).textMuted,
+                    side: BorderSide(color: AppColors.of(context).border),
                     padding: const EdgeInsets.symmetric(vertical: 8),
                   ),
                 ),
@@ -417,7 +417,7 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: AppColors.of(context).card,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(children: [
@@ -487,9 +487,9 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
         return Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.card,
+            color: AppColors.of(context).card,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: AppColors.of(context).border),
           ),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(l.thisWeek, style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
@@ -501,15 +501,15 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
                   width: 36, height: 36,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: prayed ? AppColors.success.withValues(alpha: 0.2) : AppColors.border,
+                    color: prayed ? AppColors.success.withValues(alpha: 0.2) : AppColors.of(context).border,
                     border: Border.all(color: prayed ? AppColors.success : AppColors.borderLight, width: 2),
                   ),
                   child: Center(child: prayed
                     ? const Icon(Icons.check, size: 18, color: AppColors.success)
-                    : Container(width: 6, height: 6, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.textMuted))),
+                    : Container(width: 6, height: 6, decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.of(context).textMuted))),
                 ),
                 const SizedBox(height: 6),
-                Text(dayLabels[i], style: AppTextStyles.bodySmall.copyWith(fontSize: 10, color: AppColors.textMuted)),
+                Text(dayLabels[i], style: AppTextStyles.bodySmall.copyWith(fontSize: 10, color: AppColors.of(context).textMuted)),
               ]);
             })),
           ]),
@@ -525,9 +525,9 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: AppColors.of(context).card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.of(context).border),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
@@ -538,7 +538,7 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
         const SizedBox(height: 12),
         if (reminderTime != null) ...[
           Text(AppLocalizations.of(context)!.dailyAt(TimeOfDay(hour: reminderTime.hour, minute: reminderTime.minute).format(context)),
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.of(context).textSecondary)),
           const SizedBox(height: 8),
           Row(children: [
             Expanded(
@@ -550,7 +550,7 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
                   label: Text(AppLocalizations.of(context)!.change, style: AppTextStyles.bodySmall.copyWith(color: AppColors.primary)),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.primary,
-                    side: const BorderSide(color: AppColors.border),
+                    side: BorderSide(color: AppColors.of(context).border),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                 ),
@@ -570,7 +570,7 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
             ),
           ]),
         ] else ...[
-          Text(AppLocalizations.of(context)!.notSet, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textMuted)),
+          Text(AppLocalizations.of(context)!.notSet, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.of(context).textMuted)),
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity, height: 44,

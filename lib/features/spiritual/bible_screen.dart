@@ -5,11 +5,15 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/services/scripture_service.dart';
 import '../../core/services/study_data.dart';
+import '../../core/services/plan_progress_service.dart';
+import '../../core/services/witness_service.dart';
 import '../../core/providers/bible_read_provider.dart';
 import '../../core/providers/bible_session_provider.dart';
 import '../../core/providers/user_provider.dart';
 import '../../core/providers/audio_player_provider.dart';
 import '../../core/providers/download_provider.dart';
+import '../../core/providers/wisdom_provider.dart';
+import '../../core/providers/database_provider.dart';
 import '../../core/services/audio_bible_service.dart';
 import '../../shared/widgets/error_card.dart';
 import 'widgets/audio_player_bar.dart';
@@ -18,6 +22,8 @@ import 'widgets/lectio_divina_card.dart';
 import 'widgets/phase_bar.dart';
 import 'widgets/chapter_picker.dart';
 import 'widgets/download_sheet.dart';
+import 'widgets/wisdom_dialog.dart';
+import 'widgets/wisdom_card.dart';
 
 class BibleScreen extends ConsumerStatefulWidget {
   final String? initialBookId;
@@ -125,6 +131,44 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
     return ScriptureService.parseReference(entry.reference);
   }
 
+  Future<String?> _showReflectionPrompt(BuildContext context) async {
+    final c = AppColors.of(context);
+    final ctrl = TextEditingController();
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: c.card,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(_isAm ? 'እግዚአብሔር ምን አለ?' : 'What did God say?', style: AppTextStyles.labelLarge),
+        content: Column(mainAxisSize: MainAxisSize.min, children: [
+          Text(_isAm ? 'ይህን ምዕራፍ ስታነብ እግዚአብሔር ምን ነገረህ?' : 'What did God speak to you through this chapter?',
+              style: TextStyle(fontSize: 13, color: c.textSecondary)),
+          const SizedBox(height: 12),
+          TextField(
+            controller: ctrl,
+            maxLines: 3,
+            style: AppTextStyles.bodyMedium,
+            decoration: InputDecoration(
+              hintText: _isAm ? 'ልብህ ላይ ያለውን ጻፍ...' : 'Write what\'s on your heart...',
+              hintStyle: TextStyle(color: c.textMuted, fontSize: 13),
+              filled: true, fillColor: c.surface,
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+            ),
+          ),
+        ]),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, ''), child: Text(_isAm ? 'ዝለል' : 'Skip', style: TextStyle(color: c.textMuted))),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, ctrl.text.trim()),
+            child: Text(_isAm ? 'አስቀምጥ' : 'Save'),
+          ),
+        ],
+      ),
+    );
+    if (result != null && result.isNotEmpty) return result;
+    return null;
+  }
+
   String get _planId {
     final user = ref.read(userProvider).valueOrNull;
     return user?.biblePlan ?? 'nt';
@@ -172,14 +216,38 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
 
         final phase = ScriptureService.getPhase(effectiveDay);
         final phaseNames = _isAm ? ScriptureService.phaseNamesAm : ScriptureService.phaseNamesEn;
+        final canMarkRead = isToday || _pickedBookId != null;
 
         return Scaffold(
-          backgroundColor: AppColors.background,
+          backgroundColor: AppColors.of(context).background,
+          floatingActionButton: canMarkRead && !isRead
+              ? FloatingActionButton.extended(
+                  onPressed: () async {
+                    final book = parsed != null ? ScriptureService.bookMap[parsed.bookId] : null;
+                    final refStr = book != null ? '${_isAm ? book.nameAm : book.nameEn} ${parsed!.chapter}' : '';
+                    if (refStr.isEmpty) return;
+                    final note = await _showReflectionPrompt(context);
+                    await ref.read(bibleNotifierProvider.notifier).markAsRead(refStr, note: note);
+                    if (parsed == null || !mounted) return;
+                    final db = ref.read(databaseProvider);
+                    final prog = await PlanProgressService.compute(db);
+                    final completed = prog.otProgress.any((p) => p.book.id == parsed.bookId && p.isComplete) ||
+                        prog.ntProgress.any((p) => p.book.id == parsed.bookId && p.isComplete);
+                    if (completed && mounted) {
+                      showWisdomDialog(context, ref, parsed.bookId, _isAm);
+                    }
+                  },
+                  icon: const Icon(Icons.check, size: 18),
+                  label: Text(_isAm ? 'ዛሬ አንብቤዋለሁ +20' : 'Mark Read +20', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                  backgroundColor: AppColors.progressGreen,
+                  foregroundColor: const Color(0xFF07090E),
+                )
+              : null,
           appBar: AppBar(
-            backgroundColor: AppColors.background,
+            backgroundColor: AppColors.of(context).background,
             surfaceTintColor: Colors.transparent,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+              icon: Icon(Icons.arrow_back, color: AppColors.of(context).textPrimary),
               onPressed: () => context.go('/'),
             ),
             title: Text(
@@ -190,7 +258,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
               _buildLangToggle(),
                 if (_viewingDay != null)
                 IconButton(
-                  icon: const Icon(Icons.today, color: AppColors.textSecondary, size: 20),
+                  icon: Icon(Icons.today, color: AppColors.of(context).textSecondary, size: 20),
                   tooltip: _isAm ? 'የዛሬው ንባብ' : "Today's Reading",
                   onPressed: () {
                     setState(() { _viewingDay = null; _pickedBookId = null; _pickedChapter = null; _downloaded = false; });
@@ -198,14 +266,14 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
                   },
                 ),
               IconButton(
-                icon: const Icon(Icons.menu_book, color: AppColors.textSecondary, size: 20),
+                icon: Icon(Icons.menu_book, color: AppColors.of(context).textSecondary, size: 20),
                 tooltip: _isAm ? 'መጻሕፍት' : 'Books',
                 onPressed: () => _showBookPicker(context),
               ),
               IconButton(
-                icon: const Icon(Icons.auto_stories, color: AppColors.textSecondary, size: 20),
+                icon: Icon(Icons.auto_stories, color: AppColors.of(context).textSecondary, size: 20),
                 tooltip: _isAm ? 'ማስታወሻ ደብተር' : 'Journal',
-                onPressed: () => context.go('/bible/journal'),
+                onPressed: () => context.go('/bible/book-journal'),
               ),
               Padding(
                 padding: const EdgeInsets.only(right: 4),
@@ -237,6 +305,14 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
               _buildStats(chaptersRead, coverage, completedBooks.length, effectiveDay, isToday),
               const SizedBox(height: 16),
               _buildChapterHeader(_refText, theme, phase, phaseNames, effectiveDay, isToday, parsed),
+              if (parsed != null && WitnessService.quoteForBook(parsed.bookId, isAm: _isAm) != null) ...[
+                const SizedBox(height: 12),
+                _buildQuoteCard(parsed.bookId),
+              ],
+              if (parsed != null) ...[
+                const SizedBox(height: 12),
+                _buildWisdomCard(parsed.bookId),
+              ],
               const SizedBox(height: 16),
               AudioPlayerBar(isAm: _isAm),
               const SizedBox(height: 16),
@@ -286,15 +362,15 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: AppColors.of(context).card,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.of(context).border),
       ),
       child: Row(children: [
         Icon(!isToday ? Icons.calendar_today : Icons.library_books, size: 14, color: AppColors.primary),
         const SizedBox(width: 6),
         Expanded(
-          child: Text(subtitle, style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary, fontSize: 10)),
+          child: Text(subtitle, style: AppTextStyles.bodySmall.copyWith(color: AppColors.of(context).textSecondary, fontSize: 10)),
         ),
         if (coverage != null && isToday) ...[
           const SizedBox(width: 8),
@@ -304,7 +380,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
               borderRadius: BorderRadius.circular(2),
               child: LinearProgressIndicator(
                 value: coverage.totalPercent,
-                backgroundColor: AppColors.border,
+                backgroundColor: AppColors.of(context).border,
                 valueColor: const AlwaysStoppedAnimation(AppColors.primary),
                 minHeight: 3,
               ),
@@ -320,13 +396,13 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.card,
+          color: AppColors.of(context).card,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColors.border, width: 0.5),
+          border: Border.all(color: AppColors.of(context).border, width: 0.5),
         ),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
           _langChip('AMH', 'am'),
-          Container(width: 1, height: 16, color: AppColors.border),
+          Container(width: 1, height: 16, color: AppColors.of(context).border),
           _langChip('ENG', 'en'),
         ]),
       ),
@@ -353,7 +429,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w700,
-            color: active ? const Color(0xFF07090E) : AppColors.textMuted,
+            color: active ? const Color(0xFF07090E) : AppColors.of(context).textMuted,
           ),
         ),
       ),
@@ -373,7 +449,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
           Row(children: [
             _badge('${_isAm ? 'ቀን' : 'Day'} $effectiveDay ${_isAm ? 'ከ' : 'of'} $_totalDays', AppColors.primary.withValues(alpha: 0.15), AppColors.primary),
             const SizedBox(width: 6),
-            _badge('${phaseNames[phase]} · ${_isAm ? 'ክፍል' : 'Phase'} ${phase + 1} ${_isAm ? 'ከ' : 'of'} $_phaseCount', AppColors.card.withValues(alpha: 0.5), AppColors.textSecondary),
+            _badge('${phaseNames[phase]} · ${_isAm ? 'ክፍል' : 'Phase'} ${phase + 1} ${_isAm ? 'ከ' : 'of'} $_phaseCount', AppColors.of(context).card.withValues(alpha: 0.5), AppColors.of(context).textSecondary),
           ]),
           const SizedBox(height: 10),
         ],
@@ -386,11 +462,11 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: AppColors.card.withValues(alpha: 0.4),
+                  color: AppColors.of(context).card.withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(8),
                   border: Border(left: BorderSide(color: AppColors.primary.withValues(alpha: 0.3), width: 2)),
                 ),
-                child: Text(theme, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary, fontSize: 12)),
+                child: Text(theme, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.of(context).textSecondary, fontSize: 12)),
               ),
             ]),
           ),
@@ -426,6 +502,36 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
     );
   }
 
+  Widget _buildQuoteCard(String bookId) {
+    final c = AppColors.of(context);
+    final quote = WitnessService.quoteForBook(bookId, isAm: _isAm);
+    if (quote == null) return const SizedBox.shrink();
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: c.card,
+        borderRadius: BorderRadius.circular(10),
+        border: Border(left: BorderSide(color: AppColors.primary.withValues(alpha: 0.4), width: 2)),
+      ),
+      child: Text(quote, style: TextStyle(fontSize: 11, fontStyle: FontStyle.italic, color: c.textSecondary, height: 1.5)),
+    );
+  }
+
+  Widget _buildWisdomCard(String bookId) {
+    return Consumer(builder: (context, ref, _) {
+      final wisdomAsync = ref.watch(wisdomForBookProvider(bookId));
+      final note = wisdomAsync.valueOrNull;
+      if (note == null || note.isEmpty) return const SizedBox.shrink();
+      final book = ScriptureService.bookMap[bookId];
+      final name = book != null ? (_isAm ? book.nameAm : book.nameEn) : bookId;
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 0),
+        child: WisdomCard(note: note, bookName: name, isAm: _isAm),
+      );
+    });
+  }
+
   Widget _iconBtn(IconData icon, String tooltip, VoidCallback onTap) {
     return Material(
       color: Colors.transparent,
@@ -435,11 +541,11 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
         child: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppColors.card.withValues(alpha: 0.5),
+            color: AppColors.of(context).card.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: AppColors.of(context).border),
           ),
-          child: Icon(icon, size: 18, color: AppColors.textSecondary),
+          child: Icon(icon, size: 18, color: AppColors.of(context).textSecondary),
         ),
       ),
     );
@@ -475,10 +581,20 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
                   ]),
                 )
               : ElevatedButton.icon(
-                  onPressed: () {
+                  onPressed: () async {
                     final book = parsed != null ? ScriptureService.bookMap[parsed.bookId] : null;
                     final refStr = book != null ? '${_isAm ? book.nameAm : book.nameEn} ${parsed!.chapter}' : '';
-                    if (refStr.isNotEmpty) ref.read(bibleNotifierProvider.notifier).markAsRead(refStr);
+                    if (refStr.isEmpty) return;
+                    final note = await _showReflectionPrompt(context);
+                    await ref.read(bibleNotifierProvider.notifier).markAsRead(refStr, note: note);
+                    if (parsed == null || !mounted) return;
+                    final db = ref.read(databaseProvider);
+                    final prog = await PlanProgressService.compute(db);
+                    final completed = prog.otProgress.any((p) => p.book.id == parsed.bookId && p.isComplete) ||
+                        prog.ntProgress.any((p) => p.book.id == parsed.bookId && p.isComplete);
+                    if (completed && mounted) {
+                      showWisdomDialog(context, ref, parsed.bookId, _isAm);
+                    }
                   },
                   icon: const Icon(Icons.check, size: 16),
                   label: Text(_isAm ? 'ዛሬ አንብቤዋለሁ +20' : 'Mark Read +20', style: const TextStyle(fontSize: 12)),
@@ -498,14 +614,14 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: AppColors.card,
+            color: AppColors.of(context).card,
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: AppColors.of(context).border),
           ),
           child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Icon(Icons.lock_outline, size: 14, color: AppColors.textMuted),
+            Icon(Icons.lock_outline, size: 14, color: AppColors.of(context).textMuted),
             const SizedBox(width: 6),
-            Text(_isAm ? 'የዛሬ ብቻ' : 'Today only', style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
+            Text(_isAm ? 'የዛሬ ብቻ' : 'Today only', style: TextStyle(fontSize: 11, color: AppColors.of(context).textMuted)),
           ]),
         ),
       ),
@@ -515,7 +631,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
   void _showBookPicker(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.of(context).background,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       isScrollControlled: true,
       builder: (ctx) {
@@ -545,7 +661,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
     if (book == null) return;
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.of(context).background,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (_) {
         return Padding(
@@ -559,7 +675,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
                 const SizedBox(width: 8),
                 Text(
                   _isAm ? book.nameAm : book.nameEn,
-                  style: AppTextStyles.displaySmall.copyWith(fontSize: 20, color: AppColors.textPrimary),
+                  style: AppTextStyles.displaySmall.copyWith(fontSize: 20, color: AppColors.of(context).textPrimary),
                 ),
               ]),
               const SizedBox(height: 12),
@@ -567,12 +683,12 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: AppColors.card,
+                  color: AppColors.of(context).card,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(color: AppColors.of(context).border),
                 ),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(bookInfo, style: AppTextStyles.bodyMedium.copyWith(fontSize: 13, color: AppColors.textPrimary, height: 1.6)),
+                  Text(bookInfo, style: AppTextStyles.bodyMedium.copyWith(fontSize: 13, color: AppColors.of(context).textPrimary, height: 1.6)),
                   const SizedBox(height: 10),
                   Text(
                     _isAm ? 'ቁልፍ ጭብጥ' : 'Key Theme',
@@ -581,14 +697,14 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
                   const SizedBox(height: 4),
                   Text(
                     _isAm ? book.themeAm : book.themeEn,
-                    style: AppTextStyles.bodyMedium.copyWith(fontSize: 12, color: AppColors.textSecondary),
+                    style: AppTextStyles.bodyMedium.copyWith(fontSize: 12, color: AppColors.of(context).textSecondary),
                   ),
                 ]),
               ),
               const SizedBox(height: 12),
               Text(
                 _isAm ? 'ለጥልቅ ጥናት፦ Blue Letter Bible፣ BibleHub ይጠቀሙ' : 'For deeper study: Blue Letter Bible, BibleHub',
-                style: AppTextStyles.bodySmall.copyWith(fontSize: 10, color: AppColors.textMuted),
+                style: AppTextStyles.bodySmall.copyWith(fontSize: 10, color: AppColors.of(context).textMuted),
               ),
               const SizedBox(height: 20),
             ],
@@ -608,9 +724,9 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: AppColors.of(context).card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.of(context).border),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
@@ -618,13 +734,13 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
           const SizedBox(width: 6),
           Text(
             _isAm ? '${_monthsAm[now.month - 1]} ንባብ' : '${_monthsEn[now.month - 1]} Reading',
-            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textSecondary),
+            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.of(context).textSecondary),
           ),
         ]),
         const SizedBox(height: 12),
         Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: labels.map((l) => SizedBox(
           width: 28, child: Text(l, textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: AppColors.textMuted))),
+            style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: AppColors.of(context).textMuted))),
         ).toList()),
         const SizedBox(height: 6),
         ...List.generate((firstWeekday + daysInMonth + 6) ~/ 7, (row) {
@@ -645,7 +761,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: isToday2 ? FontWeight.w700 : FontWeight.w400,
-                  color: isRead ? AppColors.progressGreen : (isToday2 ? AppColors.primary : AppColors.textMuted),
+                  color: isRead ? AppColors.progressGreen : (isToday2 ? AppColors.primary : AppColors.of(context).textMuted),
                 ),
               )),
             );
@@ -704,7 +820,7 @@ class _BookChapterPickerState extends ConsumerState<_BookChapterPicker> {
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
         child: Text(
           widget.isAm ? s.nameAm : s.nameEn,
-          style: AppTextStyles.bodySmall.copyWith(fontSize: 11, color: AppColors.textMuted, fontWeight: FontWeight.w700),
+          style: AppTextStyles.bodySmall.copyWith(fontSize: 11, color: AppColors.of(context).textMuted, fontWeight: FontWeight.w700),
         ),
       ),
       ...s.books.map((b) => ListTile(
@@ -712,7 +828,7 @@ class _BookChapterPickerState extends ConsumerState<_BookChapterPicker> {
         title: Text(widget.isAm ? b.nameAm : b.nameEn, style: const TextStyle(fontSize: 15)),
         subtitle: Text(
           widget.isAm ? b.themeAm : b.themeEn,
-          style: TextStyle(fontSize: 10, color: AppColors.textMuted),
+          style: TextStyle(fontSize: 10, color: AppColors.of(context).textMuted),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),

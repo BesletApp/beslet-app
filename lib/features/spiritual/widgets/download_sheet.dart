@@ -98,30 +98,31 @@ class _DownloadSheetState extends ConsumerState<DownloadSheet> {
   @override
   Widget build(BuildContext context) {
     final downloads = ref.watch(downloadListProvider);
+    final c = AppColors.of(context);
     final isAm = Localizations.localeOf(context).languageCode == 'am';
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: c.card,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(mainAxisSize: MainAxisSize.min, children: [
         Container(
           margin: const EdgeInsets.only(top: 12),
           width: 40, height: 4,
-          decoration: BoxDecoration(color: AppColors.border, borderRadius: BorderRadius.circular(2)),
+          decoration: BoxDecoration(color: c.border, borderRadius: BorderRadius.circular(2)),
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
           child: Row(children: [
             const Icon(Icons.download, size: 18, color: AppColors.primary),
             const SizedBox(width: 8),
-            Text(isAm ? 'ማውረዶች' : 'Downloads', style: const TextStyle(fontFamily: 'Inter', fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+            Text(isAm ? 'ማውረዶች' : 'Downloads', style: TextStyle(fontFamily: 'Inter', fontSize: 17, fontWeight: FontWeight.w700, color: c.textPrimary)),
             const Spacer(),
-            Text('${downloads.length}', style: const TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.textMuted)),
+            Text('${downloads.length}', style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: c.textMuted)),
           ]),
         ),
-        const Divider(height: 1, color: AppColors.border),
+        Divider(height: 1, color: c.border),
         if (!widget.isAlreadyDownloaded)
           Container(
             padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
@@ -148,8 +149,8 @@ class _DownloadSheetState extends ConsumerState<DownloadSheet> {
                     Text(isAm ? 'ይህን ምዕራፍ አውርድ' : 'Download this chapter',
                         style: const TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.primary)),
                     if (_downloadSize != null)
-                      Text('~$_downloadSize MB · ${isAm ? 'ኦዲዮን ያካትታል' : 'includes audio'}',
-                          style: const TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.textMuted)),
+                       Text('~$_downloadSize MB · ${isAm ? 'ኦዲዮን ያካትታል' : 'includes audio'}',
+                           style: TextStyle(fontFamily: 'Inter', fontSize: 10, color: c.textMuted)),
                   ])),
                   if (!_downloading) const Icon(Icons.chevron_right, size: 18, color: AppColors.primary),
                 ]),
@@ -160,10 +161,10 @@ class _DownloadSheetState extends ConsumerState<DownloadSheet> {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
             child: Column(children: [
-              Icon(Icons.download_outlined, size: 40, color: AppColors.textMuted.withValues(alpha: 0.3)),
+              Icon(Icons.download_outlined, size: 40, color: c.textMuted.withValues(alpha: 0.3)),
               const SizedBox(height: 8),
               Text(isAm ? 'ገና ምንም የወረዱ ምዕራፎች የሉም' : 'No downloaded chapters yet',
-                  style: const TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.textMuted)),
+                  style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: c.textMuted)),
             ]),
           )
         else
@@ -181,25 +182,25 @@ class _DownloadSheetState extends ConsumerState<DownloadSheet> {
                     : '${dl.bookName} ${dl.chapter}';
                 final isCurrent = dl.bookId == widget.currentBookId && dl.chapter == widget.currentChapter;
                 return Column(children: [
-                  if (i == 0 && !widget.isAlreadyDownloaded) const Divider(height: 1, color: AppColors.border),
+                  if (i == 0 && !widget.isAlreadyDownloaded) Divider(height: 1, color: c.border),
                   ListTile(
                     dense: true,
                     leading: Container(
                       width: 32, height: 32,
                       decoration: BoxDecoration(
-                        color: isCurrent ? AppColors.primary.withValues(alpha: 0.15) : AppColors.border.withValues(alpha: 0.15),
+                        color: isCurrent ? AppColors.primary.withValues(alpha: 0.15) : c.border.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(isCurrent ? Icons.play_arrow : Icons.menu_book, size: 16,
-                          color: isCurrent ? AppColors.primary : AppColors.textMuted),
+                          color: isCurrent ? AppColors.primary : c.textMuted),
                     ),
                     title: Text(label, style: TextStyle(
                       fontFamily: 'Inter', fontSize: 13,
-                      color: isCurrent ? AppColors.primary : AppColors.textPrimary,
+                      color: isCurrent ? AppColors.primary : c.textPrimary,
                       fontWeight: isCurrent ? FontWeight.w600 : FontWeight.w400,
                     )),
                     trailing: IconButton(
-                      icon: const Icon(Icons.delete_outline, size: 18, color: AppColors.textMuted),
+                      icon: Icon(Icons.delete_outline, size: 18, color: c.textMuted),
                       onPressed: () => ref.read(downloadListProvider.notifier).remove(dl.bookId, dl.chapter),
                     ),
                     onTap: () {

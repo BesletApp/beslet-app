@@ -21,17 +21,18 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
   Widget build(BuildContext context) {
     final goalsAsync = ref.watch(currentPeriodGoalsProvider(_selectedType));
     final pastPeriodsAsync = ref.watch(pastPeriodStartsProvider(_selectedType));
+    final c = AppColors.of(context);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: c.background,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: c.background,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/daily-todo')),
-        title: const Text('🎯 My Goals', style: TextStyle(fontFamily: 'Inter', fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        title: Text('🎯 My Goals', style: TextStyle(fontFamily: 'Inter', fontSize: 18, fontWeight: FontWeight.w600, color: c.textPrimary)),
         actions: [
           IconButton(
-            icon: Icon(_showPast ? Icons.today : Icons.history, color: AppColors.textMuted),
+            icon: Icon(_showPast ? Icons.today : Icons.history, color: c.textMuted),
             tooltip: _showPast ? 'Current goals' : 'Past goals',
             onPressed: () => setState(() => _showPast = !_showPast),
           ),
@@ -55,33 +56,34 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
           ]),
         ),
         Expanded(
-          child: _showPast ? _buildPastView(pastPeriodsAsync) : _buildCurrentView(goalsAsync),
+          child: _showPast ? _buildPastView(pastPeriodsAsync, c) : _buildCurrentView(goalsAsync, c),
         ),
       ]),
     );
   }
 
   Widget _buildTypeChip(String type, String label) {
+    final c = AppColors.of(context);
     final selected = _selectedType == type;
     return GestureDetector(
       onTap: () => setState(() => _selectedType = type),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: selected ? AppColors.primary.withValues(alpha: 0.2) : AppColors.card,
+          color: selected ? AppColors.primary.withValues(alpha: 0.2) : c.card,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: selected ? AppColors.primary : AppColors.border),
+          border: Border.all(color: selected ? AppColors.primary : c.border),
         ),
         child: Text(label,
             style: AppTextStyles.bodySmall.copyWith(
-              color: selected ? AppColors.primary : AppColors.textSecondary,
+              color: selected ? AppColors.primary : c.textSecondary,
               fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
             )),
       ),
     );
   }
 
-  Widget _buildCurrentView(AsyncValue<List<Goal>> goalsAsync) {
+  Widget _buildCurrentView(AsyncValue<List<Goal>> goalsAsync, ThemePalette c) {
     return goalsAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(child: Text('$e')),
@@ -98,14 +100,14 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
               const SizedBox(height: 16),
               Center(child: Text('No $_selectedType goals yet', style: AppTextStyles.displaySmall.copyWith(fontSize: 18))),
               const SizedBox(height: 8),
-              Center(child: Text('Add your first goal!', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary))),
+              Center(child: Text('Add your first goal!', style: AppTextStyles.bodyMedium.copyWith(color: c.textSecondary))),
             ],
             if (active.isNotEmpty) ...[
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
-                child: Text('Active', style: AppTextStyles.labelSmall.copyWith(color: AppColors.textMuted, fontSize: 10, letterSpacing: 1.2)),
+                child: Text('Active', style: AppTextStyles.labelSmall.copyWith(color: c.textMuted, fontSize: 10, letterSpacing: 1.2)),
               ),
-              ...active.map((g) => _buildGoalTile(g, false)),
+              ...active.map((g) => _buildGoalTile(g, false, c)),
             ],
             if (achieved.isNotEmpty) ...[
               if (active.isNotEmpty) const SizedBox(height: 16),
@@ -113,7 +115,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Text('Achieved', style: AppTextStyles.labelSmall.copyWith(color: AppColors.success, fontSize: 10, letterSpacing: 1.2)),
               ),
-              ...achieved.map((g) => _buildGoalTile(g, true)),
+              ...achieved.map((g) => _buildGoalTile(g, true, c)),
             ],
           ],
         );
@@ -121,25 +123,25 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
     );
   }
 
-  Widget _buildPastView(AsyncValue<List<String>> periodsAsync) {
+  Widget _buildPastView(AsyncValue<List<String>> periodsAsync, ThemePalette c) {
     return periodsAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(child: Text('$e')),
       data: (periods) {
         if (periods.isEmpty) {
-          return const Center(child: Text('No past goals yet', style: TextStyle(color: AppColors.textSecondary)));
+          return Center(child: Text('No past goals yet', style: TextStyle(color: c.textSecondary)));
         }
         return ListView(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
           children: periods.map((period) {
-            return _buildPastPeriod(period);
+            return _buildPastPeriod(period, c);
           }).toList(),
         );
       },
     );
   }
 
-  Widget _buildPastPeriod(String periodStart) {
+  Widget _buildPastPeriod(String periodStart, ThemePalette c) {
     final goalsAsync = ref.watch(goalsForPeriodProvider((type: _selectedType, periodStart: periodStart)));
     return goalsAsync.when(
       loading: () => const SizedBox.shrink(),
@@ -151,23 +153,23 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
           child: Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.card,
+              color: c.card,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.border),
+              border: Border.all(color: c.border),
             ),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(label, style: AppTextStyles.labelSmall.copyWith(color: AppColors.textSecondary, fontSize: 11)),
+              Text(label, style: AppTextStyles.labelSmall.copyWith(color: c.textSecondary, fontSize: 11)),
               const SizedBox(height: 8),
               ...goals.map((g) => Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Row(children: [
                   Icon(g.isAchieved ? Icons.check_circle : Icons.radio_button_unchecked,
-                      size: 18, color: g.isAchieved ? AppColors.success : AppColors.textMuted),
+                      size: 18, color: g.isAchieved ? AppColors.success : c.textMuted),
                   const SizedBox(width: 8),
                   Expanded(child: Text(g.title,
                       style: AppTextStyles.bodyMedium.copyWith(
                         decoration: g.isAchieved ? TextDecoration.lineThrough : null,
-                        color: g.isAchieved ? AppColors.textMuted : AppColors.textPrimary,
+                        color: g.isAchieved ? c.textMuted : c.textPrimary,
                       ))),
                 ]),
               )),
@@ -178,7 +180,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
     );
   }
 
-  Widget _buildGoalTile(Goal goal, bool achieved) {
+  Widget _buildGoalTile(Goal goal, bool achieved, ThemePalette c) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: GestureDetector(
@@ -186,10 +188,10 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
         child: Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: AppColors.card,
+            color: c.card,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: achieved ? AppColors.primary.withValues(alpha: 0.3) : AppColors.border,
+              color: achieved ? AppColors.primary.withValues(alpha: 0.3) : c.border,
             ),
           ),
           child: Row(children: [
@@ -203,12 +205,12 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
               child: Text(goal.title,
                   style: AppTextStyles.bodyMedium.copyWith(
                     decoration: achieved ? TextDecoration.lineThrough : null,
-                    color: achieved ? AppColors.textMuted : AppColors.textPrimary,
+                    color: achieved ? c.textMuted : c.textPrimary,
                   )),
             ),
             GestureDetector(
               onTap: () => _confirmDelete(goal),
-              child: Icon(Icons.close, size: 16, color: AppColors.textMuted.withValues(alpha: 0.5)),
+              child: Icon(Icons.close, size: 16, color: c.textMuted.withValues(alpha: 0.5)),
             ),
           ]),
         ),
@@ -217,12 +219,13 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
   }
 
   void _confirmDelete(Goal goal) {
+    final c = AppColors.of(context);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.card,
+        backgroundColor: c.card,
         title: Text('Delete goal?', style: AppTextStyles.labelLarge),
-        content: Text('This will remove "${goal.title}" permanently.', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+        content: Text('This will remove "${goal.title}" permanently.', style: AppTextStyles.bodyMedium.copyWith(color: c.textSecondary)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
           TextButton(
@@ -254,13 +257,14 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
   }
 
   void _showAddGoal() {
+    final c = AppColors.of(context);
     final ctrl = TextEditingController();
     String selectedType = _selectedType;
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setState) => AlertDialog(
-          backgroundColor: AppColors.card,
+          backgroundColor: c.card,
           title: Text('Add $_selectedType Goal', style: AppTextStyles.labelLarge),
           content: Column(mainAxisSize: MainAxisSize.min, children: [
             TextField(
@@ -268,8 +272,8 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
               style: AppTextStyles.bodyMedium,
               decoration: InputDecoration(
                 hintText: 'What do you want to achieve?',
-                hintStyle: TextStyle(color: AppColors.textMuted),
-                filled: true, fillColor: AppColors.surface,
+                hintStyle: TextStyle(color: c.textMuted),
+                filled: true, fillColor: c.surface,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
               ),
             ),
@@ -281,12 +285,12 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    color: isSelected ? AppColors.primary.withValues(alpha: 0.2) : AppColors.surface,
+                    color: isSelected ? AppColors.primary.withValues(alpha: 0.2) : c.surface,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: isSelected ? AppColors.primary : AppColors.border),
+                    border: Border.all(color: isSelected ? AppColors.primary : c.border),
                   ),
                   child: Text('${t[0].toUpperCase()}${t.substring(1)}',
-                      style: AppTextStyles.bodySmall.copyWith(color: isSelected ? AppColors.primary : AppColors.textSecondary)),
+                      style: AppTextStyles.bodySmall.copyWith(color: isSelected ? AppColors.primary : c.textSecondary)),
                 ),
               );
             }).toList()),

@@ -17,10 +17,16 @@ import '../../l10n/app_localizations.dart';
 import '../../core/providers/fellowship_provider.dart';
 import '../../core/providers/todo_provider.dart';
 import '../../core/providers/streak_provider.dart';
+import '../../core/providers/reading_plan_provider.dart';
+import '../../core/services/plan_progress_service.dart';
 import '../../core/providers/soul_log_provider.dart';
+import '../../core/providers/database_provider.dart';
+import '../../core/services/loop_service.dart';
 import '../../services/update_checker.dart';
 import '../../shared/widgets/error_card.dart';
+import '../../shared/widgets/enkutatash_overlay.dart';
 import '../../core/services/streak_service.dart';
+import '../../core/services/witness_service.dart';
 
 class _PillarData {
   final String icon;
@@ -51,12 +57,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool _widgetUpdated = false;
   bool _showCommunity = false;
   bool _soulExpanded = false;
+  bool _verseExpanded = false;
 
   @override
   void initState() {
     super.initState();
     _checkForUpdates();
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkCommunityPrompt());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkEnkutatash());
   }
 
   Future<void> _checkCommunityPrompt() async {
@@ -79,6 +87,46 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       Uri.parse('https://t.me/besletcommunity'),
       mode: LaunchMode.externalApplication,
     );
+  }
+
+  Future<void> _showLoopCompleteDialog(ReadingLoop loop) async {
+    final completed = await showDialog<int>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.of(context).card,
+        title: Text('Loop ${loop.loopNumber} Complete!', style: AppTextStyles.labelLarge),
+        content: Text('You finished ${loop.duration} days of reading. Start a new loop?', style: AppTextStyles.bodyMedium),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, -1), child: const Text('Not now', style: TextStyle(fontFamily: 'Inter'))),
+          TextButton(onPressed: () => Navigator.pop(ctx, 7), child: const Text('7 days', style: TextStyle(fontFamily: 'Inter'))),
+          TextButton(onPressed: () => Navigator.pop(ctx, 30), child: const Text('30 days', style: TextStyle(fontFamily: 'Inter'))),
+          TextButton(onPressed: () => Navigator.pop(ctx, 66), child: const Text('66 days', style: TextStyle(fontFamily: 'Inter'))),
+          TextButton(onPressed: () => Navigator.pop(ctx, 90), child: const Text('90 days', style: TextStyle(fontFamily: 'Inter'))),
+        ],
+      ),
+    );
+    if (completed != null && completed > 0 && mounted) {
+      final db = ref.read(databaseProvider);
+      final user = await db.select(db.users).get().then((u) => u.first);
+      await LoopService.createNextLoop(db, user.biblePlan, completed);
+      ref.invalidate(activeLoopProvider);
+      setState(() {});
+    }
+  }
+
+  Future<void> _checkEnkutatash() async {
+    final now = DateTime.now();
+    if (now.month != 9 || now.day != 11) return;
+    if (now.year != 2026) return;
+    final prefs = await SharedPreferences.getInstance();
+    final shown = prefs.getBool('enkutatashShown') ?? false;
+    if (!shown && mounted) {
+      await prefs.setBool('enkutatashShown', true);
+      Navigator.of(context).push(MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => EnkutatashOverlay(onDismiss: () => Navigator.of(context).pop()),
+      ));
+    }
   }
 
   Future<void> _checkForUpdates() async {
@@ -158,6 +206,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final todayBibleRead = ref.watch(todayBibleReadProvider);
     final todayFellowship = ref.watch(todayFellowshipProvider);
     final todayTodoStats = ref.watch(todayTodoStatsProvider);
+    final readingProgressAsync = ref.watch(readingProgressProvider);
+    final activeLoopAsync = ref.watch(activeLoopProvider);
 
     _isAm = Localizations.localeOf(context).languageCode == 'am';
     final streakState = ref.watch(streakStateProvider).valueOrNull;
@@ -177,6 +227,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         final totalDays = SummerService.totalSummerDays;
         final connectedToday = todayFellowship.valueOrNull != null;
         final todoStats = todayTodoStats.valueOrNull ?? TodoStats(total: 0, completed: 0);
+        final progress = readingProgressAsync.valueOrNull;
+        final loop = activeLoopAsync.valueOrNull;
 
         if (!_widgetUpdated) {
           _widgetUpdated = true;
@@ -201,7 +253,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           _celebrated = false;
         }
 
+        if (loop != null && loop.status == 'active') {
+          final loopStart = DateTime.tryParse(loop.startDate);
+          if (loopStart != null) {
+            final loopDay = DateTime.now().difference(loopStart).inDays + 1;
+            if (loopDay > loop.duration && mounted) {
+              WidgetsBinding.instance.addPostFrameCallback((_) => _showLoopCompleteDialog(loop));
+            }
+          }
+        }
+
         final todayXp = (bibleRead ? 20 : 0) + (prayed ? 15 : 0) + (todoStats.completed * 5) + (skillsMin > 0 ? 10 : 0) + (connectedToday ? 5 : 0);
+        final phaseIdx = ScriptureService.getPhase(daysElapsed);
 
         return Scaffold(
           body: SafeArea(
@@ -212,8 +275,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 child: Column(children: [
                   _buildCompactHeader(context, user, daysElapsed, totalDays, daysRemaining, inSummer, l),
-                  const SizedBox(height: 20),
-                  _buildVerseHero(context),
+                  const SizedBox(height: 16),
+                  _buildLitPath(context, bibleRead, prayed, todoStats, todayXp, tracking, daysElapsed, totalDays, phaseIdx, l),
                   const SizedBox(height: 20),
                   if (streakState?.isSabbathToday == true) ...[
                     _buildSabbathBlessing(context, l),
@@ -221,7 +284,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ],
                   _buildSoulCheckIn(context, todaySoulLog, l),
                   const SizedBox(height: 20),
-                  _buildLitPath(context, bibleRead, prayed, todoStats, todayXp, tracking, daysElapsed, totalDays, l),
+                  if (progress != null) ...[
+                    _buildReadingPlanCard(progress, loop, context, l),
+                    const SizedBox(height: 20),
+                  ],
+                  _buildCollapsibleVerse(context),
                   if (_showCommunity) ...[
                     const SizedBox(height: 16),
                     _buildCommunityBanner(context),
@@ -236,7 +303,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  static const _promptNames = ['📖 Verse', '💝 Appreciate', '🤗 Check in', '💡 Share', '🙏 Pray', '📞 Call', '🕊️ Reflect'];
+  static const _promptNamesAm = ['📖 ጥቅስ', '💝 አመሰግናለሁ', '🤗 ሰላም', '💡 አካፍል', '🙏 ጸልይ', '📞 ደውል', '🕊️ አሰላስል'];
+
   List<_PillarData> _computePillars(bool prayed, bool bibleRead, int skillsMin, bool connectedToday, TodoStats todoStats, AppLocalizations l) {
+    final promptIdx = DateTime.now().weekday - 1;
+    final promptText = connectedToday ? l.fellowshipConnected : (_isAm ? _promptNamesAm[promptIdx] : _promptNames[promptIdx]);
     return [
       _PillarData(
         icon: '🙏', name: l.spiritual,
@@ -256,7 +328,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
       _PillarData(
         icon: '👥', name: l.fellowship,
-        statusText: connectedToday ? l.fellowshipConnected : l.reachOut,
+        statusText: promptText,
         isComplete: connectedToday,
         progress: connectedToday ? 1.0 : 0.0,
         route: '/fellowship',
@@ -269,6 +341,100 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         route: '/daily-todo',
       ),
     ];
+  }
+
+  Widget _buildReadingPlanCard(PlanProgress progress, ReadingLoop? loop, BuildContext context, AppLocalizations l) {
+    final c = AppColors.of(context);
+    final pct = (progress.biblePercent * 100).round();
+    return GestureDetector(
+      onTap: () => context.go('/progress'),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: c.card,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: c.border),
+        ),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            const Text('📖', style: TextStyle(fontSize: 18)),
+            const SizedBox(width: 10),
+            Text('Reading Plan', style: AppTextStyles.labelLarge.copyWith(fontSize: 14)),
+            const Spacer(),
+            Text('$pct%',
+                style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.primary, fontWeight: FontWeight.w700, fontSize: 13)),
+          ]),
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(3),
+            child: LinearProgressIndicator(
+              value: progress.biblePercent,
+              backgroundColor: c.border,
+              valueColor: const AlwaysStoppedAnimation(AppColors.primary),
+              minHeight: 6,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text('${progress.totalChaptersRead} of ${progress.totalChaptersInBible} chapters',
+              style: AppTextStyles.bodySmall.copyWith(color: c.textSecondary, fontSize: 12)),
+          if (loop != null) ...[
+            const SizedBox(height: 6),
+            Text('Loop ${loop.loopNumber}: Day ${_dayInLoop(loop)} of ${loop.duration}',
+                style: AppTextStyles.bodySmall.copyWith(color: c.textMuted, fontSize: 11)),
+          ],
+          if (progress.currentBookName != null) ...[
+            const SizedBox(height: 4),
+            Text('Currently: ${progress.currentBookName} Ch. ${progress.currentBookChapter} of ${progress.currentBookTotal}',
+                style: AppTextStyles.bodySmall.copyWith(color: c.textMuted, fontSize: 11)),
+          ],
+        ]),
+      ),
+    );
+  }
+
+  Widget _buildCollapsibleVerse(BuildContext context) {
+    final c = AppColors.of(context);
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: c.card,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: c.border),
+      ),
+      child: Column(children: [
+        InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: () => setState(() => _verseExpanded = !_verseExpanded),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(children: [
+              const Text('✨', style: TextStyle(fontSize: 20)),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(_isAm ? 'የዛሬው ጥቅስ' : 'Verse of the Day',
+                    style: AppTextStyles.labelLarge.copyWith(color: c.textPrimary)),
+              ),
+              Icon(_verseExpanded ? Icons.expand_less : Icons.expand_more, color: c.textMuted),
+            ]),
+          ),
+        ),
+        if (_verseExpanded) ...[
+          Divider(height: 1, color: c.border),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: _buildVerseHero(context),
+          ),
+        ],
+      ]),
+    );
+  }
+
+  int _dayInLoop(ReadingLoop loop) {
+    final start = DateTime.tryParse(loop.startDate);
+    if (start == null) return 1;
+    return (DateTime.now().difference(start).inDays + 1).clamp(1, loop.duration);
   }
 
   Widget _buildCommunityBanner(BuildContext context) {
@@ -302,7 +468,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const SizedBox(height: 4),
               Text(
                 'Share your summer experience, day-to-day lifestyle, and encourage one another in our Telegram community.',
-                style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary, fontSize: 11, height: 1.4),
+                style: AppTextStyles.bodySmall.copyWith(color: AppColors.of(context).textSecondary, fontSize: 11, height: 1.4),
               ),
             ]),
           ),
@@ -310,7 +476,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             onTap: _dismissCommunity,
             child: Padding(
               padding: const EdgeInsets.only(left: 4),
-              child: Icon(Icons.close, size: 18, color: AppColors.textMuted),
+              child: Icon(Icons.close, size: 18, color: AppColors.of(context).textMuted),
             ),
           ),
         ]),
@@ -357,7 +523,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: AppColors.of(context).card,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
       ),
@@ -372,10 +538,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Expanded(
               child: Text(
                 isAm ? 'ዛሬ እንዴት ነህ: ${_moodLabel(log.mood, isAm)}' : 'How you are today: ${_moodLabel(log.mood, isAm)}',
-                style: AppTextStyles.labelLarge.copyWith(color: AppColors.textSecondary),
+                style: AppTextStyles.labelLarge.copyWith(color: AppColors.of(context).textSecondary),
               ),
             ),
-            const Icon(Icons.edit_square, size: 18, color: AppColors.textMuted),
+            Icon(Icons.edit_square, size: 18, color: AppColors.of(context).textMuted),
           ]),
         ),
       ),
@@ -387,9 +553,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: AppColors.of(context).card,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.of(context).border),
       ),
       child: Column(children: [
         InkWell(
@@ -402,19 +568,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(isAm ? 'ነፍስህ እንዴት ናት?' : 'How\'s your soul?',
-                    style: AppTextStyles.labelLarge.copyWith(color: AppColors.textPrimary)),
+                    style: AppTextStyles.labelLarge.copyWith(color: AppColors.of(context).textPrimary)),
               ),
-              Icon(_soulExpanded ? Icons.expand_less : Icons.expand_more, color: AppColors.textMuted),
+              Icon(_soulExpanded ? Icons.expand_less : Icons.expand_more, color: AppColors.of(context).textMuted),
             ]),
           ),
         ),
         if (_soulExpanded) ...[
-          const Divider(height: 1, color: AppColors.border),
+          Divider(height: 1, color: AppColors.of(context).border),
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(children: [
               Text(isAm ? 'ልብህ ላይ ያለው ምንድን ነው?' : 'What is on your heart?',
-                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted)),
+                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.of(context).textMuted)),
               const SizedBox(height: 12),
               Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
                 _moodBtn(1, '😢'), _moodBtn(2, '😕'), _moodBtn(3, '😐'),
@@ -433,9 +599,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Container(
         width: 44, height: 44,
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: AppColors.of(context).surface,
           borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: AppColors.of(context).border),
         ),
         child: Center(child: Text(emoji, style: const TextStyle(fontSize: 22))),
       ),
@@ -460,7 +626,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void _editSoulCheckIn(SoulLogData log) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.card,
+      backgroundColor: AppColors.of(context).card,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (ctx) => SafeArea(
         child: Padding(
@@ -511,19 +677,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         const Spacer(),
         Text('$greeting, ${user.name.split(' ').first}',
-            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary)),
+            style: AppTextStyles.bodySmall.copyWith(color: AppColors.of(context).textSecondary)),
       ]),
     ]);
   }
 
-  Widget _buildLitPath(BuildContext context, bool bibleRead, bool prayed, TodoStats todoStats, int todayXp, TrackingData? tracking, int daysElapsed, int totalDays, AppLocalizations l) {
+  Widget _buildLitPath(BuildContext context, bool bibleRead, bool prayed, TodoStats todoStats, int todayXp, TrackingData? tracking, int daysElapsed, int totalDays, int phaseIdx, AppLocalizations l) {
     final tasksDone = todoStats.total > 0 && todoStats.completed >= todoStats.total;
     final step1done = bibleRead;
     final step2done = bibleRead && prayed;
     final step3done = bibleRead && prayed && tasksDone;
     final currentStep = step1done ? (step2done ? (step3done ? 3 : 2) : 1) : 0;
 
-    final phaseIdx = ScriptureService.getPhase(daysElapsed);
     final phaseColors = [const Color(0xFF4CAF50), const Color(0xFF2196F3), const Color(0xFFFF6F00), const Color(0xFF9C27B0)];
     final phaseNames = ['Discipline', 'Faith', 'Obedience', 'Impact'];
     final phaseColor = phaseColors[phaseIdx];
@@ -554,7 +719,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               width: 1,
               height: 16,
               decoration: BoxDecoration(
-                color: step1done ? AppColors.progressGreen : AppColors.border,
+                color: step1done ? AppColors.progressGreen : AppColors.of(context).border,
               ),
             ),
           ),
@@ -582,7 +747,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               width: 1,
               height: 16,
               decoration: BoxDecoration(
-                color: step2done ? AppColors.progressGreen : AppColors.border,
+                color: step2done ? AppColors.progressGreen : AppColors.of(context).border,
               ),
             ),
           ),
@@ -602,7 +767,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         onView: step3done ? () => context.go('/daily-todo') : null,
       ),
       const SizedBox(height: 16),
-      _buildRitualFooter(streak, todayXp, phaseName, phaseColor, daysElapsed, totalDays, l),
+      _buildRitualFooter(streak, todayXp, phaseName, phaseColor, daysElapsed, totalDays, phaseIdx, l),
     ]);
   }
 
@@ -620,8 +785,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     VoidCallback? onView,
   }) {
     final opacity = isLocked ? 0.35 : (isComplete ? 0.7 : 1.0);
-    final bgColor = isCurrent ? AppColors.cardElevated : AppColors.card;
-    final borderColor = isCurrent ? accent.withValues(alpha: 0.4) : (isComplete ? accent.withValues(alpha: 0.2) : AppColors.border);
+    final bgColor = isCurrent ? AppColors.cardElevated : AppColors.of(context).card;
+    final borderColor = isCurrent ? accent.withValues(alpha: 0.4) : (isComplete ? accent.withValues(alpha: 0.2) : AppColors.of(context).border);
     final borderWidth = isCurrent ? 1.0 : 0.5;
 
     return GestureDetector(
@@ -644,8 +809,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const SizedBox(width: 10),
               Expanded(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(label, style: AppTextStyles.labelLarge.copyWith(fontSize: 14, color: isComplete ? accent : AppColors.textPrimary)),
-                  Text(purpose, style: AppTextStyles.bodySmall.copyWith(fontSize: 10, color: AppColors.textMuted, fontStyle: FontStyle.italic)),
+                  Text(label, style: AppTextStyles.labelLarge.copyWith(fontSize: 14, color: isComplete ? accent : AppColors.of(context).textPrimary)),
+                  Text(purpose, style: AppTextStyles.bodySmall.copyWith(fontSize: 10, color: AppColors.of(context).textMuted, fontStyle: FontStyle.italic)),
                 ]),
               ),
               if (isComplete)
@@ -655,7 +820,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   child: Icon(Icons.check, size: 14, color: accent),
                 )
               else if (isLocked)
-                Icon(Icons.lock_outline, size: 16, color: AppColors.textMuted),
+                Icon(Icons.lock_outline, size: 16, color: AppColors.of(context).textMuted),
             ]),
             if (actionLabel != null && !isLocked) ...[
               const SizedBox(height: 12),
@@ -680,24 +845,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildRitualFooter(int streak, int todayXp, String phaseName, Color phaseColor, int daysElapsed, int totalDays, AppLocalizations l) {
+  Widget _buildRitualFooter(int streak, int todayXp, String phaseName, Color phaseColor, int daysElapsed, int totalDays, int phaseIdx, AppLocalizations l) {
     final progress = totalDays > 0 ? daysElapsed / totalDays : 0.0;
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: AppColors.of(context).card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border, width: 0.5),
+        border: Border.all(color: AppColors.of(context).border, width: 0.5),
       ),
       child: Column(children: [
         Row(children: [
           Row(children: [
             Text(StreakService.growthEmoji(streak), style: const TextStyle(fontSize: 14)),
             const SizedBox(width: 4),
-            Text('$streak days', style: AppTextStyles.bodySmall.copyWith(fontSize: 11, color: AppColors.textPrimary)),
+            Text('$streak days', style: AppTextStyles.bodySmall.copyWith(fontSize: 11, color: AppColors.of(context).textPrimary)),
           ]),
           const SizedBox(width: 16),
-          Container(width: 1, height: 12, color: AppColors.border),
+          Container(width: 1, height: 12, color: AppColors.of(context).border),
           const SizedBox(width: 16),
           Row(children: [
             Icon(Icons.auto_awesome, size: 13, color: AppColors.primary),
@@ -725,15 +890,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               borderRadius: BorderRadius.circular(2),
               child: LinearProgressIndicator(
                 value: progress,
-                backgroundColor: AppColors.border,
+                backgroundColor: AppColors.of(context).border,
                 valueColor: AlwaysStoppedAnimation(phaseColor),
                 minHeight: 3,
               ),
             ),
           ),
           const SizedBox(width: 8),
-          Text('Day $daysElapsed of $totalDays', style: AppTextStyles.bodySmall.copyWith(fontSize: 9, color: AppColors.textMuted)),
+          Text('Day $daysElapsed of $totalDays', style: AppTextStyles.bodySmall.copyWith(fontSize: 9, color: AppColors.of(context).textMuted)),
         ]),
+        const SizedBox(height: 8),
+        Text(
+          WitnessService.phaseMessage(phaseIdx, daysElapsed, _isAm),
+          style: TextStyle(fontSize: 10, color: phaseColor, fontWeight: FontWeight.w500, height: 1.3),
+        ),
       ]),
     );
   }
@@ -805,7 +975,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
           decoration: BoxDecoration(
-            color: AppColors.card.withValues(alpha: 0.6),
+            color: AppColors.of(context).card.withValues(alpha: 0.6),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(scripture.reference, style: AppTextStyles.bodySmall.copyWith(color: AppColors.primary, fontWeight: FontWeight.w700)),
@@ -816,12 +986,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             width: double.infinity,
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.card.withValues(alpha: 0.4),
+              color: AppColors.of(context).card.withValues(alpha: 0.4),
               borderRadius: BorderRadius.circular(12),
               border: Border(left: BorderSide(color: AppColors.primary.withValues(alpha: 0.2), width: 2)),
             ),
             child: Text(scripture.textAm!,
-                style: AppTextStyles.amharicBody.copyWith(fontSize: 13, height: 1.6, color: AppColors.textSecondary),
+                style: AppTextStyles.amharicBody.copyWith(fontSize: 13, height: 1.6, color: AppColors.of(context).textSecondary),
                 textAlign: TextAlign.center),
           ),
         ],

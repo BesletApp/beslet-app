@@ -16,6 +16,7 @@ class _MiniPlayerBarState extends ConsumerState<MiniPlayerBar> {
 
   @override
   Widget build(BuildContext context) {
+    final c = AppColors.of(context);
     final playerState = ref.watch(audioPlayerProvider);
 
     if (!playerState.isActive) return const SizedBox.shrink();
@@ -34,15 +35,15 @@ class _MiniPlayerBarState extends ConsumerState<MiniPlayerBar> {
         child: Container(
           height: 20,
           decoration: BoxDecoration(
-            color: AppColors.card,
-            border: Border(top: BorderSide(color: AppColors.border)),
+            color: c.card,
+            border: Border(top: BorderSide(color: c.border)),
           ),
           child: Row(children: [
             Expanded(
               child: ClipRRect(
                 child: LinearProgressIndicator(
                   value: progress,
-                  backgroundColor: AppColors.border,
+                  backgroundColor: c.border,
                   valueColor: const AlwaysStoppedAnimation(AppColors.audioBlue),
                   minHeight: 20,
                 ),
@@ -61,8 +62,8 @@ class _MiniPlayerBarState extends ConsumerState<MiniPlayerBar> {
     return Container(
       height: 44,
       decoration: BoxDecoration(
-        color: AppColors.card,
-        border: Border(top: BorderSide(color: AppColors.border)),
+        color: c.card,
+        border: Border(top: BorderSide(color: c.border)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -70,9 +71,9 @@ class _MiniPlayerBarState extends ConsumerState<MiniPlayerBar> {
           ClipRRect(
             child: LinearProgressIndicator(
               value: progress,
-              backgroundColor: AppColors.border,
-              valueColor: const AlwaysStoppedAnimation(AppColors.audioBlue),
-              minHeight: 2,
+                backgroundColor: c.border,
+                valueColor: const AlwaysStoppedAnimation(AppColors.audioBlue),
+                minHeight: 2,
             ),
           ),
           Expanded(
@@ -84,11 +85,11 @@ class _MiniPlayerBarState extends ConsumerState<MiniPlayerBar> {
                 Expanded(
                   child: Text(
                     chapter.reference,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                      color: c.textPrimary,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -98,10 +99,10 @@ class _MiniPlayerBarState extends ConsumerState<MiniPlayerBar> {
                     padding: const EdgeInsets.only(right: 4),
                     child: Text(
                       '${current + 1}/$total',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 9,
-                        color: AppColors.textMuted,
+                        color: c.textMuted,
                       ),
                     ),
                   ),
@@ -109,7 +110,7 @@ class _MiniPlayerBarState extends ConsumerState<MiniPlayerBar> {
                   icon: Icon(
                     isPlaying ? Icons.pause : Icons.play_arrow,
                     size: 18,
-                    color: AppColors.textPrimary,
+                    color: c.textPrimary,
                   ),
                   onPressed: () =>
                       ref.read(audioPlayerProvider.notifier).togglePlayPause(),
@@ -117,7 +118,7 @@ class _MiniPlayerBarState extends ConsumerState<MiniPlayerBar> {
                   constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.keyboard_arrow_down, size: 14, color: AppColors.textMuted),
+                  icon: Icon(Icons.keyboard_arrow_down, size: 14, color: c.textMuted),
                   onPressed: () => setState(() => _collapsed = true),
                   padding: const EdgeInsets.all(6),
                   constraints: const BoxConstraints(minWidth: 24, minHeight: 24),

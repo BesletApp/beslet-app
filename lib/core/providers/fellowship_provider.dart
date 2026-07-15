@@ -24,16 +24,17 @@ final weeklyFellowshipCountProvider = FutureProvider<int>((ref) async {
 class FellowshipNotifier extends AsyncNotifier<void> {
   @override FutureOr<void> build() {}
 
-  Future<void> logConnection({String? contactName, String? note}) async {
+  Future<void> logConnection({String? contactName, String? note, int? promptType}) async {
     final db = ref.read(databaseProvider);
     final today = DateTime.now().toIso8601String().substring(0, 10);
+    final pt = promptType ?? DateTime.now().weekday - 1;
     final existing = await (db.select(db.fellowshipLogs)..where((t) => t.date.equals(today))).get();
     if (existing.isNotEmpty) {
       await (db.update(db.fellowshipLogs)..where((t) => t.date.equals(today)))
-          .write(FellowshipLogsCompanion(contactName: Value(contactName), note: Value(note)));
+          .write(FellowshipLogsCompanion(contactName: Value(contactName), note: Value(note), promptType: Value(pt)));
     } else {
       await db.into(db.fellowshipLogs).insert(FellowshipLogsCompanion.insert(
-        id: const Uuid().v4(), date: today, contactName: Value<String?>(contactName), note: Value<String?>(note), createdAt: DateTime.now().toIso8601String(),
+        id: const Uuid().v4(), date: today, contactName: Value<String?>(contactName), note: Value<String?>(note), createdAt: DateTime.now().toIso8601String(), promptType: Value(pt),
       ));
     }
     ref.invalidate(todayFellowshipProvider);

@@ -20,6 +20,7 @@ class StudyGuideCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = AppColors.of(context);
     final theme = Theme.of(context);
     final ctx = StudyData.getContext(bookId, isAmharic);
     final daily = StudyData.forDay(day, planId);
@@ -32,22 +33,22 @@ class StudyGuideCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _section(theme, '📖 ${isAmharic ? 'የመጽሐፉ ዳራ' : 'Book Context'}', ctx, null),
+          _section(c, theme, '📖 ${isAmharic ? 'የመጽሐፉ ዳራ' : 'Book Context'}', ctx, null),
           const SizedBox(height: 12),
-          _section(theme, '💡 ${isAmharic ? 'ትልቁ ሐሳብ' : 'One Big Idea'}', bigIdea, null),
+          _section(c, theme, '💡 ${isAmharic ? 'ትልቁ ሐሳብ' : 'One Big Idea'}', bigIdea, null),
           const SizedBox(height: 12),
-          _section(theme, '🤔 ${isAmharic ? 'ማሰላሰያ' : 'Reflection Question'}', question, context),
+          _section(c, theme, '🤔 ${isAmharic ? 'ማሰላሰያ' : 'Reflection Question'}', question, context),
         ],
       ),
     );
   }
 
-  Widget _section(ThemeData theme, String title, String body, BuildContext? ctx) {
+  Widget _section(ThemePalette c, ThemeData theme, String title, String body, BuildContext? ctx) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: c.card,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -63,7 +64,7 @@ class StudyGuideCard extends StatelessWidget {
               decoration: InputDecoration(
                 hintText: isAmharic ? 'መልስህን ጻፍ...' : 'Write your answer...',
                 filled: true,
-                fillColor: AppColors.background,
+                fillColor: c.background,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 contentPadding: const EdgeInsets.all(12),
               ),

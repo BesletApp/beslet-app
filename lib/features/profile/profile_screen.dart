@@ -71,7 +71,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final l = AppLocalizations.of(context)!;
     final profileAsync = ref.watch(profileProvider);
     final dailyXpAsync = ref.watch(dailyXpProvider);
-    final bg = AppColors.background;
+    final bg = AppColors.of(context).background;
 
     return Scaffold(
       backgroundColor: bg,
@@ -82,7 +82,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
       body: RefreshIndicator(
         color: AppColors.primary,
-        backgroundColor: AppColors.card,
+        backgroundColor: AppColors.of(context).card,
         onRefresh: () async {
           ref.invalidate(profileProvider);
           ref.invalidate(downloadListProvider);
@@ -156,7 +156,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             Positioned(bottom: 0, right: 0,
               child: Container(
                 padding: const EdgeInsets.all(3),
-                decoration: BoxDecoration(color: AppColors.card, shape: BoxShape.circle, border: Border.all(color: AppColors.background, width: 2)),
+                decoration: BoxDecoration(color: AppColors.of(context).card, shape: BoxShape.circle, border: Border.all(color: AppColors.of(context).background, width: 2)),
                 child: const Icon(Icons.edit, size: 14, color: AppColors.primary),
               ),
             ),
@@ -164,7 +164,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
       ),
       const SizedBox(height: 10),
-      Text(p.displayName, style: TextStyle(fontFamily: 'CormorantGaramond', fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+      Text(p.displayName, style: TextStyle(fontFamily: 'CormorantGaramond', fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.of(context).textPrimary)),
       const SizedBox(height: 4),
       Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
@@ -201,13 +201,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       decoration: BoxDecoration(
         color: c.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.border, width: 0.5),
+        border: Border.all(color: AppColors.of(context).border, width: 0.5),
       ),
       child: Column(children: [
         Icon(ic, size: 16, color: c),
         const SizedBox(height: 3),
         Text(val, style: TextStyle(fontFamily: 'Inter', fontSize: 15, fontWeight: FontWeight.w700, color: c)),
-        Text(lbl, style: const TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.textMuted)),
+        Text(lbl, style: TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.of(context).textMuted)),
       ]),
     ));
   }
@@ -217,32 +217,32 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final nameCtl = TextEditingController(text: p.displayName);
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.card,
+      backgroundColor: AppColors.of(context).card,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) {
         return Padding(
           padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom, left: 24, right: 24, top: 24),
           child: StatefulBuilder(builder: (ctx, setSheetState) {
             return Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.border, borderRadius: BorderRadius.circular(2)))),
+              Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.of(context).border, borderRadius: BorderRadius.circular(2)))),
               const SizedBox(height: 16),
-              Text(l.editProfile, style: const TextStyle(fontFamily: 'Inter', fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+              Text(l.editProfile, style: TextStyle(fontFamily: 'Inter', fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.of(context).textPrimary)),
               const SizedBox(height: 20),
-              Text(l.displayName, style: const TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+              Text(l.displayName, style: TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.of(context).textSecondary)),
               const SizedBox(height: 6),
               TextField(
                 controller: nameCtl,
-                style: const TextStyle(fontFamily: 'Inter', fontSize: 15, color: AppColors.textPrimary),
+                style: TextStyle(fontFamily: 'Inter', fontSize: 15, color: AppColors.of(context).textPrimary),
                 decoration: InputDecoration(
                   hintText: l.localeName == 'am' ? 'ስምህን አስገባ' : 'Enter your name',
                   filled: true,
-                  fillColor: AppColors.background,
+                  fillColor: AppColors.of(context).background,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 ),
               ),
               const SizedBox(height: 16),
-              Text(l.localeName == 'am' ? 'የአዶ ቀለም' : 'Avatar Color', style: const TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+              Text(l.localeName == 'am' ? 'የአዶ ቀለም' : 'Avatar Color', style: TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.of(context).textSecondary)),
               const SizedBox(height: 8),
               Row(children: _avatarColors.entries.map((e) {
                 final isSelected = _avatarColor == e.key;
@@ -258,7 +258,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       decoration: BoxDecoration(
                         color: e.value,
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: isSelected ? AppColors.textPrimary : Colors.transparent, width: 2),
+                        border: Border.all(color: isSelected ? AppColors.of(context).textPrimary : Colors.transparent, width: 2),
                       ),
                       child: isSelected ? const Center(child: Icon(Icons.check, size: 18, color: Colors.white)) : null,
                     ),
@@ -322,17 +322,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: AppColors.of(context).card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border, width: 0.5),
+        border: Border.all(color: AppColors.of(context).border, width: 0.5),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
           const Icon(Icons.emoji_events, size: 14, color: AppColors.primary),
           const SizedBox(width: 6),
-          Text('Badges', style: TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+          Text('Badges', style: TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.of(context).textSecondary)),
           const Spacer(),
-          Text('${p.badges.length}/${allBadges.length}', style: TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.textMuted)),
+          Text('${p.badges.length}/${allBadges.length}', style: TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.of(context).textMuted)),
         ]),
         const SizedBox(height: 8),
         SizedBox(
@@ -349,11 +349,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 child: Container(
                   width: 48,
                   decoration: BoxDecoration(
-                    color: earned ? AppColors.primary.withValues(alpha: 0.1) : AppColors.border.withValues(alpha: 0.15),
+                    color: earned ? AppColors.primary.withValues(alpha: 0.1) : AppColors.of(context).border.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: earned ? AppColors.primary.withValues(alpha: 0.2) : AppColors.border.withValues(alpha: 0.1)),
+                    border: Border.all(color: earned ? AppColors.primary.withValues(alpha: 0.2) : AppColors.of(context).border.withValues(alpha: 0.1)),
                   ),
-                  child: Icon(b.$2, size: 20, color: earned ? AppColors.primary : AppColors.textMuted.withValues(alpha: 0.3)),
+                  child: Icon(b.$2, size: 20, color: earned ? AppColors.primary : AppColors.of(context).textMuted.withValues(alpha: 0.3)),
                 ),
               );
             },
@@ -382,7 +382,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           return SizedBox(
             width: size, height: 82,
             child: Material(
-              color: AppColors.card,
+              color: AppColors.of(context).card,
               borderRadius: BorderRadius.circular(12),
               child: InkWell(
                 borderRadius: BorderRadius.circular(12),
@@ -390,19 +390,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 child: Stack(children: [
                   Padding(padding: const EdgeInsets.all(12), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Row(children: [
-                      Icon(c.icon, size: 16, color: c.value > 0 ? AppColors.primary : AppColors.textMuted.withValues(alpha: 0.3)),
+                      Icon(c.icon, size: 16, color: c.value > 0 ? AppColors.primary : AppColors.of(context).textMuted.withValues(alpha: 0.3)),
                       const SizedBox(width: 6),
-                      Text(c.label, style: TextStyle(fontFamily: 'Inter', fontSize: 11, fontWeight: FontWeight.w700, color: c.value > 0 ? AppColors.textPrimary : AppColors.textMuted.withValues(alpha: 0.3))),
+                      Text(c.label, style: TextStyle(fontFamily: 'Inter', fontSize: 11, fontWeight: FontWeight.w700, color: c.value > 0 ? AppColors.of(context).textPrimary : AppColors.of(context).textMuted.withValues(alpha: 0.3))),
                     ]),
                     const SizedBox(height: 6),
                     if (c.value > 0)
-                      Text(c.detail, style: const TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.textSecondary))
+                      Text(c.detail, style: TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.of(context).textSecondary))
                     else
-                      Text(c.emptyMsg, style: TextStyle(fontFamily: 'Inter', fontSize: 9, color: AppColors.textMuted.withValues(alpha: 0.5))),
+                      Text(c.emptyMsg, style: TextStyle(fontFamily: 'Inter', fontSize: 9, color: AppColors.of(context).textMuted.withValues(alpha: 0.5))),
                     const Spacer(),
                     ClipRRect(borderRadius: BorderRadius.circular(1), child: Container(
                       height: 2,
-                      color: AppColors.border,
+                      color: AppColors.of(context).border,
                       alignment: Alignment.centerLeft,
                       child: FractionallySizedBox(
                         widthFactor: c.value > 0 ? (c.value / maxVal).clamp(0.05, 1.0) : 0,
@@ -444,7 +444,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       margin: const EdgeInsets.only(top: 8),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: AppColors.of(context).card,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
         boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.05), blurRadius: 8)],
@@ -456,7 +456,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           child: Icon(_icons[i], size: 18, color: AppColors.primary),
         ),
         const SizedBox(width: 10),
-        Expanded(child: Text(msgs[i], style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary, height: 1.4))),
+        Expanded(child: Text(msgs[i], style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.of(context).textSecondary, height: 1.4))),
       ]),
     );
   }
@@ -469,15 +469,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: AppColors.of(context).card,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border, width: 0.5),
+        border: Border.all(color: AppColors.of(context).border, width: 0.5),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
           const Icon(Icons.timeline, size: 16, color: AppColors.primary),
           const SizedBox(width: 6),
-          Text(l.spiritualGrowth, style: const TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+          Text(l.spiritualGrowth, style: TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.of(context).textPrimary)),
           const Spacer(),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -506,7 +506,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         const SizedBox(height: 12),
         Row(children: [
           const Spacer(),
-          Text('${p.xp} XP · ${l.keepGoing}', style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textSecondary)),
+          Text('${p.xp} XP · ${l.keepGoing}', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.of(context).textSecondary)),
         ]),
       ]),
     );
@@ -520,24 +520,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         child: Column(children: [
           Row(children: [
             if (i > 0)
-              Expanded(child: Container(height: 2, color: i <= currentPhase ? AppColors.primary : AppColors.border.withValues(alpha: 0.3))),
+              Expanded(child: Container(height: 2, color: i <= currentPhase ? AppColors.primary : AppColors.of(context).border.withValues(alpha: 0.3))),
             Container(
               width: isActive ? 24 : 18, height: isActive ? 24 : 18,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: isPast ? AppColors.primary : (isActive ? AppColors.card : AppColors.border.withValues(alpha: 0.15)),
+                color: isPast ? AppColors.primary : (isActive ? AppColors.of(context).card : AppColors.of(context).border.withValues(alpha: 0.15)),
                 border: Border.all(
-                  color: isActive ? AppColors.primary : (isPast ? AppColors.primary : AppColors.border.withValues(alpha: 0.3)),
+                  color: isActive ? AppColors.primary : (isPast ? AppColors.primary : AppColors.of(context).border.withValues(alpha: 0.3)),
                   width: isActive ? 2.5 : 1.5,
                 ),
               ),
               child: isPast ? const Icon(Icons.check, size: 10, color: Color(0xFF0A0A0A)) : (isActive ? const Icon(Icons.eco, size: 12, color: AppColors.primary) : null),
             ),
             if (i < 3)
-              Expanded(child: Container(height: 2, color: i < currentPhase ? AppColors.primary : AppColors.border.withValues(alpha: 0.3))),
+              Expanded(child: Container(height: 2, color: i < currentPhase ? AppColors.primary : AppColors.of(context).border.withValues(alpha: 0.3))),
           ]),
           const SizedBox(height: 4),
-          Text(_phases[i], style: TextStyle(fontSize: 7.5, fontWeight: FontWeight.w600, color: isActive ? AppColors.primary : AppColors.textMuted)),
+          Text(_phases[i], style: TextStyle(fontSize: 7.5, fontWeight: FontWeight.w600, color: isActive ? AppColors.primary : AppColors.of(context).textMuted)),
         ]),
       );
     }));
@@ -545,9 +545,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Widget _journeyStat(IconData ic, String text, String? sub) {
     return Row(mainAxisSize: MainAxisSize.min, children: [
-      Icon(ic, size: 13, color: AppColors.textMuted),
+      Icon(ic, size: 13, color: AppColors.of(context).textMuted),
       const SizedBox(width: 6),
-      Text(text, style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary)),
+      Text(text, style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.of(context).textSecondary)),
     ]);
   }
 
@@ -557,7 +557,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final spots = dailyXp.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value)).toList();
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text('Weekly XP trend', style: TextStyle(fontFamily: 'Inter', fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.textMuted)),
+      Text('Weekly XP trend', style: TextStyle(fontFamily: 'Inter', fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.of(context).textMuted)),
       const SizedBox(height: 6),
       SizedBox(
         height: 50,
@@ -602,17 +602,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget _zone4(AppLocalizations l) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: AppColors.of(context).card,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border, width: 0.5),
+        border: Border.all(color: AppColors.of(context).border, width: 0.5),
       ),
       child: Column(children: [
         _tile(Icons.language, l.language, () => context.go('/settings?section=language')),
-        const Divider(height: 1, color: AppColors.border),
+        Divider(height: 1, color: AppColors.of(context).border),
         _tile(Icons.palette, l.appearance, () => context.go('/settings?section=appearance')),
-        const Divider(height: 1, color: AppColors.border),
+        Divider(height: 1, color: AppColors.of(context).border),
         _tile(Icons.notifications_outlined, l.reminders, () => context.go('/settings?section=reminders')),
-        const Divider(height: 1, color: AppColors.border),
+        Divider(height: 1, color: AppColors.of(context).border),
         _tile(Icons.info_outline, l.aboutApp, () => context.go('/settings?section=about')),
       ]),
     );
@@ -621,8 +621,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget _tile(IconData ic, String t, VoidCallback onTap) {
     return ListTile(
       leading: Icon(ic, color: AppColors.primary, size: 20),
-      title: Text(t, style: const TextStyle(fontFamily: 'Inter', fontSize: 14, color: AppColors.textPrimary)),
-      trailing: const Icon(Icons.chevron_right, color: AppColors.textMuted, size: 18),
+      title: Text(t, style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: AppColors.of(context).textPrimary)),
+      trailing: Icon(Icons.chevron_right, color: AppColors.of(context).textMuted, size: 18),
       onTap: onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16),
       dense: true,

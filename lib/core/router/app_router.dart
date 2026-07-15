@@ -11,6 +11,7 @@ import '../../features/habits/habits_screen.dart';
 import '../../features/spiritual/prayer_screen.dart';
 import '../../features/spiritual/bible_screen.dart';
 import '../../features/spiritual/reflection_journal_screen.dart';
+import '../../features/spiritual/book_journal_screen.dart';
 import '../../features/skills/skills_screen.dart';
 import '../../features/progress/progress_screen.dart';
 import '../../features/reflection/reflection_screen.dart';
@@ -25,17 +26,19 @@ class AppRouter {
     initialLocation: '/splash',
     errorBuilder: (context, state) {
       final l = AppLocalizations.of(context)!;
+      final c = AppColors.of(context);
+      final t = AppTextStyles.of(context);
       return Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: c.background,
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(40),
             child: Column(mainAxisSize: MainAxisSize.min, children: [
               const Text('🙏', style: TextStyle(fontSize: 64)),
               const SizedBox(height: 16),
-              Text(l.pageNotFound, style: AppTextStyles.displaySmall),
+              Text(l.pageNotFound, style: t.displaySmall),
               const SizedBox(height: 8),
-              Text(state.error?.message ?? 'The page you\'re looking for doesn\'t exist.', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+              Text(state.error?.message ?? 'The page you\'re looking for doesn\'t exist.', style: t.bodyMedium.copyWith(color: c.textSecondary)),
               const SizedBox(height: 24),
               ElevatedButton(onPressed: () => context.go('/home'), child: Text(l.goHome)),
             ]),
@@ -67,6 +70,7 @@ class AppRouter {
               return BibleScreen(initialBookId: book, initialChapter: chapter);
             }),
             GoRoute(path: '/bible/journal', builder: (_, __) => const ReflectionJournalScreen()),
+            GoRoute(path: '/bible/book-journal', builder: (_, __) => const BookJournalScreen()),
           ]),
           StatefulShellBranch(routes: [
             GoRoute(path: '/progress', builder: (_, __) => const ProgressScreen()),

@@ -28,6 +28,7 @@ class _VerseListViewState extends ConsumerState<VerseListView> {
     final playerState = ref.watch(audioPlayerProvider);
     final verses = playerState.verseTexts;
     final numbers = playerState.verseNumbers;
+    final c = AppColors.of(context);
     final isAm = widget.isAm;
 
     if (verses.isEmpty) {
@@ -35,21 +36,21 @@ class _VerseListViewState extends ConsumerState<VerseListView> {
         return Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: AppColors.card,
+            color: c.card,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: c.border),
           ),
           child: Column(children: [
-            Icon(Icons.wifi_off, size: 32, color: AppColors.textMuted.withValues(alpha: 0.4)),
+            Icon(Icons.wifi_off, size: 32, color: c.textMuted.withValues(alpha: 0.4)),
             const SizedBox(height: 12),
             Text(
               isAm ? 'በይነመረብ አልተገኘም' : 'No internet connection',
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary, fontSize: 14),
+              style: AppTextStyles.bodyMedium.copyWith(color: c.textSecondary, fontSize: 14),
             ),
             const SizedBox(height: 6),
             Text(
               isAm ? 'እባክዎ ይገናኙና እንደገና ይሞክሩ' : 'Please connect and try again',
-              style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted, fontSize: 12),
+              style: AppTextStyles.bodySmall.copyWith(color: c.textMuted, fontSize: 12),
             ),
           ]),
         );
@@ -70,9 +71,9 @@ class _VerseListViewState extends ConsumerState<VerseListView> {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: c.card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: c.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,54 +82,53 @@ class _VerseListViewState extends ConsumerState<VerseListView> {
             padding: const EdgeInsets.fromLTRB(14, 12, 14, 4),
             child: Text(
               playerState.chapter?.reference ?? '',
-              style: const TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+              style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w700, color: c.textPrimary),
             ),
           ),
-          const Divider(height: 1, color: AppColors.border),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: 320),
-            child: ListView.builder(
-              controller: _scrollCtrl,
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              itemCount: verses.length,
-              itemBuilder: (context, index) {
-                final isCurrent = index == current;
-                final verse = verses[index];
-                final number = index < numbers.length ? numbers[index] : '${index + 1}';
+          Divider(height: 1, color: c.border),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            controller: _scrollCtrl,
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            itemCount: verses.length,
+            itemBuilder: (context, index) {
+              final isCurrent = index == current;
+              final verse = verses[index];
+              final number = index < numbers.length ? numbers[index] : '${index + 1}';
 
-                return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                  color: isCurrent ? AppColors.audioBlue.withValues(alpha: 0.08) : null,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 24,
-                        margin: const EdgeInsets.only(top: 1),
-                        child: Text(
-                          number,
-                          style: TextStyle(
-                            fontFamily: 'Inter', fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: isCurrent ? AppColors.audioBlue : AppColors.textMuted,
-                          ),
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                color: isCurrent ? AppColors.audioBlue.withValues(alpha: 0.08) : null,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 24,
+                      margin: const EdgeInsets.only(top: 1),
+                      child: Text(
+                        number,
+                        style: TextStyle(
+                          fontFamily: 'Inter', fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: isCurrent ? AppColors.audioBlue : c.textMuted,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          verse,
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            fontSize: 13,
-                            color: isCurrent ? AppColors.textPrimary : AppColors.textSecondary,
-                          ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        verse,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          fontSize: 13,
+                          color: isCurrent ? c.textPrimary : c.textSecondary,
                         ),
                       ),
-                    ],
-                  ),
-                );
-              },
-            ),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
         ],
       ),

@@ -65,6 +65,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final userAsync = ref.watch(userProvider);
     final l = AppLocalizations.of(context)!;
     final isAm = Localizations.localeOf(context).languageCode == 'am';
+    final c = AppColors.of(context);
 
     return Scaffold(
       appBar: AppBar(leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/profile')), title: Text(l.settings)),
@@ -73,7 +74,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.border)),
+          decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: c.border)),
           child: SwitchListTile(
             title: Text(l.darkMode, style: AppTextStyles.bodyMedium),
             subtitle: Text(isAm ? 'የጨለማ/የብርሃን ሁነታን ቀይር' : 'Toggle light/dark theme', style: AppTextStyles.bodySmall),
@@ -88,7 +89,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.border)),
+          decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: c.border)),
           child: userAsync.when(
             data: (user) => Column(children: [
               _langTile(context, ref, user, 'en', l.english, '🇬🇧'),
@@ -104,7 +105,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.border)),
+          decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: c.border)),
           child: userAsync.when(
             data: (user) => ListTile(
               leading: const Icon(Icons.weekend, color: AppColors.primary),
@@ -113,7 +114,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 user.sabbathDay == -1
                     ? (isAm ? 'አልተመረጠም። እረፍት የሌለበት ቀን' : 'Not set — no rest day')
                     : (isAm ? _dayName(user.sabbathDay, isAm) : _dayName(user.sabbathDay, isAm)),
-                style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary)),
+                style: AppTextStyles.bodySmall.copyWith(color: c.textSecondary)),
               trailing: Text(
                 user.sabbathDay == -1 ? (isAm ? '--' : '--') : _dayName(user.sabbathDay, isAm),
                 style: const TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.primary)),
@@ -129,7 +130,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.border)),
+          decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: c.border)),
           child: ListTile(
             leading: const Icon(Icons.access_time, color: AppColors.primary),
             title: Text(isAm ? 'ዕለታዊ ማሳሰቢያ' : 'Daily reading reminder', style: AppTextStyles.bodyMedium),
@@ -161,14 +162,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.border)),
+          decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: c.border)),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text('ብስለት — Beslet', style: const TextStyle(fontFamily: 'CormorantGaramond', fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.primary)),
             const SizedBox(height: 8),
-            Text(isAm ? 'በአርባ ምንጭ ዩኒቨርሲቲ ውስጥ ላሉ ክርስቲያን ተማሪዎች የበጋ የ90 ቀን የመንፈሳዊ እድገት መተግበሪያ።' : 'A 90-day summer spiritual growth app for Christian students at Arba Minch University and beyond.', style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textSecondary, height: 1.4)),
+            Text(isAm ? 'በአርባ ምንጭ ዩኒቨርሲቲ ውስጥ ላሉ ክርስቲያን ተማሪዎች የበጋ የ90 ቀን የመንፈሳዊ እድገት መተግበሪያ።' : 'A 90-day summer spiritual growth app for Christian students at Arba Minch University and beyond.', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: c.textSecondary, height: 1.4)),
             const SizedBox(height: 12),
-            Text('Made by Amanuel Lamesa', style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textMuted)),
-            Text('Summer 2026 · v1.0', style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.textMuted)),
+            Text('Made by Amanuel Lamesa', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: c.textMuted)),
+            Text('Summer 2026 · v1.0', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: c.textMuted)),
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
@@ -228,24 +229,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final isAm = Localizations.localeOf(context).languageCode == 'am';
     final day = await showDialog<int>(
       context: context,
-      builder: (ctx) => SimpleDialog(
-        backgroundColor: AppColors.card,
-        title: Text(isAm ? 'የእረፍት ቀንህን ምረጥ' : 'Choose your rest day', style: AppTextStyles.labelLarge),
-        children: List.generate(8, (i) {
-          if (i == 7) {
-            return SimpleDialogOption(
-              onPressed: () => Navigator.pop(ctx, -1),
-              child: Text(isAm ? 'የለም (የእረፍት ቀን የለም)' : 'None (no rest day)',
-                  style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textMuted)),
-            );
-          }
-          return SimpleDialogOption(
-            onPressed: () => Navigator.pop(ctx, i),
-            child: Text('${_dayName(i, isAm)}${i == 6 ? (isAm ? ' (እሁድ)' : ' (Sunday)') : ''}',
-                style: AppTextStyles.bodyMedium),
+      builder: (ctx) {
+          final cc = AppColors.of(ctx);
+          return SimpleDialog(
+            backgroundColor: cc.card,
+            title: Text(isAm ? 'የእረፍት ቀንህን ምረጥ' : 'Choose your rest day', style: AppTextStyles.labelLarge),
+            children: List.generate(8, (i) {
+              if (i == 7) {
+                return SimpleDialogOption(
+                  onPressed: () => Navigator.pop(ctx, -1),
+                  child: Text(isAm ? 'የለም (የእረፍት ቀን የለም)' : 'None (no rest day)',
+                      style: AppTextStyles.bodyMedium.copyWith(color: cc.textMuted)),
+                );
+              }
+              return SimpleDialogOption(
+                onPressed: () => Navigator.pop(ctx, i),
+                child: Text('${_dayName(i, isAm)}${i == 6 ? (isAm ? ' (እሁድ)' : ' (Sunday)') : ''}',
+                    style: AppTextStyles.bodyMedium),
+              );
+            }),
           );
-        }),
-      ),
+        },
     );
     if (day != null && day != user.sabbathDay) {
       final db = ref.read(databaseProvider);

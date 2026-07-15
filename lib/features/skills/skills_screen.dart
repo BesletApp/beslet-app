@@ -55,6 +55,7 @@ class _SkillsScreenState extends ConsumerState<SkillsScreen> with WidgetsBinding
   }
 
   @override Widget build(BuildContext context) {
+    final c = AppColors.of(context);
     return Scaffold(
       appBar: AppBar(leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/home')), title: const Text('Skills'), actions: [
         IconButton(icon: const Icon(Icons.add), onPressed: _showAddDialog),
@@ -72,7 +73,7 @@ class _SkillsScreenState extends ConsumerState<SkillsScreen> with WidgetsBinding
                   const SizedBox(height: 16),
                   Text('No skills yet', style: AppTextStyles.displaySmall),
                   const SizedBox(height: 8),
-                  Text('Track skills you want to develop!', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+                  Text('Track skills you want to develop!', style: AppTextStyles.bodyMedium.copyWith(color: c.textSecondary)),
                   const SizedBox(height: 24),
                   ElevatedButton.icon(icon: const Icon(Icons.add), label: const Text('Add Skill'), onPressed: _showAddDialog),
                 ]),
@@ -84,32 +85,32 @@ class _SkillsScreenState extends ConsumerState<SkillsScreen> with WidgetsBinding
             child: ListView.builder(
             padding: const EdgeInsets.all(20),
             itemCount: skills.length,
-            itemBuilder: (_, i) => _buildSkillCard(skills[i]),
+            itemBuilder: (_, i) => _buildSkillCard(skills[i], c),
           ));
         },
       ),
     );
   }
 
-  Widget _buildSkillCard(Skill skill) {
+  Widget _buildSkillCard(Skill skill, ThemePalette c) {
     final isActive = _activeSkillId == skill.id;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: c.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isActive ? AppColors.primary.withValues(alpha: 0.5) : AppColors.border),
+        border: Border.all(color: isActive ? AppColors.primary.withValues(alpha: 0.5) : c.border),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: Container(
           width: 48, height: 48,
-          decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.border),
+          decoration: BoxDecoration(shape: BoxShape.circle, color: c.border),
           child: Center(child: Text(skill.icon.isNotEmpty ? skill.icon : '📚', style: const TextStyle(fontSize: 24))),
         ),
         title: Text(skill.name, style: AppTextStyles.bodyMedium),
-        subtitle: Text('${skill.category} · ${skill.targetMinutes} min goal', style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted)),
+        subtitle: Text('${skill.category} · ${skill.targetMinutes} min goal', style: AppTextStyles.bodySmall.copyWith(color: c.textMuted)),
         trailing: isActive
             ? GestureDetector(
                 onTap: _stopTimer,
@@ -137,10 +138,11 @@ class _SkillsScreenState extends ConsumerState<SkillsScreen> with WidgetsBinding
   }
 
   void _confirmDelete(String skillId, String skillName) {
+    final c = AppColors.of(context);
     showDialog(context: context, builder: (ctx) => AlertDialog(
-      backgroundColor: AppColors.card,
+      backgroundColor: c.card,
       title: Text('Delete $skillName?', style: AppTextStyles.labelLarge),
-      content: Text('This will remove the skill and all session logs.', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+      content: Text('This will remove the skill and all session logs.', style: AppTextStyles.bodyMedium.copyWith(color: c.textSecondary)),
       actions: [
         TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
         TextButton(onPressed: () { Navigator.pop(ctx); ref.read(skillsNotifierProvider.notifier).deleteSkill(skillId); }, child: Text('Delete', style: TextStyle(color: AppColors.error))),
@@ -149,13 +151,14 @@ class _SkillsScreenState extends ConsumerState<SkillsScreen> with WidgetsBinding
   }
 
   void _showAddDialog() {
+    final c = AppColors.of(context);
     final nameCtrl = TextEditingController();
     String category = 'Creative';
     String icon = '🎯';
 
     showDialog(context: context, builder: (ctx) => StatefulBuilder(
       builder: (ctx, setState) => AlertDialog(
-        backgroundColor: AppColors.card,
+        backgroundColor: c.card,
         title: Text('New Skill', style: AppTextStyles.labelLarge),
         content: Column(mainAxisSize: MainAxisSize.min, children: [
           TextField(
@@ -163,27 +166,27 @@ class _SkillsScreenState extends ConsumerState<SkillsScreen> with WidgetsBinding
             style: AppTextStyles.bodyMedium,
             decoration: InputDecoration(
               hintText: 'Skill name',
-              hintStyle: TextStyle(color: AppColors.textMuted),
-              filled: true, fillColor: AppColors.surface, border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              hintStyle: TextStyle(color: c.textMuted),
+              filled: true, fillColor: c.surface, border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
             ),
           ),
           const SizedBox(height: 16),
-          Text('Category & Icon', style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary)),
+          Text('Category & Icon', style: AppTextStyles.bodySmall.copyWith(color: c.textSecondary)),
           const SizedBox(height: 8),
           Wrap(spacing: 8, runSpacing: 8, children: [
             ['Creative', '🎵'], ['Writing', '✍️'], ['Tech', '💻'], ['Language', '🗣️'], ['Wellness', '🧘'], ['Art', '🎨'],
-          ].map((c) {
-            final isSelected = category == c[0];
+          ].map((item) {
+            final isSelected = category == item[0];
             return GestureDetector(
-              onTap: () => setState(() { category = c[0]; icon = c[1]; }),
+              onTap: () => setState(() { category = item[0]; icon = item[1]; }),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: isSelected ? AppColors.primary.withValues(alpha: 0.2) : AppColors.surface,
+                  color: isSelected ? AppColors.primary.withValues(alpha: 0.2) : c.surface,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: isSelected ? AppColors.primary : AppColors.border),
+                  border: Border.all(color: isSelected ? AppColors.primary : c.border),
                 ),
-                child: Text('${c[1]} ${c[0]}', style: AppTextStyles.bodySmall.copyWith(color: isSelected ? AppColors.primary : AppColors.textSecondary)),
+                child: Text('${item[1]} ${item[0]}', style: AppTextStyles.bodySmall.copyWith(color: isSelected ? AppColors.primary : c.textSecondary)),
               ),
             );
           }).toList()),

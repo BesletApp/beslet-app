@@ -25,6 +25,7 @@ class _FamilyScreenState extends ConsumerState<FamilyScreen> {
     final todayAsync = ref.watch(todayFamilyProvider);
     final weeklyHoursAsync = ref.watch(weeklyFamilyHoursProvider);
     final todayLog = todayAsync.valueOrNull;
+    final c = AppColors.of(context);
 
     return Scaffold(
       appBar: AppBar(leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/home')), title: const Text('Time with Family')),
@@ -43,16 +44,16 @@ class _FamilyScreenState extends ConsumerState<FamilyScreen> {
               Text(todayLog != null ? '${todayLog.hours}h logged today' : 'Log family time', style: AppTextStyles.displaySmall.copyWith(fontSize: 18)),
               const SizedBox(height: 4),
               Text(todayLog != null ? 'Quality time matters. Keep it up!' : 'How much time did you spend with family today?',
-                  style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+                  style: AppTextStyles.bodyMedium.copyWith(color: c.textSecondary)),
             ]),
           ),
           const SizedBox(height: 24),
           Container(
             padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.border)),
+            decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: c.border)),
             child: Column(children: [
               Text(_hours.toStringAsFixed(1), style: AppTextStyles.displayLarge.copyWith(fontSize: 48, color: AppColors.primary)),
-              Text('hours', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textMuted)),
+              Text('hours', style: AppTextStyles.bodyMedium.copyWith(color: c.textMuted)),
               const SizedBox(height: 16),
               Slider(
                 value: _hours,
@@ -60,13 +61,13 @@ class _FamilyScreenState extends ConsumerState<FamilyScreen> {
                 max: 8.0,
                 divisions: 15,
                 activeColor: AppColors.primary,
-                inactiveColor: AppColors.border,
+                inactiveColor: c.border,
                 label: '${_hours.toStringAsFixed(1)}h',
                 onChanged: (v) => setState(() { _hours = v; _saved = false; }),
               ),
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                Text('0.5h', style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted)),
-                Text('8h', style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted)),
+                Text('0.5h', style: AppTextStyles.bodySmall.copyWith(color: c.textMuted)),
+                Text('8h', style: AppTextStyles.bodySmall.copyWith(color: c.textMuted)),
               ]),
               const SizedBox(height: 16),
               TextField(
@@ -74,8 +75,8 @@ class _FamilyScreenState extends ConsumerState<FamilyScreen> {
                 style: AppTextStyles.bodyMedium,
                 decoration: InputDecoration(
                   hintText: 'What did you do? (optional)',
-                  hintStyle: TextStyle(color: AppColors.textMuted),
-                  filled: true, fillColor: AppColors.surface, border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                  hintStyle: TextStyle(color: c.textMuted),
+                  filled: true, fillColor: c.surface, border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                 ),
                 onChanged: (_) => setState(() => _saved = false),
               ),
@@ -93,7 +94,7 @@ class _FamilyScreenState extends ConsumerState<FamilyScreen> {
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.border)),
+            decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: c.border)),
             child: Row(children: [
               Container(
                 width: 48, height: 48,
@@ -103,7 +104,7 @@ class _FamilyScreenState extends ConsumerState<FamilyScreen> {
               const SizedBox(width: 16),
               Expanded(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('This Week', style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary)),
+                  Text('This Week', style: AppTextStyles.bodySmall.copyWith(color: c.textSecondary)),
                   const SizedBox(height: 4),
                   Text('${weeklyHoursAsync.valueOrNull?.toStringAsFixed(1) ?? '0.0'}h total', style: AppTextStyles.displaySmall.copyWith(fontSize: 24)),
                 ]),

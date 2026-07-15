@@ -35,6 +35,7 @@ class _ReflectionScreenState extends ConsumerState<ReflectionScreen> {
 
   @override Widget build(BuildContext context) {
     final reflectionAsync = ref.watch(reflectionProvider);
+    final c = AppColors.of(context);
 
     return Scaffold(
       appBar: AppBar(leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/home')), title: const Text('Weekly Reflection')),
@@ -49,15 +50,15 @@ class _ReflectionScreenState extends ConsumerState<ReflectionScreen> {
               const SizedBox(height: 12),
               Text('Weekly Check-in', style: AppTextStyles.displaySmall),
               const SizedBox(height: 4),
-              Text('Take a moment to reflect on your week', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+              Text('Take a moment to reflect on your week', style: AppTextStyles.bodyMedium.copyWith(color: c.textSecondary)),
             ]),
           ),
           const SizedBox(height: 24),
-          _buildQuestion('What helped you grow this week?', '🙌', _grewCtrl),
+          _buildQuestion('What helped you grow this week?', '🙌', _grewCtrl, c),
           const SizedBox(height: 20),
-          _buildQuestion('Where did you slip or struggle?', '💪', _slippedCtrl),
+          _buildQuestion('Where did you slip or struggle?', '💪', _slippedCtrl, c),
           const SizedBox(height: 20),
-          _buildQuestion('What will you focus on next week?', '🎯', _focusCtrl),
+          _buildQuestion('What will you focus on next week?', '🎯', _focusCtrl, c),
           const SizedBox(height: 32),
           SizedBox(
             width: double.infinity,
@@ -86,7 +87,7 @@ class _ReflectionScreenState extends ConsumerState<ReflectionScreen> {
     );
   }
 
-  Widget _buildQuestion(String question, String emoji, TextEditingController ctrl) {
+  Widget _buildQuestion(String question, String emoji, TextEditingController ctrl, ThemePalette c) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Row(children: [
         Text(emoji, style: const TextStyle(fontSize: 18)),
@@ -100,8 +101,8 @@ class _ReflectionScreenState extends ConsumerState<ReflectionScreen> {
         style: AppTextStyles.bodyMedium,
         decoration: InputDecoration(
           hintText: 'Write your thoughts...',
-          hintStyle: TextStyle(color: AppColors.textMuted),
-          filled: true, fillColor: AppColors.surface,
+          hintStyle: TextStyle(color: c.textMuted),
+          filled: true, fillColor: c.surface,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
         ),
         onChanged: (_) => setState(() => _saved = false),

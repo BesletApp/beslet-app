@@ -135,11 +135,11 @@ class ScriptureService {
   static List<BibleBook> get ntBooks => sections.where((s) => ['gospels', 'acts', 'paulsLetters', 'generalEpistles', 'revelation'].contains(s.id)).expand((s) => s.books).toList();
 
   /// Generates a reading plan for a given testament. Each entry is "Book Chapter:StartVerse" or "Book Chapter".
-  static List<BiblePlanEntry> getPlan(String planId, {int days = 90}) {
+  static List<BiblePlanEntry> getPlan(String planId, {int days = 90, int startChapter = 0}) {
     final books = planId == 'ot' ? otBooks : ntBooks;
     final totalChapters = books.fold<int>(0, (int s, b) => s + b.chapters);
     final entries = <BiblePlanEntry>[];
-    int chapterIdx = 0;
+    int chapterIdx = startChapter;
     for (int day = 0; day < days && chapterIdx < totalChapters; day++) {
       final book = _bookForChapter(books, chapterIdx);
       if (book == null) break;
@@ -228,8 +228,8 @@ class ScriptureService {
 
   static Scripture getDailyScripture() => verses[DateTime.now().day % verses.length];
 
-  static BiblePlanEntry getTodaysReading(String planId) {
-    final plan = getPlan(planId);
+  static BiblePlanEntry getTodaysReading(String planId, {int startChapter = 0, int days = 90}) {
+    final plan = getPlan(planId, days: days, startChapter: startChapter);
     final elapsed = DateTime.now().difference(SummerService.summerStart).inDays;
     final day = (elapsed.clamp(0, plan.length - 1));
     return plan[day];

@@ -16,6 +16,7 @@ class StreakBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = AppColors.of(context);
     final color = StreakService.growthColor(currentStreak);
     final emoji = StreakService.growthEmoji(currentStreak);
     const labels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
@@ -44,7 +45,7 @@ class StreakBar extends StatelessWidget {
               style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: color)),
           if (freezeTokens > 0)
             Text('❄️ $freezeTokens freeze${freezeTokens != 1 ? 's' : ''}',
-                style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
+                style: TextStyle(fontSize: 10, color: c.textMuted)),
         ]),
         const Spacer(),
         ...weekDays.asMap().entries.map((e) {
@@ -53,12 +54,12 @@ class StreakBar extends StatelessWidget {
             width: 20, height: 20, margin: const EdgeInsets.symmetric(horizontal: 1),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: done ? color : AppColors.border.withValues(alpha: 0.4),
+              color: done ? color : c.border.withValues(alpha: 0.4),
             ),
             alignment: Alignment.center,
             child: done
                 ? Icon(Icons.check, size: 11, color: Colors.white)
-                : Text(labels[e.key], style: TextStyle(fontSize: 8, color: AppColors.textMuted)),
+                : Text(labels[e.key], style: TextStyle(fontSize: 8, color: c.textMuted)),
           );
         }),
       ]),

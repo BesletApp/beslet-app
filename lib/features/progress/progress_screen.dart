@@ -5,12 +5,17 @@ import '../../core/theme/app_colors.dart';
 import '../../core/providers/tracking_provider.dart';
 import '../../shared/widgets/error_card.dart';
 import '../../core/providers/analytics_provider.dart';
+import '../../core/providers/reading_plan_provider.dart';
 import '../../core/services/xp_service.dart';
 import '../../core/services/summer_service.dart';
 import '../../core/services/scripture_service.dart';
+import '../../core/services/plan_progress_service.dart';
+import '../../core/services/witness_service.dart';
+import '../../core/database/app_database.dart';
 import 'widgets/streak_card.dart';
 import 'widgets/chart_section.dart';
 import 'widgets/achievement_card.dart';
+import 'widgets/book_progress_list.dart';
 
 const _phaseNames = ['Discipline', 'Faith', 'Obedience', 'Impact'];
 
@@ -24,6 +29,7 @@ class ProgressScreen extends ConsumerWidget {
     final primaryText = isDark ? AppColors.textPrimary : AppColors.textPrimaryLight;
     final surface = isDark ? AppColors.surface : AppColors.backgroundLight;
     final border = isDark ? AppColors.border : AppColors.borderLightTheme;
+    final c = AppColors.of(context);
 
     final trackingAsync = ref.watch(trackingDataProvider);
     final completionsAsync = ref.watch(weeklyPillarCompletionsProvider);
@@ -32,6 +38,8 @@ class ProgressScreen extends ConsumerWidget {
     final dailyXpAsync = ref.watch(dailyXpProvider);
     final bestStreakAsync = ref.watch(overallBestStreakProvider);
     final reflectionAsync = ref.watch(reflectionProvider);
+    final readingProgressAsync = ref.watch(readingProgressProvider);
+    final activeLoopAsync = ref.watch(activeLoopProvider);
     final screenWidth = MediaQuery.of(context).size.width;
 
     return trackingAsync.when(
@@ -70,13 +78,13 @@ class ProgressScreen extends ConsumerWidget {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
               children: [
-                _buildHeader(tracking, primaryText, surface),
+                _buildHeader(tracking, primaryText, surface, c),
                 const SizedBox(height: 20),
-                _buildLevelHero(tracking, primaryText, surface),
+                _buildLevelHero(tracking, primaryText, surface, c),
                 const SizedBox(height: 16),
                 _buildPillarPulse(context, tracking, todayPillars, border),
                 const SizedBox(height: 16),
-                _buildPhaseJourney(daysElapsed, totalDays, phaseIdx, border),
+                _buildPhaseJourney(daysElapsed, totalDays, phaseIdx, border, c),
                 const SizedBox(height: 12),
                 StreakCard(
                   streak: tracking.streak, bestStreak: bestStreak, weekDays: weekDays,
@@ -87,12 +95,14 @@ class ProgressScreen extends ConsumerWidget {
                   _buildReflectionPrompt(context),
                 ],
                 const SizedBox(height: 12),
+                _buildReadingPlanProgress(readingProgressAsync, activeLoopAsync, isDark, c),
+                const SizedBox(height: 12),
                 ChartSection(
                   weeklyCompletions: completions, weeklyXp: weeklyXp, dailyXp: dailyXp,
                   isDark: isDark, dailyGoal: dailyAvg, weeklyGoal: weeklyAvg,
                 ),
                 const SizedBox(height: 14),
-                _buildAchievementsSection(tracking, screenWidth, isDark),
+                _buildAchievementsSection(tracking, screenWidth, isDark, c),
               ],
             ),
           ),
@@ -101,7 +111,7 @@ class ProgressScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeader(TrackingData tracking, Color primaryText, Color surface) {
+  Widget _buildHeader(TrackingData tracking, Color primaryText, Color surface, ThemePalette c) {
     return Row(
       children: [
         Text('Growth', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: primaryText)),
@@ -114,14 +124,14 @@ class ProgressScreen extends ConsumerWidget {
             const SizedBox(width: 4),
             Text('${tracking.streak}', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: primaryText)),
             const SizedBox(width: 4),
-            Text('day', style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
+            Text('day', style: TextStyle(fontSize: 10, color: c.textMuted)),
           ]),
         ),
       ],
     );
   }
 
-  Widget _buildLevelHero(TrackingData tracking, Color primaryText, Color surface) {
+  Widget _buildLevelHero(TrackingData tracking, Color primaryText, Color surface, ThemePalette c) {
     final xpRemaining = XpService.xpToNextLevel(tracking.totalXp);
     final progress = tracking.levelProgress;
     final suggestion = XpService.nextActionSuggestion(tracking.totalXp);
@@ -148,11 +158,11 @@ class ProgressScreen extends ConsumerWidget {
           const SizedBox(width: 12),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(tracking.levelName, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: primaryText)),
-            Text('Level ${tracking.level}', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+            Text('Level ${tracking.level}', style: TextStyle(fontSize: 12, color: c.textSecondary)),
           ])),
           Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
             Text('${tracking.totalXp}', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.primary, height: 1)),
-            Text('XP total', style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
+            Text('XP total', style: TextStyle(fontSize: 10, color: c.textMuted)),
           ]),
         ]),
         const SizedBox(height: 14),
@@ -162,7 +172,7 @@ class ProgressScreen extends ConsumerWidget {
               borderRadius: BorderRadius.circular(3),
               child: LinearProgressIndicator(
                 value: progress,
-                backgroundColor: AppColors.border,
+                backgroundColor: c.border,
                 valueColor: const AlwaysStoppedAnimation(AppColors.primary),
                 minHeight: 6,
               ),
@@ -173,7 +183,7 @@ class ProgressScreen extends ConsumerWidget {
         ]),
         const SizedBox(height: 6),
         Row(children: [
-          Text('$xpRemaining XP to next level', style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
+          Text('$xpRemaining XP to next level', style: TextStyle(fontSize: 10, color: c.textMuted)),
           const Spacer(),
           Text(suggestion, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.primary)),
         ]),
@@ -182,6 +192,7 @@ class ProgressScreen extends ConsumerWidget {
   }
 
   Widget _buildPillarPulse(BuildContext context, TrackingData tracking, Map<String, bool> todayPillars, Color border) {
+    final c = AppColors.of(context);
     final pillars = [
       _PillarData(Icons.menu_book, 'Bible', todayPillars['bible'] == true, AppColors.spiritualPurple, '/prayer'),
       _PillarData(Icons.water_drop, 'Pray', todayPillars['prayer'] == true, AppColors.spiritualPurple, '/prayer'),
@@ -200,7 +211,7 @@ class ProgressScreen extends ConsumerWidget {
     ];
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text("Today's Rhythm", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textMuted)),
+      Text("Today's Rhythm", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: c.textMuted)),
       const SizedBox(height: 8),
       Row(children: List.generate(5, (i) {
         final p = pillars[i];
@@ -211,17 +222,17 @@ class ProgressScreen extends ConsumerWidget {
               margin: const EdgeInsets.symmetric(horizontal: 2),
               padding: const EdgeInsets.symmetric(vertical: 10),
               decoration: BoxDecoration(
-                color: p.isComplete ? p.color.withValues(alpha: 0.1) : AppColors.card,
+                color: p.isComplete ? p.color.withValues(alpha: 0.1) : c.card,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: p.isComplete ? p.color.withValues(alpha: 0.3) : border, width: 0.5),
               ),
               child: Column(children: [
-                Icon(p.icon, size: 16, color: p.isComplete ? p.color : AppColors.textMuted),
+                Icon(p.icon, size: 16, color: p.isComplete ? p.color : c.textMuted),
                 const SizedBox(height: 4),
                 Text(statusLabels[i],
                     style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700,
-                        color: p.isComplete ? p.color : AppColors.textMuted)),
-                Text(p.label, style: TextStyle(fontSize: 8, color: AppColors.textSecondary)),
+                        color: p.isComplete ? p.color : c.textMuted)),
+                Text(p.label, style: TextStyle(fontSize: 8, color: c.textSecondary)),
               ]),
             ),
           ),
@@ -230,11 +241,11 @@ class ProgressScreen extends ConsumerWidget {
     ]);
   }
 
-  Widget _buildPhaseJourney(int daysElapsed, int totalDays, int phaseIdx, Color border) {
+  Widget _buildPhaseJourney(int daysElapsed, int totalDays, int phaseIdx, Color border, ThemePalette c) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: c.card,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: border, width: 0.5),
       ),
@@ -242,9 +253,9 @@ class ProgressScreen extends ConsumerWidget {
         Row(children: [
           const Icon(Icons.timeline, size: 16, color: AppColors.primary),
           const SizedBox(width: 6),
-          Text('Summer Journey', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+          Text('Summer Journey', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: c.textSecondary)),
           const Spacer(),
-          Text('Day $daysElapsed of $totalDays', style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
+          Text('Day $daysElapsed of $totalDays', style: TextStyle(fontSize: 10, color: c.textMuted)),
         ]),
         const SizedBox(height: 12),
         Row(children: List.generate(4, (i) {
@@ -264,7 +275,7 @@ class ProgressScreen extends ConsumerWidget {
                   width: isCurrent ? 26 : 20, height: isCurrent ? 26 : 20,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: isPast ? AppColors.primary : (isCurrent ? AppColors.card : border.withValues(alpha: 0.3)),
+                    color: isPast ? AppColors.primary : (isCurrent ? c.card : border.withValues(alpha: 0.3)),
                     border: Border.all(
                       color: isCurrent ? AppColors.primary : (isPast ? AppColors.primary : border),
                       width: isCurrent ? 2.5 : 1.5,
@@ -285,7 +296,7 @@ class ProgressScreen extends ConsumerWidget {
               const SizedBox(height: 6),
               Text(_phaseNames[i],
                   style: TextStyle(fontSize: 8, fontWeight: FontWeight.w600,
-                      color: isCurrent ? AppColors.primary : AppColors.textMuted)),
+                      color: isCurrent ? AppColors.primary : c.textMuted)),
             ]),
           );
         })),
@@ -299,6 +310,7 @@ class ProgressScreen extends ConsumerWidget {
   }
 
   Widget _buildReflectionPrompt(BuildContext context) {
+    final c = AppColors.of(context);
     return GestureDetector(
       onTap: () => context.go('/reflection'),
       child: Container(
@@ -316,16 +328,16 @@ class ProgressScreen extends ConsumerWidget {
           ),
           const SizedBox(width: 10),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Text('Weekly Reflection', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-            Text('What grew? What slipped? Next focus?', style: TextStyle(fontSize: 10, color: AppColors.textSecondary)),
+            Text('Weekly Reflection', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: c.textPrimary)),
+            Text('What grew? What slipped? Next focus?', style: TextStyle(fontSize: 10, color: c.textSecondary)),
           ])),
-          const Icon(Icons.chevron_right, size: 18, color: AppColors.textMuted),
+          Icon(Icons.chevron_right, size: 18, color: c.textMuted),
         ]),
       ),
     );
   }
 
-  Widget _buildAchievementsSection(TrackingData tracking, double screenWidth, bool isDark) {
+  Widget _buildAchievementsSection(TrackingData tracking, double screenWidth, bool isDark, ThemePalette c) {
     const allAchievements = [
       ('first_step', 'First Step', Icons.flag, 'Complete your first habit'),
       ('week_streak', 'Faithful Week', Icons.local_fire_department, '7-day streak'),
@@ -341,9 +353,9 @@ class ProgressScreen extends ConsumerWidget {
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Row(children: [
-        Text('Milestones', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        Text('Milestones', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: c.textPrimary)),
         const Spacer(),
-        Text('$earned/${allAchievements.length} unlocked', style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
+        Text('$earned/${allAchievements.length} unlocked', style: TextStyle(fontSize: 11, color: c.textMuted)),
       ]),
       const SizedBox(height: 10),
       Wrap(
@@ -359,6 +371,83 @@ class ProgressScreen extends ConsumerWidget {
         }).toList(),
       ),
     ]);
+  }
+  Widget _buildReadingPlanProgress(AsyncValue<PlanProgress> progressAsync, AsyncValue<ReadingLoop?> loopAsync, bool isDark, ThemePalette c) {
+    return progressAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (plan) {
+        final loop = loopAsync.valueOrNull;
+        final loopDay = loop != null
+            ? DateTime.now().difference(DateTime.parse(loop.startDate)).inDays + 1
+            : 0;
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: c.card,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: c.border),
+          ),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('Reading Plan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: c.textPrimary)),
+            const SizedBox(height: 4),
+            Text('${plan.totalChaptersRead} of ${plan.totalChaptersInBible} chapters · ${(plan.biblePercent * 100).toStringAsFixed(1)}% complete',
+                style: TextStyle(fontSize: 12, color: c.textSecondary)),
+            const SizedBox(height: 12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: LinearProgressIndicator(
+                value: plan.biblePercent,
+                minHeight: 10,
+                backgroundColor: c.border,
+                valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50)),
+              ),
+            ),
+            if (loop != null) ...[
+              const SizedBox(height: 8),
+              Row(children: [
+                Icon(Icons.loop, size: 14, color: c.textMuted),
+                const SizedBox(width: 4),
+                Text('Loop ${loop.loopNumber}: Day $loopDay of ${loop.duration}',
+                    style: TextStyle(fontSize: 11, color: c.textMuted)),
+              ]),
+            ],
+            if (plan.currentBookName != null) ...[
+              const SizedBox(height: 10),
+              Text('Reading: ${plan.currentBookName} ${plan.currentBookChapter}',
+                  style: TextStyle(fontSize: 12, color: c.textSecondary)),
+            ],
+            const SizedBox(height: 16),
+            BookProgressList(progress: plan, isDark: isDark),
+            _buildMilestoneMessage(plan, c),
+          ]),
+        );
+      },
+    );
+  }
+
+  Widget _buildMilestoneMessage(PlanProgress plan, ThemePalette c) {
+    final completedBooks = plan.otProgress.where((p) => p.isComplete).length +
+        plan.ntProgress.where((p) => p.isComplete).length;
+    final msg = WitnessService.milestoneMessage(completedBooks, false);
+    if (msg == null) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.primary.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+        ),
+        child: Row(children: [
+          const Text('🌱', style: TextStyle(fontSize: 16)),
+          const SizedBox(width: 8),
+          Expanded(child: Text(msg, style: TextStyle(fontSize: 12, color: c.textSecondary, height: 1.4))),
+        ]),
+      ),
+    );
   }
 }
 

@@ -19,6 +19,7 @@ class _AudioPlayerBarState extends ConsumerState<AudioPlayerBar> {
   @override
   Widget build(BuildContext context) {
     final playerState = ref.watch(audioPlayerProvider);
+    final c = AppColors.of(context);
     final isAm = widget.isAm;
 
     if (playerState.state == AudioState.loading) {
@@ -38,7 +39,7 @@ class _AudioPlayerBarState extends ConsumerState<AudioPlayerBar> {
             Text(
               isAm ? 'በማዘጋጀት ላይ...' : 'Loading...',
               style: AppTextStyles.bodySmall
-                  .copyWith(color: AppColors.textSecondary),
+                  .copyWith(color: c.textSecondary),
             ),
           ],
         ),
@@ -49,14 +50,14 @@ class _AudioPlayerBarState extends ConsumerState<AudioPlayerBar> {
       return _buildContainer(
         child: Row(
           children: [
-            const Icon(Icons.wifi_off, size: 16, color: AppColors.textMuted),
+            Icon(Icons.wifi_off, size: 16, color: c.textMuted),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
                 playerState.error ??
                     (isAm ? 'ገመድ አልተገኘም' : 'No internet connection'),
                 style: AppTextStyles.bodySmall
-                    .copyWith(color: AppColors.textMuted, fontSize: 12),
+                    .copyWith(color: c.textMuted, fontSize: 12),
               ),
             ),
           ],
@@ -74,7 +75,7 @@ class _AudioPlayerBarState extends ConsumerState<AudioPlayerBar> {
             Text(
               isAm ? 'ለማዳመጥ ይንኩ' : 'Tap play to listen',
               style: AppTextStyles.bodySmall
-                  .copyWith(color: AppColors.textSecondary, fontSize: 12),
+                  .copyWith(color: c.textSecondary, fontSize: 12),
             ),
           ],
         ),
@@ -98,6 +99,7 @@ class _AudioPlayerBarState extends ConsumerState<AudioPlayerBar> {
     bool isPlaying,
     bool isAm,
   ) {
+    final c = AppColors.of(context);
     final total = playerState.totalVerses;
     final current = playerState.currentVerse;
     final progress = total > 0 ? (current + 1) / total : 0.0;
@@ -114,11 +116,11 @@ class _AudioPlayerBarState extends ConsumerState<AudioPlayerBar> {
               Expanded(
                 child: Text(
                   chapter.reference,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: c.textPrimary,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -127,7 +129,7 @@ class _AudioPlayerBarState extends ConsumerState<AudioPlayerBar> {
                 Text(
                   '${current + 1}/$total',
                   style: AppTextStyles.bodySmall
-                      .copyWith(color: AppColors.textMuted, fontSize: 11),
+                      .copyWith(color: c.textMuted, fontSize: 11),
                 ),
             ],
           ),
@@ -137,7 +139,7 @@ class _AudioPlayerBarState extends ConsumerState<AudioPlayerBar> {
               borderRadius: BorderRadius.circular(4),
               child: LinearProgressIndicator(
                 value: progress,
-                backgroundColor: AppColors.border,
+                backgroundColor: c.border,
                 valueColor: const AlwaysStoppedAnimation(AppColors.audioBlue),
                 minHeight: 4,
               ),
@@ -176,7 +178,7 @@ class _AudioPlayerBarState extends ConsumerState<AudioPlayerBar> {
               style: TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 10,
-                color: AppColors.textMuted,
+                color: c.textMuted,
               ),
             ),
           ],
@@ -191,6 +193,7 @@ class _AudioPlayerBarState extends ConsumerState<AudioPlayerBar> {
     bool isPlaying,
     bool isAm,
   ) {
+    final c = AppColors.of(context);
     final speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
 
     return _buildContainer(
@@ -205,11 +208,11 @@ class _AudioPlayerBarState extends ConsumerState<AudioPlayerBar> {
               Expanded(
                 child: Text(
                   chapter.reference,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: c.textPrimary,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -218,7 +221,7 @@ class _AudioPlayerBarState extends ConsumerState<AudioPlayerBar> {
                 Text(
                   '${playerState.currentVerse + 1}/${playerState.totalVerses}',
                   style: AppTextStyles.bodySmall
-                      .copyWith(color: AppColors.textMuted, fontSize: 11),
+                      .copyWith(color: c.textMuted, fontSize: 11),
                 ),
             ],
           ),
@@ -230,7 +233,7 @@ class _AudioPlayerBarState extends ConsumerState<AudioPlayerBar> {
                 value: playerState.totalVerses > 0
                     ? (playerState.currentVerse + 1) / playerState.totalVerses
                     : 0,
-                backgroundColor: AppColors.border,
+                backgroundColor: c.border,
                 valueColor: const AlwaysStoppedAnimation(AppColors.audioBlue),
                 minHeight: 4,
               ),
@@ -287,7 +290,7 @@ class _AudioPlayerBarState extends ConsumerState<AudioPlayerBar> {
                           color: active ? AppColors.audioBlue : Colors.transparent,
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
-                            color: active ? AppColors.audioBlue : AppColors.border,
+                            color: active ? AppColors.audioBlue : c.border,
                           ),
                         ),
                         child: Text(
@@ -298,7 +301,7 @@ class _AudioPlayerBarState extends ConsumerState<AudioPlayerBar> {
                             fontWeight: FontWeight.w600,
                             color: active
                                 ? const Color(0xFF0A0A0A)
-                                : AppColors.textSecondary,
+                                : c.textSecondary,
                           ),
                         ),
                       ),
@@ -314,8 +317,9 @@ class _AudioPlayerBarState extends ConsumerState<AudioPlayerBar> {
   }
 
   Widget _iconButton(IconData icon, String tooltip, VoidCallback onPressed) {
+    final c = AppColors.of(context);
     return IconButton(
-      icon: Icon(icon, size: 20, color: AppColors.textSecondary),
+      icon: Icon(icon, size: 20, color: c.textSecondary),
       onPressed: onPressed,
       padding: const EdgeInsets.all(6),
       constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
@@ -324,12 +328,13 @@ class _AudioPlayerBarState extends ConsumerState<AudioPlayerBar> {
   }
 
   Widget _buildContainer({required Widget child}) {
+    final c = AppColors.of(context);
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: c.card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: c.border),
       ),
       child: child,
     );

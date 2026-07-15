@@ -19,16 +19,17 @@ class BesletCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = AppColors.of(context);
     final card = Container(
       padding: padding ?? EdgeInsets.all(variant == CardVariant.tertiary ? 12 : 16),
-      decoration: _decoration,
+      decoration: _decoration(c),
       child: child,
     );
     if (onTap != null) return GestureDetector(onTap: onTap, child: card);
     return card;
   }
 
-  BoxDecoration get _decoration {
+  BoxDecoration _decoration(ThemePalette c) {
     switch (variant) {
       case CardVariant.hero:
         return BoxDecoration(
@@ -45,9 +46,9 @@ class BesletCard extends StatelessWidget {
         );
       case CardVariant.secondary:
         return BoxDecoration(
-          color: AppColors.card,
+          color: c.card,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.border, width: 0.5),
+          border: Border.all(color: c.border, width: 0.5),
         );
       case CardVariant.tertiary:
         return BoxDecoration(

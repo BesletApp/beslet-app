@@ -59,6 +59,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
+    final c = AppColors.of(context);
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -73,7 +74,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         borderRadius: BorderRadius.circular(4),
                         child: LinearProgressIndicator(
                           value: (_page + 1) / _pages,
-                          backgroundColor: AppColors.border,
+                          backgroundColor: c.border,
                           valueColor: const AlwaysStoppedAnimation(AppColors.primary),
                           minHeight: 4,
                         ),
@@ -82,7 +83,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     const Spacer(),
                     GestureDetector(
                       onTap: () => _pageController.jumpToPage(_pages - 1),
-                      child: Text(l.skip, style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.textMuted)),
+                      child: Text(l.skip, style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: c.textMuted)),
                     ),
                   ],
                 ),
@@ -92,10 +93,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 controller: _pageController,
                 onPageChanged: (i) => setState(() => _page = i),
                 children: [
-                  _buildWelcomePage(l),
-                  _buildHowItWorksPage(l),
-                  _buildSetupPage(l),
-                  _buildCtaPage(l),
+                  _buildWelcomePage(l, c),
+                  _buildHowItWorksPage(l, c),
+                  _buildSetupPage(l, c),
+                  _buildCtaPage(l, c),
                 ],
               ),
             ),
@@ -109,7 +110,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     margin: const EdgeInsets.symmetric(horizontal: 3),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(4),
-                      color: _page == i ? AppColors.primary : AppColors.border,
+                      color: _page == i ? AppColors.primary : c.border,
                     ),
                   )),
                 ),
@@ -162,7 +163,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  Widget _buildWelcomePage(AppLocalizations l) {
+  Widget _buildWelcomePage(AppLocalizations l, ThemePalette c) {
     final h = _isAm ? 'እንኳን ወደ ብስለት በደህና መጡ!' : 'Welcome to ብስለት';
     final subtitle = _isAm
         ? 'በዚህ ክረምት በአራት ምሰሶች እድገትህን ገንባ፦ መንፈሳዊ፣ ክህሎቶች፣ ህብረት፣ ቤተሰብ'
@@ -182,18 +183,18 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           const SizedBox(height: 24),
           Text(h, style: AppTextStyles.displayMedium, textAlign: TextAlign.center),
           const SizedBox(height: 12),
-          Text(subtitle, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary, height: 1.5), textAlign: TextAlign.center),
+          Text(subtitle, style: AppTextStyles.bodyMedium.copyWith(color: c.textSecondary, height: 1.5), textAlign: TextAlign.center),
           const SizedBox(height: 32),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _pillarIcon('🙏', _isAm ? 'መንፈሳዊ' : 'Spiritual'),
+              _pillarIcon('🙏', _isAm ? 'መንፈሳዊ' : 'Spiritual', c),
               const SizedBox(width: 16),
-              _pillarIcon('🎯', _isAm ? 'ክህሎቶች' : 'Skills'),
+              _pillarIcon('🎯', _isAm ? 'ክህሎቶች' : 'Skills', c),
               const SizedBox(width: 16),
-              _pillarIcon('👥', _isAm ? 'ህብረት' : 'Fellowship'),
+              _pillarIcon('👥', _isAm ? 'ህብረት' : 'Fellowship', c),
               const SizedBox(width: 16),
-              _pillarIcon('👨‍👩‍👧‍👧', _isAm ? 'ቤተሰብ' : 'Family'),
+              _pillarIcon('👨‍👩‍👧‍👧', _isAm ? 'ቤተሰብ' : 'Family', c),
             ],
           ),
           const SizedBox(height: 24),
@@ -202,16 +203,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: AppColors.card,
+                color: c.card,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: c.border),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(_isAm ? 'EN' : 'አማ', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textMuted)),
+                  Text(_isAm ? 'EN' : 'አማ', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: c.textMuted)),
                   const SizedBox(width: 6),
-                  Icon(Icons.translate, size: 16, color: AppColors.textMuted),
+                  Icon(Icons.translate, size: 16, color: c.textMuted),
                 ],
               ),
             ),
@@ -221,25 +222,25 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  Widget _pillarIcon(String emoji, String label) {
+  Widget _pillarIcon(String emoji, String label, ThemePalette c) {
     return Column(
       children: [
         Container(
           width: 48, height: 48,
           decoration: BoxDecoration(
-            color: AppColors.card,
+            color: c.card,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: c.border),
           ),
           child: Center(child: Text(emoji, style: TextStyle(fontSize: 22))),
         ),
         const SizedBox(height: 4),
-        Text(label, style: TextStyle(fontFamily: 'Inter', fontSize: 9, color: AppColors.textMuted)),
+        Text(label, style: TextStyle(fontFamily: 'Inter', fontSize: 9, color: c.textMuted)),
       ],
     );
   }
 
-  Widget _buildHowItWorksPage(AppLocalizations l) {
+  Widget _buildHowItWorksPage(AppLocalizations l, ThemePalette c) {
     final title = _isAm ? '90 ቀናት እንዴት ይሠራሉ' : 'How the 90 Days Work';
     final per = 90 ~/ 4;
     final ranges = List.generate(4, (i) {
@@ -278,19 +279,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               _isAm
                 ? '90 ቀናት በእውነት ለመለወጥ በቂ ጊዜ ነው። ዕለታዊ ምት፣ የአራት ምሰሶች ተጠያቂነት እና የማይረሳ ለውጥ። በየቀኑ አንድ ምሰሶ፣ ቀስ በቀስ እያደግህ ትሄዳለህ።'
                 : '90 days is enough time to genuinely change. A daily rhythm, 4-pillar accountability, and real transformation. Each day you show up, you grow — not by chance, but by design. You won\'t be the same person at the end.',
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary, height: 1.5, fontSize: 13),
+              style: AppTextStyles.bodyMedium.copyWith(color: c.textSecondary, height: 1.5, fontSize: 13),
             ),
           ),
           const SizedBox(height: 20),
-          Text(_isAm ? 'የእድገት ደረጃዎች' : 'Growth Stages', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textSecondary)),
+          Text(_isAm ? 'የእድገት ደረጃዎች' : 'Growth Stages', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w700, color: c.textSecondary)),
           const SizedBox(height: 12),
-          ...phases.asMap().entries.map((e) => _phaseRow(e.key, e.value)),
+          ...phases.asMap().entries.map((e) => _phaseRow(e.key, e.value, c)),
         ],
       ),
     );
   }
 
-  Widget _phaseRow(int i, Map<String, String> phase) {
+  Widget _phaseRow(int i, Map<String, String> phase, ThemePalette c) {
     final colors = [const Color(0xFF4CAF50), const Color(0xFF2196F3), const Color(0xFFFF6F00), const Color(0xFF9C27B0)];
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -305,8 +306,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(phase['label']!, style: TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
-              Text(phase['desc']!, style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textMuted)),
+              Text(phase['label']!, style: TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w700, color: c.textPrimary)),
+              Text(phase['desc']!, style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: c.textMuted)),
             ],
           ),
         ],
@@ -314,7 +315,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  Widget _buildSetupPage(AppLocalizations l) {
+  Widget _buildSetupPage(AppLocalizations l, ThemePalette c) {
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -329,45 +330,45 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               labelText: 'Your name',
               hintText: 'Enter your name...',
               filled: true,
-              fillColor: AppColors.card,
+              fillColor: c.card,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
             ),
             textCapitalization: TextCapitalization.words,
           ),
           const SizedBox(height: 20),
-          Text(_isAm ? 'መጽሐፍ ቅዱስ እቅድ' : 'Bible Plan', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textSecondary)),
+          Text(_isAm ? 'መጽሐፍ ቅዱስ እቅድ' : 'Bible Plan', style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w700, color: c.textSecondary)),
           const SizedBox(height: 8),
-          _planOption('ot', _isAm ? 'ብሉይ ኪዳን' : 'Old Testament'),
+          _planOption('ot', _isAm ? 'ብሉይ ኪዳን' : 'Old Testament', c),
           const SizedBox(height: 8),
-          _planOption('nt', _isAm ? 'አዲስ ኪዳን' : 'New Testament'),
+          _planOption('nt', _isAm ? 'አዲስ ኪዳን' : 'New Testament', c),
         ],
       ),
     );
   }
 
-  Widget _planOption(String id, String label) {
+  Widget _planOption(String id, String label, ThemePalette c) {
     final selected = _biblePlan == id;
     return GestureDetector(
       onTap: () => setState(() => _biblePlan = id),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: selected ? AppColors.primary.withValues(alpha: 0.1) : AppColors.card,
+          color: selected ? AppColors.primary.withValues(alpha: 0.1) : c.card,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: selected ? AppColors.primary : AppColors.border, width: selected ? 1.5 : 1),
+          border: Border.all(color: selected ? AppColors.primary : c.border, width: selected ? 1.5 : 1),
         ),
         child: Row(
           children: [
-            Icon(selected ? Icons.radio_button_checked : Icons.radio_button_off, size: 18, color: selected ? AppColors.primary : AppColors.textMuted),
+            Icon(selected ? Icons.radio_button_checked : Icons.radio_button_off, size: 18, color: selected ? AppColors.primary : c.textMuted),
             const SizedBox(width: 10),
-            Text(label, style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: selected ? AppColors.textPrimary : AppColors.textSecondary)),
+            Text(label, style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: selected ? c.textPrimary : c.textSecondary)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildCtaPage(AppLocalizations l) {
+  Widget _buildCtaPage(AppLocalizations l, ThemePalette c) {
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -385,7 +386,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           const SizedBox(height: 12),
           Text(
             _isAm ? 'የብስለት ጉዞህ ዛሬ ይጀምራል።' : 'Your journey of maturity begins today.',
-            style: AppTextStyles.bodyLarge.copyWith(color: AppColors.textSecondary),
+            style: AppTextStyles.bodyLarge.copyWith(color: c.textSecondary),
             textAlign: TextAlign.center,
           ),
         ],

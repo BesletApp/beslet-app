@@ -37,19 +37,21 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
   }
 
   Widget _buildIcon(IconData icon, bool selected) {
+    final c = AppColors.of(context);
     return AnimatedBuilder(
       animation: _bounceAnim,
       builder: (_, child) => Transform.scale(
         scale: selected ? 1.0 + _bounceAnim.value * 0.15 : 1.0,
         child: child,
       ),
-      child: Icon(icon, color: selected ? AppColors.primary : AppColors.textMuted),
+      child: Icon(icon, color: selected ? AppColors.primary : c.textMuted),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
+    final c = AppColors.of(context);
     final currentIndex = widget.navigationShell.currentIndex;
 
     return Scaffold(
@@ -67,7 +69,7 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
             _bounceCtrl.forward(from: 0);
           }
         },
-        backgroundColor: AppColors.card,
+        backgroundColor: c.card,
         indicatorColor: AppColors.primary.withValues(alpha: 0.2),
         destinations: [
           NavigationDestination(icon: _buildIcon(Icons.today_outlined, currentIndex == 0), selectedIcon: _buildIcon(Icons.today, currentIndex == 0), label: l.today),

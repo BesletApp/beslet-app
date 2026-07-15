@@ -3952,6 +3952,18 @@ class $FellowshipLogsTable extends FellowshipLogs
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _promptTypeMeta = const VerificationMeta(
+    'promptType',
+  );
+  @override
+  late final GeneratedColumn<int> promptType = GeneratedColumn<int>(
+    'prompt_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(-1),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -3959,6 +3971,7 @@ class $FellowshipLogsTable extends FellowshipLogs
     contactName,
     note,
     createdAt,
+    promptType,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -4008,6 +4021,12 @@ class $FellowshipLogsTable extends FellowshipLogs
     } else if (isInserting) {
       context.missing(_createdAtMeta);
     }
+    if (data.containsKey('prompt_type')) {
+      context.handle(
+        _promptTypeMeta,
+        promptType.isAcceptableOrUnknown(data['prompt_type']!, _promptTypeMeta),
+      );
+    }
     return context;
   }
 
@@ -4037,6 +4056,10 @@ class $FellowshipLogsTable extends FellowshipLogs
         DriftSqlType.string,
         data['${effectivePrefix}created_at'],
       )!,
+      promptType: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}prompt_type'],
+      )!,
     );
   }
 
@@ -4052,12 +4075,14 @@ class FellowshipLog extends DataClass implements Insertable<FellowshipLog> {
   final String? contactName;
   final String? note;
   final String createdAt;
+  final int promptType;
   const FellowshipLog({
     required this.id,
     required this.date,
     this.contactName,
     this.note,
     required this.createdAt,
+    required this.promptType,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -4071,6 +4096,7 @@ class FellowshipLog extends DataClass implements Insertable<FellowshipLog> {
       map['note'] = Variable<String>(note);
     }
     map['created_at'] = Variable<String>(createdAt);
+    map['prompt_type'] = Variable<int>(promptType);
     return map;
   }
 
@@ -4083,6 +4109,7 @@ class FellowshipLog extends DataClass implements Insertable<FellowshipLog> {
           : Value(contactName),
       note: note == null && nullToAbsent ? const Value.absent() : Value(note),
       createdAt: Value(createdAt),
+      promptType: Value(promptType),
     );
   }
 
@@ -4097,6 +4124,7 @@ class FellowshipLog extends DataClass implements Insertable<FellowshipLog> {
       contactName: serializer.fromJson<String?>(json['contactName']),
       note: serializer.fromJson<String?>(json['note']),
       createdAt: serializer.fromJson<String>(json['createdAt']),
+      promptType: serializer.fromJson<int>(json['promptType']),
     );
   }
   @override
@@ -4108,6 +4136,7 @@ class FellowshipLog extends DataClass implements Insertable<FellowshipLog> {
       'contactName': serializer.toJson<String?>(contactName),
       'note': serializer.toJson<String?>(note),
       'createdAt': serializer.toJson<String>(createdAt),
+      'promptType': serializer.toJson<int>(promptType),
     };
   }
 
@@ -4117,12 +4146,14 @@ class FellowshipLog extends DataClass implements Insertable<FellowshipLog> {
     Value<String?> contactName = const Value.absent(),
     Value<String?> note = const Value.absent(),
     String? createdAt,
+    int? promptType,
   }) => FellowshipLog(
     id: id ?? this.id,
     date: date ?? this.date,
     contactName: contactName.present ? contactName.value : this.contactName,
     note: note.present ? note.value : this.note,
     createdAt: createdAt ?? this.createdAt,
+    promptType: promptType ?? this.promptType,
   );
   FellowshipLog copyWithCompanion(FellowshipLogsCompanion data) {
     return FellowshipLog(
@@ -4133,6 +4164,9 @@ class FellowshipLog extends DataClass implements Insertable<FellowshipLog> {
           : this.contactName,
       note: data.note.present ? data.note.value : this.note,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      promptType: data.promptType.present
+          ? data.promptType.value
+          : this.promptType,
     );
   }
 
@@ -4143,13 +4177,15 @@ class FellowshipLog extends DataClass implements Insertable<FellowshipLog> {
           ..write('date: $date, ')
           ..write('contactName: $contactName, ')
           ..write('note: $note, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('promptType: $promptType')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, date, contactName, note, createdAt);
+  int get hashCode =>
+      Object.hash(id, date, contactName, note, createdAt, promptType);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -4158,7 +4194,8 @@ class FellowshipLog extends DataClass implements Insertable<FellowshipLog> {
           other.date == this.date &&
           other.contactName == this.contactName &&
           other.note == this.note &&
-          other.createdAt == this.createdAt);
+          other.createdAt == this.createdAt &&
+          other.promptType == this.promptType);
 }
 
 class FellowshipLogsCompanion extends UpdateCompanion<FellowshipLog> {
@@ -4167,6 +4204,7 @@ class FellowshipLogsCompanion extends UpdateCompanion<FellowshipLog> {
   final Value<String?> contactName;
   final Value<String?> note;
   final Value<String> createdAt;
+  final Value<int> promptType;
   final Value<int> rowid;
   const FellowshipLogsCompanion({
     this.id = const Value.absent(),
@@ -4174,6 +4212,7 @@ class FellowshipLogsCompanion extends UpdateCompanion<FellowshipLog> {
     this.contactName = const Value.absent(),
     this.note = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.promptType = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   FellowshipLogsCompanion.insert({
@@ -4182,6 +4221,7 @@ class FellowshipLogsCompanion extends UpdateCompanion<FellowshipLog> {
     this.contactName = const Value.absent(),
     this.note = const Value.absent(),
     required String createdAt,
+    this.promptType = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        date = Value(date),
@@ -4192,6 +4232,7 @@ class FellowshipLogsCompanion extends UpdateCompanion<FellowshipLog> {
     Expression<String>? contactName,
     Expression<String>? note,
     Expression<String>? createdAt,
+    Expression<int>? promptType,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -4200,6 +4241,7 @@ class FellowshipLogsCompanion extends UpdateCompanion<FellowshipLog> {
       if (contactName != null) 'contact_name': contactName,
       if (note != null) 'note': note,
       if (createdAt != null) 'created_at': createdAt,
+      if (promptType != null) 'prompt_type': promptType,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -4210,6 +4252,7 @@ class FellowshipLogsCompanion extends UpdateCompanion<FellowshipLog> {
     Value<String?>? contactName,
     Value<String?>? note,
     Value<String>? createdAt,
+    Value<int>? promptType,
     Value<int>? rowid,
   }) {
     return FellowshipLogsCompanion(
@@ -4218,6 +4261,7 @@ class FellowshipLogsCompanion extends UpdateCompanion<FellowshipLog> {
       contactName: contactName ?? this.contactName,
       note: note ?? this.note,
       createdAt: createdAt ?? this.createdAt,
+      promptType: promptType ?? this.promptType,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -4240,6 +4284,9 @@ class FellowshipLogsCompanion extends UpdateCompanion<FellowshipLog> {
     if (createdAt.present) {
       map['created_at'] = Variable<String>(createdAt.value);
     }
+    if (promptType.present) {
+      map['prompt_type'] = Variable<int>(promptType.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -4254,6 +4301,7 @@ class FellowshipLogsCompanion extends UpdateCompanion<FellowshipLog> {
           ..write('contactName: $contactName, ')
           ..write('note: $note, ')
           ..write('createdAt: $createdAt, ')
+          ..write('promptType: $promptType, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -7675,6 +7723,827 @@ class BibleSessionsCompanion extends UpdateCompanion<BibleSession> {
   }
 }
 
+class $ReadingLoopsTable extends ReadingLoops
+    with TableInfo<$ReadingLoopsTable, ReadingLoop> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ReadingLoopsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _planIdMeta = const VerificationMeta('planId');
+  @override
+  late final GeneratedColumn<String> planId = GeneratedColumn<String>(
+    'plan_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _durationMeta = const VerificationMeta(
+    'duration',
+  );
+  @override
+  late final GeneratedColumn<int> duration = GeneratedColumn<int>(
+    'duration',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _startChapterMeta = const VerificationMeta(
+    'startChapter',
+  );
+  @override
+  late final GeneratedColumn<int> startChapter = GeneratedColumn<int>(
+    'start_chapter',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _startDateMeta = const VerificationMeta(
+    'startDate',
+  );
+  @override
+  late final GeneratedColumn<String> startDate = GeneratedColumn<String>(
+    'start_date',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _loopNumberMeta = const VerificationMeta(
+    'loopNumber',
+  );
+  @override
+  late final GeneratedColumn<int> loopNumber = GeneratedColumn<int>(
+    'loop_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    planId,
+    duration,
+    startChapter,
+    startDate,
+    status,
+    loopNumber,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'reading_loops';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ReadingLoop> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('plan_id')) {
+      context.handle(
+        _planIdMeta,
+        planId.isAcceptableOrUnknown(data['plan_id']!, _planIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_planIdMeta);
+    }
+    if (data.containsKey('duration')) {
+      context.handle(
+        _durationMeta,
+        duration.isAcceptableOrUnknown(data['duration']!, _durationMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_durationMeta);
+    }
+    if (data.containsKey('start_chapter')) {
+      context.handle(
+        _startChapterMeta,
+        startChapter.isAcceptableOrUnknown(
+          data['start_chapter']!,
+          _startChapterMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_startChapterMeta);
+    }
+    if (data.containsKey('start_date')) {
+      context.handle(
+        _startDateMeta,
+        startDate.isAcceptableOrUnknown(data['start_date']!, _startDateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_startDateMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('loop_number')) {
+      context.handle(
+        _loopNumberMeta,
+        loopNumber.isAcceptableOrUnknown(data['loop_number']!, _loopNumberMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_loopNumberMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ReadingLoop map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ReadingLoop(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      planId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}plan_id'],
+      )!,
+      duration: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}duration'],
+      )!,
+      startChapter: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}start_chapter'],
+      )!,
+      startDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}start_date'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      loopNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}loop_number'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ReadingLoopsTable createAlias(String alias) {
+    return $ReadingLoopsTable(attachedDatabase, alias);
+  }
+}
+
+class ReadingLoop extends DataClass implements Insertable<ReadingLoop> {
+  final String id;
+  final String planId;
+  final int duration;
+  final int startChapter;
+  final String startDate;
+  final String status;
+  final int loopNumber;
+  final String createdAt;
+  const ReadingLoop({
+    required this.id,
+    required this.planId,
+    required this.duration,
+    required this.startChapter,
+    required this.startDate,
+    required this.status,
+    required this.loopNumber,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['plan_id'] = Variable<String>(planId);
+    map['duration'] = Variable<int>(duration);
+    map['start_chapter'] = Variable<int>(startChapter);
+    map['start_date'] = Variable<String>(startDate);
+    map['status'] = Variable<String>(status);
+    map['loop_number'] = Variable<int>(loopNumber);
+    map['created_at'] = Variable<String>(createdAt);
+    return map;
+  }
+
+  ReadingLoopsCompanion toCompanion(bool nullToAbsent) {
+    return ReadingLoopsCompanion(
+      id: Value(id),
+      planId: Value(planId),
+      duration: Value(duration),
+      startChapter: Value(startChapter),
+      startDate: Value(startDate),
+      status: Value(status),
+      loopNumber: Value(loopNumber),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory ReadingLoop.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ReadingLoop(
+      id: serializer.fromJson<String>(json['id']),
+      planId: serializer.fromJson<String>(json['planId']),
+      duration: serializer.fromJson<int>(json['duration']),
+      startChapter: serializer.fromJson<int>(json['startChapter']),
+      startDate: serializer.fromJson<String>(json['startDate']),
+      status: serializer.fromJson<String>(json['status']),
+      loopNumber: serializer.fromJson<int>(json['loopNumber']),
+      createdAt: serializer.fromJson<String>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'planId': serializer.toJson<String>(planId),
+      'duration': serializer.toJson<int>(duration),
+      'startChapter': serializer.toJson<int>(startChapter),
+      'startDate': serializer.toJson<String>(startDate),
+      'status': serializer.toJson<String>(status),
+      'loopNumber': serializer.toJson<int>(loopNumber),
+      'createdAt': serializer.toJson<String>(createdAt),
+    };
+  }
+
+  ReadingLoop copyWith({
+    String? id,
+    String? planId,
+    int? duration,
+    int? startChapter,
+    String? startDate,
+    String? status,
+    int? loopNumber,
+    String? createdAt,
+  }) => ReadingLoop(
+    id: id ?? this.id,
+    planId: planId ?? this.planId,
+    duration: duration ?? this.duration,
+    startChapter: startChapter ?? this.startChapter,
+    startDate: startDate ?? this.startDate,
+    status: status ?? this.status,
+    loopNumber: loopNumber ?? this.loopNumber,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  ReadingLoop copyWithCompanion(ReadingLoopsCompanion data) {
+    return ReadingLoop(
+      id: data.id.present ? data.id.value : this.id,
+      planId: data.planId.present ? data.planId.value : this.planId,
+      duration: data.duration.present ? data.duration.value : this.duration,
+      startChapter: data.startChapter.present
+          ? data.startChapter.value
+          : this.startChapter,
+      startDate: data.startDate.present ? data.startDate.value : this.startDate,
+      status: data.status.present ? data.status.value : this.status,
+      loopNumber: data.loopNumber.present
+          ? data.loopNumber.value
+          : this.loopNumber,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ReadingLoop(')
+          ..write('id: $id, ')
+          ..write('planId: $planId, ')
+          ..write('duration: $duration, ')
+          ..write('startChapter: $startChapter, ')
+          ..write('startDate: $startDate, ')
+          ..write('status: $status, ')
+          ..write('loopNumber: $loopNumber, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    planId,
+    duration,
+    startChapter,
+    startDate,
+    status,
+    loopNumber,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ReadingLoop &&
+          other.id == this.id &&
+          other.planId == this.planId &&
+          other.duration == this.duration &&
+          other.startChapter == this.startChapter &&
+          other.startDate == this.startDate &&
+          other.status == this.status &&
+          other.loopNumber == this.loopNumber &&
+          other.createdAt == this.createdAt);
+}
+
+class ReadingLoopsCompanion extends UpdateCompanion<ReadingLoop> {
+  final Value<String> id;
+  final Value<String> planId;
+  final Value<int> duration;
+  final Value<int> startChapter;
+  final Value<String> startDate;
+  final Value<String> status;
+  final Value<int> loopNumber;
+  final Value<String> createdAt;
+  final Value<int> rowid;
+  const ReadingLoopsCompanion({
+    this.id = const Value.absent(),
+    this.planId = const Value.absent(),
+    this.duration = const Value.absent(),
+    this.startChapter = const Value.absent(),
+    this.startDate = const Value.absent(),
+    this.status = const Value.absent(),
+    this.loopNumber = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ReadingLoopsCompanion.insert({
+    required String id,
+    required String planId,
+    required int duration,
+    required int startChapter,
+    required String startDate,
+    required String status,
+    required int loopNumber,
+    required String createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       planId = Value(planId),
+       duration = Value(duration),
+       startChapter = Value(startChapter),
+       startDate = Value(startDate),
+       status = Value(status),
+       loopNumber = Value(loopNumber),
+       createdAt = Value(createdAt);
+  static Insertable<ReadingLoop> custom({
+    Expression<String>? id,
+    Expression<String>? planId,
+    Expression<int>? duration,
+    Expression<int>? startChapter,
+    Expression<String>? startDate,
+    Expression<String>? status,
+    Expression<int>? loopNumber,
+    Expression<String>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (planId != null) 'plan_id': planId,
+      if (duration != null) 'duration': duration,
+      if (startChapter != null) 'start_chapter': startChapter,
+      if (startDate != null) 'start_date': startDate,
+      if (status != null) 'status': status,
+      if (loopNumber != null) 'loop_number': loopNumber,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ReadingLoopsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? planId,
+    Value<int>? duration,
+    Value<int>? startChapter,
+    Value<String>? startDate,
+    Value<String>? status,
+    Value<int>? loopNumber,
+    Value<String>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return ReadingLoopsCompanion(
+      id: id ?? this.id,
+      planId: planId ?? this.planId,
+      duration: duration ?? this.duration,
+      startChapter: startChapter ?? this.startChapter,
+      startDate: startDate ?? this.startDate,
+      status: status ?? this.status,
+      loopNumber: loopNumber ?? this.loopNumber,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (planId.present) {
+      map['plan_id'] = Variable<String>(planId.value);
+    }
+    if (duration.present) {
+      map['duration'] = Variable<int>(duration.value);
+    }
+    if (startChapter.present) {
+      map['start_chapter'] = Variable<int>(startChapter.value);
+    }
+    if (startDate.present) {
+      map['start_date'] = Variable<String>(startDate.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (loopNumber.present) {
+      map['loop_number'] = Variable<int>(loopNumber.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<String>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ReadingLoopsCompanion(')
+          ..write('id: $id, ')
+          ..write('planId: $planId, ')
+          ..write('duration: $duration, ')
+          ..write('startChapter: $startChapter, ')
+          ..write('startDate: $startDate, ')
+          ..write('status: $status, ')
+          ..write('loopNumber: $loopNumber, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $WisdomNotesTable extends WisdomNotes
+    with TableInfo<$WisdomNotesTable, WisdomNote> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $WisdomNotesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _bookIdMeta = const VerificationMeta('bookId');
+  @override
+  late final GeneratedColumn<String> bookId = GeneratedColumn<String>(
+    'book_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, bookId, note, createdAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'wisdom_notes';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<WisdomNote> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('book_id')) {
+      context.handle(
+        _bookIdMeta,
+        bookId.isAcceptableOrUnknown(data['book_id']!, _bookIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bookIdMeta);
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_noteMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  WisdomNote map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return WisdomNote(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      bookId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}book_id'],
+      )!,
+      note: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $WisdomNotesTable createAlias(String alias) {
+    return $WisdomNotesTable(attachedDatabase, alias);
+  }
+}
+
+class WisdomNote extends DataClass implements Insertable<WisdomNote> {
+  final String id;
+  final String bookId;
+  final String note;
+  final String createdAt;
+  const WisdomNote({
+    required this.id,
+    required this.bookId,
+    required this.note,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['book_id'] = Variable<String>(bookId);
+    map['note'] = Variable<String>(note);
+    map['created_at'] = Variable<String>(createdAt);
+    return map;
+  }
+
+  WisdomNotesCompanion toCompanion(bool nullToAbsent) {
+    return WisdomNotesCompanion(
+      id: Value(id),
+      bookId: Value(bookId),
+      note: Value(note),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory WisdomNote.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return WisdomNote(
+      id: serializer.fromJson<String>(json['id']),
+      bookId: serializer.fromJson<String>(json['bookId']),
+      note: serializer.fromJson<String>(json['note']),
+      createdAt: serializer.fromJson<String>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'bookId': serializer.toJson<String>(bookId),
+      'note': serializer.toJson<String>(note),
+      'createdAt': serializer.toJson<String>(createdAt),
+    };
+  }
+
+  WisdomNote copyWith({
+    String? id,
+    String? bookId,
+    String? note,
+    String? createdAt,
+  }) => WisdomNote(
+    id: id ?? this.id,
+    bookId: bookId ?? this.bookId,
+    note: note ?? this.note,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  WisdomNote copyWithCompanion(WisdomNotesCompanion data) {
+    return WisdomNote(
+      id: data.id.present ? data.id.value : this.id,
+      bookId: data.bookId.present ? data.bookId.value : this.bookId,
+      note: data.note.present ? data.note.value : this.note,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WisdomNote(')
+          ..write('id: $id, ')
+          ..write('bookId: $bookId, ')
+          ..write('note: $note, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, bookId, note, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is WisdomNote &&
+          other.id == this.id &&
+          other.bookId == this.bookId &&
+          other.note == this.note &&
+          other.createdAt == this.createdAt);
+}
+
+class WisdomNotesCompanion extends UpdateCompanion<WisdomNote> {
+  final Value<String> id;
+  final Value<String> bookId;
+  final Value<String> note;
+  final Value<String> createdAt;
+  final Value<int> rowid;
+  const WisdomNotesCompanion({
+    this.id = const Value.absent(),
+    this.bookId = const Value.absent(),
+    this.note = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  WisdomNotesCompanion.insert({
+    required String id,
+    required String bookId,
+    required String note,
+    required String createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       bookId = Value(bookId),
+       note = Value(note),
+       createdAt = Value(createdAt);
+  static Insertable<WisdomNote> custom({
+    Expression<String>? id,
+    Expression<String>? bookId,
+    Expression<String>? note,
+    Expression<String>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (bookId != null) 'book_id': bookId,
+      if (note != null) 'note': note,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  WisdomNotesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? bookId,
+    Value<String>? note,
+    Value<String>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return WisdomNotesCompanion(
+      id: id ?? this.id,
+      bookId: bookId ?? this.bookId,
+      note: note ?? this.note,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (bookId.present) {
+      map['book_id'] = Variable<String>(bookId.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<String>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WisdomNotesCompanion(')
+          ..write('id: $id, ')
+          ..write('bookId: $bookId, ')
+          ..write('note: $note, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -7700,6 +8569,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $StreakFrozenTable streakFrozen = $StreakFrozenTable(this);
   late final $SoulLogTable soulLog = $SoulLogTable(this);
   late final $BibleSessionsTable bibleSessions = $BibleSessionsTable(this);
+  late final $ReadingLoopsTable readingLoops = $ReadingLoopsTable(this);
+  late final $WisdomNotesTable wisdomNotes = $WisdomNotesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -7724,6 +8595,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     streakFrozen,
     soulLog,
     bibleSessions,
+    readingLoops,
+    wisdomNotes,
   ];
 }
 
@@ -10531,6 +11404,7 @@ typedef $$FellowshipLogsTableCreateCompanionBuilder =
       Value<String?> contactName,
       Value<String?> note,
       required String createdAt,
+      Value<int> promptType,
       Value<int> rowid,
     });
 typedef $$FellowshipLogsTableUpdateCompanionBuilder =
@@ -10540,6 +11414,7 @@ typedef $$FellowshipLogsTableUpdateCompanionBuilder =
       Value<String?> contactName,
       Value<String?> note,
       Value<String> createdAt,
+      Value<int> promptType,
       Value<int> rowid,
     });
 
@@ -10574,6 +11449,11 @@ class $$FellowshipLogsTableFilterComposer
 
   ColumnFilters<String> get createdAt => $composableBuilder(
     column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get promptType => $composableBuilder(
+    column: $table.promptType,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -10611,6 +11491,11 @@ class $$FellowshipLogsTableOrderingComposer
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get promptType => $composableBuilder(
+    column: $table.promptType,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$FellowshipLogsTableAnnotationComposer
@@ -10638,6 +11523,11 @@ class $$FellowshipLogsTableAnnotationComposer
 
   GeneratedColumn<String> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<int> get promptType => $composableBuilder(
+    column: $table.promptType,
+    builder: (column) => column,
+  );
 }
 
 class $$FellowshipLogsTableTableManager
@@ -10678,6 +11568,7 @@ class $$FellowshipLogsTableTableManager
                 Value<String?> contactName = const Value.absent(),
                 Value<String?> note = const Value.absent(),
                 Value<String> createdAt = const Value.absent(),
+                Value<int> promptType = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => FellowshipLogsCompanion(
                 id: id,
@@ -10685,6 +11576,7 @@ class $$FellowshipLogsTableTableManager
                 contactName: contactName,
                 note: note,
                 createdAt: createdAt,
+                promptType: promptType,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -10694,6 +11586,7 @@ class $$FellowshipLogsTableTableManager
                 Value<String?> contactName = const Value.absent(),
                 Value<String?> note = const Value.absent(),
                 required String createdAt,
+                Value<int> promptType = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => FellowshipLogsCompanion.insert(
                 id: id,
@@ -10701,6 +11594,7 @@ class $$FellowshipLogsTableTableManager
                 contactName: contactName,
                 note: note,
                 createdAt: createdAt,
+                promptType: promptType,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -12540,6 +13434,448 @@ typedef $$BibleSessionsTableProcessedTableManager =
       BibleSession,
       PrefetchHooks Function()
     >;
+typedef $$ReadingLoopsTableCreateCompanionBuilder =
+    ReadingLoopsCompanion Function({
+      required String id,
+      required String planId,
+      required int duration,
+      required int startChapter,
+      required String startDate,
+      required String status,
+      required int loopNumber,
+      required String createdAt,
+      Value<int> rowid,
+    });
+typedef $$ReadingLoopsTableUpdateCompanionBuilder =
+    ReadingLoopsCompanion Function({
+      Value<String> id,
+      Value<String> planId,
+      Value<int> duration,
+      Value<int> startChapter,
+      Value<String> startDate,
+      Value<String> status,
+      Value<int> loopNumber,
+      Value<String> createdAt,
+      Value<int> rowid,
+    });
+
+class $$ReadingLoopsTableFilterComposer
+    extends Composer<_$AppDatabase, $ReadingLoopsTable> {
+  $$ReadingLoopsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get planId => $composableBuilder(
+    column: $table.planId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get duration => $composableBuilder(
+    column: $table.duration,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get startChapter => $composableBuilder(
+    column: $table.startChapter,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get startDate => $composableBuilder(
+    column: $table.startDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get loopNumber => $composableBuilder(
+    column: $table.loopNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ReadingLoopsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ReadingLoopsTable> {
+  $$ReadingLoopsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get planId => $composableBuilder(
+    column: $table.planId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get duration => $composableBuilder(
+    column: $table.duration,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get startChapter => $composableBuilder(
+    column: $table.startChapter,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get startDate => $composableBuilder(
+    column: $table.startDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get loopNumber => $composableBuilder(
+    column: $table.loopNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ReadingLoopsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ReadingLoopsTable> {
+  $$ReadingLoopsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get planId =>
+      $composableBuilder(column: $table.planId, builder: (column) => column);
+
+  GeneratedColumn<int> get duration =>
+      $composableBuilder(column: $table.duration, builder: (column) => column);
+
+  GeneratedColumn<int> get startChapter => $composableBuilder(
+    column: $table.startChapter,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get startDate =>
+      $composableBuilder(column: $table.startDate, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<int> get loopNumber => $composableBuilder(
+    column: $table.loopNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$ReadingLoopsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ReadingLoopsTable,
+          ReadingLoop,
+          $$ReadingLoopsTableFilterComposer,
+          $$ReadingLoopsTableOrderingComposer,
+          $$ReadingLoopsTableAnnotationComposer,
+          $$ReadingLoopsTableCreateCompanionBuilder,
+          $$ReadingLoopsTableUpdateCompanionBuilder,
+          (
+            ReadingLoop,
+            BaseReferences<_$AppDatabase, $ReadingLoopsTable, ReadingLoop>,
+          ),
+          ReadingLoop,
+          PrefetchHooks Function()
+        > {
+  $$ReadingLoopsTableTableManager(_$AppDatabase db, $ReadingLoopsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ReadingLoopsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ReadingLoopsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ReadingLoopsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> planId = const Value.absent(),
+                Value<int> duration = const Value.absent(),
+                Value<int> startChapter = const Value.absent(),
+                Value<String> startDate = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<int> loopNumber = const Value.absent(),
+                Value<String> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ReadingLoopsCompanion(
+                id: id,
+                planId: planId,
+                duration: duration,
+                startChapter: startChapter,
+                startDate: startDate,
+                status: status,
+                loopNumber: loopNumber,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String planId,
+                required int duration,
+                required int startChapter,
+                required String startDate,
+                required String status,
+                required int loopNumber,
+                required String createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ReadingLoopsCompanion.insert(
+                id: id,
+                planId: planId,
+                duration: duration,
+                startChapter: startChapter,
+                startDate: startDate,
+                status: status,
+                loopNumber: loopNumber,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ReadingLoopsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ReadingLoopsTable,
+      ReadingLoop,
+      $$ReadingLoopsTableFilterComposer,
+      $$ReadingLoopsTableOrderingComposer,
+      $$ReadingLoopsTableAnnotationComposer,
+      $$ReadingLoopsTableCreateCompanionBuilder,
+      $$ReadingLoopsTableUpdateCompanionBuilder,
+      (
+        ReadingLoop,
+        BaseReferences<_$AppDatabase, $ReadingLoopsTable, ReadingLoop>,
+      ),
+      ReadingLoop,
+      PrefetchHooks Function()
+    >;
+typedef $$WisdomNotesTableCreateCompanionBuilder =
+    WisdomNotesCompanion Function({
+      required String id,
+      required String bookId,
+      required String note,
+      required String createdAt,
+      Value<int> rowid,
+    });
+typedef $$WisdomNotesTableUpdateCompanionBuilder =
+    WisdomNotesCompanion Function({
+      Value<String> id,
+      Value<String> bookId,
+      Value<String> note,
+      Value<String> createdAt,
+      Value<int> rowid,
+    });
+
+class $$WisdomNotesTableFilterComposer
+    extends Composer<_$AppDatabase, $WisdomNotesTable> {
+  $$WisdomNotesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get bookId => $composableBuilder(
+    column: $table.bookId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$WisdomNotesTableOrderingComposer
+    extends Composer<_$AppDatabase, $WisdomNotesTable> {
+  $$WisdomNotesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get bookId => $composableBuilder(
+    column: $table.bookId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$WisdomNotesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $WisdomNotesTable> {
+  $$WisdomNotesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get bookId =>
+      $composableBuilder(column: $table.bookId, builder: (column) => column);
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<String> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$WisdomNotesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $WisdomNotesTable,
+          WisdomNote,
+          $$WisdomNotesTableFilterComposer,
+          $$WisdomNotesTableOrderingComposer,
+          $$WisdomNotesTableAnnotationComposer,
+          $$WisdomNotesTableCreateCompanionBuilder,
+          $$WisdomNotesTableUpdateCompanionBuilder,
+          (
+            WisdomNote,
+            BaseReferences<_$AppDatabase, $WisdomNotesTable, WisdomNote>,
+          ),
+          WisdomNote,
+          PrefetchHooks Function()
+        > {
+  $$WisdomNotesTableTableManager(_$AppDatabase db, $WisdomNotesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$WisdomNotesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$WisdomNotesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$WisdomNotesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> bookId = const Value.absent(),
+                Value<String> note = const Value.absent(),
+                Value<String> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => WisdomNotesCompanion(
+                id: id,
+                bookId: bookId,
+                note: note,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String bookId,
+                required String note,
+                required String createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => WisdomNotesCompanion.insert(
+                id: id,
+                bookId: bookId,
+                note: note,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$WisdomNotesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $WisdomNotesTable,
+      WisdomNote,
+      $$WisdomNotesTableFilterComposer,
+      $$WisdomNotesTableOrderingComposer,
+      $$WisdomNotesTableAnnotationComposer,
+      $$WisdomNotesTableCreateCompanionBuilder,
+      $$WisdomNotesTableUpdateCompanionBuilder,
+      (
+        WisdomNote,
+        BaseReferences<_$AppDatabase, $WisdomNotesTable, WisdomNote>,
+      ),
+      WisdomNote,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -12582,4 +13918,8 @@ class $AppDatabaseManager {
       $$SoulLogTableTableManager(_db, _db.soulLog);
   $$BibleSessionsTableTableManager get bibleSessions =>
       $$BibleSessionsTableTableManager(_db, _db.bibleSessions);
+  $$ReadingLoopsTableTableManager get readingLoops =>
+      $$ReadingLoopsTableTableManager(_db, _db.readingLoops);
+  $$WisdomNotesTableTableManager get wisdomNotes =>
+      $$WisdomNotesTableTableManager(_db, _db.wisdomNotes);
 }

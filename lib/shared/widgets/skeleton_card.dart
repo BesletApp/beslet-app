@@ -53,7 +53,7 @@ class _SkeletonCardState extends State<SkeletonCard> with SingleTickerProviderSt
           decoration: BoxDecoration(
             color: base,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.border, width: 0.5),
+            border: Border.all(color: widget.isDark ? AppColors.border : AppColors.borderLightTheme, width: 0.5),
           ),
           child: Row(children: [
             if (widget.hasCircle)

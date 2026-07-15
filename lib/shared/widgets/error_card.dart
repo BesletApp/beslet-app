@@ -10,16 +10,18 @@ class ErrorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = AppColors.of(context);
+    final t = AppTextStyles.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.cloud_off, size: 36, color: AppColors.textMuted),
+            Icon(Icons.cloud_off, size: 36, color: c.textMuted),
             const SizedBox(height: 12),
             Text(message,
-                style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+                style: t.bodyMedium.copyWith(color: c.textSecondary),
                 textAlign: TextAlign.center),
             if (onRetry != null) ...[
               const SizedBox(height: 16),

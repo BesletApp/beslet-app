@@ -20,13 +20,15 @@ import 'tables/streak_log_table.dart';
 import 'tables/streak_freeze_table.dart';
 import 'tables/soul_log_table.dart';
 import 'tables/bible_sessions_table.dart';
+import 'tables/reading_loops_table.dart';
+import 'tables/wisdom_notes_table.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Users, Habits, Completions, PrayerLogs, BibleReads, Skills, SkillSessions, Reflections, Challenges, ChallengeParticipants, FellowshipLogs, FamilyTimeLogs, Goals, TodoItems, DailyReflections, StreakLog, StreakFrozen, SoulLog, BibleSessions])
+@DriftDatabase(tables: [Users, Habits, Completions, PrayerLogs, BibleReads, Skills, SkillSessions, Reflections, Challenges, ChallengeParticipants, FellowshipLogs, FamilyTimeLogs, Goals, TodoItems, DailyReflections, StreakLog, StreakFrozen, SoulLog, BibleSessions, ReadingLoops, WisdomNotes])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
-  @override int get schemaVersion => 12;
+  @override int get schemaVersion => 14;
 
   @override
   MigrationStrategy get migration {
@@ -69,6 +71,13 @@ class AppDatabase extends _$AppDatabase {
         }
         if (from < 12) {
           await m.createTable(soulLog);
+        }
+        if (from < 13) {
+          await m.createTable(readingLoops);
+        }
+        if (from < 14) {
+          await m.addColumn(fellowshipLogs, fellowshipLogs.promptType);
+          await m.createTable(wisdomNotes);
         }
       },
     );

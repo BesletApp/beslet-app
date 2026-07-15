@@ -1,5 +1,52 @@
 import 'package:flutter/material.dart';
 
+class ThemePalette {
+  final bool isDark;
+  final Color textPrimary;
+  final Color textSecondary;
+  final Color textMuted;
+  final Color card;
+  final Color background;
+  final Color surface;
+  final Color border;
+
+  const ThemePalette._({
+    required this.isDark,
+    required this.textPrimary,
+    required this.textSecondary,
+    required this.textMuted,
+    required this.card,
+    required this.background,
+    required this.surface,
+    required this.border,
+  });
+
+  factory ThemePalette({required bool isDark}) {
+    if (isDark) {
+      return const ThemePalette._(
+        isDark: true,
+        textPrimary: AppColors.textPrimary,
+        textSecondary: AppColors.textSecondary,
+        textMuted: AppColors.textMuted,
+        card: AppColors.card,
+        background: AppColors.background,
+        surface: AppColors.surface,
+        border: AppColors.border,
+      );
+    }
+    return const ThemePalette._(
+      isDark: false,
+      textPrimary: AppColors.textPrimaryLight,
+      textSecondary: AppColors.textSecondaryLight,
+      textMuted: AppColors.textMutedLight,
+      card: AppColors.cardLight,
+      background: AppColors.backgroundLight,
+      surface: AppColors.surfaceLight,
+      border: AppColors.borderLightTheme,
+    );
+  }
+}
+
 class AppColors {
   // Obsidian depths — cool blue-black, 3-tier surface system
   static const Color background = Color(0xFF07090E);
@@ -41,6 +88,11 @@ class AppColors {
   static const Color progressGreen = Color(0xFF4CAF50);
   static const Color audioBlue = Color(0xFF2196F3);
   static const Color warningOrange = Color(0xFFFF6F00);
+
+  /// Returns the correct palette for the current theme brightness
+  static ThemePalette of(BuildContext context) => ThemePalette(
+    isDark: Theme.of(context).brightness == Brightness.dark,
+  );
 
   // Gold gradients
   static const LinearGradient gradientGold = LinearGradient(

@@ -26,6 +26,7 @@ class PhaseBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = AppColors.of(context);
     final daysPerPhase = totalDays ~/ phaseCount;
     final phaseColors = [
       const Color(0xFF4CAF50),
@@ -41,9 +42,9 @@ class PhaseBar extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: c.card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: c.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,9 +63,9 @@ class PhaseBar extends StatelessWidget {
               const Spacer(),
               Text(
                 isAm ? 'ቀን $day ከ$totalDays' : 'Day $day of $totalDays',
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'Inter', fontSize: 10, fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary,
+                  color: c.textSecondary,
                 ),
               ),
             ],
@@ -79,7 +80,7 @@ class PhaseBar extends StatelessWidget {
                   height: 4,
                   margin: EdgeInsets.only(right: i < phaseCount - 1 ? 4 : 0),
                   decoration: BoxDecoration(
-                    color: done ? phaseColors[i] : (active ? phaseColors[i].withValues(alpha: 0.6) : AppColors.border.withValues(alpha: 0.4)),
+                    color: done ? phaseColors[i] : (active ? phaseColors[i].withValues(alpha: 0.6) : c.border.withValues(alpha: 0.4)),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -99,7 +100,7 @@ class PhaseBar extends StatelessWidget {
                   style: TextStyle(
                     fontFamily: 'Inter', fontSize: 9,
                     fontWeight: active ? FontWeight.w700 : FontWeight.w500,
-                    color: active ? AppColors.textPrimary : AppColors.textMuted,
+                    color: active ? c.textPrimary : c.textMuted,
                   ),
                 ),
               );
@@ -110,9 +111,9 @@ class PhaseBar extends StatelessWidget {
             children: [
               Text(
                 isAm ? 'ይህ ሳምንት' : 'This Week',
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'Inter', fontSize: 10, fontWeight: FontWeight.w700,
-                  color: AppColors.textSecondary, letterSpacing: 0.5,
+                  color: c.textSecondary, letterSpacing: 0.5,
                 ),
               ),
             ],
@@ -133,7 +134,7 @@ class PhaseBar extends StatelessWidget {
                       isAm ? _amDayAbbr(d) : ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][(d - 1) % 7],
                       style: TextStyle(
                         fontFamily: 'Inter', fontSize: 8,
-                        color: isCurrentDay ? AppColors.textPrimary : AppColors.textMuted,
+                        color: isCurrentDay ? c.textPrimary : c.textMuted,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -142,7 +143,7 @@ class PhaseBar extends StatelessWidget {
                       height: 36,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: isEarlierDay ? phaseColors[phaseForDay].withValues(alpha: 0.3) : (isCurrentDay ? phaseColors[phaseIdx] : AppColors.border.withValues(alpha: 0.2)),
+                        color: isEarlierDay ? phaseColors[phaseForDay].withValues(alpha: 0.3) : (isCurrentDay ? phaseColors[phaseIdx] : c.border.withValues(alpha: 0.2)),
                         border: Border.all(
                           color: isCurrentDay ? phaseColors[phaseIdx] : Colors.transparent,
                           width: 2,
@@ -154,7 +155,7 @@ class PhaseBar extends StatelessWidget {
                         style: TextStyle(
                           fontFamily: 'Inter', fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: isEarlierDay ? AppColors.textPrimary : (isCurrentDay ? Colors.white : AppColors.textMuted),
+                          color: isEarlierDay ? c.textPrimary : (isCurrentDay ? Colors.white : c.textMuted),
                         ),
                       ),
                     ),

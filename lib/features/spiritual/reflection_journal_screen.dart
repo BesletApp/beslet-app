@@ -11,16 +11,17 @@ class ReflectionJournalScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final c = AppColors.of(context);
     final isAm = Localizations.localeOf(context).languageCode == 'am';
     final sessionsAsync = ref.watch(recentSessionsProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: c.background,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: c.background,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back, color: c.textPrimary),
           onPressed: () => context.go('/bible'),
         ),
         title: Text(
@@ -38,16 +39,16 @@ class ReflectionJournalScreen extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.auto_stories, size: 64, color: AppColors.textMuted),
+                  Icon(Icons.auto_stories, size: 64, color: c.textMuted),
                   const SizedBox(height: 16),
                   Text(
                     isAm ? 'ገና ማስታወሻ የለም' : 'No reflections yet',
-                    style: AppTextStyles.labelLarge.copyWith(color: AppColors.textSecondary),
+                    style: AppTextStyles.labelLarge.copyWith(color: c.textSecondary),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     isAm ? 'መጽሐፍ ቅዱስ ስታነብ ሐሳብህን ጻፍ' : 'Write your thoughts when you read Scripture',
-                    style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted),
+                    style: AppTextStyles.bodySmall.copyWith(color: c.textMuted),
                   ),
                 ],
               ),
@@ -66,9 +67,9 @@ class ReflectionJournalScreen extends ConsumerWidget {
                 margin: const EdgeInsets.only(bottom: 10),
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: AppColors.card,
+                  color: c.card,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(color: c.border),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -82,15 +83,15 @@ class ReflectionJournalScreen extends ConsumerWidget {
                           )),
                       const Spacer(),
                       Text(s.date,
-                          style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted, fontSize: 10)),
+                          style: AppTextStyles.bodySmall.copyWith(color: c.textMuted, fontSize: 10)),
                     ]),
                     const SizedBox(height: 8),
                     Text(s.reflection!,
-                        style: AppTextStyles.bodyMedium.copyWith(fontSize: 13, color: AppColors.textPrimary)),
+                        style: AppTextStyles.bodyMedium.copyWith(fontSize: 13, color: c.textPrimary)),
                     if (s.durationMinutes > 0) ...[
                       const SizedBox(height: 6),
                       Text('${s.durationMinutes} min',
-                          style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted, fontSize: 10)),
+                          style: AppTextStyles.bodySmall.copyWith(color: c.textMuted, fontSize: 10)),
                     ],
                   ],
                 ),

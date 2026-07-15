@@ -13,6 +13,7 @@ class ChapterPicker extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final c = AppColors.of(context);
     final completedAsync = ref.watch(bookCompletionProvider);
     final chaptersRead = completedAsync.valueOrNull?[book.id] ?? 0;
     final totalChapters = book.chapters;
@@ -24,7 +25,7 @@ class ChapterPicker extends ConsumerWidget {
         children: [
           Row(children: [
             IconButton(
-              icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary, size: 20),
+              icon: Icon(Icons.arrow_back, color: c.textPrimary, size: 20),
               onPressed: () => Navigator.of(context).pop(),
             ),
             const SizedBox(width: 8),
@@ -52,9 +53,9 @@ class ChapterPicker extends ConsumerWidget {
                     child: Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10),
-                        color: isRead ? AppColors.progressGreen.withValues(alpha: 0.1) : AppColors.card,
+                        color: isRead ? AppColors.progressGreen.withValues(alpha: 0.1) : c.card,
                         border: Border.all(
-                          color: isRead ? AppColors.progressGreen.withValues(alpha: 0.3) : AppColors.border,
+                          color: isRead ? AppColors.progressGreen.withValues(alpha: 0.3) : c.border,
                         ),
                       ),
                       alignment: Alignment.center,
@@ -63,7 +64,7 @@ class ChapterPicker extends ConsumerWidget {
                         children: [
                           Text('$chapter',
                               style: AppTextStyles.labelLarge.copyWith(
-                                color: isRead ? AppColors.progressGreen : AppColors.textPrimary,
+                                color: isRead ? AppColors.progressGreen : c.textPrimary,
                                 fontSize: 16,
                               )),
                           if (isRead)
