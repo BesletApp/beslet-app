@@ -4,20 +4,6 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-subprojects {
-    afterEvaluate {
-        if (plugins.hasPlugin("com.android.library")) {
-            android {
-                defaultConfig {
-                    ndk {
-                        abiFilters += "arm64-v8a"
-                    }
-                }
-            }
-        }
-    }
-}
-
 android {
     namespace = "com.amu.beslet_app"
     compileSdk = flutter.compileSdkVersion
@@ -38,8 +24,7 @@ android {
 
         multiDexEnabled = true
         ndk {
-            abiFilters.clear()
-            abiFilters.add("arm64-v8a")
+            abiFilters += listOf("arm64-v8a", "armeabi-v7a")
         }
     }
 
