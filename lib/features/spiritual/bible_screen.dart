@@ -140,22 +140,24 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
         backgroundColor: c.card,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(_isAm ? 'እግዚአብሔር ምን አለ?' : 'What did God say?', style: AppTextStyles.labelLarge),
-        content: Column(mainAxisSize: MainAxisSize.min, children: [
-          Text(_isAm ? 'ይህን ምዕራፍ ስታነብ እግዚአብሔር ምን ነገረህ?' : 'What did God speak to you through this chapter?',
-              style: TextStyle(fontSize: 13, color: c.textSecondary)),
-          const SizedBox(height: 12),
-          TextField(
-            controller: ctrl,
-            maxLines: 3,
-            style: AppTextStyles.bodyMedium,
-            decoration: InputDecoration(
-              hintText: _isAm ? 'ልብህ ላይ ያለውን ጻፍ...' : 'Write what\'s on your heart...',
-              hintStyle: TextStyle(color: c.textMuted, fontSize: 13),
-              filled: true, fillColor: c.surface,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+        content: SingleChildScrollView(
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Text(_isAm ? 'ይህን ምዕራፍ ስታነብ እግዚአብሔር ምን ነገረህ?' : 'What did God speak to you through this chapter?',
+                style: TextStyle(fontSize: 13, color: c.textSecondary)),
+            const SizedBox(height: 12),
+            TextField(
+              controller: ctrl,
+              maxLines: 3,
+              style: AppTextStyles.bodyMedium,
+              decoration: InputDecoration(
+                hintText: _isAm ? 'ልብህ ላይ ያለውን ጻፍ...' : 'Write what\'s on your heart...',
+                hintStyle: TextStyle(color: c.textMuted, fontSize: 13),
+                filled: true, fillColor: c.surface,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              ),
             ),
-          ),
-        ]),
+          ]),
+        ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, ''), child: Text(_isAm ? 'ዝለል' : 'Skip', style: TextStyle(color: c.textMuted))),
           ElevatedButton(

@@ -136,53 +136,56 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (ctx) => AlertDialog(
-          backgroundColor: const Color(0xFF1A1A2E),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: const Text(
-            'New update available',
-            style: TextStyle(
-              color: Color(0xFFD4AF37),
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
+        builder: (ctx) {
+          final cc = AppColors.of(ctx);
+          return AlertDialog(
+            backgroundColor: cc.card,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
             ),
-          ),
-          content: Text(
-            'Version ${update.latestVersion} is ready\n\n${update.releaseNotes}',
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 13,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text(
-                'Later',
-                style: TextStyle(color: Colors.white38),
+            title: Text(
+              _isAm ? 'አዲስ ማሻሻያ አለ' : 'New update available',
+              style: TextStyle(
+                color: cc.primary,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
               ),
             ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFD4AF37),
-                foregroundColor: Colors.black,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+            content: Text(
+              'Version ${update.latestVersion} is ready\n\n${update.releaseNotes}',
+              style: TextStyle(
+                color: cc.textSecondary,
+                fontSize: 13,
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: Text(
+                  _isAm ? 'በኋላ' : 'Later',
+                  style: TextStyle(color: cc.textMuted),
                 ),
               ),
-              onPressed: () async {
-                Navigator.of(ctx).pop();
-                await launchUrl(
-                  Uri.parse(update.downloadUrl),
-                  mode: LaunchMode.externalApplication,
-                );
-              },
-              child: const Text('Download Update'),
-            ),
-          ],
-        ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: cc.primary,
+                  foregroundColor: cc.isDark ? const Color(0xFF07090E) : Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                onPressed: () async {
+                  Navigator.of(ctx).pop();
+                  await launchUrl(
+                    Uri.parse(update.downloadUrl),
+                    mode: LaunchMode.externalApplication,
+                  );
+                },
+                child: Text(_isAm ? 'አውርድ' : 'Download Update'),
+              ),
+            ],
+          );
+        },
       );
     }
   }
@@ -500,12 +503,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _showCelebration(String name) {
+    final c = AppColors.of(context);
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Row(children: [
         const Text('🎉 ', style: TextStyle(fontSize: 18)),
-        Expanded(child: Text('All done, $name! You\'re growing today.', style: AppTextStyles.bodyMedium)),
+        Expanded(child: Text('All done, $name! You\'re growing today.', style: AppTextStyles.bodyMedium.copyWith(color: Colors.white))),
       ]),
-      backgroundColor: AppColors.primary,
+      backgroundColor: c.success,
       behavior: SnackBarBehavior.floating,
       duration: const Duration(seconds: 3),
     ));
@@ -649,7 +653,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildCompactHeader(BuildContext context, User user, int daysElapsed, int totalDays, int daysRemaining, bool inSummer, AppLocalizations l) {
     final hour = DateTime.now().hour;
-    final greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+    final isAm = _isAm;
+    final greeting = isAm
+        ? (hour < 12 ? 'እንደምን አደርክ' : hour < 18 ? 'እንደምን ዋልክ' : 'እንደምን አመሸህ')
+        : (hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening');
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
@@ -683,14 +690,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildLitPath(BuildContext context, bool bibleRead, bool prayed, TodoStats todoStats, int todayXp, TrackingData? tracking, int daysElapsed, int totalDays, int phaseIdx, AppLocalizations l) {
+    final c = AppColors.of(context);
     final tasksDone = todoStats.total > 0 && todoStats.completed >= todoStats.total;
     final step1done = bibleRead;
     final step2done = bibleRead && prayed;
     final step3done = bibleRead && prayed && tasksDone;
     final currentStep = step1done ? (step2done ? (step3done ? 3 : 2) : 1) : 0;
 
-    final phaseColors = [const Color(0xFF4CAF50), const Color(0xFF2196F3), const Color(0xFFFF6F00), const Color(0xFF9C27B0)];
-    final phaseNames = ['Discipline', 'Faith', 'Obedience', 'Impact'];
+    final phaseColors = [c.progressGreen, c.audioBlue, c.warning, c.spiritualPurple];
+    final phaseNames = _isAm ? ScriptureService.phaseNamesAm : ScriptureService.phaseNamesEn;
     final phaseColor = phaseColors[phaseIdx];
     final phaseName = phaseNames[phaseIdx];
 
@@ -700,13 +708,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       _buildLitStep(
         step: 1,
         icon: '📖',
-        label: 'Read the Word',
-        purpose: 'Hear His voice',
+        label: _isAm ? 'ቃሉን አንብብ' : 'Read the Word',
+        purpose: _isAm ? 'የእግዚአብሔርን ድምፅ ስማ' : 'Hear His voice',
         isComplete: step1done,
         isLocked: false,
         isCurrent: currentStep == 0,
-        accent: AppColors.spiritualPurple,
-        actionLabel: step1done ? null : 'Start Reading →',
+        accent: c.spiritualPurple,
+        actionLabel: step1done ? null : (_isAm ? 'ማንበብ ጀምር →' : 'Start Reading →'),
         onAction: step1done ? null : () => context.go('/bible'),
         onView: step1done ? () => context.go('/bible') : null,
       ),
@@ -719,7 +727,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               width: 1,
               height: 16,
               decoration: BoxDecoration(
-                color: step1done ? AppColors.progressGreen : AppColors.of(context).border,
+                color: step1done ? c.progressGreen : c.border,
               ),
             ),
           ),
@@ -728,13 +736,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       _buildLitStep(
         step: 2,
         icon: '🙏',
-        label: 'Prayer',
-        purpose: 'Pour out your heart',
+        label: _isAm ? 'ጸሎት' : 'Prayer',
+        purpose: _isAm ? 'ልብህን አፍስስ' : 'Pour out your heart',
         isComplete: step2done,
         isLocked: false,
         isCurrent: currentStep == 1,
-        accent: AppColors.spiritualPurple,
-        actionLabel: step2done ? null : 'Start Prayer →',
+        accent: c.spiritualPurple,
+        actionLabel: step2done ? null : (_isAm ? 'ጸሎት ጀምር →' : 'Start Prayer →'),
         onAction: !step2done ? () => context.go('/prayer') : null,
         onView: step2done ? () => context.go('/prayer') : null,
       ),
@@ -747,7 +755,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               width: 1,
               height: 16,
               decoration: BoxDecoration(
-                color: step2done ? AppColors.progressGreen : AppColors.of(context).border,
+                color: step2done ? c.progressGreen : c.border,
               ),
             ),
           ),
@@ -756,13 +764,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       _buildLitStep(
         step: 3,
         icon: '✅',
-        label: "Today's Tasks",
-        purpose: 'Walk in obedience',
+        label: _isAm ? 'የዛሬ ተግባራት' : "Today's Tasks",
+        purpose: _isAm ? 'በታዛዥነት ሂድ' : 'Walk in obedience',
         isComplete: step3done,
         isLocked: false,
         isCurrent: currentStep == 2,
-        accent: AppColors.progressGreen,
-        actionLabel: step3done ? null : (todoStats.total == 0 ? 'Plan →' : 'Do →'),
+        accent: c.progressGreen,
+        actionLabel: step3done ? null : (todoStats.total == 0 ? (_isAm ? 'እቅድ →' : 'Plan →') : (_isAm ? 'አድርግ →' : 'Do →')),
         onAction: !step3done ? () => context.go('/daily-todo') : null,
         onView: step3done ? () => context.go('/daily-todo') : null,
       ),
@@ -784,10 +792,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     VoidCallback? onAction,
     VoidCallback? onView,
   }) {
+    final c = AppColors.of(context);
     final opacity = isLocked ? 0.35 : (isComplete ? 0.7 : 1.0);
-    final bgColor = isCurrent ? AppColors.cardElevated : AppColors.of(context).card;
-    final borderColor = isCurrent ? accent.withValues(alpha: 0.4) : (isComplete ? accent.withValues(alpha: 0.2) : AppColors.of(context).border);
-    final borderWidth = isCurrent ? 1.0 : 0.5;
+    final bgColor = isCurrent ? c.cardElevated : c.card;
+    final borderColor = isCurrent ? accent.withValues(alpha: 0.4) : (isComplete ? accent.withValues(alpha: 0.2) : c.border);
 
     return GestureDetector(
       onTap: isComplete ? onView : (isLocked ? null : onAction),
@@ -798,7 +806,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: borderColor, width: borderWidth),
+            border: Border.all(color: borderColor, width: isCurrent ? 1.0 : 0.5),
             boxShadow: isCurrent
                 ? [BoxShadow(color: accent.withValues(alpha: 0.08), blurRadius: 12, spreadRadius: 1)]
                 : null,
@@ -809,8 +817,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const SizedBox(width: 10),
               Expanded(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(label, style: AppTextStyles.labelLarge.copyWith(fontSize: 14, color: isComplete ? accent : AppColors.of(context).textPrimary)),
-                  Text(purpose, style: AppTextStyles.bodySmall.copyWith(fontSize: 10, color: AppColors.of(context).textMuted, fontStyle: FontStyle.italic)),
+                  Text(label, style: AppTextStyles.labelLarge.copyWith(fontSize: 14, color: isComplete ? accent : c.textPrimary)),
+                  Text(purpose, style: AppTextStyles.bodySmall.copyWith(fontSize: 10, color: c.textMuted, fontStyle: FontStyle.italic)),
                 ]),
               ),
               if (isComplete)
@@ -820,7 +828,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   child: Icon(Icons.check, size: 14, color: accent),
                 )
               else if (isLocked)
-                Icon(Icons.lock_outline, size: 16, color: AppColors.of(context).textMuted),
+                Icon(Icons.lock_outline, size: 16, color: c.textMuted),
             ]),
             if (actionLabel != null && !isLocked) ...[
               const SizedBox(height: 12),
@@ -828,11 +836,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: onAction,
-                  icon: Icon(Icons.arrow_forward, size: 16),
+                  icon: const Icon(Icons.arrow_forward, size: 16),
                   label: Text(actionLabel, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: accent,
-                    foregroundColor: const Color(0xFF07090E),
+                    foregroundColor: c.isDark ? const Color(0xFF07090E) : Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
@@ -910,29 +918,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildSabbathBlessing(BuildContext context, AppLocalizations l) {
     final isAm = _isAm;
+    final c = AppColors.of(context);
+    final accent = c.success;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(colors: [Color(0xFF2E7D32), Color(0xFF1B5E20)]),
+        gradient: LinearGradient(colors: [accent.withValues(alpha: 0.85), accent.withValues(alpha: 0.6)]),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 8, offset: const Offset(0, 2))],
       ),
       child: Column(children: [
         Text(isAm ? '🕊️ የእረፍት ቀን' : '🕊️ Sabbath Rest',
-            style: const TextStyle(fontFamily: 'Inter', fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white)),
+            style: TextStyle(fontFamily: 'Inter', fontSize: 16, fontWeight: FontWeight.w700, color: c.isDark ? Colors.white : Colors.white)),
         const SizedBox(height: 8),
         Text(
           isAm
             ? '"ወደ እኔ የደከማችሁ የተሸከማችሁም ሁሉ ኑ፤ እኔም አሳርፋችኋለሁ።" — ማቴዎስ 11፥28'
             : '"Come to me, all who labor and are heavy laden, and I will give you rest." — Matthew 11:28',
-          style: const TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w400, color: Color(0xFFE8F5E9)),
+          style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w400, color: Colors.white.withValues(alpha: 0.9)),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 6),
         Text(
           isAm ? 'እግዚአብሔር ዛሬ እንድታርፍ ይጋብዝሃል። ዘንድሮ ሥራ አልጠበቀብህም። 🌱' : 'God invites you to rest today. No tasks expected. 🌱',
-          style: const TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w400, color: Color(0xFFC8E6C9)),
+          style: TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w400, color: Colors.white.withValues(alpha: 0.75)),
           textAlign: TextAlign.center,
         ),
       ]),

@@ -13,13 +13,14 @@ class BesletApp extends ConsumerWidget {
 
   @override Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
+    final paletteOption = ref.watch(themePaletteProvider);
     final locale = ref.watch(localeProvider);
     NotificationService.setLanguage(locale.languageCode == 'am');
     return MaterialApp.router(
       title: 'ብስለት — Maturity',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
+      theme: AppTheme.lightTheme(paletteOption),
+      darkTheme: AppTheme.darkTheme(paletteOption),
       themeMode: themeMode,
       locale: locale,
       supportedLocales: const [Locale('en'), Locale('am')],

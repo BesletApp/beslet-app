@@ -39,7 +39,13 @@ class BookJournalScreen extends ConsumerWidget {
     final isAm = Localizations.localeOf(context).languageCode == 'am';
 
     return Scaffold(
-      appBar: AppBar(title: Text(isAm ? 'የእኔ ማስታወሻ' : 'My Journal')),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        leading: IconButton(icon: Icon(Icons.arrow_back, color: c.textPrimary), onPressed: () => Navigator.pop(context)),
+        title: Text(isAm ? 'የእኔ ማስታወሻ' : 'My Journal', style: TextStyle(color: c.textPrimary)),
+      ),
       body: journalAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Could not load journal', style: TextStyle(color: c.textSecondary))),

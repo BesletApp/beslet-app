@@ -35,8 +35,8 @@ class PhaseBar extends StatelessWidget {
       const Color(0xFF9C27B0),
     ];
 
-    // Calculate which days fall in the current week (7 days centered on current day)
-    final weekStart = ((day - 4) ~/ 7) * 7 + 1;
+    // Show 7 days centered on current day (3 before, 3 after)
+    final weekStart = day - 3;
     final weekDays = List.generate(7, (i) => weekStart + i).where((d) => d >= 1 && d <= totalDays).toList();
 
     return Container(
@@ -127,20 +127,22 @@ class PhaseBar extends StatelessWidget {
               final phaseForDay = ScriptureService.getPhase(d);
               return GestureDetector(
                 onTap: () => onDaySelected?.call(d),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      isAm ? _amDayAbbr(d) : ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][(d - 1) % 7],
-                      style: TextStyle(
-                        fontFamily: 'Inter', fontSize: 8,
-                        color: isCurrentDay ? c.textPrimary : c.textMuted,
+                child: SizedBox(
+                  width: 48,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        isAm ? _amDayAbbr(d) : ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][(d - 1) % 7],
+                        style: TextStyle(
+                          fontFamily: 'Inter', fontSize: 8,
+                          color: isCurrentDay ? c.textPrimary : c.textMuted,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Container(
-                      width: 36,
-                      height: 36,
+                      const SizedBox(height: 4),
+                      Container(
+                        width: 36,
+                        height: 36,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: isEarlierDay ? phaseColors[phaseForDay].withValues(alpha: 0.3) : (isCurrentDay ? phaseColors[phaseIdx] : c.border.withValues(alpha: 0.2)),
@@ -161,7 +163,8 @@ class PhaseBar extends StatelessWidget {
                     ),
                   ],
                 ),
-              );
+              ),
+            );
             }).toList(),
           ),
         ],

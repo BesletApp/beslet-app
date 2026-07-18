@@ -84,6 +84,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             contentPadding: EdgeInsets.zero,
           ),
         ),
+        const SizedBox(height: 16),
+        Text(isAm ? 'ገጽታ' : 'Theme', style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
+        const SizedBox(height: 12),
+        _ThemePalettePicker(),
         const SizedBox(height: 24),
         Text(key: _languageKey, l.language, style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
         const SizedBox(height: 12),
@@ -257,5 +261,98 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ref.invalidate(userProvider);
       ref.invalidate(streakStateProvider);
     }
+  }
+}
+
+// ─── Theme Palette Picker ─────────────────────────────────────
+class _ThemePalettePicker extends ConsumerWidget {
+  @override Widget build(BuildContext context, WidgetRef ref) {
+    final selected = ref.watch(themePaletteProvider);
+    final isAm = Localizations.localeOf(context).languageCode == 'am';
+    final c = AppColors.of(context);
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: c.border)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Wrap(spacing: 10, runSpacing: 10, children: [
+          for (final opt in AppThemeOption.values)
+            _PaletteChip(
+              option: opt,
+              isSelected: opt == selected,
+              label: isAm ? _paletteNameAm(opt) : _paletteNameEn(opt),
+              onTap: () => ref.read(themePaletteProvider.notifier).select(opt),
+            ),
+        ]),
+      ]),
+    );
+  }
+
+  String _paletteNameEn(AppThemeOption opt) => switch (opt) {
+    AppThemeOption.classic => 'Classic Gold',
+    AppThemeOption.sepia => 'Sepia Warm',
+    AppThemeOption.calmBlue => 'Calm Blue',
+    AppThemeOption.forestGreen => 'Forest Green',
+    AppThemeOption.midnight => 'Midnight',
+  };
+
+  String _paletteNameAm(AppThemeOption opt) => switch (opt) {
+    AppThemeOption.classic => 'ክላሲክ ወርቅ',
+    AppThemeOption.sepia => 'ሴፒያ',
+    AppThemeOption.calmBlue => 'ሰላማዊ ሰማያዊ',
+    AppThemeOption.forestGreen => 'ደን አረንጓዴ',
+    AppThemeOption.midnight => 'እኩለ ሌሊት',
+  };
+}
+
+class _PaletteChip extends StatelessWidget {
+  final AppThemeOption option;
+  final bool isSelected;
+  final String label;
+  final VoidCallback onTap;
+  const _PaletteChip({required this.option, required this.isSelected, required this.label, required this.onTap});
+
+  @override Widget build(BuildContext context) {
+    final c = AppColors.of(context, option: option);
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: 64,
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: c.card,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? c.primary : c.border,
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 28, height: 28,
+              decoration: BoxDecoration(
+                color: c.primary,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 9,
+                fontWeight: FontWeight.w600,
+                color: isSelected ? c.primary : c.textSecondary,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

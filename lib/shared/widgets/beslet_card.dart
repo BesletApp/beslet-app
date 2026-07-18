@@ -33,12 +33,12 @@ class BesletCard extends StatelessWidget {
     switch (variant) {
       case CardVariant.hero:
         return BoxDecoration(
-          color: AppColors.cardElevated,
+          color: c.cardElevated,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.primary.withValues(alpha: 0.5), width: 1),
+          border: Border.all(color: c.primary.withValues(alpha: 0.5), width: 1),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.12),
+              color: c.primary.withValues(alpha: 0.12),
               blurRadius: 16,
               spreadRadius: 1,
             ),

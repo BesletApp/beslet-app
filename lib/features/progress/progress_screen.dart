@@ -418,7 +418,7 @@ class ProgressScreen extends ConsumerWidget {
                   style: TextStyle(fontSize: 12, color: c.textSecondary)),
             ],
             const SizedBox(height: 16),
-            BookProgressList(progress: plan, isDark: isDark),
+            BookProgressList(progress: plan),
             _buildMilestoneMessage(plan, c),
           ]),
         );

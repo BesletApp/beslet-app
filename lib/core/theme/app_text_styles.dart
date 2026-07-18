@@ -21,36 +21,26 @@ class AppTextTheme {
 }
 
 class AppTextStyles {
-  static final AppTextTheme _dark = const AppTextTheme(
-    displayLarge: TextStyle(fontFamily: 'CormorantGaramond', fontSize: 34, fontWeight: FontWeight.w700, color: AppColors.textPrimary, height: 1.2),
-    displayMedium: TextStyle(fontFamily: 'CormorantGaramond', fontSize: 28, fontWeight: FontWeight.w600, color: AppColors.textPrimary, height: 1.25),
-    displaySmall: TextStyle(fontFamily: 'CormorantGaramond', fontSize: 22, fontWeight: FontWeight.w600, color: AppColors.textPrimary, height: 1.3),
-    bodyLarge: TextStyle(fontFamily: 'Inter', fontSize: 16, fontWeight: FontWeight.w400, color: AppColors.textPrimary),
-    bodyMedium: TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w400, color: AppColors.textPrimary),
-    bodySmall: TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w400, color: AppColors.textSecondary),
-    labelLarge: TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
-    labelSmall: TextStyle(fontFamily: 'Inter', fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.textMuted, letterSpacing: 1.5),
-    amharicDisplay: TextStyle(fontFamily: 'NotoSansEthiopic', fontSize: 36, fontWeight: FontWeight.w700, color: AppColors.primary),
-    amharicBody: TextStyle(fontFamily: 'NotoSansEthiopic', fontSize: 14, fontWeight: FontWeight.w400, color: AppColors.textPrimary),
+  /// Build an [AppTextTheme] from a [ThemePalette].
+  static AppTextTheme forPalette(ThemePalette c) => AppTextTheme(
+    displayLarge: TextStyle(fontFamily: 'CormorantGaramond', fontSize: 34, fontWeight: FontWeight.w700, color: c.textPrimary, height: 1.2),
+    displayMedium: TextStyle(fontFamily: 'CormorantGaramond', fontSize: 28, fontWeight: FontWeight.w600, color: c.textPrimary, height: 1.25),
+    displaySmall: TextStyle(fontFamily: 'CormorantGaramond', fontSize: 22, fontWeight: FontWeight.w600, color: c.textPrimary, height: 1.3),
+    bodyLarge: TextStyle(fontFamily: 'Inter', fontSize: 16, fontWeight: FontWeight.w400, color: c.textPrimary),
+    bodyMedium: TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w400, color: c.textPrimary),
+    bodySmall: TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w400, color: c.textSecondary),
+    labelLarge: TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w700, color: c.textPrimary),
+    labelSmall: TextStyle(fontFamily: 'Inter', fontSize: 10, fontWeight: FontWeight.w800, color: c.textMuted, letterSpacing: 1.5),
+    amharicDisplay: TextStyle(fontFamily: 'NotoSansEthiopic', fontSize: 36, fontWeight: FontWeight.w700, color: c.primary),
+    amharicBody: TextStyle(fontFamily: 'NotoSansEthiopic', fontSize: 14, fontWeight: FontWeight.w400, color: c.textPrimary),
   );
 
-  static final AppTextTheme _light = const AppTextTheme(
-    displayLarge: TextStyle(fontFamily: 'CormorantGaramond', fontSize: 34, fontWeight: FontWeight.w700, color: AppColors.textPrimaryLight, height: 1.2),
-    displayMedium: TextStyle(fontFamily: 'CormorantGaramond', fontSize: 28, fontWeight: FontWeight.w600, color: AppColors.textPrimaryLight, height: 1.25),
-    displaySmall: TextStyle(fontFamily: 'CormorantGaramond', fontSize: 22, fontWeight: FontWeight.w600, color: AppColors.textPrimaryLight, height: 1.3),
-    bodyLarge: TextStyle(fontFamily: 'Inter', fontSize: 16, fontWeight: FontWeight.w400, color: AppColors.textPrimaryLight),
-    bodyMedium: TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w400, color: AppColors.textPrimaryLight),
-    bodySmall: TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w400, color: AppColors.textSecondaryLight),
-    labelLarge: TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textPrimaryLight),
-    labelSmall: TextStyle(fontFamily: 'Inter', fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.textMutedLight, letterSpacing: 1.5),
-    amharicDisplay: TextStyle(fontFamily: 'NotoSansEthiopic', fontSize: 36, fontWeight: FontWeight.w700, color: AppColors.primary),
-    amharicBody: TextStyle(fontFamily: 'NotoSansEthiopic', fontSize: 14, fontWeight: FontWeight.w400, color: AppColors.textPrimaryLight),
-  );
+  static final AppTextTheme _dark = forPalette(AppColors.forOption(AppThemeOption.classic, true));
 
   static AppTextTheme of(BuildContext context) =>
-      Theme.of(context).brightness == Brightness.dark ? _dark : _light;
+      forPalette(AppColors.of(context));
 
-  // Legacy static getters — kept for backward compat, return dark defaults
+  // Legacy static getters — kept for backward compat, return classic dark defaults
   static TextStyle get displayLarge => _dark.displayLarge;
   static TextStyle get displayMedium => _dark.displayMedium;
   static TextStyle get displaySmall => _dark.displaySmall;
