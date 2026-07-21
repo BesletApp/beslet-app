@@ -4,15 +4,16 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-subprojects {
-    afterEvaluate {
-        if (plugins.hasPlugin("com.android.library")) {
-            android {
-                defaultConfig {
-                    ndk {
-                        abiFilters += "arm64-v8a"
-                    }
-                }
+// Load keystore properties from key.properties
+val keystoreProperties = mutableMapOf<String, String>()
+val keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.readLines().forEach { line ->
+        val trimmed = line.trim()
+        if (trimmed.isNotEmpty() && !trimmed.startsWith("#")) {
+            val parts = trimmed.split("=", limit = 2)
+            if (parts.size == 2) {
+                keystoreProperties[parts[0].trim()] = parts[1].trim()
             }
         }
     }
@@ -40,11 +41,18 @@ android {
         ndk { abiFilters += "arm64-v8a" }
     }
 
-
+    signingConfigs {
+        create("release") {
+            keyAlias = keystoreProperties["keyAlias"] ?: ""
+            keyPassword = keystoreProperties["keyPassword"] ?: ""
+            storeFile = keystoreProperties["storeFile"]?.let { file(it) }
+            storePassword = keystoreProperties["storePassword"] ?: ""
+        }
+    }
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 }

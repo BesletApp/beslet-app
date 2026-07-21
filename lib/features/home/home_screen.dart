@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
-import '../../core/services/scripture_service.dart';
-import '../../core/services/summer_service.dart';
 import '../../core/database/app_database.dart';
 import '../../core/providers/user_provider.dart';
 import '../../core/providers/tracking_provider.dart';
@@ -12,6 +10,7 @@ import '../../core/providers/prayer_provider.dart';
 import '../../core/providers/bible_read_provider.dart';
 import '../../core/providers/fellowship_provider.dart';
 import '../../core/providers/family_provider.dart';
+import '../../experience/verse_hero_card.dart';
 
 class _PillarData {
   final String icon;
@@ -113,7 +112,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     const SizedBox(height: 24),
                     _buildPillarGrid(context, tempPillars),
                     const SizedBox(height: 20),
-                    _buildVerseCard(context),
+                    const VerseHeroCard(),
                     const SizedBox(height: 24),
                   ]),
                 ),
@@ -175,188 +174,45 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildHero(BuildContext context, User user, AsyncValue<TrackingData> tracking) {
     final hour = DateTime.now().hour;
     final greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-    final inSummer = SummerService.isInSummer;
-    final daysElapsed = SummerService.daysElapsed;
-    final daysRemaining = SummerService.daysRemaining;
-    final totalDays = SummerService.totalSummerDays;
-    final progress = totalDays > 0 ? daysElapsed / totalDays : 0.0;
-
-    if (!inSummer) {
-      return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
-          ),
-          child: Text(SummerService.outsideMessage,
-              style: AppTextStyles.bodySmall.copyWith(color: AppColors.primary, fontSize: 11)),
-        ),
-        const SizedBox(height: 16),
-        Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-          Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('$greeting,', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
-              Text(user.name, style: AppTextStyles.displaySmall),
-              const SizedBox(height: 4),
-              Text('Summer starts in ${SummerService.daysUntilNextSummer} days.',
-                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary, fontStyle: FontStyle.italic)),
-            ]),
-          ),
-          SizedBox(width: 64, height: 64,
-            child: Stack(alignment: Alignment.center, children: [
-              CircularProgressIndicator(value: 0, strokeWidth: 4,
-                backgroundColor: AppColors.border,
-                valueColor: const AlwaysStoppedAnimation(AppColors.primary)),
-              Icon(Icons.wb_sunny_outlined, size: 28, color: AppColors.primary.withValues(alpha: 0.6)),
-            ]),
-          ),
-        ]),
-        const SizedBox(height: 16),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
-          decoration: BoxDecoration(
-            color: AppColors.card,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
-          ),
-          child: Row(children: [
-            const Text('🌱', style: TextStyle(fontSize: 24)),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('Get ready for summer!', style: AppTextStyles.labelLarge),
-                Text('Build your spiritual habits before ${SummerService.nextSummerStart.month}/${SummerService.nextSummerStart.day}.',
-                    style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted)),
-              ]),
-            ),
-          ]),
-        ),
-        const SizedBox(height: 16),
-        tracking.when(
-          data: (data) => Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            decoration: BoxDecoration(
-              color: AppColors.card,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: Row(children: [
-              const Text('🔥', style: TextStyle(fontSize: 18)),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('${data.streak}-day streak · Level ${data.level + 1}',
-                      style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary, fontSize: 11)),
-                  const SizedBox(height: 4),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(2),
-                    child: LinearProgressIndicator(value: data.levelProgress,
-                      backgroundColor: AppColors.border,
-                      valueColor: const AlwaysStoppedAnimation(AppColors.primary), minHeight: 3),
-                  ),
-                ]),
-              ),
-              const SizedBox(width: 12),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
-                ),
-                child: Text('${data.totalXp} XP',
-                    style: AppTextStyles.bodySmall.copyWith(color: AppColors.primary, fontSize: 11)),
-              ),
-            ]),
-          ),
-          loading: () => const SizedBox(height: 48),
-          error: (_, __) => const SizedBox(height: 48),
-        ),
-      ]);
-    }
-
-    final messages = [
-      'Each day you choose well, you become who you\'re meant to be.',
-      'Stay faithful, stay strong.',
-      'Small steps lead to big changes.',
-      'Your journey matters.',
-      'Today is a gift. Seize it!',
-      'Keep going, you\'re doing great!',
-    ];
-    final msg = messages[DateTime.now().day % messages.length];
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: AppColors.primary.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
-        ),
-        child: Text('Day $daysElapsed of $totalDays · $daysRemaining left',
-            style: AppTextStyles.bodySmall.copyWith(color: AppColors.primary, fontSize: 11)),
-      ),
-      const SizedBox(height: 16),
       Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text('$greeting,', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
             Text(user.name, style: AppTextStyles.displaySmall),
-            const SizedBox(height: 4),
-            Text('Day $daysElapsed — $msg',
-                style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary, fontStyle: FontStyle.italic)),
           ]),
         ),
-        const SizedBox(width: 16),
-        SizedBox(width: 64, height: 64,
-          child: Stack(alignment: Alignment.center, children: [
-            CircularProgressIndicator(value: progress, strokeWidth: 4,
-              backgroundColor: AppColors.border,
-              valueColor: const AlwaysStoppedAnimation(AppColors.primary)),
-            Column(mainAxisSize: MainAxisSize.min, children: [
-              Text('$daysElapsed', style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary, fontSize: 18)),
-              Text('of $totalDays', style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted, fontSize: 9)),
-            ]),
-          ]),
+        tracking.when(
+          data: (data) => Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+            ),
+            child: Text(data.levelName,
+                style: AppTextStyles.bodySmall.copyWith(color: AppColors.primary, fontSize: 11)),
+          ),
+          loading: () => const SizedBox(width: 80),
+          error: (_, __) => const SizedBox(width: 80),
         ),
       ]),
-      const SizedBox(height: 16),
+      const SizedBox(height: 20),
       tracking.when(
         data: (data) => Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
             color: AppColors.card,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: AppColors.border.withValues(alpha: 0.5)),
           ),
           child: Row(children: [
-            const Text('🔥', style: TextStyle(fontSize: 18)),
-            const SizedBox(width: 8),
+            const Icon(Icons.auto_awesome_rounded, size: 16, color: AppColors.primary),
+            const SizedBox(width: 10),
             Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('${data.streak}-day streak · Level ${data.level + 1}',
-                    style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary, fontSize: 11)),
-                const SizedBox(height: 4),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(2),
-                  child: LinearProgressIndicator(value: data.levelProgress,
-                    backgroundColor: AppColors.border,
-                    valueColor: const AlwaysStoppedAnimation(AppColors.primary), minHeight: 3),
-                ),
-              ]),
-            ),
-            const SizedBox(width: 12),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
-              ),
-              child: Text('${data.totalXp} XP',
-                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.primary, fontSize: 11)),
+              child: Text('${data.bibleDays} days in the Word this week',
+                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary, fontSize: 12)),
             ),
           ]),
         ),
@@ -454,41 +310,4 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildVerseCard(BuildContext context) {
-    final scripture = ScriptureService.getDailyScripture();
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          Container(
-            width: 3, height: 14,
-            decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(2)),
-          ),
-          const SizedBox(width: 8),
-          Text('Verse of the Day',
-              style: AppTextStyles.labelSmall.copyWith(color: AppColors.primary, fontSize: 10, letterSpacing: 1.2)),
-          const Spacer(),
-          GestureDetector(
-            onTap: () => context.go('/bible'),
-            child: Icon(Icons.arrow_forward_ios, size: 12, color: AppColors.textMuted),
-          ),
-        ]),
-        const SizedBox(height: 12),
-        Text('"${scripture.text}"',
-            style: AppTextStyles.bodyMedium.copyWith(fontStyle: FontStyle.italic, height: 1.6)),
-        const SizedBox(height: 6),
-        Text(scripture.reference, style: AppTextStyles.bodySmall.copyWith(color: AppColors.primary)),
-        if (scripture.textAm != null) ...[
-          const SizedBox(height: 10),
-          Text(scripture.textAm!,
-              style: AppTextStyles.amharicBody.copyWith(fontSize: 13, height: 1.6, color: AppColors.textSecondary)),
-        ],
-      ]),
-    );
-  }
 }

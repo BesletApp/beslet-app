@@ -1,7 +1,7 @@
 name: beslet_app
 description: Beslet (ብስለት) - Spiritual Growth & Life Discipline System
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.4.3+2
 
 environment:
   sdk: ^3.12.0
@@ -26,10 +26,7 @@ dependencies:
   wakelock_plus: ^1.2.10
   jni: 1.0.0
 
-hooks:
-  user_defines:
-    sqlite3:
-      source: system
+
 
 dev_dependencies:
   flutter_test:
