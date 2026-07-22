@@ -1,58 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../l10n/app_localizations.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_durations.dart';
+import '../personalization/personalization_providers.dart';
 import '../../features/spiritual/widgets/mini_player_bar.dart';
 
-class AppShell extends StatefulWidget {
+class AppShell extends ConsumerStatefulWidget {
   final StatefulNavigationShell navigationShell;
 
   const AppShell({super.key, required this.navigationShell});
 
   @override
-  State<AppShell> createState() => _AppShellState();
+  ConsumerState<AppShell> createState() => _AppShellState();
 }
 
-class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
-  late final AnimationController _bounceCtrl;
-  late final Animation<double> _bounceAnim;
-
-  @override
-  void initState() {
-    super.initState();
-    _bounceCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 500),
-    );
-    _bounceAnim = CurvedAnimation(
-      parent: _bounceCtrl,
-      curve: Curves.elasticOut,
-    );
-  }
-
-  @override
-  void dispose() {
-    _bounceCtrl.dispose();
-    super.dispose();
-  }
-
-  Widget _buildIcon(IconData icon, bool selected) {
-    final c = AppColors.of(context);
-    return AnimatedBuilder(
-      animation: _bounceAnim,
-      builder: (_, child) => Transform.scale(
-        scale: selected ? 1.0 + _bounceAnim.value * 0.15 : 1.0,
-        child: child,
-      ),
-      child: Icon(icon, color: selected ? AppColors.primary : c.textMuted),
-    );
-  }
-
+class _AppShellState extends ConsumerState<AppShell> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     final c = AppColors.of(context);
     final currentIndex = widget.navigationShell.currentIndex;
+    final sessionCtrl = ref.watch(sessionControllerProvider);
 
     return Scaffold(
       body: Column(
@@ -66,16 +36,16 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
         onDestinationSelected: (index) {
           if (index != currentIndex) {
             widget.navigationShell.goBranch(index);
-            _bounceCtrl.forward(from: 0);
           }
         },
         backgroundColor: c.card,
         indicatorColor: AppColors.primary.withValues(alpha: 0.2),
+        animationDuration: sessionCtrl.transition(AppDurations.normal),
         destinations: [
-          NavigationDestination(icon: _buildIcon(Icons.today_outlined, currentIndex == 0), selectedIcon: _buildIcon(Icons.today, currentIndex == 0), label: l.today),
-          NavigationDestination(icon: _buildIcon(Icons.menu_book_outlined, currentIndex == 1), selectedIcon: _buildIcon(Icons.menu_book, currentIndex == 1), label: l.bible),
-          NavigationDestination(icon: _buildIcon(Icons.bar_chart_outlined, currentIndex == 2), selectedIcon: _buildIcon(Icons.bar_chart, currentIndex == 2), label: l.growth),
-          NavigationDestination(icon: _buildIcon(Icons.person_outline, currentIndex == 3), selectedIcon: _buildIcon(Icons.person, currentIndex == 3), label: l.profile),
+          NavigationDestination(icon: Icon(Icons.today_outlined, color: c.textMuted), selectedIcon: Icon(Icons.today, color: AppColors.primary), label: l.today),
+          NavigationDestination(icon: Icon(Icons.menu_book_outlined, color: c.textMuted), selectedIcon: Icon(Icons.menu_book, color: AppColors.primary), label: l.bible),
+          NavigationDestination(icon: Icon(Icons.bar_chart_outlined, color: c.textMuted), selectedIcon: Icon(Icons.bar_chart, color: AppColors.primary), label: l.growth),
+          NavigationDestination(icon: Icon(Icons.person_outline, color: c.textMuted), selectedIcon: Icon(Icons.person, color: AppColors.primary), label: l.profile),
         ],
       ),
     );

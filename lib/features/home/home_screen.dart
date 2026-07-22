@@ -5,6 +5,11 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_durations.dart';
+import '../../core/personalization/tone_service.dart';
+import '../../core/personalization/personalization_providers.dart';
+import '../../core/emotional/experience_profile.dart';
 import '../../core/services/scripture_service.dart';
 import '../../core/services/summer_service.dart';
 import '../../core/services/widget_service.dart';
@@ -25,25 +30,15 @@ import '../../core/services/loop_service.dart';
 import '../../services/update_checker.dart';
 import '../../shared/widgets/error_card.dart';
 import '../../shared/widgets/enkutatash_overlay.dart';
-import '../../core/services/streak_service.dart';
-import '../../core/services/witness_service.dart';
 
-class _PillarData {
+
+class _StepData {
   final String icon;
-  final String name;
-  final String statusText;
-  final bool isComplete;
-  final double progress;
-  final String? route;
-
-  const _PillarData({
-    required this.icon,
-    required this.name,
-    required this.statusText,
-    required this.isComplete,
-    required this.progress,
-    this.route,
-  });
+  final String title;
+  final String subtitle;
+  final String ctaLabel;
+  final String route;
+  const _StepData({required this.icon, required this.title, required this.subtitle, required this.ctaLabel, required this.route});
 }
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -51,38 +46,81 @@ class HomeScreen extends ConsumerStatefulWidget {
   @override ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStateMixin {
   bool _isAm = false;
   bool _celebrated = false;
   bool _widgetUpdated = false;
-  bool _showCommunity = false;
-  bool _soulExpanded = false;
-  bool _verseExpanded = false;
+
+  late final AnimationController _staggerCtrl;
+  late final List<Animation<double>> _staggerAnims;
+
+  late final AnimationController _pulseCtrl;
+  late final Animation<double> _pulseAnim;
+  double _currentSpacingScale = 1.0;
 
   @override
   void initState() {
     super.initState();
+    _initStaggerAnimations(itemDuration: const Duration(milliseconds: 350));
+    _pulseCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500));
+    _pulseAnim = Tween<double>(begin: 0.6, end: 1.0).animate(
+      CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut),
+    );
     _checkForUpdates();
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkCommunityPrompt());
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkEnkutatash());
   }
 
+  void _initStaggerAnimations({required Duration itemDuration, Curve? curve, int count = 5}) {
+    final gap = const Duration(milliseconds: 80);
+    final totalDuration = itemDuration + gap * (count - 1);
+    _staggerCtrl = AnimationController(vsync: this, duration: totalDuration);
+    _staggerAnims = List.generate(count, (i) {
+      final start = (gap.inMilliseconds * i) / totalDuration.inMilliseconds;
+      final end = (gap.inMilliseconds * i + itemDuration.inMilliseconds) / totalDuration.inMilliseconds;
+      return CurvedAnimation(
+        parent: Tween<double>(begin: 0.0, end: 1.0).animate(
+          CurvedAnimation(
+            parent: _staggerCtrl,
+            curve: Interval(start.clamp(0.0, 1.0), end.clamp(0.0, 1.0), curve: curve ?? Curves.easeOut),
+          ),
+        ),
+        curve: curve ?? Curves.easeOut,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _staggerCtrl.dispose();
+    _pulseCtrl.dispose();
+    super.dispose();
+  }
+
+  double _h(double token) => (token * _currentSpacingScale).roundToDouble();
+
+  double _milestoneProgress(int streak) {
+    if (streak >= 90) return ((streak - 90) / 275).clamp(0.0, 1.0);
+    if (streak >= 30) return ((streak - 30) / 60).clamp(0.0, 1.0);
+    if (streak >= 14) return ((streak - 14) / 16).clamp(0.0, 1.0);
+    if (streak >= 7) return ((streak - 7) / 7).clamp(0.0, 1.0);
+    return (streak / 7).clamp(0.0, 1.0);
+  }
+
   Future<void> _checkCommunityPrompt() async {
     final prefs = await SharedPreferences.getInstance();
     final prompted = prefs.getBool('communityPrompted') ?? false;
-    if (mounted && !prompted) {
-      setState(() => _showCommunity = true);
-    }
-  }
-
-  Future<void> _dismissCommunity() async {
-    final prefs = await SharedPreferences.getInstance();
+    if (!mounted || prompted) return;
     await prefs.setBool('communityPrompted', true);
-    if (mounted) setState(() => _showCommunity = false);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: const Text('Join our community on Telegram'),
+      action: SnackBarAction(label: 'Join', onPressed: _openTelegram),
+      duration: AppDurations.verySlow,
+    ));
   }
 
   Future<void> _openTelegram() async {
-    await _dismissCommunity();
     await launchUrl(
       Uri.parse('https://t.me/besletcommunity'),
       mode: LaunchMode.externalApplication,
@@ -122,15 +160,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final shown = prefs.getBool('enkutatashShown') ?? false;
     if (!shown && mounted) {
       await prefs.setBool('enkutatashShown', true);
-      Navigator.of(context).push(MaterialPageRoute(
+      if (!mounted) return;
+      final nav = Navigator.of(context);
+      nav.push(MaterialPageRoute(
         fullscreenDialog: true,
-        builder: (_) => EnkutatashOverlay(onDismiss: () => Navigator.of(context).pop()),
+        builder: (_) => EnkutatashOverlay(onDismiss: () => nav.pop()),
       ));
     }
   }
 
   Future<void> _checkForUpdates() async {
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(AppDurations.slow);
     final update = await UpdateChecker.checkForUpdate();
     if (update != null && mounted) {
       showDialog(
@@ -140,39 +180,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           final cc = AppColors.of(ctx);
           return AlertDialog(
             backgroundColor: cc.card,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.md)),
             title: Text(
               _isAm ? 'አዲስ ማሻሻያ አለ' : 'New update available',
-              style: TextStyle(
-                color: cc.primary,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(color: cc.primary, fontSize: 16, fontWeight: FontWeight.w600),
             ),
             content: Text(
               'Version ${update.latestVersion} is ready\n\n${update.releaseNotes}',
-              style: TextStyle(
-                color: cc.textSecondary,
-                fontSize: 13,
-              ),
+              style: TextStyle(color: cc.textSecondary, fontSize: 13),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(),
-                child: Text(
-                  _isAm ? 'በኋላ' : 'Later',
-                  style: TextStyle(color: cc.textMuted),
-                ),
+                child: Text(_isAm ? 'በኋላ' : 'Later', style: TextStyle(color: cc.textMuted)),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: cc.primary,
                   foregroundColor: cc.isDark ? const Color(0xFF07090E) : Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.sm)),
                 ),
                 onPressed: () async {
                   Navigator.of(ctx).pop();
@@ -211,11 +237,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final todayTodoStats = ref.watch(todayTodoStatsProvider);
     final readingProgressAsync = ref.watch(readingProgressProvider);
     final activeLoopAsync = ref.watch(activeLoopProvider);
+    final tone = ref.watch(toneServiceProvider);
+    final engine = ref.watch(personalizationEngineProvider);
 
     _isAm = Localizations.localeOf(context).languageCode == 'am';
     final streakState = ref.watch(streakStateProvider).valueOrNull;
     final todaySoulLog = ref.watch(todaySoulLogProvider).valueOrNull;
     final l = AppLocalizations.of(context)!;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_staggerCtrl.isAnimating && !_staggerCtrl.isCompleted) {
+        _staggerCtrl.forward();
+      }
+    });
+
     return userAsync.when(
       loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (e, _) => Scaffold(body: ErrorCard(message: 'Could not load your data', onRetry: _onRefresh)),
@@ -232,6 +267,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         final todoStats = todayTodoStats.valueOrNull ?? TodoStats(total: 0, completed: 0);
         final progress = readingProgressAsync.valueOrNull;
         final loop = activeLoopAsync.valueOrNull;
+        final streak = tracking?.streak ?? 0;
 
         if (!_widgetUpdated) {
           _widgetUpdated = true;
@@ -242,13 +278,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           });
         }
 
-        final tempPillars = _computePillars(prayed, bibleRead, skillsMin, connectedToday, todoStats, l);
-        final allComplete = tempPillars.every((p) => p.isComplete);
+        final tasksDone = todoStats.total > 0 && todoStats.completed >= todoStats.total;
+        final step1done = bibleRead;
+        final step2done = bibleRead && prayed;
+        final step3done = bibleRead && prayed && tasksDone;
+        final currentStep = step1done ? (step2done ? (step3done ? 3 : 2) : 1) : 0;
+
+        final allComplete = bibleRead && prayed && skillsMin > 0 && connectedToday && todoStats.total > 0 && todoStats.completed >= todoStats.total;
 
         if (allComplete && !_celebrated) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) {
-              _showCelebration(user.name);
+              _showCelebration(user.name, tone, l);
               setState(() => _celebrated = true);
             }
           });
@@ -266,8 +307,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           }
         }
 
+        final season = AppSeason.fromStreak(streak);
+        final dayState = DayState.detect(
+          isFirstSessionToday: engine.isFirstSessionToday,
+          allStepsComplete: allComplete,
+          missedYesterday: streakState?.isAtRisk ?? false,
+          wasAwayForDays: engine.wasAwayForDays,
+        );
+        final profile = getProfile(season, dayState, AppColors.of(context));
+
+        _currentSpacingScale = profile.spacingScale;
+
+        if (_staggerCtrl.duration != profile.animationDuration) {
+          _initStaggerAnimations(
+            itemDuration: profile.animationDuration,
+            curve: profile.animationCurve,
+            count: 5,
+          );
+        }
+
+        if (streakState?.isAtRisk == true && !_pulseCtrl.isAnimating) {
+          _pulseCtrl.repeat(reverse: true);
+        } else if (streakState?.isAtRisk != true && _pulseCtrl.isAnimating) {
+          _pulseCtrl.stop();
+          _pulseCtrl.value = 1.0;
+        }
+
         final todayXp = (bibleRead ? 20 : 0) + (prayed ? 15 : 0) + (todoStats.completed * 5) + (skillsMin > 0 ? 10 : 0) + (connectedToday ? 5 : 0);
-        final phaseIdx = ScriptureService.getPhase(daysElapsed);
+        final gap = _h(24.0);
 
         return Scaffold(
           body: SafeArea(
@@ -275,29 +342,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               onRefresh: _onRefresh,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                child: Column(children: [
-                  _buildCompactHeader(context, user, daysElapsed, totalDays, daysRemaining, inSummer, l),
-                  const SizedBox(height: 16),
-                  _buildLitPath(context, bibleRead, prayed, todoStats, todayXp, tracking, daysElapsed, totalDays, phaseIdx, l),
-                  const SizedBox(height: 20),
-                  if (streakState?.isSabbathToday == true) ...[
-                    _buildSabbathBlessing(context, l),
-                    const SizedBox(height: 20),
+                padding: const EdgeInsets.only(left: 20, right: 20, top: AppSpacing.md),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildStaggered(0, _buildGreetingBlock(profile, user, inSummer, daysElapsed, totalDays, daysRemaining, l, tone)),
+                    SizedBox(height: gap),
+                    if (profile.showStreakRing) ...[
+                      _buildStaggered(1, _buildStreakRitual(profile, streak, streakState?.isAtRisk ?? false)),
+                      SizedBox(height: gap),
+                    ],
+                    _buildStaggered(2, _buildPrimaryStepCard(
+                      profile, currentStep, bibleRead, prayed, todoStats,
+                      streakState?.isSabbathToday ?? false, allComplete, user.name, tone, l,
+                    )),
+                    SizedBox(height: gap),
+                    _buildStaggered(3, _buildSecondaryActions(
+                      profile, skillsMin, connectedToday, todayXp, progress, todaySoulLog, l,
+                    )),
+                    SizedBox(height: gap),
+                    _buildStaggered(4, _buildVerseCard(profile)),
+                    SizedBox(height: _h(AppSpacing.xl)),
                   ],
-                  _buildSoulCheckIn(context, todaySoulLog, l),
-                  const SizedBox(height: 20),
-                  if (progress != null) ...[
-                    _buildReadingPlanCard(progress, loop, context, l),
-                    const SizedBox(height: 20),
-                  ],
-                  _buildCollapsibleVerse(context),
-                  if (_showCommunity) ...[
-                    const SizedBox(height: 16),
-                    _buildCommunityBanner(context),
-                  ],
-                  const SizedBox(height: 32),
-                ]),
+                ),
               ),
             ),
           ),
@@ -306,294 +373,521 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  static const _promptNames = ['📖 Verse', '💝 Appreciate', '🤗 Check in', '💡 Share', '🙏 Pray', '📞 Call', '🕊️ Reflect'];
-  static const _promptNamesAm = ['📖 ጥቅስ', '💝 አመሰግናለሁ', '🤗 ሰላም', '💡 አካፍል', '🙏 ጸልይ', '📞 ደውል', '🕊️ አሰላስል'];
-
-  List<_PillarData> _computePillars(bool prayed, bool bibleRead, int skillsMin, bool connectedToday, TodoStats todoStats, AppLocalizations l) {
-    final promptIdx = DateTime.now().weekday - 1;
-    final promptText = connectedToday ? l.fellowshipConnected : (_isAm ? _promptNamesAm[promptIdx] : _promptNames[promptIdx]);
-    return [
-      _PillarData(
-        icon: '🙏', name: l.spiritual,
-        statusText: prayed && bibleRead ? l.pillarSpiritualComplete
-            : prayed ? l.pillarPrayerDoneBiblePending
-            : bibleRead ? l.pillarBibleDonePrayerPending : l.pillarSpiritualPending,
-        isComplete: prayed && bibleRead,
-        progress: (prayed ? 0.5 : 0.0) + (bibleRead ? 0.5 : 0.0),
-        route: '/prayer',
+  Widget _buildStaggered(int index, Widget child) {
+    if (index >= _staggerAnims.length) return child;
+    return AnimatedBuilder(
+      animation: _staggerAnims[index],
+      builder: (context, child) => Opacity(
+        opacity: _staggerAnims[index].value,
+        child: Transform.translate(
+          offset: Offset(0, (1.0 - _staggerAnims[index].value) * 16),
+          child: child,
+        ),
       ),
-      _PillarData(
-        icon: '🎯', name: l.skills,
-        statusText: skillsMin > 0 ? l.skillMinutesToday(skillsMin) : l.skillTapToStart,
-        isComplete: skillsMin > 0,
-        progress: skillsMin > 0 ? 1.0 : 0.0,
-        route: '/skills',
-      ),
-      _PillarData(
-        icon: '👥', name: l.fellowship,
-        statusText: promptText,
-        isComplete: connectedToday,
-        progress: connectedToday ? 1.0 : 0.0,
-        route: '/fellowship',
-      ),
-      _PillarData(
-        icon: '✅', name: 'Tasks',
-        statusText: todoStats.total > 0 ? '${todoStats.completed}/${todoStats.total} done' : 'Plan today →',
-        isComplete: todoStats.total > 0 && todoStats.completed >= todoStats.total,
-        progress: todoStats.total > 0 ? todoStats.completed / todoStats.total : 0.0,
-        route: '/daily-todo',
-      ),
-    ];
+      child: child,
+    );
   }
 
-  Widget _buildReadingPlanCard(PlanProgress progress, ReadingLoop? loop, BuildContext context, AppLocalizations l) {
-    final c = AppColors.of(context);
-    final pct = (progress.biblePercent * 100).round();
-    return GestureDetector(
-      onTap: () => context.go('/progress'),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: c.card,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: c.border),
-        ),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [
-            const Text('📖', style: TextStyle(fontSize: 18)),
-            const SizedBox(width: 10),
-            Text('Reading Plan', style: AppTextStyles.labelLarge.copyWith(fontSize: 14)),
-            const Spacer(),
-            Text('$pct%',
-                style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.primary, fontWeight: FontWeight.w700, fontSize: 13)),
-          ]),
-          const SizedBox(height: 10),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(3),
-            child: LinearProgressIndicator(
-              value: progress.biblePercent,
-              backgroundColor: c.border,
-              valueColor: const AlwaysStoppedAnimation(AppColors.primary),
-              minHeight: 6,
+  Widget _buildGreetingBlock(ExperienceProfile profile, User user, bool inSummer, int daysElapsed, int totalDays, int daysRemaining, AppLocalizations l, ToneService tone) {
+    final hour = DateTime.now().hour;
+    final greeting = tone.greeting(l, hour);
+    final name = user.name.split(' ').first;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(children: [
+          if (inSummer)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: AppSpacing.xs),
+              decoration: BoxDecoration(
+                color: AppColors.of(context).primary.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppColors.of(context).primary.withValues(alpha: 0.25)),
+              ),
+              child: Text('Day $daysElapsed of $totalDays · $daysRemaining left',
+                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.of(context).primary, fontSize: 11)),
+            )
+          else
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: AppSpacing.xs),
+              decoration: BoxDecoration(
+                color: AppColors.of(context).primary.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppColors.of(context).primary.withValues(alpha: 0.25)),
+              ),
+              child: Text(SummerService.outsideMessage,
+                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.of(context).primary, fontSize: 11)),
+            ),
+        ]),
+        SizedBox(height: _h(12.0)),
+        _buildGreetingText(profile, greeting, name, l),
+      ],
+    );
+  }
+
+  Widget _buildGreetingText(ExperienceProfile profile, String greeting, String name, AppLocalizations l) {
+    String displayText;
+    switch (profile.greetingStyle) {
+      case 'full':
+        displayText = '$greeting, $name.';
+      case 'short':
+        displayText = '$name. $greeting.';
+      case 'minimal':
+        displayText = greeting;
+      case 'nameOnly':
+        displayText = name;
+      default:
+        displayText = '$greeting, $name.';
+    }
+    return Text(
+      displayText,
+      style: AppTextStyles.of(context).displayMedium.copyWith(
+        color: profile.colors.greeting,
+        fontWeight: profile.visualWeight,
+        height: 1.2,
+      ),
+    );
+  }
+
+  Widget _buildStreakRitual(ExperienceProfile profile, int streak, bool isAtRisk) {
+    final progress = _milestoneProgress(streak);
+    return Center(
+      child: SizedBox(
+        width: 64,
+        height: 64,
+        child: AnimatedBuilder(
+          animation: _pulseCtrl,
+          builder: (context, _) => CustomPaint(
+            painter: _StreakRingPainter(
+              progress: progress,
+              color: profile.colors.streakRing,
+              isAtRisk: isAtRisk,
+              pulseOpacity: isAtRisk ? _pulseAnim.value : 1.0,
+            ),
+            child: Center(
+              child: Text(
+                '$streak',
+                style: AppTextStyles.displaySmall.copyWith(
+                  fontSize: 18,
+                  color: profile.colors.streakRing,
+                  fontWeight: profile.visualWeight,
+                ),
+              ),
             ),
           ),
-          const SizedBox(height: 8),
-          Text('${progress.totalChaptersRead} of ${progress.totalChaptersInBible} chapters',
-              style: AppTextStyles.bodySmall.copyWith(color: c.textSecondary, fontSize: 12)),
-          if (loop != null) ...[
-            const SizedBox(height: 6),
-            Text('Loop ${loop.loopNumber}: Day ${_dayInLoop(loop)} of ${loop.duration}',
-                style: AppTextStyles.bodySmall.copyWith(color: c.textMuted, fontSize: 11)),
-          ],
-          if (progress.currentBookName != null) ...[
-            const SizedBox(height: 4),
-            Text('Currently: ${progress.currentBookName} Ch. ${progress.currentBookChapter} of ${progress.currentBookTotal}',
-                style: AppTextStyles.bodySmall.copyWith(color: c.textMuted, fontSize: 11)),
-          ],
-        ]),
+        ),
       ),
     );
   }
 
-  Widget _buildCollapsibleVerse(BuildContext context) {
+  Widget _buildPrimaryStepCard(
+    ExperienceProfile profile, int currentStep, bool bibleRead, bool prayed, TodoStats todoStats,
+    bool isSabbath, bool allComplete, String userName, ToneService tone, AppLocalizations l,
+  ) {
+    if (isSabbath) {
+      return _buildSabbathContent(profile, l);
+    }
+    if (allComplete) {
+      return _buildCelebrationCard(profile, userName, tone, l);
+    }
+    if (currentStep >= 3) {
+      return _buildRhythmCompleteCard(profile, l);
+    }
+    final stepData = _nextStepData(currentStep, todoStats, l);
+    return _buildStepCard(profile, stepData);
+  }
+
+  _StepData _nextStepData(int currentStep, TodoStats todoStats, AppLocalizations l) {
+    switch (currentStep) {
+      case 0:
+        return _StepData(
+          icon: '📖',
+          title: _isAm ? 'ቃሉን አንብብ' : 'Read the Word',
+          subtitle: _isAm ? 'የእግዚአብሔርን ድምፅ ስማ' : 'Hear His voice',
+          ctaLabel: _isAm ? 'ማንበብ ጀምር' : 'Start Reading',
+          route: '/bible',
+        );
+      case 1:
+        return _StepData(
+          icon: '🙏',
+          title: _isAm ? 'ጸሎት' : 'Prayer',
+          subtitle: _isAm ? 'ልብህን አፍስስ' : 'Pour out your heart',
+          ctaLabel: _isAm ? 'ጸልይ' : 'Begin Prayer',
+          route: '/prayer',
+        );
+      case 2:
+        return _StepData(
+          icon: '✅',
+          title: _isAm ? 'የዛሬ ተግባራት' : "Today's Tasks",
+          subtitle: _isAm
+              ? (todoStats.total == 0 ? 'እቅድ አውጣ' : 'በታዛዥነት ሂድ')
+              : (todoStats.total == 0 ? 'Set your intention' : 'Walk in obedience'),
+          ctaLabel: _isAm
+              ? (todoStats.total == 0 ? 'እቅድ ፍጠር' : 'አድርግ')
+              : (todoStats.total == 0 ? 'Shape your day' : 'Do'),
+          route: '/daily-todo',
+        );
+      default:
+        return _StepData(
+          icon: '📖',
+          title: 'Read the Word',
+          subtitle: 'Hear His voice',
+          ctaLabel: 'Start Reading',
+          route: '/bible',
+        );
+    }
+  }
+
+  Widget _buildStepCard(ExperienceProfile profile, _StepData step) {
     final c = AppColors.of(context);
     return Container(
       width: double.infinity,
+      padding: EdgeInsets.all(_h(AppSpacing.lg)),
       decoration: BoxDecoration(
-        color: c.card,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: c.border),
-      ),
-      child: Column(children: [
-        InkWell(
-          borderRadius: BorderRadius.circular(14),
-          onTap: () => setState(() => _verseExpanded = !_verseExpanded),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(children: [
-              const Text('✨', style: TextStyle(fontSize: 20)),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(_isAm ? 'የዛሬው ጥቅስ' : 'Verse of the Day',
-                    style: AppTextStyles.labelLarge.copyWith(color: c.textPrimary)),
-              ),
-              Icon(_verseExpanded ? Icons.expand_less : Icons.expand_more, color: c.textMuted),
-            ]),
-          ),
-        ),
-        if (_verseExpanded) ...[
-          Divider(height: 1, color: c.border),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: _buildVerseHero(context),
+        color: c.cardElevated,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: profile.colors.accent.withValues(alpha: 0.3), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: profile.colors.accent.withValues(alpha: 0.08),
+            blurRadius: 20,
+            spreadRadius: 2,
           ),
         ],
-      ]),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(step.icon, style: const TextStyle(fontSize: 28)),
+          SizedBox(height: _h(AppSpacing.md)),
+          Text(
+            step.title,
+            style: AppTextStyles.of(context).displaySmall.copyWith(
+              fontWeight: profile.visualWeight,
+              color: c.textPrimary,
+            ),
+          ),
+          SizedBox(height: _h(AppSpacing.sm)),
+          Text(
+            step.subtitle,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: c.textSecondary,
+              fontStyle: FontStyle.italic,
+              height: 1.4,
+            ),
+          ),
+          SizedBox(height: _h(AppSpacing.lg)),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => context.go(step.route),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: profile.colors.accent,
+                foregroundColor: c.isDark ? const Color(0xFF07090E) : Colors.white,
+                padding: EdgeInsets.symmetric(vertical: _h(AppSpacing.sm + 4)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                elevation: 0,
+              ),
+              child: Text(
+                step.ctaLabel,
+                style: AppTextStyles.labelLarge.copyWith(fontWeight: FontWeight.w600, fontSize: 16),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  int _dayInLoop(ReadingLoop loop) {
-    final start = DateTime.tryParse(loop.startDate);
-    if (start == null) return 1;
-    return (DateTime.now().difference(start).inDays + 1).clamp(1, loop.duration);
-  }
-
-  Widget _buildCommunityBanner(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
+  Widget _buildSabbathContent(ExperienceProfile profile, AppLocalizations l) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(_h(AppSpacing.lg)),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppColors.primary.withValues(alpha: 0.15), AppColors.primary.withValues(alpha: 0.05)],
+          colors: [profile.colors.accent.withValues(alpha: 0.85), profile.colors.accent.withValues(alpha: 0.6)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 12, offset: const Offset(0, 2)),
+        ],
       ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Container(
-            width: 40, height: 40,
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Center(child: Text('💬', style: TextStyle(fontSize: 20))),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(l.community, style: AppTextStyles.labelLarge.copyWith(fontSize: 14)),
-              const SizedBox(height: 4),
-              Text(
-                'Share your summer experience, day-to-day lifestyle, and encourage one another in our Telegram community.',
-                style: AppTextStyles.bodySmall.copyWith(color: AppColors.of(context).textSecondary, fontSize: 11, height: 1.4),
-              ),
-            ]),
-          ),
-          GestureDetector(
-            onTap: _dismissCommunity,
-            child: Padding(
-              padding: const EdgeInsets.only(left: 4),
-              child: Icon(Icons.close, size: 18, color: AppColors.of(context).textMuted),
-            ),
-          ),
-        ]),
-        const SizedBox(height: 12),
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton.icon(
-            onPressed: _openTelegram,
-            icon: const Icon(Icons.send, size: 16),
-            label: Text('Join ብስለት on Telegram', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: const Color(0xFF0A0A0A),
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-          ),
+      child: Column(children: [
+        Text(_isAm ? '🕊️ የእረፍት ቀን' : '🕊️ Sabbath Rest',
+            style: AppTextStyles.of(context).displaySmall.copyWith(color: Colors.white, fontWeight: FontWeight.w700)),
+        SizedBox(height: _h(AppSpacing.sm)),
+        Text(
+          _isAm
+            ? '"ወደ እኔ የደከማችሁ..." — ማቴዎስ 11፥28'
+            : '"Come to me, all who labor..." — Matthew 11:28',
+          style: AppTextStyles.bodyMedium.copyWith(color: Colors.white70, height: 1.5),
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(height: _h(AppSpacing.sm)),
+        Text(
+          _isAm ? 'እግዚአብሔር ዛሬ እንድታርፍ ይጋብዝሃል።' : 'God invites you to rest today.',
+          style: AppTextStyles.bodySmall.copyWith(color: Colors.white60),
+          textAlign: TextAlign.center,
         ),
       ]),
     );
   }
 
-  void _showCelebration(String name) {
+  Widget _buildRhythmCompleteCard(ExperienceProfile profile, AppLocalizations l) {
     final c = AppColors.of(context);
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(_h(AppSpacing.lg)),
+      decoration: BoxDecoration(
+        color: c.cardElevated,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: profile.colors.stepComplete.withValues(alpha: 0.3)),
+      ),
+      child: Column(children: [
+        const Text('✅', style: TextStyle(fontSize: 32)),
+        SizedBox(height: _h(AppSpacing.sm)),
+        Text(
+          _isAm ? 'የዛሬ ሥርዐት ተፈጸመ' : "Today's rhythm complete",
+          style: AppTextStyles.of(context).displaySmall.copyWith(
+            color: profile.colors.stepComplete,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        SizedBox(height: _h(AppSpacing.xs)),
+        Text(
+          _isAm ? 'ተጨማሪ ከታች አለ።' : 'More below.',
+          style: AppTextStyles.bodySmall.copyWith(color: c.textMuted),
+        ),
+      ]),
+    );
+  }
+
+  Widget _buildCelebrationCard(ExperienceProfile profile, String userName, ToneService tone, AppLocalizations l) {
+    final c = AppColors.of(context);
+    final msg = tone.completionMessage(l, userName);
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(_h(AppSpacing.lg)),
+      decoration: BoxDecoration(
+        color: c.cardElevated,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: profile.colors.stepComplete.withValues(alpha: 0.3)),
+      ),
+      child: Column(children: [
+        Text('🎉', style: const TextStyle(fontSize: 36)),
+        SizedBox(height: _h(AppSpacing.sm)),
+        Text(
+          msg,
+          style: AppTextStyles.of(context).displaySmall.copyWith(
+            color: profile.colors.stepComplete,
+            fontWeight: FontWeight.w600,
+            height: 1.3,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ]),
+    );
+  }
+
+  Widget _buildSecondaryActions(
+    ExperienceProfile profile, int skillsMin, bool connectedToday, int todayXp,
+    PlanProgress? planProgress, SoulLogData? todaySoulLog, AppLocalizations l,
+  ) {
+    final c = AppColors.of(context);
+    return Opacity(
+      opacity: 0.65,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            _buildSecondaryPill('🎯', skillsMin > 0 ? '$skillsMin min' : (_isAm ? 'ጀምር' : 'Start'), () => context.go('/skills')),
+            SizedBox(width: _h(AppSpacing.sm)),
+            _buildSecondaryPill('👥', connectedToday ? (_isAm ? 'ተገናኝተዋል' : 'Connected') : (_isAm ? 'አገናኝ' : 'Connect'), () => context.go('/fellowship')),
+            if (planProgress != null) ...[
+              SizedBox(width: _h(AppSpacing.sm)),
+              _buildSecondaryPill('📖', '${(planProgress.biblePercent * 100).round()}%', () => context.go('/progress')),
+            ],
+          ]),
+          SizedBox(height: _h(AppSpacing.sm)),
+          Row(children: [
+            _buildSoulRow(todaySoulLog, l),
+            const Spacer(),
+            Text('+$todayXp', style: AppTextStyles.bodySmall.copyWith(color: c.textMuted, fontSize: 11)),
+          ]),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSecondaryPill(String emoji, String label, VoidCallback onTap) {
+    final c = AppColors.of(context);
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: _h(AppSpacing.sm), vertical: _h(AppSpacing.xs)),
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Text(emoji, style: const TextStyle(fontSize: 12)),
+          SizedBox(width: _h(4)),
+          Text(label, style: AppTextStyles.bodySmall.copyWith(fontSize: 11, color: c.textMuted)),
+        ]),
+      ),
+    );
+  }
+
+  Widget _buildSoulRow(SoulLogData? todayLog, AppLocalizations l) {
+    if (todayLog != null) {
+      return GestureDetector(
+        onTap: () => _editSoulCheckIn(todayLog),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Text(_moodEmoji(todayLog.mood), style: const TextStyle(fontSize: 16)),
+          SizedBox(width: _h(4)),
+          Text(_isAm ? _moodLabel(todayLog.mood, true) : _moodLabel(todayLog.mood, false),
+              style: AppTextStyles.bodySmall.copyWith(fontSize: 10, color: AppColors.of(context).textMuted)),
+        ]),
+      );
+    }
+    return Row(mainAxisSize: MainAxisSize.min, children: [
+      const Text('💭', style: TextStyle(fontSize: 14)),
+      SizedBox(width: _h(4)),
+      Row(mainAxisSize: MainAxisSize.min, children: [
+        _miniMoodBtn(1, '😢'), _miniMoodBtn(2, '😕'), _miniMoodBtn(3, '😐'),
+        _miniMoodBtn(4, '🙂'), _miniMoodBtn(5, '😊'),
+      ]),
+    ]);
+  }
+
+  Widget _miniMoodBtn(int mood, String emoji) {
+    return GestureDetector(
+      onTap: () => _logSoulCheckIn(mood),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: _h(2)),
+        child: Text(emoji, style: const TextStyle(fontSize: 14)),
+      ),
+    );
+  }
+
+  Widget _buildVerseCard(ExperienceProfile profile) {
+    final scripture = ScriptureService.getDailyScripture();
+    final c = AppColors.of(context);
+    return _FadeInAnimation(
+      duration: profile.animationDuration,
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: _h(AppSpacing.md)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              '"${scripture.text}"',
+              style: AppTextStyles.of(context).displaySmall.copyWith(
+                fontFamily: 'CormorantGaramond',
+                fontStyle: FontStyle.italic,
+                height: 1.6,
+                fontSize: 20,
+                color: c.textSecondary.withValues(alpha: 0.8),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: _h(AppSpacing.sm)),
+            Text(
+              scripture.reference,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: c.primary.withValues(alpha: 0.7),
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            if (scripture.textAm != null) ...[
+              SizedBox(height: _h(AppSpacing.sm)),
+              Text(
+                scripture.textAm!,
+                style: AppTextStyles.amharicBody.copyWith(
+                  fontSize: 13,
+                  height: 1.5,
+                  color: c.textMuted.withValues(alpha: 0.7),
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+            SizedBox(height: _h(AppSpacing.md)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton.icon(
+                  onPressed: () => context.go('/bible'),
+                  icon: Icon(Icons.play_arrow, size: 14, color: c.textMuted),
+                  label: Text('Listen', style: AppTextStyles.bodySmall.copyWith(fontSize: 11, color: c.textMuted)),
+                ),
+                SizedBox(width: _h(AppSpacing.md)),
+                TextButton.icon(
+                  onPressed: () => context.go('/bible'),
+                  icon: Icon(Icons.menu_book, size: 14, color: c.textMuted),
+                  label: Text('Read', style: AppTextStyles.bodySmall.copyWith(fontSize: 11, color: c.textMuted)),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showCelebration(String name, ToneService tone, AppLocalizations l) {
+    final c = AppColors.of(context);
+    final msg = tone.completionMessage(l, name);
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Row(children: [
         const Text('🎉 ', style: TextStyle(fontSize: 18)),
-        Expanded(child: Text('All done, $name! You\'re growing today.', style: AppTextStyles.bodyMedium.copyWith(color: Colors.white))),
+        Expanded(child: Text(msg, style: AppTextStyles.bodyMedium.copyWith(color: Colors.white))),
       ]),
       backgroundColor: c.success,
       behavior: SnackBarBehavior.floating,
-      duration: const Duration(seconds: 3),
+      duration: AppDurations.verySlow,
     ));
   }
 
-  Widget _buildSoulCheckIn(BuildContext context, SoulLogData? todayLog, AppLocalizations l) {
-    if (todayLog case final log?) {
-      return _buildSoulCheckInDone(log, l);
-    }
-    return _buildSoulCheckInPrompt(l);
+  String _moodEmoji(int mood) {
+    return ['😢', '😕', '😐', '🙂', '😊'][mood.clamp(1, 5) - 1];
   }
 
-  Widget _buildSoulCheckInDone(SoulLogData log, AppLocalizations l) {
-    final isAm = _isAm;
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: AppColors.of(context).card,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(14),
-        onTap: () => _editSoulCheckIn(log),
+  String _moodLabel(int mood, bool isAm) {
+    const labels = ['', 'Struggling', 'Down', 'Okay', 'Good', 'Great'];
+    const amLabels = ['', 'እየታገልሁ ነው', 'አዝኛለሁ', 'እሺ', 'ጥሩ', 'በጣም ጥሩ'];
+    return isAm ? amLabels[mood.clamp(0, 5)] : labels[mood.clamp(0, 5)];
+  }
+
+  Future<void> _logSoulCheckIn(int mood) async {
+    await ref.read(soulLogNotifierProvider.notifier).logCheckIn(mood);
+    setState(() {});
+  }
+
+  void _editSoulCheckIn(SoulLogData log) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.of(context).card,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.md))),
+      builder: (ctx) => SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(children: [
-            Text(_moodEmoji(log.mood), style: const TextStyle(fontSize: 20)),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                isAm ? 'ዛሬ እንዴት ነህ: ${_moodLabel(log.mood, isAm)}' : 'How you are today: ${_moodLabel(log.mood, isAm)}',
-                style: AppTextStyles.labelLarge.copyWith(color: AppColors.of(context).textSecondary),
-              ),
-            ),
-            Icon(Icons.edit_square, size: 18, color: AppColors.of(context).textMuted),
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Text(_isAm ? 'ስሜትህን ለውጥ' : 'Update your mood', style: AppTextStyles.labelLarge),
+            SizedBox(height: AppSpacing.md),
+            Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+              _moodBtn(1, '😢'), _moodBtn(2, '😕'), _moodBtn(3, '😐'),
+              _moodBtn(4, '🙂'), _moodBtn(5, '😊'),
+            ]),
+            SizedBox(height: AppSpacing.sm),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(_isAm ? 'ተው' : 'Cancel')),
           ]),
         ),
       ),
-    );
-  }
-
-  Widget _buildSoulCheckInPrompt(AppLocalizations l) {
-    final isAm = _isAm;
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: AppColors.of(context).card,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.of(context).border),
-      ),
-      child: Column(children: [
-        InkWell(
-          borderRadius: BorderRadius.circular(14),
-          onTap: () => setState(() => _soulExpanded = !_soulExpanded),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(children: [
-              const Text('💭', style: TextStyle(fontSize: 20)),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(isAm ? 'ነፍስህ እንዴት ናት?' : 'How\'s your soul?',
-                    style: AppTextStyles.labelLarge.copyWith(color: AppColors.of(context).textPrimary)),
-              ),
-              Icon(_soulExpanded ? Icons.expand_less : Icons.expand_more, color: AppColors.of(context).textMuted),
-            ]),
-          ),
-        ),
-        if (_soulExpanded) ...[
-          Divider(height: 1, color: AppColors.of(context).border),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(children: [
-              Text(isAm ? 'ልብህ ላይ ያለው ምንድን ነው?' : 'What is on your heart?',
-                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.of(context).textMuted)),
-              const SizedBox(height: 12),
-              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-                _moodBtn(1, '😢'), _moodBtn(2, '😕'), _moodBtn(3, '😐'),
-                _moodBtn(4, '🙂'), _moodBtn(5, '😊'),
-              ]),
-            ]),
-          ),
-        ],
-      ]),
     );
   }
 
@@ -611,431 +905,68 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
     );
   }
+}
 
-  String _moodEmoji(int mood) {
-    return ['😢', '😕', '😐', '🙂', '😊'][mood.clamp(1, 5) - 1];
+class _FadeInAnimation extends StatefulWidget {
+  final Widget child;
+  final Duration duration;
+  const _FadeInAnimation({required this.child, this.duration = const Duration(milliseconds: 300)});
+  @override State<_FadeInAnimation> createState() => _FadeInAnimationState();
+}
+
+class _FadeInAnimationState extends State<_FadeInAnimation> with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _anim;
+  @override void initState() {
+    super.initState();
+    _ctrl = AnimationController(vsync: this, duration: widget.duration);
+    _anim = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
+    _ctrl.forward();
+  }
+  @override void dispose() { _ctrl.dispose(); super.dispose(); }
+  @override Widget build(BuildContext context) => FadeTransition(opacity: _anim, child: widget.child);
+}
+
+class _StreakRingPainter extends CustomPainter {
+  final double progress;
+  final Color color;
+  final bool isAtRisk;
+  final double pulseOpacity;
+
+  _StreakRingPainter({
+    required this.progress,
+    required this.color,
+    this.isAtRisk = false,
+    this.pulseOpacity = 1.0,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = (size.width - 8) / 2;
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round;
+
+    paint.color = color.withValues(alpha: 0.15 * pulseOpacity);
+    canvas.drawCircle(center, radius, paint);
+
+    if (progress > 0) {
+      paint.color = color.withValues(alpha: pulseOpacity);
+      final sweepAngle = 2 * 3.14159 * progress.clamp(0.0, 1.0);
+      const startAngle = -3.14159 / 2;
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        startAngle,
+        sweepAngle,
+        false,
+        paint,
+      );
+    }
   }
 
-  String _moodLabel(int mood, bool isAm) {
-    const labels = ['', 'Struggling', 'Down', 'Okay', 'Good', 'Great'];
-    const amLabels = ['', 'እየታገልሁ ነው', 'አዝኛለሁ', 'እሺ', 'ጥሩ', 'በጣም ጥሩ'];
-    return isAm ? amLabels[mood.clamp(0, 5)] : labels[mood.clamp(0, 5)];
-  }
-
-  Future<void> _logSoulCheckIn(int mood) async {
-    await ref.read(soulLogNotifierProvider.notifier).logCheckIn(mood);
-    setState(() => _soulExpanded = false);
-  }
-
-  void _editSoulCheckIn(SoulLogData log) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.of(context).card,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Text(_isAm ? 'ስሜትህን ለውጥ' : 'Update your mood',
-                style: AppTextStyles.labelLarge),
-            const SizedBox(height: 16),
-            Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-              _moodBtn(1, '😢'), _moodBtn(2, '😕'), _moodBtn(3, '😐'),
-              _moodBtn(4, '🙂'), _moodBtn(5, '😊'),
-            ]),
-            const SizedBox(height: 8),
-            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(_isAm ? 'ተው' : 'Cancel')),
-          ]),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCompactHeader(BuildContext context, User user, int daysElapsed, int totalDays, int daysRemaining, bool inSummer, AppLocalizations l) {
-    final hour = DateTime.now().hour;
-    final isAm = _isAm;
-    final greeting = isAm
-        ? (hour < 12 ? 'እንደምን አደርክ' : hour < 18 ? 'እንደምን ዋልክ' : 'እንደምን አመሸህ')
-        : (hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening');
-
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-        if (inSummer)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
-            ),
-            child: Text('Day $daysElapsed of $totalDays · $daysRemaining left',
-                style: AppTextStyles.bodySmall.copyWith(color: AppColors.primary, fontSize: 11)),
-          )
-        else
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
-            ),
-            child: Text(SummerService.outsideMessage,
-                style: AppTextStyles.bodySmall.copyWith(color: AppColors.primary, fontSize: 11)),
-          ),
-        const Spacer(),
-        Text('$greeting, ${user.name.split(' ').first}',
-            style: AppTextStyles.bodySmall.copyWith(color: AppColors.of(context).textSecondary)),
-      ]),
-    ]);
-  }
-
-  Widget _buildLitPath(BuildContext context, bool bibleRead, bool prayed, TodoStats todoStats, int todayXp, TrackingData? tracking, int daysElapsed, int totalDays, int phaseIdx, AppLocalizations l) {
-    final c = AppColors.of(context);
-    final tasksDone = todoStats.total > 0 && todoStats.completed >= todoStats.total;
-    final step1done = bibleRead;
-    final step2done = bibleRead && prayed;
-    final step3done = bibleRead && prayed && tasksDone;
-    final currentStep = step1done ? (step2done ? (step3done ? 3 : 2) : 1) : 0;
-
-    final phaseColors = [c.progressGreen, c.audioBlue, c.warning, c.spiritualPurple];
-    final phaseNames = _isAm ? ScriptureService.phaseNamesAm : ScriptureService.phaseNamesEn;
-    final phaseColor = phaseColors[phaseIdx];
-    final phaseName = phaseNames[phaseIdx];
-
-    final streak = tracking?.streak ?? 0;
-
-    return Column(children: [
-      _buildLitStep(
-        step: 1,
-        icon: '📖',
-        label: _isAm ? 'ቃሉን አንብብ' : 'Read the Word',
-        purpose: _isAm ? 'የእግዚአብሔርን ድምፅ ስማ' : 'Hear His voice',
-        isComplete: step1done,
-        isLocked: false,
-        isCurrent: currentStep == 0,
-        accent: c.spiritualPurple,
-        actionLabel: step1done ? null : (_isAm ? 'ማንበብ ጀምር →' : 'Start Reading →'),
-        onAction: step1done ? null : () => context.go('/bible'),
-        onView: step1done ? () => context.go('/bible') : null,
-      ),
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        child: SizedBox(
-          height: 20,
-          child: Center(
-            child: Container(
-              width: 1,
-              height: 16,
-              decoration: BoxDecoration(
-                color: step1done ? c.progressGreen : c.border,
-              ),
-            ),
-          ),
-        ),
-      ),
-      _buildLitStep(
-        step: 2,
-        icon: '🙏',
-        label: _isAm ? 'ጸሎት' : 'Prayer',
-        purpose: _isAm ? 'ልብህን አፍስስ' : 'Pour out your heart',
-        isComplete: step2done,
-        isLocked: false,
-        isCurrent: currentStep == 1,
-        accent: c.spiritualPurple,
-        actionLabel: step2done ? null : (_isAm ? 'ጸሎት ጀምር →' : 'Start Prayer →'),
-        onAction: !step2done ? () => context.go('/prayer') : null,
-        onView: step2done ? () => context.go('/prayer') : null,
-      ),
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        child: SizedBox(
-          height: 20,
-          child: Center(
-            child: Container(
-              width: 1,
-              height: 16,
-              decoration: BoxDecoration(
-                color: step2done ? c.progressGreen : c.border,
-              ),
-            ),
-          ),
-        ),
-      ),
-      _buildLitStep(
-        step: 3,
-        icon: '✅',
-        label: _isAm ? 'የዛሬ ተግባራት' : "Today's Tasks",
-        purpose: _isAm ? 'በታዛዥነት ሂድ' : 'Walk in obedience',
-        isComplete: step3done,
-        isLocked: false,
-        isCurrent: currentStep == 2,
-        accent: c.progressGreen,
-        actionLabel: step3done ? null : (todoStats.total == 0 ? (_isAm ? 'እቅድ →' : 'Plan →') : (_isAm ? 'አድርግ →' : 'Do →')),
-        onAction: !step3done ? () => context.go('/daily-todo') : null,
-        onView: step3done ? () => context.go('/daily-todo') : null,
-      ),
-      const SizedBox(height: 16),
-      _buildRitualFooter(streak, todayXp, phaseName, phaseColor, daysElapsed, totalDays, phaseIdx, l),
-    ]);
-  }
-
-  Widget _buildLitStep({
-    required int step,
-    required String icon,
-    required String label,
-    required String purpose,
-    required bool isComplete,
-    required bool isLocked,
-    required bool isCurrent,
-    required Color accent,
-    String? actionLabel,
-    VoidCallback? onAction,
-    VoidCallback? onView,
-  }) {
-    final c = AppColors.of(context);
-    final opacity = isLocked ? 0.35 : (isComplete ? 0.7 : 1.0);
-    final bgColor = isCurrent ? c.cardElevated : c.card;
-    final borderColor = isCurrent ? accent.withValues(alpha: 0.4) : (isComplete ? accent.withValues(alpha: 0.2) : c.border);
-
-    return GestureDetector(
-      onTap: isComplete ? onView : (isLocked ? null : onAction),
-      child: Opacity(
-        opacity: opacity,
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: bgColor,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: borderColor, width: isCurrent ? 1.0 : 0.5),
-            boxShadow: isCurrent
-                ? [BoxShadow(color: accent.withValues(alpha: 0.08), blurRadius: 12, spreadRadius: 1)]
-                : null,
-          ),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [
-              Text(icon, style: const TextStyle(fontSize: 20)),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(label, style: AppTextStyles.labelLarge.copyWith(fontSize: 14, color: isComplete ? accent : c.textPrimary)),
-                  Text(purpose, style: AppTextStyles.bodySmall.copyWith(fontSize: 10, color: c.textMuted, fontStyle: FontStyle.italic)),
-                ]),
-              ),
-              if (isComplete)
-                Container(
-                  width: 22, height: 22,
-                  decoration: BoxDecoration(shape: BoxShape.circle, color: accent.withValues(alpha: 0.15)),
-                  child: Icon(Icons.check, size: 14, color: accent),
-                )
-              else if (isLocked)
-                Icon(Icons.lock_outline, size: 16, color: c.textMuted),
-            ]),
-            if (actionLabel != null && !isLocked) ...[
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: onAction,
-                  icon: const Icon(Icons.arrow_forward, size: 16),
-                  label: Text(actionLabel, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: accent,
-                    foregroundColor: c.isDark ? const Color(0xFF07090E) : Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                ),
-              ),
-            ],
-          ]),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRitualFooter(int streak, int todayXp, String phaseName, Color phaseColor, int daysElapsed, int totalDays, int phaseIdx, AppLocalizations l) {
-    final progress = totalDays > 0 ? daysElapsed / totalDays : 0.0;
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.of(context).card,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.of(context).border, width: 0.5),
-      ),
-      child: Column(children: [
-        Row(children: [
-          Row(children: [
-            Text(StreakService.growthEmoji(streak), style: const TextStyle(fontSize: 14)),
-            const SizedBox(width: 4),
-            Text('$streak days', style: AppTextStyles.bodySmall.copyWith(fontSize: 11, color: AppColors.of(context).textPrimary)),
-          ]),
-          const SizedBox(width: 16),
-          Container(width: 1, height: 12, color: AppColors.of(context).border),
-          const SizedBox(width: 16),
-          Row(children: [
-            Icon(Icons.auto_awesome, size: 13, color: AppColors.primary),
-            const SizedBox(width: 4),
-            Text('+$todayXp XP', style: AppTextStyles.bodySmall.copyWith(fontSize: 11, color: AppColors.primary)),
-          ]),
-          const Spacer(),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(
-              color: phaseColor.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(mainAxisSize: MainAxisSize.min, children: [
-              Container(width: 6, height: 6, decoration: BoxDecoration(shape: BoxShape.circle, color: phaseColor)),
-              const SizedBox(width: 4),
-              Text(phaseName, style: AppTextStyles.bodySmall.copyWith(fontSize: 9, color: phaseColor, fontWeight: FontWeight.w700)),
-            ]),
-          ),
-        ]),
-        const SizedBox(height: 8),
-        Row(children: [
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(2),
-              child: LinearProgressIndicator(
-                value: progress,
-                backgroundColor: AppColors.of(context).border,
-                valueColor: AlwaysStoppedAnimation(phaseColor),
-                minHeight: 3,
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text('Day $daysElapsed of $totalDays', style: AppTextStyles.bodySmall.copyWith(fontSize: 9, color: AppColors.of(context).textMuted)),
-        ]),
-        const SizedBox(height: 8),
-        Text(
-          WitnessService.phaseMessage(phaseIdx, daysElapsed, _isAm),
-          style: TextStyle(fontSize: 10, color: phaseColor, fontWeight: FontWeight.w500, height: 1.3),
-        ),
-      ]),
-    );
-  }
-
-  Widget _buildSabbathBlessing(BuildContext context, AppLocalizations l) {
-    final isAm = _isAm;
-    final c = AppColors.of(context);
-    final accent = c.success;
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [accent.withValues(alpha: 0.85), accent.withValues(alpha: 0.6)]),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 8, offset: const Offset(0, 2))],
-      ),
-      child: Column(children: [
-        Text(isAm ? '🕊️ የእረፍት ቀን' : '🕊️ Sabbath Rest',
-            style: TextStyle(fontFamily: 'Inter', fontSize: 16, fontWeight: FontWeight.w700, color: c.isDark ? Colors.white : Colors.white)),
-        const SizedBox(height: 8),
-        Text(
-          isAm
-            ? '"ወደ እኔ የደከማችሁ የተሸከማችሁም ሁሉ ኑ፤ እኔም አሳርፋችኋለሁ።" — ማቴዎስ 11፥28'
-            : '"Come to me, all who labor and are heavy laden, and I will give you rest." — Matthew 11:28',
-          style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w400, color: Colors.white.withValues(alpha: 0.9)),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 6),
-        Text(
-          isAm ? 'እግዚአብሔር ዛሬ እንድታርፍ ይጋብዝሃል። ዘንድሮ ሥራ አልጠበቀብህም። 🌱' : 'God invites you to rest today. No tasks expected. 🌱',
-          style: TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w400, color: Colors.white.withValues(alpha: 0.75)),
-          textAlign: TextAlign.center,
-        ),
-      ]),
-    );
-  }
-
-  Widget _buildVerseHero(BuildContext context) {
-    final scripture = ScriptureService.getDailyScripture();
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: AppColors.cardElevated,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.4), width: 1),
-        boxShadow: [
-          BoxShadow(color: AppColors.primary.withValues(alpha: 0.1), blurRadius: 20, spreadRadius: 2),
-        ],
-      ),
-      child: Column(children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
-          ),
-          child: Row(mainAxisSize: MainAxisSize.min, children: [
-            const Text('✨', style: TextStyle(fontSize: 12)),
-            const SizedBox(width: 6),
-            Text('Verse of the Day',
-                style: AppTextStyles.labelSmall.copyWith(color: AppColors.primary, fontSize: 9, letterSpacing: 1.2)),
-          ]),
-        ),
-        const SizedBox(height: 20),
-        Text('"${scripture.text}"',
-            style: AppTextStyles.bodyLarge.copyWith(fontStyle: FontStyle.italic, height: 1.7, fontSize: 17),
-            textAlign: TextAlign.center),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-          decoration: BoxDecoration(
-            color: AppColors.of(context).card.withValues(alpha: 0.6),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text(scripture.reference, style: AppTextStyles.bodySmall.copyWith(color: AppColors.primary, fontWeight: FontWeight.w700)),
-        ),
-        if (scripture.textAm != null) ...[
-          const SizedBox(height: 14),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.of(context).card.withValues(alpha: 0.4),
-              borderRadius: BorderRadius.circular(12),
-              border: Border(left: BorderSide(color: AppColors.primary.withValues(alpha: 0.2), width: 2)),
-            ),
-            child: Text(scripture.textAm!,
-                style: AppTextStyles.amharicBody.copyWith(fontSize: 13, height: 1.6, color: AppColors.of(context).textSecondary),
-                textAlign: TextAlign.center),
-          ),
-        ],
-        const SizedBox(height: 20),
-        Row(children: [
-          Expanded(
-            child: OutlinedButton.icon(
-              onPressed: () => context.go('/bible'),
-              icon: const Icon(Icons.play_arrow, size: 16),
-              label: Text('Listen', style: const TextStyle(fontSize: 12)),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.audioBlue,
-                side: BorderSide(color: AppColors.audioBlue.withValues(alpha: 0.3)),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: ElevatedButton.icon(
-              onPressed: () => context.go('/bible'),
-              icon: const Icon(Icons.menu_book, size: 16),
-              label: Text('Read', style: const TextStyle(fontSize: 12)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: const Color(0xFF07090E),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-            ),
-          ),
-        ]),
-      ]),
-    );
-  }
+  @override
+  bool shouldRepaint(_StreakRingPainter old) =>
+    old.progress != progress || old.pulseOpacity != pulseOpacity || old.isAtRisk != isAtRisk;
 }

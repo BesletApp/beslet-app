@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
+import 'app_spacing.dart';
 
 ThemeData _baseTheme({required Brightness brightness, required ThemePalette c}) {
   final isDark = brightness == Brightness.dark;
@@ -27,7 +28,7 @@ ThemeData _baseTheme({required Brightness brightness, required ThemePalette c}) 
       color: c.card,
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppSpacing.sm + 6),
         side: BorderSide(color: c.border, width: 0.5),
       ),
     ),
@@ -43,18 +44,18 @@ ThemeData _baseTheme({required Brightness brightness, required ThemePalette c}) 
       filled: true,
       fillColor: c.surface,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppSpacing.sm + 4),
         borderSide: BorderSide(color: c.border, width: 0.5),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppSpacing.sm + 4),
         borderSide: BorderSide(color: c.border, width: 0.5),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppSpacing.sm + 4),
         borderSide: BorderSide(color: c.primary, width: 1),
       ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm + 6),
       hintStyle: TextStyle(color: c.textMuted),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
@@ -62,8 +63,8 @@ ThemeData _baseTheme({required Brightness brightness, required ThemePalette c}) 
         backgroundColor: c.primary,
         foregroundColor: isDark ? const Color(0xFF07090E) : Colors.white,
         elevation: 0,
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.sm + 6)),
         textStyle: const TextStyle(
           fontFamily: 'Inter', fontSize: 15, fontWeight: FontWeight.w700,
         ),
@@ -73,7 +74,7 @@ ThemeData _baseTheme({required Brightness brightness, required ThemePalette c}) 
       style: OutlinedButton.styleFrom(
         foregroundColor: c.primary,
         side: BorderSide(color: c.border, width: 0.5),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.sm + 2)),
       ),
     ),
     progressIndicatorTheme: ProgressIndicatorThemeData(
@@ -83,7 +84,7 @@ ThemeData _baseTheme({required Brightness brightness, required ThemePalette c}) 
     ),
     snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.sm + 4)),
     ),
     textTheme: TextTheme(
       headlineLarge: TextStyle(

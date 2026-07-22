@@ -9,6 +9,8 @@ import 'core/services/notification_service.dart';
 import 'core/services/widget_service.dart';
 import 'core/services/prayer_reminder_service.dart';
 import 'core/services/prayer_alarm_sound_service.dart';
+import 'core/personalization/personalization_engine.dart';
+import 'core/personalization/personalization_providers.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,5 +32,15 @@ void main() async {
   ));
   try { await WidgetService.updateWidgetData(); } catch (_) {}
   try { await PrayerReminderService.updatePrayerNotificationContent(); } catch (_) {}
-  runApp(const ProviderScope(child: BesletApp()));
+
+  final engine = await PersonalizationEngine.init();
+
+  runApp(
+    ProviderScope(
+      overrides: [
+        personalizationEngineProvider.overrideWithValue(engine),
+      ],
+      child: const BesletApp(),
+    ),
+  );
 }

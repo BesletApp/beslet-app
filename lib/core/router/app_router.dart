@@ -3,7 +3,9 @@ import 'package:go_router/go_router.dart';
 import '../../l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../core/theme/app_spacing.dart';
 import '../../core/widgets/app_shell.dart';
+import '../../core/widgets/page_transition.dart' show FadeTransitionPage;
 import '../../features/splash/splash_screen.dart';
 import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/home/home_screen.dart';
@@ -35,11 +37,11 @@ class AppRouter {
             padding: const EdgeInsets.all(40),
             child: Column(mainAxisSize: MainAxisSize.min, children: [
               const Text('🙏', style: TextStyle(fontSize: 64)),
-              const SizedBox(height: 16),
+              SizedBox(height: AppSpacing.md),
               Text(l.pageNotFound, style: t.displaySmall),
-              const SizedBox(height: 8),
+              SizedBox(height: AppSpacing.sm),
               Text(state.error?.message ?? 'The page you\'re looking for doesn\'t exist.', style: t.bodyMedium.copyWith(color: c.textSecondary)),
-              const SizedBox(height: 24),
+              SizedBox(height: AppSpacing.lg),
               ElevatedButton(onPressed: () => context.go('/home'), child: Text(l.goHome)),
             ]),
           ),
@@ -47,40 +49,44 @@ class AppRouter {
       );
     },
     routes: [
-      GoRoute(path: '/splash', builder: (_, __) => const SplashScreen()),
-      GoRoute(path: '/onboarding', builder: (_, __) => const OnboardingScreen()),
+      GoRoute(path: '/splash', pageBuilder: (context, state) => _buildPage(state, const SplashScreen())),
+      GoRoute(path: '/onboarding', pageBuilder: (context, state) => _buildPage(state, const OnboardingScreen())),
       StatefulShellRoute.indexedStack(
-        builder: (_, __, navigationShell) => AppShell(navigationShell: navigationShell),
+        builder: (context, state, navigationShell) => AppShell(navigationShell: navigationShell),
         branches: [
           StatefulShellBranch(routes: [
-            GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
-            GoRoute(path: '/habits', builder: (_, __) => const HabitsScreen()),
-            GoRoute(path: '/prayer', builder: (_, __) => const PrayerScreen()),
-            GoRoute(path: '/skills', builder: (_, __) => const SkillsScreen()),
-            GoRoute(path: '/reflection', builder: (_, __) => const ReflectionScreen()),
-            GoRoute(path: '/fellowship', builder: (_, __) => const FellowshipScreen()),
-            GoRoute(path: '/daily-todo', builder: (_, __) => const DailyTodoScreen()),
-            GoRoute(path: '/goals', builder: (_, __) => const GoalsScreen()),
+            GoRoute(path: '/home', pageBuilder: (context, state) => _buildPage(state, const HomeScreen())),
+            GoRoute(path: '/habits', pageBuilder: (context, state) => _buildPage(state, const HabitsScreen())),
+            GoRoute(path: '/prayer', pageBuilder: (context, state) => _buildPage(state, const PrayerScreen())),
+            GoRoute(path: '/skills', pageBuilder: (context, state) => _buildPage(state, const SkillsScreen())),
+            GoRoute(path: '/reflection', pageBuilder: (context, state) => _buildPage(state, const ReflectionScreen())),
+            GoRoute(path: '/fellowship', pageBuilder: (context, state) => _buildPage(state, const FellowshipScreen())),
+            GoRoute(path: '/daily-todo', pageBuilder: (context, state) => _buildPage(state, const DailyTodoScreen())),
+            GoRoute(path: '/goals', pageBuilder: (context, state) => _buildPage(state, const GoalsScreen())),
           ]),
           StatefulShellBranch(routes: [
-            GoRoute(path: '/bible', builder: (_, state) {
+            GoRoute(path: '/bible', pageBuilder: (context, state) {
               final book = state.uri.queryParameters['book'];
               final chStr = state.uri.queryParameters['chapter'];
               final chapter = chStr != null ? int.tryParse(chStr) : null;
-              return BibleScreen(initialBookId: book, initialChapter: chapter);
+              return _buildPage(state, BibleScreen(initialBookId: book, initialChapter: chapter));
             }),
-            GoRoute(path: '/bible/journal', builder: (_, __) => const ReflectionJournalScreen()),
-            GoRoute(path: '/bible/book-journal', builder: (_, __) => const BookJournalScreen()),
+            GoRoute(path: '/bible/journal', pageBuilder: (context, state) => _buildPage(state, const ReflectionJournalScreen())),
+            GoRoute(path: '/bible/book-journal', pageBuilder: (context, state) => _buildPage(state, const BookJournalScreen())),
           ]),
           StatefulShellBranch(routes: [
-            GoRoute(path: '/progress', builder: (_, __) => const ProgressScreen()),
+            GoRoute(path: '/progress', pageBuilder: (context, state) => _buildPage(state, const ProgressScreen())),
           ]),
           StatefulShellBranch(routes: [
-            GoRoute(path: '/profile', builder: (_, __) => const ProfileScreen()),
-            GoRoute(path: '/settings', builder: (_, state) => SettingsScreen(section: state.uri.queryParameters['section'])),
+            GoRoute(path: '/profile', pageBuilder: (context, state) => _buildPage(state, const ProfileScreen())),
+            GoRoute(path: '/settings', pageBuilder: (context, state) => _buildPage(state, SettingsScreen(section: state.uri.queryParameters['section']))),
           ]),
         ],
       ),
     ],
   );
+
+  static Page _buildPage(GoRouterState state, Widget child) {
+    return FadeTransitionPage(child: child, duration: const Duration(milliseconds: 350), key: ValueKey(state.uri.toString()));
+  }
 }
