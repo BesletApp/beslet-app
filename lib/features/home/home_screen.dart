@@ -51,8 +51,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
   bool _celebrated = false;
   bool _widgetUpdated = false;
 
-  late final AnimationController _staggerCtrl;
-  late final List<Animation<double>> _staggerAnims;
+  AnimationController? _staggerCtrl;
+  List<Animation<double>>? _staggerAnims;
+  bool _staggerStarted = false;
 
   late final AnimationController _pulseCtrl;
   late final Animation<double> _pulseAnim;
@@ -69,11 +70,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
     _checkForUpdates();
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkCommunityPrompt());
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkEnkutatash());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _startStaggerOnce());
   }
 
   void _initStaggerAnimations({required Duration itemDuration, Curve? curve, int count = 5}) {
     final gap = const Duration(milliseconds: 80);
     final totalDuration = itemDuration + gap * (count - 1);
+    _staggerCtrl?.dispose();
     _staggerCtrl = AnimationController(vsync: this, duration: totalDuration);
     _staggerAnims = List.generate(count, (i) {
       final start = (gap.inMilliseconds * i) / totalDuration.inMilliseconds;
@@ -81,18 +84,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
       return CurvedAnimation(
         parent: Tween<double>(begin: 0.0, end: 1.0).animate(
           CurvedAnimation(
-            parent: _staggerCtrl,
+            parent: _staggerCtrl!,
             curve: Interval(start.clamp(0.0, 1.0), end.clamp(0.0, 1.0), curve: curve ?? Curves.easeOut),
           ),
         ),
         curve: curve ?? Curves.easeOut,
       );
     });
+    _staggerStarted = false;
+  }
+
+  void _startStaggerOnce() {
+    final ctrl = _staggerCtrl;
+    if (ctrl != null && !_staggerStarted) {
+      ctrl.forward();
+      _staggerStarted = true;
+    }
   }
 
   @override
   void dispose() {
-    _staggerCtrl.dispose();
+    _staggerCtrl?.dispose();
     _pulseCtrl.dispose();
     super.dispose();
   }
@@ -245,12 +257,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
     final todaySoulLog = ref.watch(todaySoulLogProvider).valueOrNull;
     final l = AppLocalizations.of(context)!;
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_staggerCtrl.isAnimating && !_staggerCtrl.isCompleted) {
-        _staggerCtrl.forward();
-      }
-    });
-
     return userAsync.when(
       loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (e, _) => Scaffold(body: ErrorCard(message: 'Could not load your data', onRetry: _onRefresh)),
@@ -318,12 +324,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
 
         _currentSpacingScale = profile.spacingScale;
 
-        if (_staggerCtrl.duration != profile.animationDuration) {
+        if (_staggerCtrl?.duration != profile.animationDuration) {
           _initStaggerAnimations(
             itemDuration: profile.animationDuration,
             curve: profile.animationCurve,
             count: 5,
           );
+          WidgetsBinding.instance.addPostFrameCallback((_) => _startStaggerOnce());
         }
 
         if (streakState?.isAtRisk == true && !_pulseCtrl.isAnimating) {
@@ -374,13 +381,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
   }
 
   Widget _buildStaggered(int index, Widget child) {
-    if (index >= _staggerAnims.length) return child;
+    final anims = _staggerAnims;
+    if (anims == null || index >= anims.length) return child;
     return AnimatedBuilder(
-      animation: _staggerAnims[index],
+      animation: anims[index],
       builder: (context, child) => Opacity(
-        opacity: _staggerAnims[index].value,
+        opacity: anims[index].value,
         child: Transform.translate(
-          offset: Offset(0, (1.0 - _staggerAnims[index].value) * 16),
+          offset: Offset(0, (1.0 - anims[index].value) * 16),
           child: child,
         ),
       ),
