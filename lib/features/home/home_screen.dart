@@ -458,37 +458,41 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
   Widget _buildStreakInline(ExperienceProfile profile, int streak, bool isAtRisk) {
     final p = _milestoneProgress(streak);
     final nextMilestone = streak < 7 ? 7 : streak < 14 ? 14 : streak < 30 ? 30 : streak < 90 ? 90 : 365;
-    return GestureDetector(
-      onTap: () => context.go('/progress'),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: profile.colors.streakRing.withValues(alpha: isAtRisk ? 0.08 : 0.1),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: profile.colors.streakRing.withValues(alpha: isAtRisk ? 0.5 : 0.25)),
-        ),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          Icon(Icons.local_fire_department, size: 14, color: profile.colors.streakRing),
-          SizedBox(width: 4),
-          Text(
-            '$streak',
-            style: AppTextStyles.bodySmall.copyWith(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: profile.colors.streakRing,
-            ),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => context.go('/progress'),
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: profile.colors.streakRing.withValues(alpha: isAtRisk ? 0.08 : 0.1),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: profile.colors.streakRing.withValues(alpha: isAtRisk ? 0.5 : 0.25)),
           ),
-          if (p < 1.0 && !isAtRisk) ...[
-            SizedBox(width: 6),
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            Icon(Icons.local_fire_department, size: 14, color: profile.colors.streakRing),
+            SizedBox(width: 4),
             Text(
-              '$nextMilestone',
+              '$streak',
               style: AppTextStyles.bodySmall.copyWith(
-                fontSize: 9,
-                color: profile.colors.streakRing.withValues(alpha: 0.4),
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: profile.colors.streakRing,
               ),
             ),
-          ],
-        ]),
+            if (p < 1.0 && !isAtRisk) ...[
+              SizedBox(width: 6),
+              Text(
+                '$nextMilestone',
+                style: AppTextStyles.bodySmall.copyWith(
+                  fontSize: 9,
+                  color: profile.colors.streakRing.withValues(alpha: 0.4),
+                ),
+              ),
+            ],
+          ]),
+        ),
       ),
     );
   }
@@ -635,7 +639,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
           _isAm
             ? '"ወደ እኔ የደከማችሁ..." — ማቴዎስ 11፥28'
             : '"Come to me, all who labor..." — Matthew 11:28',
-          style: AppTextStyles.bodyMedium.copyWith(color: Colors.white70, height: 1.5),
+          style: _isAm
+              ? AppTextStyles.amharicBody.copyWith(color: Colors.white70, height: 1.5)
+              : AppTextStyles.bodyMedium.copyWith(color: Colors.white70, height: 1.5),
           textAlign: TextAlign.center,
         ),
         SizedBox(height: _h(AppSpacing.sm)),
@@ -746,8 +752,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: _h(10), vertical: _h(6)),
           decoration: BoxDecoration(
-            color: Colors.transparent,
+            color: c.cardElevated.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: c.border.withValues(alpha: 0.15)),
           ),
           child: Row(mainAxisSize: MainAxisSize.min, children: [
             Text(emoji, style: const TextStyle(fontSize: 14)),
@@ -804,85 +811,84 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
   Widget _buildVerseCard(ExperienceProfile profile) {
     final scripture = ScriptureService.getDailyScripture();
     final c = AppColors.of(context);
-    return _FadeInAnimation(
-      duration: profile.animationDuration,
-      child: Column(
-        children: [
-          Divider(height: 1, thickness: 0.5, color: c.border.withValues(alpha: 0.15)),
-          SizedBox(height: _h(AppSpacing.md)),
-          Container(
-            width: double.infinity,
-            padding: EdgeInsets.symmetric(horizontal: _h(12), vertical: _h(12)),
-            decoration: BoxDecoration(
-              color: c.textPrimary.withValues(alpha: 0.02),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  '"${scripture.text}"',
-                  style: AppTextStyles.of(context).displaySmall.copyWith(
-                    fontFamily: 'CormorantGaramond',
-                    fontStyle: FontStyle.italic,
-                    height: 1.6,
-                    fontSize: 20,
-                    color: c.textSecondary.withValues(alpha: 0.85),
-                  ),
-                  textAlign: TextAlign.center,
+    final l = AppLocalizations.of(context)!;
+    return Column(
+      children: [
+        Divider(height: 1, thickness: 0.5, color: c.border.withValues(alpha: 0.15)),
+        SizedBox(height: _h(AppSpacing.md)),
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(horizontal: _h(12), vertical: _h(12)),
+          decoration: BoxDecoration(
+            color: c.textPrimary.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                '"${scripture.text}"',
+                style: AppTextStyles.of(context).displaySmall.copyWith(
+                  fontFamily: 'CormorantGaramond',
+                  fontStyle: FontStyle.italic,
+                  height: 1.6,
+                  fontSize: 20,
+                  color: c.textSecondary.withValues(alpha: 0.85),
                 ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: _h(AppSpacing.sm)),
+              Text(
+                scripture.reference,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: c.primary.withValues(alpha: 0.7),
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              if (scripture.textAm != null) ...[
                 SizedBox(height: _h(AppSpacing.sm)),
                 Text(
-                  scripture.reference,
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: c.primary.withValues(alpha: 0.7),
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.5,
+                  scripture.textAm!,
+                  style: AppTextStyles.amharicBody.copyWith(
+                    fontSize: 13,
+                    height: 1.5,
+                    fontWeight: FontWeight.w500,
+                    color: c.textSecondary.withValues(alpha: 0.9),
                   ),
                   textAlign: TextAlign.center,
                 ),
-                if (scripture.textAm != null) ...[
-                  SizedBox(height: _h(AppSpacing.sm)),
-                  Text(
-                    scripture.textAm!,
-                    style: AppTextStyles.amharicBody.copyWith(
-                      fontSize: 13,
-                      height: 1.5,
-                      color: c.textMuted.withValues(alpha: 0.7),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-                SizedBox(height: _h(AppSpacing.md)),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Material(color: Colors.transparent, child: InkWell(
-                      onTap: () => context.go('/bible'),
-                      borderRadius: BorderRadius.circular(4),
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: _h(8), vertical: _h(4)),
-                        child: Text('Listen', style: AppTextStyles.bodySmall.copyWith(fontSize: 12, color: c.textMuted)),
-                      ),
-                    )),
-                    SizedBox(width: _h(4)),
-                    Text('·', style: TextStyle(color: c.border)),
-                    SizedBox(width: _h(4)),
-                    Material(color: Colors.transparent, child: InkWell(
-                      onTap: () => context.go('/bible'),
-                      borderRadius: BorderRadius.circular(4),
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: _h(8), vertical: _h(4)),
-                        child: Text('Read', style: AppTextStyles.bodySmall.copyWith(fontSize: 12, color: c.textMuted)),
-                      ),
-                    )),
-                  ],
-                ),
               ],
-            ),
+              SizedBox(height: _h(AppSpacing.md)),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Material(color: Colors.transparent, child: InkWell(
+                    onTap: () => context.go('/bible'),
+                    borderRadius: BorderRadius.circular(4),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: _h(8), vertical: _h(4)),
+                      child: Text(l.listen, style: AppTextStyles.bodySmall.copyWith(fontSize: 12, color: c.textMuted)),
+                    ),
+                  )),
+                  SizedBox(width: _h(4)),
+                  Text('·', style: TextStyle(color: c.border)),
+                  SizedBox(width: _h(4)),
+                  Material(color: Colors.transparent, child: InkWell(
+                    onTap: () => context.go('/bible'),
+                    borderRadius: BorderRadius.circular(4),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: _h(8), vertical: _h(4)),
+                      child: Text(l.read, style: AppTextStyles.bodySmall.copyWith(fontSize: 12, color: c.textMuted)),
+                    ),
+                  )),
+                ],
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

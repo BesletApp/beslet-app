@@ -188,6 +188,18 @@ abstract class AppLocalizations {
   /// **'Read More →'**
   String get readMore;
 
+  /// No description provided for @listen.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen'**
+  String get listen;
+
+  /// No description provided for @read.
+  ///
+  /// In en, this message translates to:
+  /// **'Read'**
+  String get read;
+
   /// No description provided for @quickActions.
   ///
   /// In en, this message translates to:

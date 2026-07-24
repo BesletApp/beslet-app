@@ -54,6 +54,12 @@ class AppLocalizationsAm extends AppLocalizations {
   String get readMore => 'ተጨማሪ ያንብቡ →';
 
   @override
+  String get listen => 'አዳምጥ';
+
+  @override
+  String get read => 'አንብብ';
+
+  @override
   String get quickActions => 'ፈጣን እርምጃዎች';
 
   @override

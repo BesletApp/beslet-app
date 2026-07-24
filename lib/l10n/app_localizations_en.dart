@@ -54,6 +54,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get readMore => 'Read More →';
 
   @override
+  String get listen => 'Listen';
+
+  @override
+  String get read => 'Read';
+
+  @override
   String get quickActions => 'Quick Actions';
 
   @override
