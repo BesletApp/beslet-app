@@ -23,6 +23,9 @@ android {
         versionName = flutter.versionName
 
         multiDexEnabled = true
+        ndk {
+            abiFilters += listOf("arm64-v8a")
+        }
     }
 
 
@@ -44,6 +47,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+
         }
     }
 }

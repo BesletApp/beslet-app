@@ -1,7 +1,7 @@
 name: beslet_app
 description: Beslet (ብስለት) - Spiritual Growth & Life Discipline System
 publish_to: 'none'
-version: 1.4.9+1
+version: 1.5.0+1
 
 environment:
   sdk: ^3.12.0
@@ -55,20 +55,20 @@ flutter:
   fonts:
     - family: NotoSansEthiopic
       fonts:
-        - asset: assets/fonts/NotoSansEthiopic-Regular.ttf
-        - asset: assets/fonts/NotoSansEthiopic-Bold.ttf
+        - asset: assets/fonts/NotoSansEthiopic.ttf
+        - asset: assets/fonts/NotoSansEthiopic.ttf
           weight: 700
     - family: Inter
       fonts:
-        - asset: assets/fonts/Inter-Regular.ttf
-        - asset: assets/fonts/Inter-Bold.ttf
+        - asset: assets/fonts/Inter.ttf
+        - asset: assets/fonts/Inter.ttf
           weight: 700
     - family: CormorantGaramond
       fonts:
-        - asset: assets/fonts/CormorantGaramond-Regular.ttf
-        - asset: assets/fonts/CormorantGaramond-SemiBold.ttf
+        - asset: assets/fonts/CormorantGaramond.ttf
+        - asset: assets/fonts/CormorantGaramond.ttf
           weight: 600
-        - asset: assets/fonts/CormorantGaramond-Bold.ttf
+        - asset: assets/fonts/CormorantGaramond.ttf
           weight: 700
 
 flutter_launcher_icons:

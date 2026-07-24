@@ -56,7 +56,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
   bool _staggerStarted = false;
 
   late final AnimationController _pulseCtrl;
-  late final Animation<double> _pulseAnim;
   double _currentSpacingScale = 1.0;
 
   @override
@@ -64,16 +63,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
     super.initState();
     _initStaggerAnimations(itemDuration: const Duration(milliseconds: 350));
     _pulseCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500));
-    _pulseAnim = Tween<double>(begin: 0.6, end: 1.0).animate(
-      CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut),
-    );
     _checkForUpdates();
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkCommunityPrompt());
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkEnkutatash());
     WidgetsBinding.instance.addPostFrameCallback((_) => _startStaggerOnce());
   }
 
-  void _initStaggerAnimations({required Duration itemDuration, Curve? curve, int count = 5}) {
+  void _initStaggerAnimations({required Duration itemDuration, Curve? curve, int count = 4}) {
     final gap = const Duration(milliseconds: 80);
     final totalDuration = itemDuration + gap * (count - 1);
     _staggerCtrl?.dispose();
@@ -328,7 +324,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
           _initStaggerAnimations(
             itemDuration: profile.animationDuration,
             curve: profile.animationCurve,
-            count: 5,
+            count: 4,
           );
           WidgetsBinding.instance.addPostFrameCallback((_) => _startStaggerOnce());
         }
@@ -340,7 +336,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
           _pulseCtrl.value = 1.0;
         }
 
-        final todayXp = (bibleRead ? 20 : 0) + (prayed ? 15 : 0) + (todoStats.completed * 5) + (skillsMin > 0 ? 10 : 0) + (connectedToday ? 5 : 0);
         final gap = _h(24.0);
 
         return Scaffold(
@@ -353,22 +348,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildStaggered(0, _buildGreetingBlock(profile, user, inSummer, daysElapsed, totalDays, daysRemaining, l, tone)),
+                    _buildStaggered(0, _buildGreetingBlock(profile, user, inSummer, daysElapsed, totalDays, daysRemaining, l, tone, streak, streakState?.isAtRisk ?? false)),
                     SizedBox(height: gap),
-                    if (profile.showStreakRing) ...[
-                      _buildStaggered(1, _buildStreakRitual(profile, streak, streakState?.isAtRisk ?? false)),
-                      SizedBox(height: gap),
-                    ],
-                    _buildStaggered(2, _buildPrimaryStepCard(
+                    _buildStaggered(1, _buildPrimaryStepCard(
                       profile, currentStep, bibleRead, prayed, todoStats,
                       streakState?.isSabbathToday ?? false, allComplete, user.name, tone, l,
                     )),
                     SizedBox(height: gap),
-                    _buildStaggered(3, _buildSecondaryActions(
-                      profile, skillsMin, connectedToday, todayXp, progress, todaySoulLog, l,
+                    _buildStaggered(2, _buildRhythmSurface(
+                      profile, skillsMin, connectedToday, progress, todaySoulLog, l,
                     )),
                     SizedBox(height: gap),
-                    _buildStaggered(4, _buildVerseCard(profile)),
+                    _buildStaggered(3, _buildVerseCard(profile)),
                     SizedBox(height: _h(AppSpacing.xl)),
                   ],
                 ),
@@ -387,16 +378,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
       animation: anims[index],
       builder: (context, child) => Opacity(
         opacity: anims[index].value,
-        child: Transform.translate(
-          offset: Offset(0, (1.0 - anims[index].value) * 16),
-          child: child,
-        ),
+        child: child,
       ),
       child: child,
     );
   }
 
-  Widget _buildGreetingBlock(ExperienceProfile profile, User user, bool inSummer, int daysElapsed, int totalDays, int daysRemaining, AppLocalizations l, ToneService tone) {
+  Widget _buildGreetingBlock(ExperienceProfile profile, User user, bool inSummer, int daysElapsed, int totalDays, int daysRemaining, AppLocalizations l, ToneService tone, int streak, bool isAtRisk) {
     final hour = DateTime.now().hour;
     final greeting = tone.greeting(l, hour);
     final name = user.name.split(' ').first;
@@ -429,7 +417,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
             ),
         ]),
         SizedBox(height: _h(12.0)),
-        _buildGreetingText(profile, greeting, name, l),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(child: _buildGreetingText(profile, greeting, name, l)),
+            if (profile.showStreakRing) ...[
+              SizedBox(width: _h(8)),
+              _buildStreakInline(profile, streak, isAtRisk),
+            ],
+          ],
+        ),
       ],
     );
   }
@@ -458,33 +455,40 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
     );
   }
 
-  Widget _buildStreakRitual(ExperienceProfile profile, int streak, bool isAtRisk) {
-    final progress = _milestoneProgress(streak);
-    return Center(
-      child: SizedBox(
-        width: 64,
-        height: 64,
-        child: AnimatedBuilder(
-          animation: _pulseCtrl,
-          builder: (context, _) => CustomPaint(
-            painter: _StreakRingPainter(
-              progress: progress,
+  Widget _buildStreakInline(ExperienceProfile profile, int streak, bool isAtRisk) {
+    final p = _milestoneProgress(streak);
+    final nextMilestone = streak < 7 ? 7 : streak < 14 ? 14 : streak < 30 ? 30 : streak < 90 ? 90 : 365;
+    return GestureDetector(
+      onTap: () => context.go('/progress'),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: profile.colors.streakRing.withValues(alpha: isAtRisk ? 0.08 : 0.1),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: profile.colors.streakRing.withValues(alpha: isAtRisk ? 0.5 : 0.25)),
+        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Icon(Icons.local_fire_department, size: 14, color: profile.colors.streakRing),
+          SizedBox(width: 4),
+          Text(
+            '$streak',
+            style: AppTextStyles.bodySmall.copyWith(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
               color: profile.colors.streakRing,
-              isAtRisk: isAtRisk,
-              pulseOpacity: isAtRisk ? _pulseAnim.value : 1.0,
-            ),
-            child: Center(
-              child: Text(
-                '$streak',
-                style: AppTextStyles.displaySmall.copyWith(
-                  fontSize: 18,
-                  color: profile.colors.streakRing,
-                  fontWeight: profile.visualWeight,
-                ),
-              ),
             ),
           ),
-        ),
+          if (p < 1.0 && !isAtRisk) ...[
+            SizedBox(width: 6),
+            Text(
+              '$nextMilestone',
+              style: AppTextStyles.bodySmall.copyWith(
+                fontSize: 9,
+                color: profile.colors.streakRing.withValues(alpha: 0.4),
+              ),
+            ),
+          ],
+        ]),
       ),
     );
   }
@@ -567,7 +571,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(step.icon, style: const TextStyle(fontSize: 28)),
+          Text(step.icon, style: const TextStyle(fontSize: 24)),
           SizedBox(height: _h(AppSpacing.md)),
           Text(
             step.title,
@@ -655,7 +659,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
         border: Border.all(color: profile.colors.stepComplete.withValues(alpha: 0.3)),
       ),
       child: Column(children: [
-        const Text('✅', style: TextStyle(fontSize: 32)),
+        const Text('✅', style: TextStyle(fontSize: 24)),
         SizedBox(height: _h(AppSpacing.sm)),
         Text(
           _isAm ? 'የዛሬ ሥርዐት ተፈጸመ' : "Today's rhythm complete",
@@ -685,7 +689,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
         border: Border.all(color: profile.colors.stepComplete.withValues(alpha: 0.3)),
       ),
       child: Column(children: [
-        Text('🎉', style: const TextStyle(fontSize: 36)),
+        Text('🎉', style: const TextStyle(fontSize: 24)),
         SizedBox(height: _h(AppSpacing.sm)),
         Text(
           msg,
@@ -700,83 +704,99 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
     );
   }
 
-  Widget _buildSecondaryActions(
-    ExperienceProfile profile, int skillsMin, bool connectedToday, int todayXp,
+  Widget _buildRhythmSurface(
+    ExperienceProfile profile, int skillsMin, bool connectedToday,
     PlanProgress? planProgress, SoulLogData? todaySoulLog, AppLocalizations l,
   ) {
     final c = AppColors.of(context);
-    return Opacity(
-      opacity: 0.65,
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(_h(14)),
+      decoration: BoxDecoration(
+        color: c.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: c.border.withValues(alpha: 0.3)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            _buildSecondaryPill('🎯', skillsMin > 0 ? '$skillsMin min' : (_isAm ? 'ጀምር' : 'Start'), () => context.go('/skills')),
-            SizedBox(width: _h(AppSpacing.sm)),
-            _buildSecondaryPill('👥', connectedToday ? (_isAm ? 'ተገናኝተዋል' : 'Connected') : (_isAm ? 'አገናኝ' : 'Connect'), () => context.go('/fellowship')),
+            _buildActionPill('🎯', skillsMin > 0 ? '$skillsMin min' : (_isAm ? 'ጀምር' : 'Start'), () => context.go('/skills')),
+            SizedBox(width: _h(8)),
+            _buildActionPill('👥', connectedToday ? (_isAm ? 'ተገናኝተዋል' : 'Connected') : (_isAm ? 'አገናኝ' : 'Connect'), () => context.go('/fellowship')),
             if (planProgress != null) ...[
-              SizedBox(width: _h(AppSpacing.sm)),
-              _buildSecondaryPill('📖', '${(planProgress.biblePercent * 100).round()}%', () => context.go('/progress')),
+              SizedBox(width: _h(8)),
+              _buildActionPill('📖', '${(planProgress.biblePercent * 100).round()}%', () => context.go('/progress')),
             ],
           ]),
-          SizedBox(height: _h(AppSpacing.sm)),
-          Row(children: [
-            _buildSoulRow(todaySoulLog, l),
-            const Spacer(),
-            Text('+$todayXp', style: AppTextStyles.bodySmall.copyWith(color: c.textMuted, fontSize: 11)),
-          ]),
+          SizedBox(height: _h(10)),
+          _buildSoulCheckIn(todaySoulLog, l),
         ],
       ),
     );
   }
 
-  Widget _buildSecondaryPill(String emoji, String label, VoidCallback onTap) {
+  Widget _buildActionPill(String emoji, String label, VoidCallback onTap) {
     final c = AppColors.of(context);
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: _h(AppSpacing.sm), vertical: _h(AppSpacing.xs)),
-        decoration: BoxDecoration(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: _h(10), vertical: _h(6)),
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            Text(emoji, style: const TextStyle(fontSize: 14)),
+            SizedBox(width: _h(4)),
+            Text(label, style: AppTextStyles.bodySmall.copyWith(fontSize: 12, color: c.textSecondary)),
+          ]),
         ),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          Text(emoji, style: const TextStyle(fontSize: 12)),
-          SizedBox(width: _h(4)),
-          Text(label, style: AppTextStyles.bodySmall.copyWith(fontSize: 11, color: c.textMuted)),
-        ]),
       ),
     );
   }
 
-  Widget _buildSoulRow(SoulLogData? todayLog, AppLocalizations l) {
+  Widget _buildSoulCheckIn(SoulLogData? todayLog, AppLocalizations l) {
+    final c = AppColors.of(context);
     if (todayLog != null) {
-      return GestureDetector(
-        onTap: () => _editSoulCheckIn(todayLog),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          Text(_moodEmoji(todayLog.mood), style: const TextStyle(fontSize: 16)),
-          SizedBox(width: _h(4)),
-          Text(_isAm ? _moodLabel(todayLog.mood, true) : _moodLabel(todayLog.mood, false),
-              style: AppTextStyles.bodySmall.copyWith(fontSize: 10, color: AppColors.of(context).textMuted)),
-        ]),
+      return Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _editSoulCheckIn(todayLog),
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: _h(4), vertical: _h(4)),
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              Text(_moodEmoji(todayLog.mood), style: const TextStyle(fontSize: 18)),
+              SizedBox(width: _h(6)),
+              Text(
+                _isAm ? _moodLabel(todayLog.mood, true) : _moodLabel(todayLog.mood, false),
+                style: AppTextStyles.bodySmall.copyWith(fontSize: 12, color: c.textMuted),
+              ),
+            ]),
+          ),
+        ),
       );
     }
-    return Row(mainAxisSize: MainAxisSize.min, children: [
-      const Text('💭', style: TextStyle(fontSize: 14)),
-      SizedBox(width: _h(4)),
-      Row(mainAxisSize: MainAxisSize.min, children: [
-        _miniMoodBtn(1, '😢'), _miniMoodBtn(2, '😕'), _miniMoodBtn(3, '😐'),
-        _miniMoodBtn(4, '🙂'), _miniMoodBtn(5, '😊'),
-      ]),
-    ]);
-  }
-
-  Widget _miniMoodBtn(int mood, String emoji) {
-    return GestureDetector(
-      onTap: () => _logSoulCheckIn(mood),
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: _h(2)),
-        child: Text(emoji, style: const TextStyle(fontSize: 14)),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _logSoulCheckIn(3),
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: _h(4), vertical: _h(4)),
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            const Text('💭', style: TextStyle(fontSize: 18)),
+            SizedBox(width: _h(6)),
+            Text(
+              _isAm ? 'ስሜትህ እንዴት ነው?' : 'How are you feeling?',
+              style: AppTextStyles.bodySmall.copyWith(fontSize: 12, color: c.textMuted),
+            ),
+          ]),
+        ),
       ),
     );
   }
@@ -786,63 +806,82 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
     final c = AppColors.of(context);
     return _FadeInAnimation(
       duration: profile.animationDuration,
-      child: Padding(
-        padding: EdgeInsets.symmetric(vertical: _h(AppSpacing.md)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(
-              '"${scripture.text}"',
-              style: AppTextStyles.of(context).displaySmall.copyWith(
-                fontFamily: 'CormorantGaramond',
-                fontStyle: FontStyle.italic,
-                height: 1.6,
-                fontSize: 20,
-                color: c.textSecondary.withValues(alpha: 0.8),
-              ),
-              textAlign: TextAlign.center,
+      child: Column(
+        children: [
+          Divider(height: 1, thickness: 0.5, color: c.border.withValues(alpha: 0.15)),
+          SizedBox(height: _h(AppSpacing.md)),
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(horizontal: _h(12), vertical: _h(12)),
+            decoration: BoxDecoration(
+              color: c.textPrimary.withValues(alpha: 0.02),
+              borderRadius: BorderRadius.circular(8),
             ),
-            SizedBox(height: _h(AppSpacing.sm)),
-            Text(
-              scripture.reference,
-              style: AppTextStyles.bodySmall.copyWith(
-                color: c.primary.withValues(alpha: 0.7),
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.5,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            if (scripture.textAm != null) ...[
-              SizedBox(height: _h(AppSpacing.sm)),
-              Text(
-                scripture.textAm!,
-                style: AppTextStyles.amharicBody.copyWith(
-                  fontSize: 13,
-                  height: 1.5,
-                  color: c.textMuted.withValues(alpha: 0.7),
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-            SizedBox(height: _h(AppSpacing.md)),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                TextButton.icon(
-                  onPressed: () => context.go('/bible'),
-                  icon: Icon(Icons.play_arrow, size: 14, color: c.textMuted),
-                  label: Text('Listen', style: AppTextStyles.bodySmall.copyWith(fontSize: 11, color: c.textMuted)),
+                Text(
+                  '"${scripture.text}"',
+                  style: AppTextStyles.of(context).displaySmall.copyWith(
+                    fontFamily: 'CormorantGaramond',
+                    fontStyle: FontStyle.italic,
+                    height: 1.6,
+                    fontSize: 20,
+                    color: c.textSecondary.withValues(alpha: 0.85),
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                SizedBox(width: _h(AppSpacing.md)),
-                TextButton.icon(
-                  onPressed: () => context.go('/bible'),
-                  icon: Icon(Icons.menu_book, size: 14, color: c.textMuted),
-                  label: Text('Read', style: AppTextStyles.bodySmall.copyWith(fontSize: 11, color: c.textMuted)),
+                SizedBox(height: _h(AppSpacing.sm)),
+                Text(
+                  scripture.reference,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: c.primary.withValues(alpha: 0.7),
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                if (scripture.textAm != null) ...[
+                  SizedBox(height: _h(AppSpacing.sm)),
+                  Text(
+                    scripture.textAm!,
+                    style: AppTextStyles.amharicBody.copyWith(
+                      fontSize: 13,
+                      height: 1.5,
+                      color: c.textMuted.withValues(alpha: 0.7),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+                SizedBox(height: _h(AppSpacing.md)),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Material(color: Colors.transparent, child: InkWell(
+                      onTap: () => context.go('/bible'),
+                      borderRadius: BorderRadius.circular(4),
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: _h(8), vertical: _h(4)),
+                        child: Text('Listen', style: AppTextStyles.bodySmall.copyWith(fontSize: 12, color: c.textMuted)),
+                      ),
+                    )),
+                    SizedBox(width: _h(4)),
+                    Text('·', style: TextStyle(color: c.border)),
+                    SizedBox(width: _h(4)),
+                    Material(color: Colors.transparent, child: InkWell(
+                      onTap: () => context.go('/bible'),
+                      borderRadius: BorderRadius.circular(4),
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: _h(8), vertical: _h(4)),
+                        child: Text('Read', style: AppTextStyles.bodySmall.copyWith(fontSize: 12, color: c.textMuted)),
+                      ),
+                    )),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -900,16 +939,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
   }
 
   Widget _moodBtn(int mood, String emoji) {
-    return GestureDetector(
-      onTap: () => _logSoulCheckIn(mood),
-      child: Container(
-        width: 44, height: 44,
-        decoration: BoxDecoration(
-          color: AppColors.of(context).surface,
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: AppColors.of(context).border),
+    final c = AppColors.of(context);
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _logSoulCheckIn(mood),
+        borderRadius: BorderRadius.circular(22),
+        child: Container(
+          width: 44, height: 44,
+          decoration: BoxDecoration(
+            color: c.surface,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: c.border),
+          ),
+          child: Center(child: Text(emoji, style: const TextStyle(fontSize: 18))),
         ),
-        child: Center(child: Text(emoji, style: const TextStyle(fontSize: 22))),
       ),
     );
   }
@@ -935,46 +979,3 @@ class _FadeInAnimationState extends State<_FadeInAnimation> with SingleTickerPro
   @override Widget build(BuildContext context) => FadeTransition(opacity: _anim, child: widget.child);
 }
 
-class _StreakRingPainter extends CustomPainter {
-  final double progress;
-  final Color color;
-  final bool isAtRisk;
-  final double pulseOpacity;
-
-  _StreakRingPainter({
-    required this.progress,
-    required this.color,
-    this.isAtRisk = false,
-    this.pulseOpacity = 1.0,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = (size.width - 8) / 2;
-    final paint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3
-      ..strokeCap = StrokeCap.round;
-
-    paint.color = color.withValues(alpha: 0.15 * pulseOpacity);
-    canvas.drawCircle(center, radius, paint);
-
-    if (progress > 0) {
-      paint.color = color.withValues(alpha: pulseOpacity);
-      final sweepAngle = 2 * 3.14159 * progress.clamp(0.0, 1.0);
-      const startAngle = -3.14159 / 2;
-      canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius),
-        startAngle,
-        sweepAngle,
-        false,
-        paint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(_StreakRingPainter old) =>
-    old.progress != progress || old.pulseOpacity != pulseOpacity || old.isAtRisk != isAtRisk;
-}
