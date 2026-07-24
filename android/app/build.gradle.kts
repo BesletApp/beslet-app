@@ -28,7 +28,12 @@ android {
         }
     }
 
-
+    packaging {
+        jniLibs {
+            excludes += "/lib/armeabi-v7a/*.so"
+            excludes += "/lib/x86_64/*.so"
+        }
+    }
 
     signingConfigs {
         create("release") {
