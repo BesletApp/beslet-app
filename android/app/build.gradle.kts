@@ -24,13 +24,12 @@ android {
 
         multiDexEnabled = true
         ndk {
-            abiFilters += listOf("arm64-v8a")
+            abiFilters += listOf("arm64-v8a", "armeabi-v7a")
         }
     }
 
     packaging {
         jniLibs {
-            excludes += "/lib/armeabi-v7a/*.so"
             excludes += "/lib/x86_64/*.so"
         }
     }
