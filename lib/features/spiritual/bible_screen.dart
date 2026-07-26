@@ -14,6 +14,8 @@ import '../../core/providers/audio_player_provider.dart';
 import '../../core/providers/download_provider.dart';
 import '../../core/providers/wisdom_provider.dart';
 import '../../core/providers/database_provider.dart';
+import '../../core/providers/soul_log_provider.dart';
+import '../../core/emotional/mood_content.dart';
 import '../../core/services/audio_bible_service.dart';
 import '../../shared/widgets/error_card.dart';
 import 'widgets/audio_player_bar.dart';
@@ -24,6 +26,8 @@ import 'widgets/chapter_picker.dart';
 import 'widgets/download_sheet.dart';
 import 'widgets/wisdom_dialog.dart';
 import 'widgets/wisdom_card.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/widgets/zone_layout.dart';
 
 class BibleScreen extends ConsumerStatefulWidget {
   final String? initialBookId;
@@ -44,6 +48,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
   int? _pickedChapter;
   bool _downloaded = false;
   bool _audioLoaded = false;
+  bool _responded = false;
 
   String get _effectiveLang {
     final locale = Localizations.localeOf(context).languageCode;
@@ -191,6 +196,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
     final coverage = coverageAsync.valueOrNull;
     final completedBooks = completedBooksAsync.valueOrNull ?? [];
     final readDays = readDaysAsync.valueOrNull ?? {};
+    final mood = ref.watch(todaySoulLogProvider).valueOrNull?.mood;
 
     return userAsync.when(
       loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
@@ -301,54 +307,71 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
               ),
             ],
           ),
-          body: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-            children: [
-              _buildStats(chaptersRead, coverage, completedBooks.length, effectiveDay, isToday),
-              const SizedBox(height: 16),
-              _buildChapterHeader(_refText, theme, phase, phaseNames, effectiveDay, isToday, parsed),
-              if (parsed != null && WitnessService.quoteForBook(parsed.bookId, isAm: _isAm) != null) ...[
-                const SizedBox(height: 12),
-                _buildQuoteCard(parsed.bookId),
-              ],
-              if (parsed != null) ...[
-                const SizedBox(height: 12),
-                _buildWisdomCard(parsed.bookId),
-              ],
-              const SizedBox(height: 16),
-              AudioPlayerBar(isAm: _isAm),
-              const SizedBox(height: 16),
-              VerseListView(isAm: _isAm),
-              const SizedBox(height: 16),
-              _buildActions(isRead, isToday, parsed),
-              const SizedBox(height: 16),
-              if (parsed != null)
-                LectioDivinaCard(
-                  bookId: parsed.bookId,
-                  chapter: parsed.chapter,
-                  isAm: _isAm,
-                  planDay: _pickedBookId == null ? '${todaysReading?.day ?? effectiveDay}' : null,
-                ),
-              if (_pickedBookId == null) ...[
-                const SizedBox(height: 16),
-                PhaseBar(
-                  day: effectiveDay,
-                  phaseIdx: phase,
-                  phaseNames: phaseNames,
-                  isAm: _isAm,
-                  plan: plan,
-                  totalDays: _totalDays,
-                  phaseCount: _phaseCount,
-                  onDaySelected: (d) {
-                    setState(() { _viewingDay = d; _pickedBookId = null; _pickedChapter = null; _downloaded = false; });
-                    _loadAudio();
-                  },
-                ),
-                const SizedBox(height: 16),
-                _buildAttendanceMonth(readDays),
-              ],
-              const SizedBox(height: 100),
-            ],
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: 68),
+            child: ZoneLayout(
+              orientation: Column(children: [
+                _buildStats(chaptersRead, coverage, completedBooks.length, effectiveDay, isToday),
+                SizedBox(height: AppSpacing.md),
+                _buildChapterHeader(_refText, theme, phase, phaseNames, effectiveDay, isToday, parsed),
+                if (parsed != null && WitnessService.quoteForBook(parsed.bookId, isAm: _isAm) != null) ...[
+                  SizedBox(height: AppSpacing.sm),
+                  _buildQuoteCard(parsed.bookId),
+                ],
+                if (parsed != null) ...[
+                  SizedBox(height: AppSpacing.sm),
+                  _buildWisdomCard(parsed.bookId),
+                ],
+              ]),
+              primary: AudioPlayerBar(isAm: _isAm),
+              support: VerseListView(isAm: _isAm),
+              anchor: Column(children: [
+                _buildActions(isRead, isToday, parsed),
+                SizedBox(height: AppSpacing.md),
+                if (parsed != null)
+                  LectioDivinaCard(
+                    bookId: parsed.bookId,
+                    chapter: parsed.chapter,
+                    isAm: _isAm,
+                    planDay: _pickedBookId == null ? '${todaysReading?.day ?? effectiveDay}' : null,
+                    onDone: () => setState(() => _responded = true),
+                  ),
+                if (_pickedBookId == null) ...[
+                  SizedBox(height: AppSpacing.md),
+                  PhaseBar(
+                    day: effectiveDay,
+                    phaseIdx: phase,
+                    phaseNames: phaseNames,
+                    isAm: _isAm,
+                    plan: plan,
+                    totalDays: _totalDays,
+                    phaseCount: _phaseCount,
+                    onDaySelected: (d) {
+                      setState(() { _viewingDay = d; _pickedBookId = null; _pickedChapter = null; _downloaded = false; });
+                      _loadAudio();
+                    },
+                  ),
+                  SizedBox(height: AppSpacing.md),
+                  _buildAttendanceMonth(readDays),
+                ],
+                if (_responded && mood != null) ...[
+                  const SizedBox(height: AppSpacing.md),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                    child: Text(
+                      _isAm ? MoodContent.identity[mood]!.am : MoodContent.identity[mood]!.en,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        fontStyle: FontStyle.italic,
+                        fontSize: 12,
+                        color: AppColors.of(context).textMuted.withValues(alpha: 0.7),
+                        height: 1.4,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
+              ]),
+            ),
           ),
         );
       },
@@ -362,7 +385,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
             ? '$chaptersRead ምዕራፎች · $booksDone መጻሕፍት ${coverage != null ? '· ${(coverage.totalPercent * 100).round()}%' : ''}'
             : '$chaptersRead ch. · $booksDone books ${coverage != null ? '· ${(coverage.totalPercent * 100).round()}%' : ''}');
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.sm),
       decoration: BoxDecoration(
         color: AppColors.of(context).card,
         borderRadius: BorderRadius.circular(10),
@@ -510,7 +533,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
     if (quote == null) return const SizedBox.shrink();
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
         color: c.card,
         borderRadius: BorderRadius.circular(10),
@@ -570,7 +593,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
         Expanded(
           child: alreadyRead
               ? Container(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
                   decoration: BoxDecoration(
                     color: AppColors.progressGreen.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
@@ -589,6 +612,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
                     if (refStr.isEmpty) return;
                     final note = await _showReflectionPrompt(context);
                     await ref.read(bibleNotifierProvider.notifier).markAsRead(refStr, note: note);
+                    if (mounted) setState(() => _responded = true);
                     if (parsed == null || !mounted) return;
                     final db = ref.read(databaseProvider);
                     final prog = await PlanProgressService.compute(db);
@@ -603,7 +627,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.progressGreen,
                     foregroundColor: const Color(0xFF07090E),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                 ),
@@ -614,7 +638,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
     return Row(children: [
       Expanded(
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
           decoration: BoxDecoration(
             color: AppColors.of(context).card,
             borderRadius: BorderRadius.circular(10),
@@ -696,7 +720,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
                     _isAm ? 'ቁልፍ ጭብጥ' : 'Key Theme',
                     style: AppTextStyles.bodySmall.copyWith(color: AppColors.primary, fontSize: 10, fontWeight: FontWeight.w700),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: AppSpacing.xs),
                   Text(
                     _isAm ? book.themeAm : book.themeEn,
                     style: AppTextStyles.bodyMedium.copyWith(fontSize: 12, color: AppColors.of(context).textSecondary),

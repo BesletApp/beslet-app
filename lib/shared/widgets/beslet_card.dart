@@ -3,6 +3,10 @@ import '../../core/theme/app_colors.dart';
 
 enum CardVariant { hero, secondary, tertiary }
 
+/// 🔒 BESLET ENFORCEMENT: CARD COMPONENT
+///
+/// FIX R18: Replaced GestureDetector with Material + InkWell.
+/// Every tappable element MUST use InkWell (R17, R18).
 class BesletCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
@@ -17,15 +21,40 @@ class BesletCard extends StatelessWidget {
     this.variant = CardVariant.secondary,
   });
 
+  BorderRadius _borderRadius() {
+    switch (variant) {
+      case CardVariant.hero:
+        return BorderRadius.circular(16);
+      case CardVariant.secondary:
+        return BorderRadius.circular(14);
+      case CardVariant.tertiary:
+        return BorderRadius.circular(12);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = AppColors.of(context);
+    final borderRadius = _borderRadius();
+
     final card = Container(
       padding: padding ?? EdgeInsets.all(variant == CardVariant.tertiary ? 12 : 16),
       decoration: _decoration(c),
       child: child,
     );
-    if (onTap != null) return GestureDetector(onTap: onTap, child: card);
+
+    if (onTap != null) {
+      // 🔒 R18: Use Material + InkWell, NOT GestureDetector
+      return Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: borderRadius,
+          onTap: onTap,
+          child: card,
+        ),
+      );
+    }
+
     return card;
   }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/providers/audio_player_provider.dart';
 import '../../../core/services/audio_bible_service.dart';
@@ -79,7 +80,7 @@ class _VerseListViewState extends ConsumerState<VerseListView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(14, 12, 14, 4),
+            padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.xs),
             child: Text(
               playerState.chapter?.reference ?? '',
               style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w700, color: c.textPrimary),
@@ -90,7 +91,7 @@ class _VerseListViewState extends ConsumerState<VerseListView> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             controller: _scrollCtrl,
-            padding: const EdgeInsets.symmetric(vertical: 4),
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
             itemCount: verses.length,
             itemBuilder: (context, index) {
               final isCurrent = index == current;
@@ -98,7 +99,7 @@ class _VerseListViewState extends ConsumerState<VerseListView> {
               final number = index < numbers.length ? numbers[index] : '${index + 1}';
 
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 color: isCurrent ? AppColors.audioBlue.withValues(alpha: 0.08) : null,
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,

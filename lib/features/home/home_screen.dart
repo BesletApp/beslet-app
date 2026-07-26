@@ -25,11 +25,13 @@ import '../../core/providers/streak_provider.dart';
 import '../../core/providers/reading_plan_provider.dart';
 import '../../core/services/plan_progress_service.dart';
 import '../../core/providers/soul_log_provider.dart';
+import '../../core/emotional/mood_content.dart';
 import '../../core/providers/database_provider.dart';
 import '../../core/services/loop_service.dart';
 import '../../services/update_checker.dart';
 import '../../shared/widgets/error_card.dart';
 import '../../shared/widgets/enkutatash_overlay.dart';
+import '../../core/widgets/zone_layout.dart';
 
 
 class _StepData {
@@ -54,6 +56,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
   AnimationController? _staggerCtrl;
   List<Animation<double>>? _staggerAnims;
   bool _staggerStarted = false;
+  bool _showMoodPicker = false;
 
   late final AnimationController _pulseCtrl;
   double _currentSpacingScale = 1.0;
@@ -70,7 +73,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
   }
 
   void _initStaggerAnimations({required Duration itemDuration, Curve? curve, int count = 4}) {
-    final gap = const Duration(milliseconds: 80);
+    // relaxed stagger for calm, intentional entry
+    final gap = const Duration(milliseconds: 120);
     final totalDuration = itemDuration + gap * (count - 1);
     _staggerCtrl?.dispose();
     _staggerCtrl = AnimationController(vsync: this, duration: totalDuration);
@@ -81,10 +85,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
         parent: Tween<double>(begin: 0.0, end: 1.0).animate(
           CurvedAnimation(
             parent: _staggerCtrl!,
-            curve: Interval(start.clamp(0.0, 1.0), end.clamp(0.0, 1.0), curve: curve ?? Curves.easeOut),
+            curve: Interval(start.clamp(0.0, 1.0), end.clamp(0.0, 1.0), curve: curve ?? Curves.easeInOut),
           ),
         ),
-        curve: curve ?? Curves.easeOut,
+        curve: curve ?? Curves.easeInOut,
       );
     });
     _staggerStarted = false;
@@ -336,32 +340,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
           _pulseCtrl.value = 1.0;
         }
 
-        final gap = _h(24.0);
-
         return Scaffold(
           body: SafeArea(
             child: RefreshIndicator(
               onRefresh: _onRefresh,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.only(left: 20, right: 20, top: AppSpacing.md),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildStaggered(0, _buildGreetingBlock(profile, user, inSummer, daysElapsed, totalDays, daysRemaining, l, tone, streak, streakState?.isAtRisk ?? false)),
-                    SizedBox(height: gap),
-                    _buildStaggered(1, _buildPrimaryStepCard(
-                      profile, currentStep, bibleRead, prayed, todoStats,
-                      streakState?.isSabbathToday ?? false, allComplete, user.name, tone, l,
-                    )),
-                    SizedBox(height: gap),
-                    _buildStaggered(2, _buildRhythmSurface(
-                      profile, skillsMin, connectedToday, progress, todaySoulLog, l,
-                    )),
-                    SizedBox(height: gap),
-                    _buildStaggered(3, _buildVerseCard(profile)),
-                    SizedBox(height: _h(AppSpacing.xl)),
-                  ],
+                child: ZoneLayout(
+                  orientation: _buildStaggered(0, _buildGreetingBlock(profile, user, inSummer, daysElapsed, totalDays, daysRemaining, l, tone, streak, streakState?.isAtRisk ?? false, todaySoulLog?.mood)),
+                  primary: _buildStaggered(1, _buildPrimaryStepCard(
+                    profile, currentStep, bibleRead, prayed, todoStats,
+                    streakState?.isSabbathToday ?? false, allComplete, user.name, tone, l,
+                  )),
+                  support: _buildStaggered(2, _buildRhythmSurface(
+                    profile, skillsMin, connectedToday, progress, todaySoulLog, l,
+                  )),
+                  anchor: _buildStaggered(3, _buildVerseCard(profile)),
                 ),
               ),
             ),
@@ -384,10 +378,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
     );
   }
 
-  Widget _buildGreetingBlock(ExperienceProfile profile, User user, bool inSummer, int daysElapsed, int totalDays, int daysRemaining, AppLocalizations l, ToneService tone, int streak, bool isAtRisk) {
+  Widget _buildGreetingBlock(ExperienceProfile profile, User user, bool inSummer, int daysElapsed, int totalDays, int daysRemaining, AppLocalizations l, ToneService tone, int streak, bool isAtRisk, int? currentMood) {
     final hour = DateTime.now().hour;
     final greeting = tone.greeting(l, hour);
     final name = user.name.split(' ').first;
+    final c = AppColors.of(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -395,7 +390,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
         Row(children: [
           if (inSummer)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: AppSpacing.xs),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
               decoration: BoxDecoration(
                 color: AppColors.of(context).primary.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(20),
@@ -406,7 +401,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
             )
           else
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: AppSpacing.xs),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
               decoration: BoxDecoration(
                 color: AppColors.of(context).primary.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(20),
@@ -416,17 +411,64 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
                   style: AppTextStyles.bodySmall.copyWith(color: AppColors.of(context).primary, fontSize: 11)),
             ),
         ]),
-        SizedBox(height: _h(12.0)),
+        SizedBox(height: _h(AppSpacing.md)),
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Expanded(child: _buildGreetingText(profile, greeting, name, l)),
             if (profile.showStreakRing) ...[
-              SizedBox(width: _h(8)),
+              SizedBox(width: _h(AppSpacing.sm)),
               _buildStreakInline(profile, streak, isAtRisk),
             ],
           ],
         ),
+        if (currentMood != null) ...[
+          SizedBox(height: _h(AppSpacing.sm)),
+          Row(
+            children: [
+              Text(_moodEmoji(currentMood), style: const TextStyle(fontSize: 14)),
+              SizedBox(width: AppSpacing.xs),
+              Expanded(
+                child: Text(
+                  _isAm ? MoodContent.whisper[currentMood]!.am : MoodContent.whisper[currentMood]!.en,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: c.primary.withValues(alpha: 0.6),
+                    fontStyle: FontStyle.italic,
+                    fontSize: 11,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ] else if (_showMoodPicker)
+          Padding(
+            padding: EdgeInsets.only(top: _h(AppSpacing.sm)),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [
+                for (final m in [1, 2, 3, 4, 5])
+                  Padding(
+                    padding: const EdgeInsets.only(right: AppSpacing.sm),
+                    child: _moodBtn(m, _moodEmoji(m)),
+                  ),
+              ]),
+            ]),
+          )
+        else
+          Material(color: Colors.transparent, child: InkWell(
+            onTap: () => setState(() => _showMoodPicker = true),
+            borderRadius: BorderRadius.circular(8),
+            child: Padding(
+              padding: EdgeInsets.only(top: _h(AppSpacing.sm)),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                Text('💭', style: const TextStyle(fontSize: 14)),
+                SizedBox(width: AppSpacing.xs),
+                Text(
+                  _isAm ? 'ስሜትህ እንዴት ነው?' : 'How are you?',
+                  style: AppTextStyles.bodySmall.copyWith(fontSize: 11, color: c.textMuted),
+                ),
+              ]),
+            ),
+          )),
       ],
     );
   }
@@ -464,7 +506,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
         onTap: () => context.go('/progress'),
         borderRadius: BorderRadius.circular(20),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
           decoration: BoxDecoration(
             color: profile.colors.streakRing.withValues(alpha: isAtRisk ? 0.08 : 0.1),
             borderRadius: BorderRadius.circular(20),
@@ -472,7 +514,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
           ),
           child: Row(mainAxisSize: MainAxisSize.min, children: [
             Icon(Icons.local_fire_department, size: 14, color: profile.colors.streakRing),
-            SizedBox(width: 4),
+            SizedBox(width: AppSpacing.xs),
             Text(
               '$streak',
               style: AppTextStyles.bodySmall.copyWith(
@@ -482,7 +524,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
               ),
             ),
             if (p < 1.0 && !isAtRisk) ...[
-              SizedBox(width: 6),
+              SizedBox(width: AppSpacing.xs),
               Text(
                 '$nextMilestone',
                 style: AppTextStyles.bodySmall.copyWith(
@@ -717,7 +759,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
     final c = AppColors.of(context);
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(_h(14)),
+      padding: EdgeInsets.all(_h(AppSpacing.cardPadding)),
       decoration: BoxDecoration(
         color: c.surface,
         borderRadius: BorderRadius.circular(12),
@@ -728,14 +770,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
         children: [
           Row(children: [
             _buildActionPill('🎯', skillsMin > 0 ? '$skillsMin min' : (_isAm ? 'ጀምር' : 'Start'), () => context.go('/skills')),
-            SizedBox(width: _h(8)),
+            SizedBox(width: _h(AppSpacing.sm)),
             _buildActionPill('👥', connectedToday ? (_isAm ? 'ተገናኝተዋል' : 'Connected') : (_isAm ? 'አገናኝ' : 'Connect'), () => context.go('/fellowship')),
             if (planProgress != null) ...[
-              SizedBox(width: _h(8)),
+              SizedBox(width: _h(AppSpacing.sm)),
               _buildActionPill('📖', '${(planProgress.biblePercent * 100).round()}%', () => context.go('/progress')),
             ],
           ]),
-          SizedBox(height: _h(10)),
+          SizedBox(height: _h(AppSpacing.sm)),
           _buildSoulCheckIn(todaySoulLog, l),
         ],
       ),
@@ -750,15 +792,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
         onTap: onTap,
         borderRadius: BorderRadius.circular(8),
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: _h(10), vertical: _h(6)),
+          padding: EdgeInsets.symmetric(horizontal: _h(AppSpacing.sm), vertical: _h(AppSpacing.xs)),
           decoration: BoxDecoration(
             color: c.cardElevated.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: c.border.withValues(alpha: 0.15)),
           ),
           child: Row(mainAxisSize: MainAxisSize.min, children: [
             Text(emoji, style: const TextStyle(fontSize: 14)),
-            SizedBox(width: _h(4)),
+            SizedBox(width: _h(AppSpacing.xs)),
             Text(label, style: AppTextStyles.bodySmall.copyWith(fontSize: 12, color: c.textSecondary)),
           ]),
         ),
@@ -775,10 +816,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
           onTap: () => _editSoulCheckIn(todayLog),
           borderRadius: BorderRadius.circular(8),
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: _h(4), vertical: _h(4)),
+            padding: EdgeInsets.all(_h(AppSpacing.xs)),
             child: Row(mainAxisSize: MainAxisSize.min, children: [
               Text(_moodEmoji(todayLog.mood), style: const TextStyle(fontSize: 18)),
-              SizedBox(width: _h(6)),
+              SizedBox(width: _h(AppSpacing.xs)),
               Text(
                 _isAm ? _moodLabel(todayLog.mood, true) : _moodLabel(todayLog.mood, false),
                 style: AppTextStyles.bodySmall.copyWith(fontSize: 12, color: c.textMuted),
@@ -794,10 +835,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
         onTap: () => _logSoulCheckIn(3),
         borderRadius: BorderRadius.circular(8),
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: _h(4), vertical: _h(4)),
+          padding: EdgeInsets.all(_h(AppSpacing.xs)),
           child: Row(mainAxisSize: MainAxisSize.min, children: [
             const Text('💭', style: TextStyle(fontSize: 18)),
-            SizedBox(width: _h(6)),
+            SizedBox(width: _h(AppSpacing.xs)),
             Text(
               _isAm ? 'ስሜትህ እንዴት ነው?' : 'How are you feeling?',
               style: AppTextStyles.bodySmall.copyWith(fontSize: 12, color: c.textMuted),
@@ -818,7 +859,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
         SizedBox(height: _h(AppSpacing.md)),
         Container(
           width: double.infinity,
-          padding: EdgeInsets.symmetric(horizontal: _h(12), vertical: _h(12)),
+          padding: EdgeInsets.all(_h(AppSpacing.cardPadding)),
           decoration: BoxDecoration(
             color: c.textPrimary.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(8),
@@ -868,18 +909,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
                     onTap: () => context.go('/bible'),
                     borderRadius: BorderRadius.circular(4),
                     child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: _h(8), vertical: _h(4)),
+                      padding: EdgeInsets.symmetric(horizontal: _h(AppSpacing.sm), vertical: _h(AppSpacing.xs)),
                       child: Text(l.listen, style: AppTextStyles.bodySmall.copyWith(fontSize: 12, color: c.textMuted)),
                     ),
                   )),
-                  SizedBox(width: _h(4)),
+                  SizedBox(width: _h(AppSpacing.xs)),
                   Text('·', style: TextStyle(color: c.border)),
-                  SizedBox(width: _h(4)),
+                  SizedBox(width: _h(AppSpacing.xs)),
                   Material(color: Colors.transparent, child: InkWell(
                     onTap: () => context.go('/bible'),
                     borderRadius: BorderRadius.circular(4),
                     child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: _h(8), vertical: _h(4)),
+                      padding: EdgeInsets.symmetric(horizontal: _h(AppSpacing.sm), vertical: _h(AppSpacing.xs)),
                       child: Text(l.read, style: AppTextStyles.bodySmall.copyWith(fontSize: 12, color: c.textMuted)),
                     ),
                   )),
@@ -918,7 +959,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
 
   Future<void> _logSoulCheckIn(int mood) async {
     await ref.read(soulLogNotifierProvider.notifier).logCheckIn(mood);
-    setState(() {});
+    setState(() => _showMoodPicker = false);
   }
 
   void _editSoulCheckIn(SoulLogData log) {
@@ -963,25 +1004,5 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
       ),
     );
   }
-}
-
-class _FadeInAnimation extends StatefulWidget {
-  final Widget child;
-  final Duration duration;
-  const _FadeInAnimation({required this.child, this.duration = const Duration(milliseconds: 300)});
-  @override State<_FadeInAnimation> createState() => _FadeInAnimationState();
-}
-
-class _FadeInAnimationState extends State<_FadeInAnimation> with SingleTickerProviderStateMixin {
-  late final AnimationController _ctrl;
-  late final Animation<double> _anim;
-  @override void initState() {
-    super.initState();
-    _ctrl = AnimationController(vsync: this, duration: widget.duration);
-    _anim = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
-    _ctrl.forward();
-  }
-  @override void dispose() { _ctrl.dispose(); super.dispose(); }
-  @override Widget build(BuildContext context) => FadeTransition(opacity: _anim, child: widget.child);
 }
 

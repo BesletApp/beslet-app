@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../core/theme/app_spacing.dart';
 import '../../core/providers/profile_provider.dart';
 import '../../core/providers/download_provider.dart';
 import '../../core/providers/analytics_provider.dart';
@@ -14,6 +15,7 @@ import '../../core/models/user_profile.dart';
 import '../../l10n/app_localizations.dart';
 import '../../shared/widgets/error_card.dart';
 import '../../shared/widgets/skeleton_card.dart';
+import '../../core/widgets/zone_layout.dart';
 
 int _pillarMax(List<int> v) => v.fold(1, (a, b) => a > b ? a : b);
 
@@ -111,19 +113,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
           data: (p) {
             final dailyXp = dailyXpAsync.valueOrNull ?? List.filled(7, 0.0);
-            return ListView(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-              children: [
-                _zone1(l, p),
-                const SizedBox(height: 16),
-                _buildBadgeStrip(p),
-                const SizedBox(height: 16),
-                _zone2(l, p),
-                const SizedBox(height: 16),
-                _zone3(l, p, dailyXp),
-                const SizedBox(height: 24),
-                _zone4(l),
-              ],
+            return SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: ZoneLayout(
+                orientation: Column(children: [
+                  _zone1(l, p),
+                  const SizedBox(height: AppSpacing.md),
+                  _buildBadgeStrip(p),
+                ]),
+                primary: _zone2(l, p),
+                support: _zone3(l, p, dailyXp),
+                anchor: _zone4(l),
+              ),
             );
           },
         ),
@@ -163,11 +164,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ],
         ),
       ),
-      const SizedBox(height: 10),
+      const SizedBox(height: AppSpacing.sm),
       Text(p.displayName, style: TextStyle(fontFamily: 'CormorantGaramond', fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.of(context).textPrimary)),
-      const SizedBox(height: 4),
+      const SizedBox(height: AppSpacing.xs),
       Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
         decoration: BoxDecoration(
           color: AppColors.primary.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(20),
@@ -179,7 +180,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           Text('$levelLabel · ${l.levelLabel} ${lvlIdx + 1}', style: const TextStyle(fontFamily: 'Inter', fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.primary)),
         ]),
       ),
-      const SizedBox(height: 18),
+      const SizedBox(height: AppSpacing.md),
       Row(children: [
         _statTile(Icons.local_fire_department, '${p.currentStreak}', l.streak, AppColors.warning),
         _statTile(Icons.check_circle_outline, '${p.totalDaysActive}', l.daysShownUp, AppColors.success),
@@ -196,8 +197,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Widget _statTile(IconData ic, String val, String lbl, Color c) {
     return Expanded(child: Container(
-      margin: const EdgeInsets.symmetric(horizontal: 3),
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
       decoration: BoxDecoration(
         color: c.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(10),
@@ -243,7 +244,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
               const SizedBox(height: 16),
               Text(l.localeName == 'am' ? 'የአዶ ቀለም' : 'Avatar Color', style: TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.of(context).textSecondary)),
-              const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.sm),
               Row(children: _avatarColors.entries.map((e) {
                 final isSelected = _avatarColor == e.key;
                 return Expanded(
@@ -265,7 +266,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ),
                 );
               }).toList()),
-              const SizedBox(height: 20),
+              const SizedBox(height: AppSpacing.md),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -297,7 +298,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   child: Text(l.save, style: const TextStyle(fontFamily: 'Inter', fontSize: 15, fontWeight: FontWeight.w600)),
                 ),
               ),
-              const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.sm),
             ]);
           }),
         );
@@ -320,11 +321,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     if (p.badges.isEmpty) return const SizedBox.shrink();
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.sm),
       decoration: BoxDecoration(
         color: AppColors.of(context).card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.of(context).border, width: 0.5),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
@@ -388,7 +388,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 borderRadius: BorderRadius.circular(12),
                 onTap: () => setState(() => _expandedPillar = _expandedPillar == i ? -1 : i),
                 child: Stack(children: [
-                  Padding(padding: const EdgeInsets.all(12), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Padding(padding: const EdgeInsets.all(AppSpacing.sm), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Row(children: [
                       Icon(c.icon, size: 16, color: c.value > 0 ? AppColors.primary : AppColors.of(context).textMuted.withValues(alpha: 0.3)),
                       const SizedBox(width: 6),
@@ -442,12 +442,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     ];
     return Container(
       margin: const EdgeInsets.only(top: 8),
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(AppSpacing.cardPadding),
       decoration: BoxDecoration(
         color: AppColors.of(context).card,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
-        boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.05), blurRadius: 8)],
       ),
       child: Row(children: [
         Container(
@@ -480,7 +479,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           Text(l.spiritualGrowth, style: TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.of(context).textPrimary)),
           const Spacer(),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
             decoration: BoxDecoration(
               color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
@@ -500,10 +499,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ]),
         const SizedBox(height: 4),
         _journeyStat(Icons.access_time, l.hoursInWord(readingHours), null),
-        const SizedBox(height: 14),
+        const SizedBox(height: AppSpacing.md),
         if (dailyXp.any((v) => v > 0))
           _buildSparkline(dailyXp),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
         Row(children: [
           const Spacer(),
           Text('${p.xp} XP · ${l.keepGoing}', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: AppColors.of(context).textSecondary)),

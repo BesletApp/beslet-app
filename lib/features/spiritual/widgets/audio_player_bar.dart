@@ -4,6 +4,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/services/audio_bible_service.dart';
 import '../../../core/providers/audio_player_provider.dart';
+import '../../../core/providers/soul_log_provider.dart';
+import '../../../core/emotional/mood_content.dart';
 
 class AudioPlayerBar extends ConsumerStatefulWidget {
   final bool compact;
@@ -21,6 +23,7 @@ class _AudioPlayerBarState extends ConsumerState<AudioPlayerBar> {
     final playerState = ref.watch(audioPlayerProvider);
     final c = AppColors.of(context);
     final isAm = widget.isAm;
+    final mood = ref.watch(todaySoulLogProvider).valueOrNull?.mood;
 
     if (playerState.state == AudioState.loading) {
       return _buildContainer(
@@ -87,10 +90,10 @@ class _AudioPlayerBarState extends ConsumerState<AudioPlayerBar> {
     final isRecorded = playerState.sourceType == AudioSourceType.recorded;
 
     if (isRecorded) {
-      return _buildRecordedPlayer(playerState, chapter, isPlaying, isAm);
+      return _buildRecordedPlayer(playerState, chapter, isPlaying, isAm, mood);
     }
 
-    return _buildTtsPlayer(playerState, chapter, isPlaying, isAm);
+    return _buildTtsPlayer(playerState, chapter, isPlaying, isAm, mood);
   }
 
   Widget _buildRecordedPlayer(
@@ -98,6 +101,7 @@ class _AudioPlayerBarState extends ConsumerState<AudioPlayerBar> {
     AudioChapterInfo chapter,
     bool isPlaying,
     bool isAm,
+    int? mood,
   ) {
     final c = AppColors.of(context);
     final total = playerState.totalVerses;
@@ -133,6 +137,19 @@ class _AudioPlayerBarState extends ConsumerState<AudioPlayerBar> {
                 ),
             ],
           ),
+          if (mood != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                isAm ? MoodContent.livingSentence[mood]!.am : MoodContent.livingSentence[mood]!.en,
+                style: TextStyle(
+                  fontFamily: 'CormorantGaramond',
+                  fontStyle: FontStyle.italic,
+                  fontSize: 12,
+                  color: AppColors.primary.withValues(alpha: 0.7),
+                ),
+              ),
+            ),
           if (!widget.compact) ...[
             const SizedBox(height: 8),
             ClipRRect(
@@ -192,6 +209,7 @@ class _AudioPlayerBarState extends ConsumerState<AudioPlayerBar> {
     AudioChapterInfo chapter,
     bool isPlaying,
     bool isAm,
+    int? mood,
   ) {
     final c = AppColors.of(context);
     final speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
@@ -225,6 +243,19 @@ class _AudioPlayerBarState extends ConsumerState<AudioPlayerBar> {
                 ),
             ],
           ),
+          if (mood != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                isAm ? MoodContent.livingSentence[mood]!.am : MoodContent.livingSentence[mood]!.en,
+                style: TextStyle(
+                  fontFamily: 'CormorantGaramond',
+                  fontStyle: FontStyle.italic,
+                  fontSize: 12,
+                  color: AppColors.primary.withValues(alpha: 0.7),
+                ),
+              ),
+            ),
           if (!widget.compact) ...[
             const SizedBox(height: 8),
             ClipRRect(

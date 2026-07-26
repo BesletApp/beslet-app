@@ -12,6 +12,8 @@ import '../../core/providers/database_provider.dart';
 import '../../core/database/app_database.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/providers/streak_provider.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/widgets/zone_layout.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   final String? section;
@@ -50,7 +52,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       _ => null,
     };
     if (key?.currentContext != null) {
-      Scrollable.ensureVisible(key!.currentContext!, duration: const Duration(milliseconds: 300), alignment: 0.1);
+      Scrollable.ensureVisible(key!.currentContext!, duration: const Duration(milliseconds: 300), alignment: 0.1, curve: Curves.easeInOut);
     }
   }
 
@@ -69,131 +71,140 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     return Scaffold(
       appBar: AppBar(leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/profile')), title: Text(l.settings)),
-      body: ListView(controller: _scroll, padding: const EdgeInsets.all(20), children: [
-        Text(key: _appearanceKey, l.appearance, style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: c.border)),
-          child: SwitchListTile(
-            title: Text(l.darkMode, style: AppTextStyles.bodyMedium),
-            subtitle: Text(isAm ? 'የጨለማ/የብርሃን ሁነታን ቀይር' : 'Toggle light/dark theme', style: AppTextStyles.bodySmall),
-            value: themeMode == ThemeMode.dark,
-            onChanged: (val) => ref.read(themeModeProvider.notifier).toggle(),
-            activeThumbColor: AppColors.primary,
-            contentPadding: EdgeInsets.zero,
-          ),
-        ),
-        const SizedBox(height: 16),
-        Text(isAm ? 'ገጽታ' : 'Theme', style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
-        const SizedBox(height: 12),
-        _ThemePalettePicker(),
-        const SizedBox(height: 24),
-        Text(key: _languageKey, l.language, style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: c.border)),
-          child: userAsync.when(
-            data: (user) => Column(children: [
-              _langTile(context, ref, user, 'en', l.english, '🇬🇧'),
-              const Divider(height: 1),
-              _langTile(context, ref, user, 'am', l.amharic, '🇪🇹'),
-            ]),
-            loading: () => const SizedBox(height: 48, child: Center(child: CircularProgressIndicator())),
-            error: (e, _) => Text('$e'),
-          ),
-        ),
-        const SizedBox(height: 24),
-        Text(isAm ? '🕊️ የእረፍት ቀን' : '🕊️ Sabbath Rest', style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: c.border)),
-          child: userAsync.when(
-            data: (user) => ListTile(
-              leading: const Icon(Icons.weekend, color: AppColors.primary),
-              title: Text(isAm ? 'የእረፍት ቀንህን ምረጥ' : 'Choose your rest day', style: AppTextStyles.bodyMedium),
-              subtitle: Text(
-                user.sabbathDay == -1
-                    ? (isAm ? 'አልተመረጠም። እረፍት የሌለበት ቀን' : 'Not set — no rest day')
-                    : (isAm ? _dayName(user.sabbathDay, isAm) : _dayName(user.sabbathDay, isAm)),
-                style: AppTextStyles.bodySmall.copyWith(color: c.textSecondary)),
-              trailing: Text(
-                user.sabbathDay == -1 ? (isAm ? '--' : '--') : _dayName(user.sabbathDay, isAm),
-                style: const TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.primary)),
-              contentPadding: EdgeInsets.zero,
-              onTap: () => _pickSabbathDay(context, ref, user),
+      body: SingleChildScrollView(
+        controller: _scroll,
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: ZoneLayout(
+          orientation: Column(children: [
+            Text(key: _appearanceKey, l.appearance, style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
+            SizedBox(height: AppSpacing.sm),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: c.border)),
+              child: SwitchListTile(
+                title: Text(l.darkMode, style: AppTextStyles.bodyMedium),
+                subtitle: Text(isAm ? 'የጨለማ/የብርሃን ሁነታን ቀይር' : 'Toggle light/dark theme', style: AppTextStyles.bodySmall),
+                value: themeMode == ThemeMode.dark,
+                onChanged: (val) => ref.read(themeModeProvider.notifier).toggle(),
+                activeThumbColor: AppColors.primary,
+                contentPadding: EdgeInsets.zero,
+              ),
             ),
-            loading: () => const SizedBox(height: 48, child: Center(child: CircularProgressIndicator())),
-            error: (e, _) => Text('$e'),
-          ),
-        ),
-        const SizedBox(height: 24),
-        Text(key: _remindersKey, l.reminders, style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: c.border)),
-          child: ListTile(
-            leading: const Icon(Icons.access_time, color: AppColors.primary),
-            title: Text(isAm ? 'ዕለታዊ ማሳሰቢያ' : 'Daily reading reminder', style: AppTextStyles.bodyMedium),
-            subtitle: Text(isAm ? 'በየቀኑ ለማንበብ ያስታውስሃል' : 'Reminds you to read daily', style: AppTextStyles.bodySmall),
-            trailing: Text(_reminderTime, style: const TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.primary)),
-            contentPadding: EdgeInsets.zero,
-            onTap: () async {
-              final parts = _reminderTime.split(':');
-              final initial = TimeOfDay(hour: int.tryParse(parts[0]) ?? 20, minute: int.tryParse(parts[1]) ?? 0);
-              final time = await showTimePicker(context: context, initialTime: initial);
-              if (time != null) {
-                final formatted = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
-                final prefs = await SharedPreferences.getInstance();
-                await prefs.setString('reminderTime', formatted);
-                await NotificationService.scheduleDailyReminder(time.hour, time.minute);
-                if (mounted) {
-                  setState(() => _reminderTime = formatted);
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text(isAm ? 'ማሳሰቢያ ተቀናብሯል በ$formatted' : 'Reminder set at $formatted'),
-                    backgroundColor: AppColors.success, behavior: SnackBarBehavior.floating, duration: Duration(seconds: 2),
-                  ));
-                }
-              }
-            },
-          ),
-        ),
-        const SizedBox(height: 24),
-        Text(key: _aboutKey, l.aboutApp, style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: c.border)),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('ብስለት — Beslet', style: const TextStyle(fontFamily: 'CormorantGaramond', fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.primary)),
-            const SizedBox(height: 8),
-            Text(isAm ? 'በአርባ ምንጭ ዩኒቨርሲቲ ውስጥ ላሉ ክርስቲያን ተማሪዎች የበጋ የ90 ቀን የመንፈሳዊ እድገት መተግበሪያ።' : 'A 90-day summer spiritual growth app for Christian students at Arba Minch University and beyond.', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: c.textSecondary, height: 1.4)),
-            const SizedBox(height: 12),
-            Text('Made by Amanuel Lamesa', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: c.textMuted)),
-            Text('Summer 2026 · v1.0', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: c.textMuted)),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  launchUrl(Uri.parse('https://t.me/emnverse'), mode: LaunchMode.externalApplication);
-                },
-                icon: const Icon(Icons.chat_bubble_outline, size: 16),
-                label: Text(isAm ? 'አስተያየት እና አስተያየት' : 'Comment & Suggestions'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.primary,
-                  side: const BorderSide(color: AppColors.primary),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  textStyle: const TextStyle(fontFamily: 'Inter', fontSize: 13),
-                ),
+            SizedBox(height: AppSpacing.md),
+            Text(isAm ? 'ገጽታ' : 'Theme', style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
+            SizedBox(height: AppSpacing.sm),
+            _ThemePalettePicker(),
+          ]),
+          primary: Column(children: [
+            Text(key: _languageKey, l.language, style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
+            SizedBox(height: AppSpacing.sm),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: c.border)),
+              child: userAsync.when(
+                data: (user) => Column(children: [
+                  _langTile(context, ref, user, 'en', l.english, '🇬🇧'),
+                  const Divider(height: 1),
+                  _langTile(context, ref, user, 'am', l.amharic, '🇪🇹'),
+                ]),
+                loading: () => const SizedBox(height: 48, child: Center(child: CircularProgressIndicator())),
+                error: (e, _) => Text('$e'),
               ),
             ),
           ]),
+          support: Column(children: [
+            Text(isAm ? '🕊️ የእረፍት ቀን' : '🕊️ Sabbath Rest', style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
+            SizedBox(height: AppSpacing.sm),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: c.border)),
+              child: userAsync.when(
+                data: (user) => ListTile(
+                  leading: const Icon(Icons.weekend, color: AppColors.primary),
+                  title: Text(isAm ? 'የእረፍት ቀንህን ምረጥ' : 'Choose your rest day', style: AppTextStyles.bodyMedium),
+                  subtitle: Text(
+                    user.sabbathDay == -1
+                        ? (isAm ? 'አልተመረጠም። እረፍት የሌለበት ቀን' : 'Not set — no rest day')
+                        : (isAm ? _dayName(user.sabbathDay, isAm) : _dayName(user.sabbathDay, isAm)),
+                    style: AppTextStyles.bodySmall.copyWith(color: c.textSecondary)),
+                  trailing: Text(
+                    user.sabbathDay == -1 ? (isAm ? '--' : '--') : _dayName(user.sabbathDay, isAm),
+                    style: const TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.primary)),
+                  contentPadding: EdgeInsets.zero,
+                  onTap: () => _pickSabbathDay(context, ref, user),
+                ),
+                loading: () => const SizedBox(height: 48, child: Center(child: CircularProgressIndicator())),
+                error: (e, _) => Text('$e'),
+              ),
+            ),
+            SizedBox(height: AppSpacing.lg),
+            Text(key: _remindersKey, l.reminders, style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
+            SizedBox(height: AppSpacing.sm),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: c.border)),
+              child: ListTile(
+                leading: const Icon(Icons.access_time, color: AppColors.primary),
+                title: Text(isAm ? 'ዕለታዊ ማሳሰቢያ' : 'Daily reading reminder', style: AppTextStyles.bodyMedium),
+                subtitle: Text(isAm ? 'በየቀኑ ለማንበብ ያስታውስሃል' : 'Reminds you to read daily', style: AppTextStyles.bodySmall),
+                trailing: Text(_reminderTime, style: const TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.primary)),
+                contentPadding: EdgeInsets.zero,
+                onTap: () async {
+                  final parts = _reminderTime.split(':');
+                  final initial = TimeOfDay(hour: int.tryParse(parts[0]) ?? 20, minute: int.tryParse(parts[1]) ?? 0);
+                  final time = await showTimePicker(context: context, initialTime: initial);
+                  if (time != null) {
+                    final formatted = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+                    final prefs = await SharedPreferences.getInstance();
+                    await prefs.setString('reminderTime', formatted);
+                    await NotificationService.scheduleDailyReminder(time.hour, time.minute);
+                    if (mounted) {
+                      setState(() => _reminderTime = formatted);
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(isAm ? 'ማሳሰቢያ ተቀናብሯል በ$formatted' : 'Reminder set at $formatted'),
+                        backgroundColor: AppColors.success, behavior: SnackBarBehavior.floating, duration: Duration(seconds: 2),
+                      ));
+                    }
+                  }
+                },
+              ),
+            ),
+          ]),
+          anchor: Column(children: [
+            Text(key: _aboutKey, l.aboutApp, style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
+            SizedBox(height: AppSpacing.sm),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: c.border)),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text('ብስለት — Beslet', style: const TextStyle(fontFamily: 'CormorantGaramond', fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.primary)),
+                const SizedBox(height: AppSpacing.sm),
+                Text(isAm ? 'በአርባ ምንጭ ዩኒቨርሲቲ ውስጥ ላሉ ክርስቲያን ተማሪዎች የበጋ የ90 ቀን የመንፈሳዊ እድገት መተግበሪያ።' : 'A 90-day summer spiritual growth app for Christian students at Arba Minch University and beyond.', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: c.textSecondary, height: 1.4)),
+                const SizedBox(height: AppSpacing.sm),
+                Text('Made by Amanuel Lamesa', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: c.textMuted)),
+                Text('Summer 2026 · v1.0', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: c.textMuted)),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      launchUrl(Uri.parse('https://t.me/emnverse'), mode: LaunchMode.externalApplication);
+                    },
+                    icon: const Icon(Icons.chat_bubble_outline, size: 16),
+                    label: Text(isAm ? 'አስተያየት እና አስተያየት' : 'Comment & Suggestions'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.primary,
+                      side: const BorderSide(color: AppColors.primary),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      textStyle: const TextStyle(fontFamily: 'Inter', fontSize: 13),
+                    ),
+                  ),
+                ),
+              ]),
+            ),
+          ]),
         ),
-      ]),
+      ),
     );
   }
 
@@ -274,7 +285,7 @@ class _ThemePalettePicker extends ConsumerWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: c.border)),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Wrap(spacing: 10, runSpacing: 10, children: [
+        Wrap(spacing: AppSpacing.sm, runSpacing: AppSpacing.sm, children: [
           for (final opt in AppThemeOption.values)
             _PaletteChip(
               option: opt,
