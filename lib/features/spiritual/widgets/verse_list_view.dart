@@ -16,13 +16,7 @@ class VerseListView extends ConsumerStatefulWidget {
 }
 
 class _VerseListViewState extends ConsumerState<VerseListView> {
-  final _scrollCtrl = ScrollController();
-
-  @override
-  void dispose() {
-    _scrollCtrl.dispose();
-    super.dispose();
-  }
+  final _itemKeys = <int, GlobalKey>{};
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +29,7 @@ class _VerseListViewState extends ConsumerState<VerseListView> {
     if (verses.isEmpty) {
       if (playerState.state == AudioState.error) {
         return Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(AppSpacing.screenPadding),
           decoration: BoxDecoration(
             color: c.card,
             borderRadius: BorderRadius.circular(12),
@@ -43,15 +37,15 @@ class _VerseListViewState extends ConsumerState<VerseListView> {
           ),
           child: Column(children: [
             Icon(Icons.wifi_off, size: 32, color: c.textMuted.withValues(alpha: 0.4)),
-            const SizedBox(height: 12),
+            SizedBox(height: AppSpacing.sm),
             Text(
               isAm ? 'በይነመረብ አልተገኘም' : 'No internet connection',
-              style: AppTextStyles.bodyMedium.copyWith(color: c.textSecondary, fontSize: 14),
+              style: AppTextStyles.bodyMedium.copyWith(color: c.textSecondary),
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: AppSpacing.xs),
             Text(
               isAm ? 'እባክዎ ይገናኙና እንደገና ይሞክሩ' : 'Please connect and try again',
-              style: AppTextStyles.bodySmall.copyWith(color: c.textMuted, fontSize: 12),
+              style: AppTextStyles.bodySmall.copyWith(color: c.textMuted),
             ),
           ]),
         );
@@ -62,10 +56,10 @@ class _VerseListViewState extends ConsumerState<VerseListView> {
     final current = playerState.currentVerse;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollCtrl.hasClients && current < verses.length) {
-        final offset = (current * 56.0).clamp(0.0, _scrollCtrl.position.maxScrollExtent);
-        if (_scrollCtrl.offset != offset) {
-          _scrollCtrl.animateTo(offset, duration: const Duration(milliseconds: 200), curve: Curves.easeInOut);
+      if (current < verses.length) {
+        final ctx = _itemKeys[current]?.currentContext;
+        if (ctx != null) {
+          Scrollable.ensureVisible(ctx, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut, alignment: 0.1);
         }
       }
     });
@@ -90,7 +84,6 @@ class _VerseListViewState extends ConsumerState<VerseListView> {
           ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            controller: _scrollCtrl,
             padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
             itemCount: verses.length,
             itemBuilder: (context, index) {
@@ -98,31 +91,34 @@ class _VerseListViewState extends ConsumerState<VerseListView> {
               final verse = verses[index];
               final number = index < numbers.length ? numbers[index] : '${index + 1}';
 
+              final itemKey = _itemKeys.putIfAbsent(index, () => GlobalKey());
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                key: itemKey,
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+                margin: EdgeInsets.only(top: index > 0 && index % 5 == 0 ? AppSpacing.xs : 0),
                 color: isCurrent ? AppColors.audioBlue.withValues(alpha: 0.08) : null,
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
+                    SizedBox(
                       width: 24,
-                      margin: const EdgeInsets.only(top: 1),
                       child: Text(
                         number,
                         style: TextStyle(
                           fontFamily: 'Inter', fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: isCurrent ? AppColors.audioBlue : c.textMuted,
+                          fontWeight: FontWeight.w500,
+                          color: c.textPrimary.withValues(alpha: 0.6),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: Text(
                         verse,
-                        style: AppTextStyles.bodyMedium.copyWith(
+                        style: (isAm ? AppTextStyles.amharicBody : AppTextStyles.bodyMedium).copyWith(
                           fontSize: 13,
-                          color: isCurrent ? c.textPrimary : c.textSecondary,
+                          height: isAm ? 1.7 : 1.6,
+                          color: isCurrent ? c.textPrimary : c.textPrimary.withValues(alpha: 0.85),
                         ),
                       ),
                     ),
