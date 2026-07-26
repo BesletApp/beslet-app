@@ -24,12 +24,15 @@ android {
 
         multiDexEnabled = true
         ndk {
-            abiFilters += listOf("arm64-v8a", "armeabi-v7a")
+            abiFilters.clear()
+            val abi = project.findProperty("targetAbi") as? String ?: "arm64-v8a"
+            abiFilters += listOf(abi)
         }
     }
 
     packaging {
         jniLibs {
+            useLegacyPackaging = false
             excludes += "/lib/x86_64/*.so"
         }
     }
