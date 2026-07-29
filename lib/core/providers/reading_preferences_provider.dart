@@ -1,8 +1,6 @@
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../services/scripture_service.dart';
-import 'bible_read_provider.dart';
 
 const _fontSizeKey = 'reading_font_size';
 const _lineSpacingKey = 'reading_line_spacing';
@@ -63,7 +61,7 @@ final keptVerseProvider = StateProvider<KeptVerse?>((ref) => null);
 final allKeptVersesProvider = StateProvider<List<KeptVerse>>((ref) => []);
 
 class ReadingPreferences {
-  static Future<void> loadFontSize(ProviderRef ref) async {
+  static Future<void> loadFontSize(Ref ref) async {
     final prefs = await SharedPreferences.getInstance();
     final saved = prefs.getDouble(_fontSizeKey) ?? 15.0;
     ref.read(fontSizeProvider.notifier).state = saved;
@@ -138,23 +136,4 @@ class ReadingPreferences {
   }
 }
 
-final todaySuggestionProvider = FutureProvider<({String bookId, int chapter})?>((ref) async {
-  final todayReads = await ref.watch(todayBibleReadProvider.future);
-  if (todayReads.isNotEmpty) return null;
 
-  final last = await ReadingPreferences.loadLastRead();
-  if (last.bookId != null && last.chapter != null) {
-    final book = ScriptureService.bookMap[last.bookId!];
-    if (book != null) {
-      if (last.chapter! < book.chapters) {
-        return (bookId: last.bookId!, chapter: last.chapter! + 1);
-      }
-      final allBooks = ScriptureService.allBooks;
-      final idx = allBooks.indexWhere((b) => b.id == last.bookId);
-      if (idx >= 0 && idx + 1 < allBooks.length) {
-        return (bookId: allBooks[idx + 1].id, chapter: 1);
-      }
-    }
-  }
-  return (bookId: 'genesis', chapter: 1);
-});

@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/audio_bible_service.dart';
-import 'download_provider.dart';
 
 class AudioPlayerState {
   final AudioState state;
@@ -41,9 +40,6 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
     _service.onStateChanged = () {
       _updateState();
     };
-    _service.onCompleted = () {
-      _updateState();
-    };
     ref.onDispose(() => _service.dispose());
     return const AudioPlayerState();
   }
@@ -71,20 +67,6 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
   Future<void> prepare(AudioChapterInfo info) async {
     await _service.loadChapter(info);
     _updateState();
-    _autoCache(info);
-  }
-
-  Future<void> _autoCache(AudioChapterInfo info) async {
-    try {
-      final service = ref.read(audioCacheServiceProvider);
-      final id = '${info.bookId}_${info.chapter}_${info.isAmharic ? 'am' : 'en'}';
-      await service.ensureCached(
-        id: id,
-        bookId: info.bookId,
-        chapter: info.chapter,
-        language: info.isAmharic ? 'am' : 'en',
-      );
-    } catch (_) {}
   }
 
   Future<void> togglePlayPause() async {
