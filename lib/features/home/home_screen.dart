@@ -440,6 +440,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
               ),
             ],
           ),
+          SizedBox(height: 4),
+          Row(
+            children: [
+              SizedBox(width: 22),
+              Expanded(
+                child: Text(
+                  _isAm ? MoodContent.identity[currentMood]!.am : MoodContent.identity[currentMood]!.en,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: c.textSecondary.withValues(alpha: 0.5),
+                    fontSize: 10,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ] else if (_showMoodPicker)
           Padding(
             padding: EdgeInsets.only(top: _h(AppSpacing.sm)),

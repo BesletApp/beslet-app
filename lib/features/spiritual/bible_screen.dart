@@ -19,6 +19,8 @@ import '../../core/providers/reading_preferences_provider.dart';
 import '../../core/providers/bible_session_provider.dart';
 import '../../core/services/audio_bible_service.dart';
 import '../../core/services/verse_reflection_service.dart';
+import '../../core/providers/ai_provider.dart';
+import '../../core/services/ai_service.dart';
 import '../../shared/widgets/error_card.dart';
 import 'widgets/audio_player_bar.dart';
 import 'widgets/verse_list_view.dart';
@@ -175,6 +177,9 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
 
   void _showReflectionSheet(int verseNumber, String text, String bookId, String bookName) {
     final svc = VerseReflectionService();
+    final fallback = svc.forVerse(bookId, text, _isAm);
+    final reflectionNotifier = ValueNotifier(fallback);
+    final ai = ref.read(aiServiceProvider);
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -183,7 +188,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
       builder: (ctx) => _ReflectionSheet(
         text: text,
         reference: '$bookName $verseNumber',
-        reflection: svc.forVerse(bookId, text, _isAm),
+        reflectionNotifier: reflectionNotifier,
         onVerseTap: () {
           Navigator.pop(ctx);
           Future.delayed(const Duration(milliseconds: 300), () {
@@ -192,6 +197,21 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
         },
       ),
     );
+    _generateAiReflection(ai, text, '$bookName $verseNumber', fallback, reflectionNotifier);
+  }
+
+  Future<void> _generateAiReflection(AiService ai, String verseText, String reference, String fallback, ValueNotifier<String> notifier) async {
+    try {
+      if (!await ai.hasApiKey) return;
+      final result = await ai.reflectionForVerse(
+        verseText: verseText,
+        reference: reference,
+        isAm: _isAm,
+      );
+      if (result.isNotEmpty) notifier.value = result;
+    } catch (_) {
+      notifier.value = fallback;
+    }
   }
 
   void _openJournalFromVerse(int verseNumber, String text, String bookId) {
@@ -338,11 +358,49 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
   }
 
   Widget _buildKeepPrompt() {
-    return const SizedBox.shrink();
+    final c = AppColors.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: c.card,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: c.border),
+        ),
+        child: Row(children: [
+          Icon(Icons.bookmark_outline, size: 18, color: AppColors.primary),
+          SizedBox(width: 8),
+          Expanded(child: Text(
+            _isAm ? 'ቃሉን ጠብቅ' : 'Keep this verse',
+            style: TextStyle(fontSize: 13, color: c.textSecondary),
+          )),
+        ]),
+      ),
+    );
   }
 
   Widget _buildReflectionPrompt() {
-    return const SizedBox.shrink();
+    final primary = AppColors.primary;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: primary.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: primary.withValues(alpha: 0.2)),
+        ),
+        child: Row(children: [
+          Icon(Icons.auto_awesome, size: 16, color: primary),
+          SizedBox(width: 8),
+          Expanded(child: Text(
+            _isAm ? 'ማሰላሰል ትፈልጋለህ?' : 'Pause and reflect?',
+            style: TextStyle(fontSize: 13, color: primary, fontWeight: FontWeight.w500),
+          )),
+        ]),
+      ),
+    );
   }
 
   Widget _buildKeptVerseBanner() {
@@ -1194,10 +1252,10 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
 class _ReflectionSheet extends StatelessWidget {
   final String text;
   final String reference;
-  final String reflection;
+  final ValueNotifier<String> reflectionNotifier;
   final VoidCallback? onVerseTap;
   const _ReflectionSheet({
-    required this.text, required this.reference, required this.reflection,
+    required this.text, required this.reference, required this.reflectionNotifier,
     this.onVerseTap,
   });
 
@@ -1221,13 +1279,16 @@ class _ReflectionSheet extends StatelessWidget {
                   Expanded(child: Text(reference,
                     style: TextStyle(fontSize: 11,
                       color: c.textMuted, fontWeight: FontWeight.w500))),
-                  IconButton(
-                    icon: Icon(Icons.share, size: 18, color: c.textMuted),
-                    onPressed: () {
-                      SharePlus.instance.share(ShareParams(
-                        text: '$reference\n\n$text\n\n$reflection',
-                      ));
-                    },
+                  ValueListenableBuilder<String>(
+                    valueListenable: reflectionNotifier,
+                    builder: (ctx, reflection, _) => IconButton(
+                      icon: Icon(Icons.share, size: 18, color: c.textMuted),
+                      onPressed: () {
+                        SharePlus.instance.share(ShareParams(
+                          text: '$reference\n\n$text\n\n$reflection',
+                        ));
+                      },
+                    ),
                   ),
                 ]),
                 SizedBox(height: 12),
@@ -1239,9 +1300,12 @@ class _ReflectionSheet extends StatelessWidget {
                       height: 1.6, fontStyle: FontStyle.italic)),
                 ),
                 SizedBox(height: 20),
-                Text(reflection,
-                  style: TextStyle(fontSize: 14,
-                    color: c.textPrimary, height: 1.7)),
+                ValueListenableBuilder<String>(
+                  valueListenable: reflectionNotifier,
+                  builder: (ctx, reflection, _) => Text(reflection,
+                    style: TextStyle(fontSize: 14,
+                      color: c.textPrimary, height: 1.7)),
+                ),
               ],
             ),
           ),

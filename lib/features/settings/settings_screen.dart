@@ -176,6 +176,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: c.border)),
+              child: ListTile(
+                leading: const Icon(Icons.auto_awesome, color: AppColors.primary),
+                title: Text(isAm ? 'AI ባህሪያት' : 'AI Features', style: AppTextStyles.bodyMedium),
+                subtitle: Text(isAm ? 'የGoogle AI ቁልፍ አስተዳደር' : 'Manage your Google AI API key',
+                    style: AppTextStyles.bodySmall.copyWith(color: c.textSecondary)),
+                trailing: const Icon(Icons.chevron_right, color: AppColors.primary),
+                contentPadding: EdgeInsets.zero,
+                onTap: () => context.go('/settings/ai-key'),
+              ),
+            ),
+            SizedBox(height: AppSpacing.lg),
+            SizedBox(height: AppSpacing.sm),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: c.border)),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text('ብስለት — Beslet', style: const TextStyle(fontFamily: 'CormorantGaramond', fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.primary)),
                 const SizedBox(height: AppSpacing.sm),
