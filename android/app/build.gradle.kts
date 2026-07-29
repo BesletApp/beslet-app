@@ -27,8 +27,7 @@ android {
 
     packaging {
         jniLibs {
-            useLegacyPackaging = false
-            excludes += "/lib/x86_64/*.so"
+            useLegacyPackaging = true
         }
     }
 
