@@ -6,11 +6,11 @@ import 'database_provider.dart';
 import 'tracking_provider.dart';
 import 'streak_provider.dart';
 
-final todayBibleReadProvider = FutureProvider<BibleRead?>((ref) async {
+final todayBibleReadProvider = FutureProvider<List<BibleRead>>((ref) async {
   final db = ref.watch(databaseProvider);
   final today = DateTime.now().toIso8601String().substring(0, 10);
   final reads = await (db.select(db.bibleReads)..where((t) => t.date.equals(today))).get();
-  return reads.isNotEmpty ? reads.first : null;
+  return reads;
 });
 
 final bibleStreakProvider = FutureProvider<int>((ref) async {
@@ -48,15 +48,12 @@ class BibleNotifier extends AsyncNotifier<void> {
   Future<void> markAsRead(String reference, {String? note}) async {
     final db = ref.read(databaseProvider);
     final today = DateTime.now().toIso8601String().substring(0, 10);
-    final existing = await (db.select(db.bibleReads)..where((t) => t.date.equals(today))).get();
-    if (existing.isEmpty) {
-      await db.into(db.bibleReads).insert(BibleReadsCompanion.insert(
-        date: today,
-        reference: reference,
-        note: Value(note),
-        durationMinutes: const Value(10),
-      ));
-    }
+    await db.into(db.bibleReads).insert(BibleReadsCompanion.insert(
+      date: today,
+      reference: reference,
+      note: Value(note),
+      durationMinutes: const Value(10),
+    ));
     ref.invalidate(todayBibleReadProvider);
     ref.invalidate(bibleStreakProvider);
     ref.invalidate(bibleReadDaysProvider);

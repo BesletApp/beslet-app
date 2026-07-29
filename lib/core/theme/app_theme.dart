@@ -29,7 +29,6 @@ ThemeData _baseTheme({required Brightness brightness, required ThemePalette c}) 
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppSpacing.sm + 6),
-        side: BorderSide(color: c.border, width: 0.5),
       ),
     ),
     bottomNavigationBarTheme: BottomNavigationBarThemeData(

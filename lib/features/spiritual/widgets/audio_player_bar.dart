@@ -1,373 +1,239 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_text_styles.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/services/audio_bible_service.dart';
 import '../../../core/providers/audio_player_provider.dart';
 import '../../../core/providers/soul_log_provider.dart';
 import '../../../core/emotional/mood_content.dart';
 
 class AudioPlayerBar extends ConsumerStatefulWidget {
-  final bool compact;
   final bool isAm;
 
-  const AudioPlayerBar({super.key, this.compact = false, this.isAm = false});
+  const AudioPlayerBar({super.key, this.isAm = false});
 
   @override
   ConsumerState<AudioPlayerBar> createState() => _AudioPlayerBarState();
 }
 
 class _AudioPlayerBarState extends ConsumerState<AudioPlayerBar> {
+  static const Map<int, double> _moodFontSize = {
+    1: 18.0,
+    2: 17.0,
+    3: 16.0,
+    4: 16.0,
+    5: 16.0,
+  };
+  static const Map<int, double> _moodAlpha = {
+    1: 0.85,
+    2: 0.90,
+    3: 1.0,
+    4: 1.0,
+    5: 1.0,
+  };
+
+  bool _departing = false;
+  double _memorialOpacity = 0.0;
+  String? _lastChapterKey;
+  bool _overlayVisible = false;
+  Timer? _overlayTimer;
+
+  double _sentenceSize(int? mood) => _moodFontSize[mood] ?? 16.0;
+  double _sentenceBaseAlpha(int? mood) => _moodAlpha[mood] ?? 1.0;
+
+  String _livingSentence(int? mood, bool isAm) {
+    if (mood != null && MoodContent.livingSentence.containsKey(mood)) {
+      return isAm
+          ? MoodContent.livingSentence[mood]!.am
+          : MoodContent.livingSentence[mood]!.en;
+    }
+    return isAm
+        ? 'ጸጥ ብለህ እርሱ አምላክ መሆኑን እወቅ።'
+        : 'Be still, and know that He is God.';
+  }
+
+  @override
+  void dispose() {
+    _overlayTimer?.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    ref.listen(audioPlayerProvider, _onAudioStateChange);
+
     final playerState = ref.watch(audioPlayerProvider);
     final c = AppColors.of(context);
     final isAm = widget.isAm;
     final mood = ref.watch(todaySoulLogProvider).valueOrNull?.mood;
 
-    if (playerState.state == AudioState.loading) {
-      return _buildContainer(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: AppColors.audioBlue,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Text(
-              isAm ? 'በማዘጋጀት ላይ...' : 'Loading...',
-              style: AppTextStyles.bodySmall
-                  .copyWith(color: c.textSecondary),
-            ),
-          ],
-        ),
-      );
+    final chapterKey = playerState.chapter != null
+        ? '${playerState.chapter!.bookId}:${playerState.chapter!.chapter}'
+        : null;
+
+    if (chapterKey != _lastChapterKey) {
+      _lastChapterKey = chapterKey;
+      _departing = false;
+      _memorialOpacity = 0.0;
+      _overlayVisible = false;
+      _overlayTimer?.cancel();
     }
 
-    if (playerState.state == AudioState.error) {
-      return _buildContainer(
-        child: Row(
-          children: [
-            Icon(Icons.wifi_off, size: 16, color: c.textMuted),
-            const SizedBox(width: 8),
-            Expanded(
+    final sentence = _livingSentence(mood, isAm);
+    final size = _sentenceSize(mood);
+    final baseAlpha = _sentenceBaseAlpha(mood);
+    final displayAlpha = _departing ? 0.4 : baseAlpha;
+
+    final hasChapter =
+        playerState.chapter != null && playerState.verseTexts.isNotEmpty;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        InkWell(
+          onTap: hasChapter ? _onSentenceTap : null,
+          highlightColor: Colors.transparent,
+          splashColor: Colors.transparent,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+            child: AnimatedOpacity(
+              opacity: displayAlpha,
+              duration: const Duration(milliseconds: 1500),
               child: Text(
-                playerState.error ??
-                    (isAm ? 'ገመድ አልተገኘም' : 'No internet connection'),
-                style: AppTextStyles.bodySmall
-                    .copyWith(color: c.textMuted, fontSize: 12),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (playerState.state == AudioState.stopped && playerState.chapter == null) {
-      return _buildContainer(
-        child: Row(
-          children: [
-            const Icon(Icons.play_circle_outline,
-                size: 18, color: AppColors.audioBlue),
-            const SizedBox(width: 8),
-            Text(
-              isAm ? 'ለማዳመጥ ይንኩ' : 'Tap play to listen',
-              style: AppTextStyles.bodySmall
-                  .copyWith(color: c.textSecondary, fontSize: 12),
-            ),
-          ],
-        ),
-      );
-    }
-
-    final chapter = playerState.chapter!;
-    final isPlaying = playerState.state == AudioState.playing;
-    final isRecorded = playerState.sourceType == AudioSourceType.recorded;
-
-    if (isRecorded) {
-      return _buildRecordedPlayer(playerState, chapter, isPlaying, isAm, mood);
-    }
-
-    return _buildTtsPlayer(playerState, chapter, isPlaying, isAm, mood);
-  }
-
-  Widget _buildRecordedPlayer(
-    AudioPlayerState playerState,
-    AudioChapterInfo chapter,
-    bool isPlaying,
-    bool isAm,
-    int? mood,
-  ) {
-    final c = AppColors.of(context);
-    final total = playerState.totalVerses;
-    final current = playerState.currentVerse;
-    final progress = total > 0 ? (current + 1) / total : 0.0;
-
-    return _buildContainer(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: [
-              Icon(isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
-                  size: 18, color: AppColors.audioBlue),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  chapter.reference,
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: c.textPrimary,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              if (!widget.compact)
-                Text(
-                  '${current + 1}/$total',
-                  style: AppTextStyles.bodySmall
-                      .copyWith(color: c.textMuted, fontSize: 11),
-                ),
-            ],
-          ),
-          if (mood != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                isAm ? MoodContent.livingSentence[mood]!.am : MoodContent.livingSentence[mood]!.en,
+                sentence,
                 style: TextStyle(
                   fontFamily: 'CormorantGaramond',
+                  fontSize: _overlayVisible ? size - 2 : size,
                   fontStyle: FontStyle.italic,
-                  fontSize: 12,
-                  color: AppColors.primary.withValues(alpha: 0.7),
+                  color: c.primary.withValues(alpha: displayAlpha),
+                  height: 1.4,
                 ),
+                textAlign: TextAlign.center,
               ),
             ),
-          if (!widget.compact) ...[
-            const SizedBox(height: 8),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: LinearProgressIndicator(
-                value: progress,
-                backgroundColor: c.border,
-                valueColor: const AlwaysStoppedAnimation(AppColors.audioBlue),
-                minHeight: 4,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+          ),
+        ),
+        if (_overlayVisible)
+          AnimatedOpacity(
+            opacity: 1.0,
+            duration: const Duration(milliseconds: 300),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                _iconButton(Icons.skip_previous, 'Previous verse',
-                    () => ref.read(audioPlayerProvider.notifier).previousVerse()),
-                const SizedBox(width: 16),
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.audioBlue,
-                    shape: BoxShape.circle,
-                  ),
-                  child: IconButton(
-                    icon: Icon(
-                      isPlaying ? Icons.pause : Icons.play_arrow,
-                      size: 28,
-                      color: const Color(0xFF0A0A0A),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.screenPadding),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(1),
+                    child: LinearProgressIndicator(
+                      value: playerState.verseTexts.isNotEmpty
+                          ? (playerState.currentVerse + 1) /
+                              playerState.verseTexts.length
+                          : 0,
+                      minHeight: 2,
+                      backgroundColor: c.border,
+                      valueColor:
+                          const AlwaysStoppedAnimation(AppColors.audioBlue),
                     ),
-                    onPressed: () =>
-                        ref.read(audioPlayerProvider.notifier).togglePlayPause(),
-                    padding: const EdgeInsets.all(8),
                   ),
                 ),
-                const SizedBox(width: 16),
-                _iconButton(Icons.skip_next, 'Next verse',
-                    () => ref.read(audioPlayerProvider.notifier).nextVerse()),
+                const SizedBox(height: 4),
+                InkWell(
+                  onTap: () {
+                    ref
+                        .read(audioPlayerProvider.notifier)
+                        .togglePlayPause();
+                    _startOverlayTimer();
+                  },
+                  borderRadius: BorderRadius.circular(20),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Icon(
+                      playerState.state == AudioState.playing
+                          ? Icons.pause_circle_outline
+                          : Icons.play_circle_outline,
+                      size: 24,
+                      color: c.textSecondary,
+                    ),
+                  ),
+                ),
               ],
             ),
-            const SizedBox(height: 4),
-            Text(
-              isAm ? 'የተቀዳ ድምጽ' : 'Pre-recorded audio',
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 10,
-                color: c.textMuted,
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTtsPlayer(
-    AudioPlayerState playerState,
-    AudioChapterInfo chapter,
-    bool isPlaying,
-    bool isAm,
-    int? mood,
-  ) {
-    final c = AppColors.of(context);
-    final speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
-
-    return _buildContainer(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: [
-              Icon(isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
-                  size: 18, color: AppColors.audioBlue),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  chapter.reference,
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: c.textPrimary,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              if (!widget.compact)
-                Text(
-                  '${playerState.currentVerse + 1}/${playerState.totalVerses}',
-                  style: AppTextStyles.bodySmall
-                      .copyWith(color: c.textMuted, fontSize: 11),
-                ),
-            ],
           ),
-          if (mood != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
+        if (_departing)
+          AnimatedOpacity(
+            opacity: _memorialOpacity,
+            duration: const Duration(milliseconds: 800),
+            child: Padding(
+              padding: const EdgeInsets.only(top: AppSpacing.xs),
               child: Text(
-                isAm ? MoodContent.livingSentence[mood]!.am : MoodContent.livingSentence[mood]!.en,
+                isAm
+                    ? 'ይህ ይቀመጣል።'
+                    : 'This remains.',
                 style: TextStyle(
                   fontFamily: 'CormorantGaramond',
-                  fontStyle: FontStyle.italic,
                   fontSize: 12,
-                  color: AppColors.primary.withValues(alpha: 0.7),
+                  fontStyle: FontStyle.italic,
+                  color: c.textMuted,
+                  height: 1.3,
                 ),
+                textAlign: TextAlign.center,
               ),
             ),
-          if (!widget.compact) ...[
-            const SizedBox(height: 8),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: LinearProgressIndicator(
-                value: playerState.totalVerses > 0
-                    ? (playerState.currentVerse + 1) / playerState.totalVerses
-                    : 0,
-                backgroundColor: c.border,
-                valueColor: const AlwaysStoppedAnimation(AppColors.audioBlue),
-                minHeight: 4,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _iconButton(Icons.skip_previous, 'Previous verse',
-                    () => ref.read(audioPlayerProvider.notifier).previousVerse()),
-                const SizedBox(width: 8),
-                _iconButton(Icons.replay_10, '-15s',
-                    () => ref.read(audioPlayerProvider.notifier).previousVerse()),
-                const SizedBox(width: 16),
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.audioBlue,
-                    shape: BoxShape.circle,
-                  ),
-                  child: IconButton(
-                    icon: Icon(
-                      isPlaying ? Icons.pause : Icons.play_arrow,
-                      size: 28,
-                      color: const Color(0xFF0A0A0A),
-                    ),
-                    onPressed: () =>
-                        ref.read(audioPlayerProvider.notifier).togglePlayPause(),
-                    padding: const EdgeInsets.all(8),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                _iconButton(Icons.forward_30, '+15s',
-                    () => ref.read(audioPlayerProvider.notifier).nextVerse()),
-                const SizedBox(width: 8),
-                _iconButton(Icons.skip_next, 'Next verse',
-                    () => ref.read(audioPlayerProvider.notifier).nextVerse()),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ...speeds.map((s) {
-                  final active = s == playerState.speed;
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 3),
-                    child: GestureDetector(
-                      onTap: () =>
-                          ref.read(audioPlayerProvider.notifier).setSpeed(s),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: active ? AppColors.audioBlue : Colors.transparent,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: active ? AppColors.audioBlue : c.border,
-                          ),
-                        ),
-                        child: Text(
-                          '${s}x',
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            color: active
-                                ? const Color(0xFF0A0A0A)
-                                : c.textSecondary,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }),
-              ],
-            ),
-          ],
-        ],
-      ),
+          ),
+      ],
     );
   }
 
-  Widget _iconButton(IconData icon, String tooltip, VoidCallback onPressed) {
-    final c = AppColors.of(context);
-    return IconButton(
-      icon: Icon(icon, size: 20, color: c.textSecondary),
-      onPressed: onPressed,
-      padding: const EdgeInsets.all(6),
-      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-      tooltip: tooltip,
-    );
+  void _onAudioStateChange(AudioPlayerState? prev, AudioPlayerState next) {
+    final wasActive = prev?.state == AudioState.playing ||
+        prev?.state == AudioState.paused;
+    final nowActive = next.state == AudioState.playing ||
+        next.state == AudioState.paused;
+
+    if (wasActive && !nowActive && next.state == AudioState.stopped) {
+      if (!_departing) {
+        _departing = true;
+        _overlayVisible = false;
+        _overlayTimer?.cancel();
+        Future.delayed(const Duration(milliseconds: 2000), () {
+          if (mounted) setState(() => _memorialOpacity = 1.0);
+        });
+      }
+    }
+
+    if (nowActive || next.state == AudioState.loading) {
+      if (_departing) {
+        setState(() {
+          _departing = false;
+          _memorialOpacity = 0.0;
+        });
+      }
+    }
   }
 
-  Widget _buildContainer({required Widget child}) {
-    final c = AppColors.of(context);
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: c.card,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: c.border),
-      ),
-      child: child,
-    );
+  void _startOverlayTimer() {
+    _overlayTimer?.cancel();
+    _overlayTimer = Timer(const Duration(seconds: 12), () {
+      if (mounted) setState(() => _overlayVisible = false);
+    });
+  }
+
+  void _onSentenceTap() {
+    if (_departing) {
+      ref.read(audioPlayerProvider.notifier).seekToVerse(0);
+      ref.read(audioPlayerProvider.notifier).togglePlayPause();
+      setState(() {
+        _departing = false;
+        _overlayVisible = true;
+      });
+      _startOverlayTimer();
+      return;
+    }
+
+    ref.read(audioPlayerProvider.notifier).togglePlayPause();
+    setState(() => _overlayVisible = true);
+    _startOverlayTimer();
   }
 }

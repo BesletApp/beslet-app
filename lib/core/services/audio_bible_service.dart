@@ -55,6 +55,7 @@ class AudioBibleService {
 
   void Function()? onStateChanged;
   void Function()? onCompleted;
+  bool naturallyCompleted = false;
 
   AudioBibleService() {
     _audioPlayer.onDurationChanged.listen((duration) {
@@ -82,6 +83,7 @@ class AudioBibleService {
     _audioPlayer.onPlayerComplete.listen((_) {
       if (_sourceType == AudioSourceType.recorded) {
         _state = AudioState.stopped;
+        naturallyCompleted = true;
         onStateChanged?.call();
         onCompleted?.call();
       }
@@ -134,13 +136,14 @@ class AudioBibleService {
     _tts.setCompletionHandler(() {
       if (_sourceType == AudioSourceType.tts) {
         if (_currentVerseIndex < _currentVerses.length - 1) {
-          _currentVerseIndex++;
-          _speakCurrentVerse();
-        } else {
-          _state = AudioState.stopped;
-          onStateChanged?.call();
-          onCompleted?.call();
-        }
+      _currentVerseIndex++;
+      _speakCurrentVerse();
+    } else {
+      _state = AudioState.stopped;
+      naturallyCompleted = true;
+      onStateChanged?.call();
+      onCompleted?.call();
+    }
       }
     });
     _initialized = true;
@@ -223,6 +226,7 @@ class AudioBibleService {
   Future<void> playChapter(AudioChapterInfo info) async {
     if (_currentChapter?.bookId == info.bookId && _currentChapter?.chapter == info.chapter && _currentVerses.isNotEmpty) {
       _state = AudioState.playing;
+      naturallyCompleted = false;
       onStateChanged?.call();
       await _tts.stop();
       await _audioPlayer.stop();
@@ -435,6 +439,7 @@ class AudioBibleService {
     _tts.stop();
     _audioPlayer.stop();
     _state = AudioState.stopped;
+    naturallyCompleted = false;
     onStateChanged?.call();
   }
 

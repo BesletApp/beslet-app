@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/services/scripture_service.dart';
@@ -43,7 +44,7 @@ class BookJournalScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
-        leading: IconButton(icon: Icon(Icons.arrow_back, color: c.textPrimary), onPressed: () => Navigator.pop(context)),
+        leading: IconButton(icon: Icon(Icons.arrow_back, color: c.textPrimary), onPressed: () => context.go('/bible')),
         title: Text(isAm ? 'የእኔ ማስታወሻ' : 'My Journal', style: TextStyle(color: c.textPrimary)),
       ),
       body: journalAsync.when(

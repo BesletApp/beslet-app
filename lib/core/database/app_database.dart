@@ -22,13 +22,14 @@ import 'tables/soul_log_table.dart';
 import 'tables/bible_sessions_table.dart';
 import 'tables/reading_loops_table.dart';
 import 'tables/wisdom_notes_table.dart';
+import 'tables/audio_cache_table.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Users, Habits, Completions, PrayerLogs, BibleReads, Skills, SkillSessions, Reflections, Challenges, ChallengeParticipants, FellowshipLogs, FamilyTimeLogs, Goals, TodoItems, DailyReflections, StreakLog, StreakFrozen, SoulLog, BibleSessions, ReadingLoops, WisdomNotes])
+@DriftDatabase(tables: [Users, Habits, Completions, PrayerLogs, BibleReads, Skills, SkillSessions, Reflections, Challenges, ChallengeParticipants, FellowshipLogs, FamilyTimeLogs, Goals, TodoItems, DailyReflections, StreakLog, StreakFrozen, SoulLog, BibleSessions, ReadingLoops, WisdomNotes, AudioCache])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
-  @override int get schemaVersion => 14;
+  @override int get schemaVersion => 16;
 
   @override
   MigrationStrategy get migration {
@@ -78,6 +79,16 @@ class AppDatabase extends _$AppDatabase {
         if (from < 14) {
           await m.addColumn(fellowshipLogs, fellowshipLogs.promptType);
           await m.createTable(wisdomNotes);
+        }
+        if (from < 15) {
+          await m.createTable(audioCache);
+        }
+        if (from < 16) {
+          await customStatement('CREATE TABLE bible_reads_temp AS SELECT * FROM bible_reads');
+          await m.deleteTable('bible_reads');
+          await m.createTable(bibleReads);
+          await customStatement('INSERT OR IGNORE INTO bible_reads SELECT * FROM bible_reads_temp');
+          await customStatement('DROP TABLE IF EXISTS bible_reads_temp');
         }
       },
     );

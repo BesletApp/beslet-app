@@ -20,11 +20,11 @@ Future<void> showWisdomDialog(BuildContext context, WidgetRef ref, String bookId
       title: Column(children: [
         Text('📜', style: TextStyle(fontSize: 36)),
         const SizedBox(height: 8),
-        Text(isAm ? '$bookName ተጠናቋል!' : '$bookName Completed!', style: AppTextStyles.labelLarge),
+        Text(bookName, style: AppTextStyles.labelLarge),
       ]),
       content: Column(mainAxisSize: MainAxisSize.min, children: [
         Text(
-          isAm ? 'ለሚቀጥለው መንገደኛ ቃለ ጥበብ ተው' : 'Leave wisdom for the next traveler...',
+          isAm ? 'ለሚቀጥለው መንገደኛ' : 'For the next traveler…',
           style: TextStyle(fontSize: 13, color: c.textSecondary),
         ),
         const SizedBox(height: 12),
@@ -33,7 +33,7 @@ Future<void> showWisdomDialog(BuildContext context, WidgetRef ref, String bookId
           maxLines: 4,
           style: AppTextStyles.bodyMedium,
           decoration: InputDecoration(
-            hintText: isAm ? 'ይህን መጽሐፍ ስታነብ እግዚአብሔር ምን አሳየህ?' : 'What did God show you through this book?',
+            hintText: isAm ? 'ከዚህ መጽሐፍ የሚቀመጠው ነገር' : 'What remains from this book?',
             hintStyle: TextStyle(color: c.textMuted, fontSize: 13),
             filled: true, fillColor: c.surface,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),

@@ -87,12 +87,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         backgroundColor: AppColors.of(context).card,
         onRefresh: () async {
           ref.invalidate(profileProvider);
-          ref.invalidate(downloadListProvider);
+          ref.invalidate(cacheStatsProvider);
+          ref.invalidate(downloadedBooksProvider);
+          ref.invalidate(cacheEntriesProvider);
           ref.invalidate(dailyXpProvider);
-          await Future.wait([
-            ref.read(profileProvider.future),
-            ref.read(downloadListProvider.notifier).refresh(),
-          ]);
+          await ref.read(profileProvider.future);
         },
         child: profileAsync.when(
           loading: () => ListView(

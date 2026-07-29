@@ -1,30 +1,32 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../services/download_service.dart';
+import '../database/app_database.dart';
+import '../services/audio_cache_service.dart';
+import 'database_provider.dart';
 
-class DownloadListNotifier extends StateNotifier<List<DownloadedChapter>> {
-  DownloadListNotifier() : super([]) {
-    _init();
-  }
-
-  Future<void> _init() async {
-    state = await DownloadService.getDownloads();
-  }
-
-  Future<void> add(String bookId, int chapter, String bookName) async {
-    await DownloadService.addDownload(bookId, chapter, bookName);
-    state = await DownloadService.getDownloads();
-  }
-
-  Future<void> remove(String bookId, int chapter) async {
-    await DownloadService.removeDownload(bookId, chapter);
-    state = await DownloadService.getDownloads();
-  }
-
-  Future<void> refresh() async {
-    state = await DownloadService.getDownloads();
-  }
-}
-
-final downloadListProvider = StateNotifierProvider<DownloadListNotifier, List<DownloadedChapter>>((ref) {
-  return DownloadListNotifier();
+final audioCacheServiceProvider = Provider<AudioCacheService>((ref) {
+  final db = ref.watch(databaseProvider);
+  return AudioCacheService(db);
 });
+
+final cacheStatsProvider = FutureProvider<CacheStats>((ref) async {
+  final service = ref.watch(audioCacheServiceProvider);
+  return await service.getStats();
+});
+
+final downloadedBooksProvider = FutureProvider<List<BookDownloadInfo>>((ref) async {
+  final service = ref.watch(audioCacheServiceProvider);
+  return await service.getBooks();
+});
+
+final cacheEntriesProvider = FutureProvider<List<AudioCacheData>>((ref) async {
+  final service = ref.watch(audioCacheServiceProvider);
+  return await service.getCacheEntries();
+});
+
+final downloadedChaptersProvider =
+    FutureProvider.family<Set<int>, ({String bookId, String language})>(
+  (ref, params) async {
+    final service = ref.watch(audioCacheServiceProvider);
+    return await service.getDownloadedChapters(params.bookId, params.language);
+  },
+);
