@@ -134,16 +134,16 @@ class AudioBibleService {
       }
     } catch (_) {}
     _tts.setCompletionHandler(() {
-      if (_sourceType == AudioSourceType.tts) {
-        if (_currentVerseIndex < _currentVerses.length - 1) {
-      _currentVerseIndex++;
-      _speakCurrentVerse();
-    } else {
-      _state = AudioState.stopped;
-      naturallyCompleted = true;
-      onStateChanged?.call();
-      onCompleted?.call();
-    }
+      if (_sourceType != AudioSourceType.tts) return;
+      if (_state != AudioState.playing) return;
+      if (_currentVerseIndex < _currentVerses.length - 1) {
+        _currentVerseIndex++;
+        _speakCurrentVerse();
+      } else {
+        _state = AudioState.stopped;
+        naturallyCompleted = true;
+        onStateChanged?.call();
+        onCompleted?.call();
       }
     });
     _initialized = true;
@@ -225,11 +225,11 @@ class AudioBibleService {
 
   Future<void> playChapter(AudioChapterInfo info) async {
     if (_currentChapter?.bookId == info.bookId && _currentChapter?.chapter == info.chapter && _currentVerses.isNotEmpty) {
-      _state = AudioState.playing;
-      naturallyCompleted = false;
+      _state = AudioState.loading;
       onStateChanged?.call();
       await _tts.stop();
       await _audioPlayer.stop();
+      naturallyCompleted = false;
       final book = ScriptureService.bookMap[info.bookId];
       if (book != null) {
         try {
@@ -305,7 +305,11 @@ class AudioBibleService {
       if (_isAmharic) {
         await _tts.speak(text);
       } else {
-        await _tts.speak('<speak>$text<break time="200ms"/></speak>');
+        final escaped = text
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;');
+        await _tts.speak('<speak>$escaped<break time="200ms"/></speak>');
       }
     }
   }

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
@@ -1216,9 +1217,19 @@ class _ReflectionSheet extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(reference,
-                  style: TextStyle(fontSize: 11,
-                    color: c.textMuted, fontWeight: FontWeight.w500)),
+                Row(children: [
+                  Expanded(child: Text(reference,
+                    style: TextStyle(fontSize: 11,
+                      color: c.textMuted, fontWeight: FontWeight.w500))),
+                  IconButton(
+                    icon: Icon(Icons.share, size: 18, color: c.textMuted),
+                    onPressed: () {
+                      SharePlus.instance.share(ShareParams(
+                        text: '$reference\n\n$text\n\n$reflection',
+                      ));
+                    },
+                  ),
+                ]),
                 SizedBox(height: 12),
                 GestureDetector(
                   onTap: onVerseTap,

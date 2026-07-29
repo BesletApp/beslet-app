@@ -49,10 +49,11 @@ class ToneService {
 
   String completionMessage(AppLocalizations l, String name) {
     final cycle = _engine.appOpenCount % 3;
+    final displayName = name.isNotEmpty ? name : 'you';
     final messages = [
-      'Beautiful, $name.',
-      'Well done, $name.',
-      'You showed up. That is enough, $name.',
+      'Beautiful, $displayName.',
+      'Well done, $displayName.',
+      'You showed up. That is enough, $displayName.',
     ];
     return messages[cycle];
   }

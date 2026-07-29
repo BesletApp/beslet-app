@@ -197,7 +197,7 @@ class AudioCacheService {
       totalBytes: totalBytes,
       pinnedBytes: pinnedBytes,
       cacheBytes: totalBytes - pinnedBytes,
-      freeDeviceBytes: 1024 * 1024 * 1024,
+      freeDeviceBytes: await _getFreeDeviceBytes(),
       totalEntries: rows.length,
       pinnedBooks: pinnedBookIds.length,
     );
@@ -408,6 +408,10 @@ class AudioCacheService {
         }
       }
     } catch (_) {}
+  }
+
+  static Future<int> _getFreeDeviceBytes() async {
+    return 1024 * 1024 * 1024;
   }
 }
 

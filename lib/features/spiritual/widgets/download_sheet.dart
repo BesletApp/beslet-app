@@ -494,7 +494,29 @@ class _LibrarySheetState extends ConsumerState<LibrarySheet> {
     });
     try {
       final service = ref.read(audioCacheServiceProvider);
-      final book = ScriptureService.bookMap[bookId]!;
+      final book = ScriptureService.bookMap[bookId];
+      if (book == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(isAm ? 'መጽሐፍ አልተገኘም' : 'Book not found'),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+          ));
+        }
+        return;
+      }
+
+      final stats = await service.getStats();
+      if (stats.freeMB < 100) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(isAm ? 'የማከማቻ ቦታ አልበቃም' : 'Not enough storage space'),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+          ));
+        }
+        return;
+      }
 
       await service.pinBook(bookId, 'en');
       if (mounted) setState(() => _downloadProgress[bookId] = 0.5);
@@ -504,12 +526,14 @@ class _LibrarySheetState extends ConsumerState<LibrarySheet> {
 
       final all = <Future>[];
       for (int ch = 1; ch <= book.chapters; ch++) {
+        if (!mounted) return;
         all.add(
             BibleTextService.cacheChapter(bookId, ch, isAmharic: false));
         all.add(
             BibleTextService.cacheChapter(bookId, ch, isAmharic: true));
       }
       for (int i = 0; i < all.length; i += 10) {
+        if (!mounted) return;
         await Future.wait(
             all.sublist(i, (i + 10).clamp(0, all.length)));
       }
