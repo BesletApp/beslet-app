@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
@@ -17,6 +18,7 @@ class VerseListView extends ConsumerStatefulWidget {
   final ValueChanged<int?>? onKeepPendingChanged;
   final void Function(int verseNumber, String text)? onKeepConfirmed;
   final void Function(int verseNumber, String text)? onReflectionRequested;
+  final ValueChanged<bool>? onReflectionAvailable;
 
   const VerseListView({
     super.key,
@@ -30,6 +32,7 @@ class VerseListView extends ConsumerStatefulWidget {
     this.onKeepPendingChanged,
     this.onKeepConfirmed,
     this.onReflectionRequested,
+    this.onReflectionAvailable,
   });
 
   @override
@@ -39,6 +42,26 @@ class VerseListView extends ConsumerStatefulWidget {
 class _VerseListViewState extends ConsumerState<VerseListView> {
   final _itemKeys = <int, GlobalKey>{};
   int? _focusedVerse;
+  Timer? _longPressTimer;
+  bool _showReflectionPrompt = false;
+
+  @override
+  void didUpdateWidget(VerseListView old) {
+    super.didUpdateWidget(old);
+    if (widget.pendingKeepIndex != old.pendingKeepIndex) {
+      _longPressTimer?.cancel();
+      if (_showReflectionPrompt) {
+        setState(() => _showReflectionPrompt = false);
+        widget.onReflectionAvailable?.call(false);
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _longPressTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -100,11 +123,24 @@ class _VerseListViewState extends ConsumerState<VerseListView> {
           ),
           child: GestureDetector(
             onLongPress: () {
-              widget.onReflectionRequested?.call(verse.number, verse.text);
+              widget.onKeepPendingChanged?.call(index);
+              _longPressTimer?.cancel();
+              _longPressTimer = Timer(const Duration(milliseconds: 500), () {
+                if (!mounted) return;
+                setState(() => _showReflectionPrompt = true);
+                widget.onReflectionAvailable?.call(true);
+              });
             },
             onTap: () {
               if (widget.pendingKeepIndex == index) {
-                widget.onKeepConfirmed?.call(verse.number, verse.text);
+                _longPressTimer?.cancel();
+                if (_showReflectionPrompt) {
+                  setState(() => _showReflectionPrompt = false);
+                  widget.onReflectionAvailable?.call(false);
+                  widget.onReflectionRequested?.call(verse.number, verse.text);
+                } else {
+                  widget.onKeepConfirmed?.call(verse.number, verse.text);
+                }
                 return;
               }
               setState(() {

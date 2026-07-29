@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/services/scripture_service.dart';
+import '../../../core/providers/bible_session_provider.dart';
 
 class ChapterPicker extends ConsumerWidget {
   final BibleBook book;
@@ -13,6 +14,8 @@ class ChapterPicker extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final c = AppColors.of(context);
+    final completedAsync = ref.watch(bookCompletionProvider);
+    final chaptersRead = completedAsync.valueOrNull?[book.id] ?? 0;
     final totalChapters = book.chapters;
 
     return Padding(
@@ -27,6 +30,9 @@ class ChapterPicker extends ConsumerWidget {
             ),
             const SizedBox(width: 8),
             Text(book.nameEn, style: AppTextStyles.labelLarge),
+            const Spacer(),
+            Text('$chaptersRead/$totalChapters',
+                style: AppTextStyles.bodySmall.copyWith(color: AppColors.primary)),
           ]),
           const SizedBox(height: 16),
           Expanded(
@@ -38,6 +44,7 @@ class ChapterPicker extends ConsumerWidget {
               itemCount: totalChapters,
               itemBuilder: (ctx, i) {
                 final chapter = i + 1;
+                final isRead = chapter <= chaptersRead;
                 return Material(
                   color: Colors.transparent,
                   child: InkWell(
@@ -46,14 +53,24 @@ class ChapterPicker extends ConsumerWidget {
                     child: Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10),
-                        color: c.card,
+                        color: isRead ? AppColors.progressGreen.withValues(alpha: 0.1) : c.card,
+                        border: Border.all(
+                          color: isRead ? AppColors.progressGreen.withValues(alpha: 0.3) : c.border,
+                        ),
                       ),
                       alignment: Alignment.center,
-                      child: Text('$chapter',
-                          style: AppTextStyles.labelLarge.copyWith(
-                            color: c.textPrimary,
-                            fontSize: 16,
-                          )),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('$chapter',
+                              style: AppTextStyles.labelLarge.copyWith(
+                                color: isRead ? AppColors.progressGreen : c.textPrimary,
+                                fontSize: 16,
+                              )),
+                          if (isRead)
+                            Icon(Icons.check, size: 12, color: AppColors.progressGreen),
+                        ],
+                      ),
                     ),
                   ),
                 );
