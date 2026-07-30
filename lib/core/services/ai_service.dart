@@ -5,7 +5,7 @@ class AiService {
   final String _key = defaultGeminiKey;
 
   GenerativeModel get _model => GenerativeModel(
-        model: 'gemini-1.5-flash',
+        model: 'gemini-flash-latest',
         apiKey: _key,
         systemInstruction: Content.system(_systemPrompt),
       );

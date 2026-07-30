@@ -179,6 +179,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
     final svc = VerseReflectionService();
     final fallback = svc.forVerse(bookId, text, _isAm);
     final reflectionNotifier = ValueNotifier(fallback);
+    final errorNotifier = ValueNotifier<String?>(null);
     final ai = ref.read(aiServiceProvider);
     showModalBottomSheet(
       context: context,
@@ -189,6 +190,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
         text: text,
         reference: '$bookName $verseNumber',
         reflectionNotifier: reflectionNotifier,
+        errorNotifier: errorNotifier,
         onVerseTap: () {
           Navigator.pop(ctx);
           Future.delayed(const Duration(milliseconds: 300), () {
@@ -197,19 +199,21 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
         },
       ),
     );
-    _generateAiReflection(ai, text, '$bookName $verseNumber', fallback, reflectionNotifier);
+    _generateAiReflection(ai, text, '$bookName $verseNumber', fallback, reflectionNotifier, errorNotifier);
   }
 
-  Future<void> _generateAiReflection(AiService ai, String verseText, String reference, String fallback, ValueNotifier<String> notifier) async {
+  Future<void> _generateAiReflection(AiService ai, String verseText, String reference, String fallback, ValueNotifier<String> notifier, ValueNotifier<String?> errorNotifier) async {
     try {
       final result = await ai.reflectionForVerse(
         verseText: verseText,
         reference: reference,
         isAm: _isAm,
       );
-      if (result.isNotEmpty) notifier.value = result;
-    } catch (_) {
-      notifier.value = fallback;
+      if (result.isNotEmpty && mounted) notifier.value = result;
+    } catch (e, st) {
+      debugPrint('AI reflection error: $e');
+      debugPrint('Stack trace: $st');
+      if (mounted) errorNotifier.value = e.toString();
     }
   }
 
@@ -1252,9 +1256,11 @@ class _ReflectionSheet extends StatelessWidget {
   final String text;
   final String reference;
   final ValueNotifier<String> reflectionNotifier;
+  final ValueNotifier<String?> errorNotifier;
   final VoidCallback? onVerseTap;
   const _ReflectionSheet({
     required this.text, required this.reference, required this.reflectionNotifier,
+    required this.errorNotifier,
     this.onVerseTap,
   });
 
@@ -1304,6 +1310,18 @@ class _ReflectionSheet extends StatelessWidget {
                   builder: (ctx, reflection, _) => Text(reflection,
                     style: TextStyle(fontSize: 14,
                       color: c.textPrimary, height: 1.7)),
+                ),
+                ValueListenableBuilder<String?>(
+                  valueListenable: errorNotifier,
+                  builder: (ctx, error, _) => error != null
+                      ? Padding(
+                          padding: const EdgeInsets.only(top: 12),
+                          child: Text(error,
+                            style: TextStyle(fontSize: 10,
+                              color: c.textMuted.withValues(alpha: 0.5)),
+                          ),
+                        )
+                      : const SizedBox.shrink(),
                 ),
               ],
             ),
