@@ -63,7 +63,7 @@ final keptVerseProvider = StateProvider<KeptVerse?>((ref) => null);
 final allKeptVersesProvider = StateProvider<List<KeptVerse>>((ref) => []);
 
 class ReadingPreferences {
-  static Future<void> loadFontSize(ProviderRef ref) async {
+  static Future<void> loadFontSize(Ref ref) async {
     final prefs = await SharedPreferences.getInstance();
     final saved = prefs.getDouble(_fontSizeKey) ?? 15.0;
     ref.read(fontSizeProvider.notifier).state = saved;
