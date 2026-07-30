@@ -5,7 +5,6 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/providers/ai_provider.dart';
-import '../../l10n/app_localizations.dart';
 
 class ApiKeyScreen extends ConsumerStatefulWidget {
   const ApiKeyScreen({super.key});
@@ -17,6 +16,18 @@ class _ApiKeyScreenState extends ConsumerState<ApiKeyScreen> {
   final _controller = TextEditingController();
   bool _obscured = true;
   bool _saving = false;
+  @override
+  void initState() {
+    super.initState();
+    _loadExistingKey();
+  }
+
+  Future<void> _loadExistingKey() async {
+    final key = await ref.read(aiServiceProvider).apiKey;
+    if (key != null && mounted) {
+      _controller.text = key;
+    }
+  }
 
   @override
   void dispose() {
@@ -168,16 +179,18 @@ class _ApiKeyScreenState extends ConsumerState<ApiKeyScreen> {
   Future<void> _saveKey() async {
     final key = _controller.text.trim();
     if (key.isEmpty) return;
+    final isAm = Localizations.localeOf(context).languageCode == 'am';
     setState(() => _saving = true);
     try {
       await ref.read(aiServiceProvider).setApiKey(key);
       ref.invalidate(hasApiKeyProvider);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(AppLocalizations.of(context)!.settings),
+          content: Text(isAm ? 'AI ቁልፍ ተቀምጧል' : 'API key saved'),
           backgroundColor: AppColors.success,
           behavior: SnackBarBehavior.floating,
         ));
+        context.go('/settings');
       }
     } finally {
       if (mounted) setState(() => _saving = false);
