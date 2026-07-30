@@ -1,31 +1,19 @@
 import 'package:google_generative_ai/google_generative_ai.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../secrets.dart';
 
 class AiService {
-  static const _storage = FlutterSecureStorage();
-  static const _keyKey = 'gemini_api_key';
+  final String _key = defaultGeminiKey;
 
-  Future<bool> get hasApiKey async => (await _storage.read(key: _keyKey)) != null;
-
-  Future<String?> get apiKey async => _storage.read(key: _keyKey);
-
-  Future<void> setApiKey(String key) async => _storage.write(key: _keyKey, value: key);
-
-  Future<void> clearApiKey() async => _storage.delete(key: _keyKey);
-
-  GenerativeModel _model(String key) => GenerativeModel(
+  GenerativeModel get _model => GenerativeModel(
         model: 'gemini-1.5-flash',
-        apiKey: key,
+        apiKey: _key,
         systemInstruction: Content.system(_systemPrompt),
       );
 
   Future<String> generate({
     required String prompt,
   }) async {
-    final key = await apiKey;
-    if (key == null) throw Exception('AI API key not set');
-    final model = _model(key);
-    final response = await model.generateContent([Content.text(prompt)]);
+    final response = await _model.generateContent([Content.text(prompt)]);
     return response.text ?? '';
   }
 

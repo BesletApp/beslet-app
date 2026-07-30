@@ -54,3 +54,6 @@ debug-info/
 
 # Server subproject (embedded git repo)
 /server/
+
+# API secrets — never commit the real key
+/lib/core/secrets.dart

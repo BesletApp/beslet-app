@@ -22,7 +22,6 @@ import '../../features/tasks/daily_todo_screen.dart';
 import '../../features/tasks/goals_screen.dart';
 import '../../features/profile/profile_screen.dart';
 import '../../features/settings/settings_screen.dart';
-import '../../features/settings/api_key_screen.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -81,7 +80,6 @@ class AppRouter {
           StatefulShellBranch(routes: [
             GoRoute(path: '/profile', pageBuilder: (context, state) => _buildPage(state, const ProfileScreen())),
             GoRoute(path: '/settings', pageBuilder: (context, state) => _buildPage(state, SettingsScreen(section: state.uri.queryParameters['section']))),
-            GoRoute(path: '/settings/ai-key', pageBuilder: (context, state) => _buildPage(state, const ApiKeyScreen())),
           ]),
         ],
       ),

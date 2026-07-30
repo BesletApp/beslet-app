@@ -202,7 +202,6 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
 
   Future<void> _generateAiReflection(AiService ai, String verseText, String reference, String fallback, ValueNotifier<String> notifier) async {
     try {
-      if (!await ai.hasApiKey) return;
       final result = await ai.reflectionForVerse(
         verseText: verseText,
         reference: reference,
