@@ -791,6 +791,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
               SizedBox(width: _h(AppSpacing.sm)),
               _buildActionPill('📖', '${(planProgress.biblePercent * 100).round()}%', () => context.go('/progress')),
             ],
+            SizedBox(width: _h(AppSpacing.sm)),
+            _buildActionPill('📝', _isAm ? 'ማስታወሻ' : 'Journal', () => context.go('/journal')),
           ]),
           SizedBox(height: _h(AppSpacing.sm)),
           _buildSoulCheckIn(todaySoulLog, l),

@@ -17,6 +17,7 @@ import '../../features/spiritual/book_journal_screen.dart';
 import '../../features/skills/skills_screen.dart';
 import '../../features/progress/progress_screen.dart';
 import '../../features/reflection/reflection_screen.dart';
+import '../../features/reflection/daily_journal_screen.dart';
 import '../../features/fellowship/fellowship_screen.dart';
 import '../../features/tasks/daily_todo_screen.dart';
 import '../../features/tasks/goals_screen.dart';
@@ -62,6 +63,7 @@ class AppRouter {
             GoRoute(path: '/reflection', pageBuilder: (context, state) => _buildPage(state, const ReflectionScreen())),
             GoRoute(path: '/fellowship', pageBuilder: (context, state) => _buildPage(state, const FellowshipScreen())),
             GoRoute(path: '/daily-todo', pageBuilder: (context, state) => _buildPage(state, const DailyTodoScreen())),
+            GoRoute(path: '/journal', pageBuilder: (context, state) => _buildPage(state, const DailyJournalScreen())),
             GoRoute(path: '/goals', pageBuilder: (context, state) => _buildPage(state, const GoalsScreen())),
           ]),
           StatefulShellBranch(routes: [

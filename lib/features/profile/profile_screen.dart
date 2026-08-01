@@ -285,7 +285,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ref.invalidate(profileProvider);
                     }
                     if (ctx.mounted) Navigator.pop(ctx);
-                    if (context.mounted) {
+                    if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                         content: Text(l.profileSaved, style: const TextStyle(fontFamily: 'Inter')),
                         behavior: SnackBarBehavior.floating,

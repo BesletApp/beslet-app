@@ -7,6 +7,7 @@ import '../../core/theme/app_text_styles.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/database/app_database.dart';
 import '../../core/providers/todo_provider.dart';
+import '../../core/providers/journal_provider.dart';
 import '../../core/providers/streak_provider.dart';
 import 'widgets/streak_bar.dart';
 
@@ -371,7 +372,7 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
 
   void _saveAndFinishEvening() {
     if (_evalCtrl.text.trim().isNotEmpty) {
-      ref.read(todoNotifierProvider.notifier).saveReflection(_evalCtrl.text.trim());
+      ref.read(journalNotifierProvider.notifier).saveEntry(_evalCtrl.text.trim());
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(_isAm ? 'ማሰላሰያ ተቀምጧል! 🌙' : 'Reflection saved! 🌙', style: AppTextStyles.bodyMedium),
         backgroundColor: AppColors.success, behavior: SnackBarBehavior.floating,

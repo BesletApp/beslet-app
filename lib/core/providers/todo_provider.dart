@@ -94,17 +94,6 @@ class TodoNotifier extends AsyncNotifier<void> {
     ref.invalidate(todayTodoStatsProvider);
   }
 
-  Future<void> saveReflection(String content) async {
-    final db = ref.read(databaseProvider);
-    final today = DateTime.now().toIso8601String().substring(0, 10);
-    await db.into(db.dailyReflections).insert(DailyReflectionsCompanion.insert(
-      id: const Uuid().v4(),
-      date: today,
-      content: content,
-      createdAt: DateTime.now().toIso8601String(),
-    ));
-  }
-
   Future<void> carryToTomorrow(String id) async {
     final db = ref.read(databaseProvider);
     final todo = await (db.select(db.todoItems)..where((t) => t.id.equals(id))).getSingle();

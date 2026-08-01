@@ -158,7 +158,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     final prefs = await SharedPreferences.getInstance();
                     await prefs.setString('reminderTime', formatted);
                     await NotificationService.scheduleDailyReminder(time.hour, time.minute);
-                    if (mounted) {
+                    if (context.mounted) {
                       setState(() => _reminderTime = formatted);
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                         content: Text(isAm ? 'ማሳሰቢያ ተቀናብሯል በ$formatted' : 'Reminder set at $formatted'),

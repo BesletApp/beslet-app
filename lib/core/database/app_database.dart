@@ -23,13 +23,14 @@ import 'tables/bible_sessions_table.dart';
 import 'tables/reading_loops_table.dart';
 import 'tables/wisdom_notes_table.dart';
 import 'tables/audio_cache_table.dart';
+import 'tables/journal_table.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Users, Habits, Completions, PrayerLogs, BibleReads, Skills, SkillSessions, Reflections, Challenges, ChallengeParticipants, FellowshipLogs, FamilyTimeLogs, Goals, TodoItems, DailyReflections, StreakLog, StreakFrozen, SoulLog, BibleSessions, ReadingLoops, WisdomNotes, AudioCache])
+@DriftDatabase(tables: [Users, Habits, Completions, PrayerLogs, BibleReads, Skills, SkillSessions, Reflections, Challenges, ChallengeParticipants, FellowshipLogs, FamilyTimeLogs, Goals, TodoItems, DailyReflections, StreakLog, StreakFrozen, SoulLog, BibleSessions, ReadingLoops, WisdomNotes, AudioCache, JournalEntry])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
-  @override int get schemaVersion => 16;
+  @override int get schemaVersion => 17;
 
   @override
   MigrationStrategy get migration {
@@ -89,6 +90,9 @@ class AppDatabase extends _$AppDatabase {
           await m.createTable(bibleReads);
           await customStatement('INSERT OR IGNORE INTO bible_reads SELECT * FROM bible_reads_temp');
           await customStatement('DROP TABLE IF EXISTS bible_reads_temp');
+        }
+        if (from < 17) {
+          await m.createTable(journalEntry);
         }
       },
     );

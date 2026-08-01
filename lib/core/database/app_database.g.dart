@@ -9264,6 +9264,317 @@ class AudioCacheCompanion extends UpdateCompanion<AudioCacheData> {
   }
 }
 
+class $JournalEntryTable extends JournalEntry
+    with TableInfo<$JournalEntryTable, JournalEntryData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $JournalEntryTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _dateMeta = const VerificationMeta('date');
+  @override
+  late final GeneratedColumn<String> date = GeneratedColumn<String>(
+    'date',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _contentMeta = const VerificationMeta(
+    'content',
+  );
+  @override
+  late final GeneratedColumn<String> content = GeneratedColumn<String>(
+    'content',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, date, content, createdAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'journal_entry';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<JournalEntryData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('date')) {
+      context.handle(
+        _dateMeta,
+        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dateMeta);
+    }
+    if (data.containsKey('content')) {
+      context.handle(
+        _contentMeta,
+        content.isAcceptableOrUnknown(data['content']!, _contentMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  JournalEntryData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return JournalEntryData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      date: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}date'],
+      )!,
+      content: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $JournalEntryTable createAlias(String alias) {
+    return $JournalEntryTable(attachedDatabase, alias);
+  }
+}
+
+class JournalEntryData extends DataClass
+    implements Insertable<JournalEntryData> {
+  final String id;
+  final String date;
+  final String? content;
+  final String createdAt;
+  const JournalEntryData({
+    required this.id,
+    required this.date,
+    this.content,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['date'] = Variable<String>(date);
+    if (!nullToAbsent || content != null) {
+      map['content'] = Variable<String>(content);
+    }
+    map['created_at'] = Variable<String>(createdAt);
+    return map;
+  }
+
+  JournalEntryCompanion toCompanion(bool nullToAbsent) {
+    return JournalEntryCompanion(
+      id: Value(id),
+      date: Value(date),
+      content: content == null && nullToAbsent
+          ? const Value.absent()
+          : Value(content),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory JournalEntryData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return JournalEntryData(
+      id: serializer.fromJson<String>(json['id']),
+      date: serializer.fromJson<String>(json['date']),
+      content: serializer.fromJson<String?>(json['content']),
+      createdAt: serializer.fromJson<String>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'date': serializer.toJson<String>(date),
+      'content': serializer.toJson<String?>(content),
+      'createdAt': serializer.toJson<String>(createdAt),
+    };
+  }
+
+  JournalEntryData copyWith({
+    String? id,
+    String? date,
+    Value<String?> content = const Value.absent(),
+    String? createdAt,
+  }) => JournalEntryData(
+    id: id ?? this.id,
+    date: date ?? this.date,
+    content: content.present ? content.value : this.content,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  JournalEntryData copyWithCompanion(JournalEntryCompanion data) {
+    return JournalEntryData(
+      id: data.id.present ? data.id.value : this.id,
+      date: data.date.present ? data.date.value : this.date,
+      content: data.content.present ? data.content.value : this.content,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('JournalEntryData(')
+          ..write('id: $id, ')
+          ..write('date: $date, ')
+          ..write('content: $content, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, date, content, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is JournalEntryData &&
+          other.id == this.id &&
+          other.date == this.date &&
+          other.content == this.content &&
+          other.createdAt == this.createdAt);
+}
+
+class JournalEntryCompanion extends UpdateCompanion<JournalEntryData> {
+  final Value<String> id;
+  final Value<String> date;
+  final Value<String?> content;
+  final Value<String> createdAt;
+  final Value<int> rowid;
+  const JournalEntryCompanion({
+    this.id = const Value.absent(),
+    this.date = const Value.absent(),
+    this.content = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  JournalEntryCompanion.insert({
+    required String id,
+    required String date,
+    this.content = const Value.absent(),
+    required String createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       date = Value(date),
+       createdAt = Value(createdAt);
+  static Insertable<JournalEntryData> custom({
+    Expression<String>? id,
+    Expression<String>? date,
+    Expression<String>? content,
+    Expression<String>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (date != null) 'date': date,
+      if (content != null) 'content': content,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  JournalEntryCompanion copyWith({
+    Value<String>? id,
+    Value<String>? date,
+    Value<String?>? content,
+    Value<String>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return JournalEntryCompanion(
+      id: id ?? this.id,
+      date: date ?? this.date,
+      content: content ?? this.content,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (date.present) {
+      map['date'] = Variable<String>(date.value);
+    }
+    if (content.present) {
+      map['content'] = Variable<String>(content.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<String>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('JournalEntryCompanion(')
+          ..write('id: $id, ')
+          ..write('date: $date, ')
+          ..write('content: $content, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -9292,6 +9603,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ReadingLoopsTable readingLoops = $ReadingLoopsTable(this);
   late final $WisdomNotesTable wisdomNotes = $WisdomNotesTable(this);
   late final $AudioCacheTable audioCache = $AudioCacheTable(this);
+  late final $JournalEntryTable journalEntry = $JournalEntryTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -9319,6 +9631,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     readingLoops,
     wisdomNotes,
     audioCache,
+    journalEntry,
   ];
 }
 
@@ -14937,6 +15250,187 @@ typedef $$AudioCacheTableProcessedTableManager =
       AudioCacheData,
       PrefetchHooks Function()
     >;
+typedef $$JournalEntryTableCreateCompanionBuilder =
+    JournalEntryCompanion Function({
+      required String id,
+      required String date,
+      Value<String?> content,
+      required String createdAt,
+      Value<int> rowid,
+    });
+typedef $$JournalEntryTableUpdateCompanionBuilder =
+    JournalEntryCompanion Function({
+      Value<String> id,
+      Value<String> date,
+      Value<String?> content,
+      Value<String> createdAt,
+      Value<int> rowid,
+    });
+
+class $$JournalEntryTableFilterComposer
+    extends Composer<_$AppDatabase, $JournalEntryTable> {
+  $$JournalEntryTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get content => $composableBuilder(
+    column: $table.content,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$JournalEntryTableOrderingComposer
+    extends Composer<_$AppDatabase, $JournalEntryTable> {
+  $$JournalEntryTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get content => $composableBuilder(
+    column: $table.content,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$JournalEntryTableAnnotationComposer
+    extends Composer<_$AppDatabase, $JournalEntryTable> {
+  $$JournalEntryTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<String> get content =>
+      $composableBuilder(column: $table.content, builder: (column) => column);
+
+  GeneratedColumn<String> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$JournalEntryTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $JournalEntryTable,
+          JournalEntryData,
+          $$JournalEntryTableFilterComposer,
+          $$JournalEntryTableOrderingComposer,
+          $$JournalEntryTableAnnotationComposer,
+          $$JournalEntryTableCreateCompanionBuilder,
+          $$JournalEntryTableUpdateCompanionBuilder,
+          (
+            JournalEntryData,
+            BaseReferences<_$AppDatabase, $JournalEntryTable, JournalEntryData>,
+          ),
+          JournalEntryData,
+          PrefetchHooks Function()
+        > {
+  $$JournalEntryTableTableManager(_$AppDatabase db, $JournalEntryTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$JournalEntryTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$JournalEntryTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$JournalEntryTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> date = const Value.absent(),
+                Value<String?> content = const Value.absent(),
+                Value<String> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => JournalEntryCompanion(
+                id: id,
+                date: date,
+                content: content,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String date,
+                Value<String?> content = const Value.absent(),
+                required String createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => JournalEntryCompanion.insert(
+                id: id,
+                date: date,
+                content: content,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$JournalEntryTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $JournalEntryTable,
+      JournalEntryData,
+      $$JournalEntryTableFilterComposer,
+      $$JournalEntryTableOrderingComposer,
+      $$JournalEntryTableAnnotationComposer,
+      $$JournalEntryTableCreateCompanionBuilder,
+      $$JournalEntryTableUpdateCompanionBuilder,
+      (
+        JournalEntryData,
+        BaseReferences<_$AppDatabase, $JournalEntryTable, JournalEntryData>,
+      ),
+      JournalEntryData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -14985,4 +15479,6 @@ class $AppDatabaseManager {
       $$WisdomNotesTableTableManager(_db, _db.wisdomNotes);
   $$AudioCacheTableTableManager get audioCache =>
       $$AudioCacheTableTableManager(_db, _db.audioCache);
+  $$JournalEntryTableTableManager get journalEntry =>
+      $$JournalEntryTableTableManager(_db, _db.journalEntry);
 }
