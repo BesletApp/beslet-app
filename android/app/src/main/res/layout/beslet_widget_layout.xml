@@ -6,8 +6,17 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    android:background="#1A1A1A"
+    android:background="#2A2518"
     android:padding="12dp">
+
+    <TextView
+        android:id="@+id/widget_light"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textSize="12sp"
+        android:textColor="#B7A87E"
+        tools:text="🌅 ጠዋት" />
 
     <TextView
         android:id="@+id/widget_verse_am"
@@ -15,7 +24,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:textSize="16sp"
-        android:textColor="#C8A96E"
+        android:textColor="#E6C877"
         android:textStyle="bold"
         tools:text="ምሕረቱ በእንደገና ነው" />
 
@@ -25,18 +34,8 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:textSize="11sp"
-        android:textColor="#8A8A8A"
+        android:textColor="#B7A87E"
         android:layout_marginTop="4dp"
         tools:text="His mercies are new every morning" />
-
-    <TextView
-        android:id="@+id/widget_day"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:textSize="10sp"
-        android:textColor="#6B6B6B"
-        android:layout_marginTop="8dp"
-        tools:text="Day 13 of 90" />
 
 </LinearLayout>

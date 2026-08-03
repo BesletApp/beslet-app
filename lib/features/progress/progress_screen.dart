@@ -5,17 +5,11 @@ import '../../core/theme/app_colors.dart';
 import '../../core/providers/tracking_provider.dart';
 import '../../shared/widgets/error_card.dart';
 import '../../core/providers/analytics_provider.dart';
-import '../../core/providers/reading_plan_provider.dart';
 import '../../core/services/xp_service.dart';
 import '../../core/services/summer_service.dart';
-import '../../core/services/scripture_service.dart';
-import '../../core/services/plan_progress_service.dart';
-import '../../core/services/witness_service.dart';
-import '../../core/database/app_database.dart';
 import 'widgets/streak_card.dart';
 import 'widgets/chart_section.dart';
 import 'widgets/achievement_card.dart';
-import 'widgets/book_progress_list.dart';
 
 const _phaseNames = ['Discipline', 'Faith', 'Obedience', 'Impact'];
 
@@ -38,8 +32,6 @@ class ProgressScreen extends ConsumerWidget {
     final dailyXpAsync = ref.watch(dailyXpProvider);
     final bestStreakAsync = ref.watch(overallBestStreakProvider);
     final reflectionAsync = ref.watch(reflectionProvider);
-    final readingProgressAsync = ref.watch(readingProgressProvider);
-    final activeLoopAsync = ref.watch(activeLoopProvider);
     final screenWidth = MediaQuery.of(context).size.width;
 
     return trackingAsync.when(
@@ -58,10 +50,9 @@ class ProgressScreen extends ConsumerWidget {
 
         final daysElapsed = SummerService.daysElapsed;
         final totalDays = SummerService.totalSummerDays;
-        final phaseIdx = ScriptureService.getPhase(daysElapsed);
+        final phaseIdx = _summerPhase(daysElapsed, totalDays: totalDays);
 
         final todayPillars = {
-          'bible': completions['bible']?.isNotEmpty == true ? completions['bible']!.last : false,
           'prayer': completions['prayer']?.isNotEmpty == true ? completions['prayer']!.last : false,
           'fellowship': completions['fellowship']?.isNotEmpty == true ? completions['fellowship']!.last : false,
           'tasks': completions['tasks']?.isNotEmpty == true ? completions['tasks']!.last : false,
@@ -94,8 +85,6 @@ class ProgressScreen extends ConsumerWidget {
                   const SizedBox(height: 12),
                   _buildReflectionPrompt(context),
                 ],
-                const SizedBox(height: 12),
-                _buildReadingPlanProgress(readingProgressAsync, activeLoopAsync, isDark, c),
                 const SizedBox(height: 12),
                 ChartSection(
                   weeklyCompletions: completions, weeklyXp: weeklyXp, dailyXp: dailyXp,
@@ -194,7 +183,6 @@ class ProgressScreen extends ConsumerWidget {
   Widget _buildPillarPulse(BuildContext context, TrackingData tracking, Map<String, bool> todayPillars, Color border) {
     final c = AppColors.of(context);
     final pillars = [
-      _PillarData(Icons.menu_book, 'Bible', todayPillars['bible'] == true, AppColors.spiritualPurple, '/prayer'),
       _PillarData(Icons.water_drop, 'Pray', todayPillars['prayer'] == true, AppColors.spiritualPurple, '/prayer'),
       _PillarData(Icons.code, 'Skill', tracking.skillsMinutes > 0, AppColors.primary, '/skills'),
       _PillarData(Icons.people, 'Fellowship', todayPillars['fellowship'] == true, AppColors.primary, '/fellowship'),
@@ -203,7 +191,6 @@ class ProgressScreen extends ConsumerWidget {
     ];
 
     final statusLabels = [
-      todayPillars['bible'] == true ? '✓' : '✗',
       todayPillars['prayer'] == true ? '✓' : '✗',
       tracking.skillsMinutes > 0 ? '${tracking.skillsMinutes}m' : '✗',
       todayPillars['fellowship'] == true ? '✓' : '✗',
@@ -213,7 +200,7 @@ class ProgressScreen extends ConsumerWidget {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text("Today's Rhythm", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: c.textMuted)),
       const SizedBox(height: 8),
-      Row(children: List.generate(5, (i) {
+      Row(children: List.generate(4, (i) {
         final p = pillars[i];
         return Expanded(
           child: GestureDetector(
@@ -343,8 +330,7 @@ class ProgressScreen extends ConsumerWidget {
       ('week_streak', 'Faithful Week', Icons.local_fire_department, '7-day streak'),
       ('month_streak', '30-Day Streak', Icons.workspace_premium, '30-day streak'),
       ('prayer_warrior', 'Prayer Warrior', Icons.water_drop, '100 prayer minutes'),
-      ('bible_week', 'Scripture Scholar', Icons.menu_book, '7 days of Bible'),
-      ('hardcore', 'Hardcore', Icons.shield, 'All 5 pillars in a day'),
+      ('hardcore', 'Hardcore', Icons.shield, 'All 4 pillars in a day'),
       ('mature', 'Maturity', Icons.emoji_events, 'Reach Mature level'),
     ];
 
@@ -372,83 +358,14 @@ class ProgressScreen extends ConsumerWidget {
       ),
     ]);
   }
-  Widget _buildReadingPlanProgress(AsyncValue<PlanProgress> progressAsync, AsyncValue<ReadingLoop?> loopAsync, bool isDark, ThemePalette c) {
-    return progressAsync.when(
-      loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
-      data: (plan) {
-        final loop = loopAsync.valueOrNull;
-        final loopDay = loop != null
-            ? DateTime.now().difference(DateTime.parse(loop.startDate)).inDays + 1
-            : 0;
-        return Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: c.card,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: c.border),
-          ),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('Reading Plan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: c.textPrimary)),
-            const SizedBox(height: 4),
-            Text('${plan.totalChaptersRead} of ${plan.totalChaptersInBible} chapters · ${(plan.biblePercent * 100).toStringAsFixed(1)}% complete',
-                style: TextStyle(fontSize: 12, color: c.textSecondary)),
-            const SizedBox(height: 12),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: LinearProgressIndicator(
-                value: plan.biblePercent,
-                minHeight: 10,
-                backgroundColor: c.border,
-                valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50)),
-              ),
-            ),
-            if (loop != null) ...[
-              const SizedBox(height: 8),
-              Row(children: [
-                Icon(Icons.loop, size: 14, color: c.textMuted),
-                const SizedBox(width: 4),
-                Text('Loop ${loop.loopNumber}: Day $loopDay of ${loop.duration}',
-                    style: TextStyle(fontSize: 11, color: c.textMuted)),
-              ]),
-            ],
-            if (plan.currentBookName != null) ...[
-              const SizedBox(height: 10),
-              Text('Reading: ${plan.currentBookName} ${plan.currentBookChapter}',
-                  style: TextStyle(fontSize: 12, color: c.textSecondary)),
-            ],
-            const SizedBox(height: 16),
-            BookProgressList(progress: plan),
-            _buildMilestoneMessage(plan, c),
-          ]),
-        );
-      },
-    );
-  }
+}
 
-  Widget _buildMilestoneMessage(PlanProgress plan, ThemePalette c) {
-    final completedBooks = plan.otProgress.where((p) => p.isComplete).length +
-        plan.ntProgress.where((p) => p.isComplete).length;
-    final msg = WitnessService.milestoneMessage(completedBooks, false);
-    if (msg == null) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.only(top: 12),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: AppColors.primary.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
-        ),
-        child: Row(children: [
-          const Text('🌱', style: TextStyle(fontSize: 16)),
-          const SizedBox(width: 8),
-          Expanded(child: Text(msg, style: TextStyle(fontSize: 12, color: c.textSecondary, height: 1.4))),
-        ]),
-      ),
-    );
-  }
+int _summerPhase(int day, {int totalDays = 90}) {
+  final perPhase = totalDays ~/ 4;
+  if (day <= perPhase) return 0;
+  if (day <= perPhase * 2) return 1;
+  if (day <= perPhase * 3) return 2;
+  return 3;
 }
 
 class _PillarData {

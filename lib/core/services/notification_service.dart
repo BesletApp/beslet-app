@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tzdata;
 import 'prayer_reminder_service.dart';
+import 'scripture_service.dart';
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin plugin = FlutterLocalNotificationsPlugin();
@@ -15,20 +16,7 @@ class NotificationService {
 
   static void setLanguage(bool isAm) => _isAmharicLang = isAm;
 
-  // ── Message Pools ──────────────────────────────────────────
-  static const _dawnPoolEn = [
-    ('Good morning! ☀️', '"This is the day the Lord has made; let us rejoice and be glad in it." — Psalm 118:24'),
-    ('Rise and shine! 🌅', '"The steadfast love of the Lord never ceases; his mercies are new every morning." — Lamentations 3:22-23'),
-    ('New day, new grace ✨', '"Because of the Lord\'s great love we are not consumed, for his compassions never fail." — Lamentations 3:22'),
-    ('Morning light 🌞', '"Jesus spoke to them, saying, \'I am the light of the world. Whoever follows me will not walk in darkness.\'" — John 8:12'),
-    ('Awake, my soul! 🎵', '"I will give thanks to the Lord with my whole heart; I will recount all of your wonderful deeds." — Psalm 9:1'),
-    ('Today is a gift 🎁', '"Every good gift and every perfect gift is from above." — James 1:17'),
-    ('Walk in love 🕊️', '"Walk in love, as Christ loved us and gave himself up for us." — Ephesians 5:2'),
-    ('Seek Him first 🙏', '"Seek first the kingdom of God and his righteousness, and all these things will be added to you." — Matthew 6:33'),
-    ('Be still 🕯️', '"Be still, and know that I am God." — Psalm 46:10'),
-    ('You are loved ❤️', '"I have loved you with an everlasting love; therefore I have continued my faithfulness to you." — Jeremiah 31:3'),
-  ];
-
+  // ── Helpers ────────────────────────────────────────────────
   static const _eveningPoolEn = [
     ('⏰ Time to reflect', 'You planned tasks today. How did it go? Take a moment to review.'),
     ('🌙 Day is done', '"Do not let the sun go down on your anger." — Ephesians 4:26. How was your day?'),
@@ -51,19 +39,6 @@ class NotificationService {
     '"I will restore to you the years that the swarming locust has eaten." — Joel 2:25. God redeems every season.',
     '"The Lord is near to all who call on him." — Psalm 145:18. He never left — and he\'s thrilled you\'re here.',
     '"Therefore, if anyone is in Christ, he is a new creation. The old has passed away; behold, the new has come." — 2 Corinthians 5:17',
-  ];
-
-  static const _dawnPoolAm = [
-    ('ደህና እድሜ! ☀️', '"ይህ እግዚአብሔር ያደረገው ቀን ነው፤ በእርሱ ደስ እንይል ሐሴትም እናድርግ።" — መዝሙር 118፥24'),
-    ('ንቁ! 🌅', '"የእግዚአብሔር ቸርነት አያልቅም፤ ምሕረቱም በየቀኑ ታድሳለች።" — ልቅሶ 3፥22-23'),
-    ('አዲስ ቀን አዲስ ጸጋ ✨', '"ከእግዚአብሔር ታላቅ ፍቅር የተነሣ አልጠፋንም፤ ምሕረቱ አያልቅምና።" — ልቅሶ 3፥22'),
-    ('የማለዳ ብርሃን 🌞', '"እኔ የዓለም ብርሃን ነኝ፤ የሚከተለኝ በጨለማ አይሄድም።" — ዮሐንስ 8፥12'),
-    ('ነፍሴ ሆይ ንቂ! 🎵', '"እግዚአብሔርን በፍጹም ልቤ አመሰግናለሁ፤ ድንቅ ሥራዎችህን ሁሉ እናገራለሁ።" — መዝሙር 9፥1'),
-    ('ዛሬ ስጦታ ነው 🎁', '"መልካም ስጦታ ሁሉ ከላይ ከአባት ይወርዳል።" — ያዕቆብ 1፥17'),
-    ('በፍቅር ተመላለሱ 🕊️', '"ክርስቶስ እንደ ወደደን በፍቅር ተመላለሱ።" — ኤፌሶን 5፥2'),
-    ('መጀመሪያ እርሱን ፈልጉ 🙏', '"መጀመሪያ የእግዚአብሔርን መንግሥት ፈልጉ፤ ይህ ሁሉ ይጨመርላችኋል።" — ማቴዎስ 6፥33'),
-    ('ጸጥ ይበሉ 🕯️', '"ጸጥ በሉ እኔም አምላክ እንደ ሆንሁ እወቁ።" — መዝሙር 46፥10'),
-    ('ተወድደዋል ❤️', '"በዘላለም ፍቅር ወድጄሃለሁ፤ በቸርነትም ጎትቼሃለሁ።" — ኤርምያስ 31፥3'),
   ];
 
   static const _eveningPoolAm = [
@@ -183,13 +158,15 @@ class NotificationService {
   // ── Morning / Dawn Reminder ────────────────────────────────
   static Future<void> scheduleDailyReminder(int hour, int minute) async {
     await cancelDailyReminder();
-    final pool = _isAmharicLang ? _dawnPoolAm : _dawnPoolEn;
-    final i = await _nextIndex('dawnMsgIndex', pool.length);
-    final (title, body) = pool[i];
+    final now = tz.TZDateTime.now(tz.local);
+    final verse = ScriptureService.threadVerseFor(now);
+    final title = _isAmharicLang ? ScriptureService.amharicReference(verse.reference) : verse.reference;
+    final body = _isAmharicLang ? (verse.textAm ?? verse.text) : verse.text;
     await _schedule(
       id: _dailyReminderId, channelId: 'morning_reminder', channelName: 'Morning Reminder',
       channelDesc: 'Daily morning habit reminder',
       title: title, body: body, hour: hour, minute: minute,
+      payload: '/threshold',
     );
   }
 

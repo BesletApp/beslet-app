@@ -1,9 +1,7 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'scripture_service.dart';
-import 'amharic_bible_service.dart';
 import 'wordproject_bible_service.dart';
 import 'bible_text_service.dart';
 
@@ -107,32 +105,17 @@ class AudioBibleService {
     await _tts.setVolume(1.0);
     try {
       final voices = await _tts.getVoices;
-      if (voices != null && voices.isNotEmpty) {
-        final filtered = (voices as List)
-            .cast<Map<String, dynamic>>()
-            .where((v) {
-              final loc = (v['locale'] as String?)?.toLowerCase() ?? '';
-              return loc.startsWith(language.split('-')[0].toLowerCase());
-            })
-            .toList();
-        if (filtered.isNotEmpty) {
-          filtered.sort((a, b) {
-            final qA = (a['quality'] as int?) ?? 0;
-            final qB = (b['quality'] as int?) ?? 0;
-            return qB.compareTo(qA);
-          });
-          final preferred = filtered.where((v) {
-            final name = ((v['name'] as String?) ?? '').toLowerCase();
-            return name.contains('natural') || name.contains('wavenet') || name.contains('high');
-          }).toList();
-          final chosen = preferred.isNotEmpty ? preferred.first : filtered.first;
-          await _tts.setVoice({
-            'name': chosen['name'],
-            'locale': chosen['locale'],
-          });
-        }
+      final chosen = voices != null ? selectTtsVoice(voices, language) : null;
+      if (chosen != null) {
+        final ok = await _tts.setVoice({
+          'name': chosen['name'],
+          'locale': chosen['locale'],
+        });
+        debugPrint('AudioBible: voice = ${chosen['name']} (${chosen['locale']}) quality=${chosen['quality']} ok=$ok');
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('AudioBible: voice selection failed: $e');
+    }
     _tts.setCompletionHandler(() {
       if (_sourceType != AudioSourceType.tts) return;
       if (_state != AudioState.playing) return;
@@ -151,32 +134,20 @@ class AudioBibleService {
 
   Future<void> _fetchChapterText(AudioChapterInfo info) async {
     try {
-      if (info.isAmharic) {
-        final amVerses = await AmharicBibleService.fetchChapter(info.bookId, info.chapter);
-        if (amVerses.isNotEmpty) {
-          _currentVerseNumbers = amVerses.map((v) => v.number.toString()).toList();
-          _currentVerses = amVerses.map((v) => v.text).toList();
-        } else {
-          _errorMessage = 'Amharic text not available for this chapter';
-          _state = AudioState.error;
-          onStateChanged?.call();
-        }
+      final verses = await BibleTextService.fetchChapter(
+        info.bookId,
+        info.chapter,
+        isAmharic: info.isAmharic,
+      );
+      if (verses.isNotEmpty) {
+        _currentVerseNumbers = verses.map((v) => v.verse.toString()).toList();
+        _currentVerses = verses.map((v) => v.text).toList();
       } else {
-        final bookName = ScriptureService.bookMap[info.bookId]?.nameEn ?? info.bookId;
-        final url = 'https://bible-api.com/${Uri.encodeComponent(bookName)}+${info.chapter}?translation=web';
-        final response = await http
-            .get(Uri.parse(url), headers: {'User-Agent': 'BesletApp/1.0'})
-            .timeout(const Duration(seconds: 15));
-        if (response.statusCode == 200) {
-          final data = jsonDecode(response.body);
-          final verses = data['verses'] as List<dynamic>;
-          _currentVerseNumbers = verses.map((v) => v['verse'].toString()).cast<String>().toList();
-          _currentVerses = verses.map((v) => v['text'].toString()).cast<String>().toList();
-        } else {
-          _errorMessage = 'Failed to load chapter text (${response.statusCode})';
-          _state = AudioState.error;
-          onStateChanged?.call();
-        }
+        _errorMessage = info.isAmharic
+            ? 'Amharic text not available for this chapter'
+            : 'Failed to load chapter text';
+        _state = AudioState.error;
+        onStateChanged?.call();
       }
     } catch (_) {
       _errorMessage = 'Connect to the internet to listen to Bible audio';
@@ -301,17 +272,37 @@ class AudioBibleService {
 
   Future<void> _speakCurrentVerse() async {
     if (_currentVerseIndex < _currentVerses.length) {
-      final text = _currentVerses[_currentVerseIndex];
-      if (_isAmharic) {
-        await _tts.speak(text);
-      } else {
-        final escaped = text
-            .replaceAll('&', '&amp;')
-            .replaceAll('<', '&lt;')
-            .replaceAll('>', '&gt;');
-        await _tts.speak('<speak>$escaped<break time="200ms"/></speak>');
-      }
+      await _speakText(_currentVerses[_currentVerseIndex]);
     }
+  }
+
+  Future<void> _speakText(String text) async {
+    if (_isAmharic) {
+      await _tts.speak(text);
+    } else {
+      final escaped = text
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;');
+      await _tts.speak('<speak>$escaped<break time="200ms"/></speak>');
+    }
+  }
+
+  /// Speaks a single passage (e.g. the daily thread verse) via TTS,
+  /// stopping any in-progress chapter playback.
+  Future<void> speakVerse(String text, {required bool isAmharic}) async {
+    await _init(language: isAmharic ? 'am-ET' : 'en-US');
+    await _tts.stop();
+    await _audioPlayer.stop();
+    _sourceType = AudioSourceType.tts;
+    _currentChapter = null;
+    _currentVerses = [];
+    _currentVerseNumbers = [];
+    _currentVerseIndex = 0;
+    _errorMessage = null;
+    _state = AudioState.playing;
+    onStateChanged?.call();
+    await _speakText(text);
   }
 
   Future<void> pause() async {
@@ -451,4 +442,50 @@ class AudioBibleService {
     _tts.stop();
     _audioPlayer.dispose();
   }
+}
+
+@visibleForTesting
+Map<String, dynamic>? selectTtsVoice(List<dynamic> voices, String language) {
+  const qualityRank = {
+    'very high': 5,
+    'high': 4,
+    'normal': 3,
+    'low': 2,
+    'very low': 1,
+  };
+  final langPrefix = language.split('-')[0].toLowerCase();
+  final exactLocale = language.toLowerCase();
+  final filtered = voices
+      .cast<Map<String, dynamic>>()
+      .where((v) {
+        final loc = (v['locale'] as String?)?.toLowerCase() ?? '';
+        return loc.startsWith(langPrefix);
+      })
+      .toList();
+  if (filtered.isEmpty) return null;
+  filtered.sort((a, b) {
+    final nameA = ((a['name'] as String?) ?? '').toLowerCase();
+    final nameB = ((b['name'] as String?) ?? '').toLowerCase();
+    final neuralA = nameA.contains('network') ||
+        nameA.contains('wavenet') ||
+        nameA.contains('neural') ||
+        nameA.contains('natural') ? 1 : 0;
+    final neuralB = nameB.contains('network') ||
+        nameB.contains('wavenet') ||
+        nameB.contains('neural') ||
+        nameB.contains('natural') ? 1 : 0;
+    final localeA = ((a['locale'] as String?) ?? '').toLowerCase();
+    final localeB = ((b['locale'] as String?) ?? '').toLowerCase();
+    final exactA = localeA == exactLocale ? 1 : 0;
+    final exactB = localeB == exactLocale ? 1 : 0;
+    final qA = qualityRank[(a['quality'] as String?)?.toLowerCase()] ?? 0;
+    final qB = qualityRank[(b['quality'] as String?)?.toLowerCase()] ?? 0;
+    final netA = (a['network_required'] as String?) == '1' ? 1 : 0;
+    final netB = (b['network_required'] as String?) == '1' ? 1 : 0;
+    if (qA != qB) return qB.compareTo(qA);
+    if (neuralA != neuralB) return neuralB.compareTo(neuralA);
+    if (exactA != exactB) return exactB.compareTo(exactA);
+    return netA.compareTo(netB);
+  });
+  return filtered.first;
 }

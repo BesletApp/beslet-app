@@ -30,7 +30,7 @@ class _PillarCard {
 
 final _phases = ['Discipline', 'Faith', 'Obedience', 'Impact'];
 final _levels = ['Seed', 'Sprout', 'Branch', 'Tree', 'Fruitful'];
-final _icons = [Icons.menu_book, Icons.code, Icons.people, Icons.checklist];
+final _icons = [Icons.code, Icons.people, Icons.checklist];
 
 const _avatarColors = {
   'gold': Color(0xFFC8942E),
@@ -182,7 +182,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       const SizedBox(height: AppSpacing.md),
       Row(children: [
         _statTile(Icons.local_fire_department, '${p.currentStreak}', l.streak, AppColors.warning),
-        _statTile(Icons.check_circle_outline, '${p.totalDaysActive}', l.daysShownUp, AppColors.success),
         _statTile(Icons.pin, '${l.day} ${p.currentDay}', l.ofTotal('90'), AppColors.primary),
         _statTile(Icons.flag, '${l.phase} ${p.currentPhase}', _phases[p.currentPhase - 1], AppColors.spiritualPurple),
       ]),
@@ -312,7 +311,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ('week_streak', Icons.local_fire_department),
       ('month_streak', Icons.workspace_premium),
       ('prayer_warrior', Icons.water_drop),
-      ('bible_week', Icons.menu_book),
       ('hardcore', Icons.shield),
       ('mature', Icons.emoji_events),
     ];
@@ -364,10 +362,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   // ── ZONE 2: Pillar summary ──
   Widget _zone2(AppLocalizations l, UserProfile p) {
-    final vals = [p.pillars.spiritualDays, p.pillars.skillMinutes, p.pillars.fellowshipLogs, p.pillars.todosCompleted];
+    final vals = [p.pillars.skillMinutes, p.pillars.fellowshipLogs, p.pillars.todosCompleted];
     final maxVal = _pillarMax(vals);
     final pillars = [
-      _PillarCard(Icons.menu_book, l.spiritual, '${p.pillars.spiritualDays} ${l.daysRead}', p.pillars.spiritualDays, p.pillars.spiritualDays > 0 ? '' : l.firstReadingWaiting),
       _PillarCard(Icons.code, l.skills, '${p.pillars.skillMinutes} ${l.minutesAbbr}', p.pillars.skillMinutes, p.pillars.skillMinutes > 0 ? '' : l.firstSkillWaiting),
       _PillarCard(Icons.people, l.fellowship, '${p.pillars.fellowshipLogs} ${l.connections}', p.pillars.fellowshipLogs, p.pillars.fellowshipLogs > 0 ? '' : l.firstConnectionWaiting),
       _PillarCard(Icons.checklist, 'Tasks', '${p.pillars.todosCompleted} done', p.pillars.todosCompleted, p.pillars.todosCompleted > 0 ? '' : l.firstTaskWaiting),
@@ -375,7 +372,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Column(children: [
       Wrap(
         spacing: 8, runSpacing: 8,
-        children: List.generate(4, (i) {
+        children: List.generate(3, (i) {
           final c = pillars[i];
           final size = (MediaQuery.of(context).size.width - 48) / 2;
           return SizedBox(
@@ -432,9 +429,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Widget _pillarDetail(int i, AppLocalizations l, UserProfile p) {
     final msgs = [
-      p.currentStreak > 0
-        ? (l.localeName == 'am' ? "በቃሉ ውስጥ ${p.totalDaysActive} ቀናት ታይተሃል። ይህ ታማኝነት ነው።" : "You've shown up ${p.totalDaysActive} days in the Word. That is faithfulness.")
-        : (l.localeName == 'am' ? "የመጀመሪያ ንባብህ ከፍጹምነት ይበልጣል። ዛሬ ጀምር።" : "Your first reading matters more than perfection. Start today."),
       (l.localeName == 'am' ? "እያንዳንዱ ክፍለ ጊዜ ከዚህ በጋ በኋላ የሚቆይ ክህሎት ነው።" : "Every session is a skill that lasts beyond this summer."),
       (l.localeName == 'am' ? "ብረት ብረትን ያሳልላል። ${p.pillars.fellowshipLogs} ግንኙነቶች ተደርገዋል።" : "Iron sharpens iron. ${p.pillars.fellowshipLogs} connections made."),
       (l.localeName == 'am' ? "${p.pillars.todosCompleted} ተግባራት ተከናውነዋል። ቀጥልበት!" : "${p.pillars.todosCompleted} tasks completed. Keep going!"),
@@ -462,7 +456,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // ── ZONE 3: Journey snapshot ──
   Widget _zone3(AppLocalizations l, UserProfile p, List<double> dailyXp) {
     final daysSince = DateTime.now().difference(p.joinedAt).inDays;
-    final readingHours = (p.totalDaysActive * 10 / 60).toStringAsFixed(1);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -493,12 +486,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         const SizedBox(height: 14),
         Row(children: [
           _journeyStat(Icons.calendar_today, l.startedAgo(daysSince), null),
-          const SizedBox(width: 16),
-          _journeyStat(Icons.check_circle, l.showedUpTimes(p.totalDaysActive), null),
         ]),
         const SizedBox(height: 4),
-        _journeyStat(Icons.access_time, l.hoursInWord(readingHours), null),
-        const SizedBox(height: AppSpacing.md),
         if (dailyXp.any((v) => v > 0))
           _buildSparkline(dailyXp),
         const SizedBox(height: AppSpacing.md),

@@ -8,10 +8,7 @@ import '../services/summer_service.dart';
 final profileProvider = FutureProvider<UserProfile>((ref) async {
   final user = await ref.watch(userProvider.future);
   final track = await ref.watch(trackingDataProvider.future);
-  final db = ref.watch(databaseProvider);
 
-  final allBibleReads = await db.select(db.bibleReads).get();
-  final totalDaysActive = allBibleReads.length;
   final joinedAt = DateTime.tryParse(user.createdAt) ?? DateTime.now();
   final currentDay = (DateTime.now().difference(SummerService.summerStart).inDays)
       .clamp(0, 89) + 1;
@@ -21,6 +18,7 @@ final profileProvider = FutureProvider<UserProfile>((ref) async {
   final lvlIdx = track.level.clamp(0, 4);
   final growthLevel = levelNames[lvlIdx];
 
+  final db = ref.watch(databaseProvider);
   final allSkills = await db.select(db.skillSessions).get();
   final skillMinutes = allSkills.fold(0, (int s, r) => s + r.minutes);
 
@@ -33,7 +31,6 @@ final profileProvider = FutureProvider<UserProfile>((ref) async {
     joinedAt: joinedAt,
     preferredLanguage: user.lang,
     currentStreak: track.streak,
-    totalDaysActive: totalDaysActive,
     currentDay: currentDay,
     currentPhase: currentPhase,
     level: track.level,
@@ -42,7 +39,6 @@ final profileProvider = FutureProvider<UserProfile>((ref) async {
     totalXp: track.totalXp,
     badges: track.badges,
     pillars: PillarStats(
-      spiritualDays: totalDaysActive,
       skillMinutes: skillMinutes,
       fellowshipLogs: fellow.length,
       todosCompleted: todosCompleted,

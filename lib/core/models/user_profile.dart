@@ -1,9 +1,8 @@
 class PillarStats {
-  final int spiritualDays;
   final int skillMinutes;
   final int fellowshipLogs;
   final int todosCompleted;
-  const PillarStats({this.spiritualDays=0,this.skillMinutes=0,this.fellowshipLogs=0,this.todosCompleted=0});
+  const PillarStats({this.skillMinutes=0,this.fellowshipLogs=0,this.todosCompleted=0});
 }
 
 class UserProfile {
@@ -11,7 +10,6 @@ class UserProfile {
   final DateTime joinedAt;
   final String preferredLanguage;
   final int currentStreak;
-  final int totalDaysActive;
   final int currentDay;
   final int currentPhase;
   final int level;
@@ -22,7 +20,7 @@ class UserProfile {
   final int totalXp;
   const UserProfile({
     required this.displayName,required this.joinedAt,required this.preferredLanguage,
-    required this.currentStreak,required this.totalDaysActive,required this.currentDay,
+    required this.currentStreak,required this.currentDay,
     required this.currentPhase,required this.level,required this.growthLevel,required this.xp,required this.pillars,
     this.badges = const [], this.totalXp = 0,
   });

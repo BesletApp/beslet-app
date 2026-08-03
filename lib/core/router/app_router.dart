@@ -12,8 +12,7 @@ import '../../features/home/home_screen.dart';
 import '../../features/habits/habits_screen.dart';
 import '../../features/spiritual/prayer_screen.dart';
 import '../../features/spiritual/bible_screen.dart';
-import '../../features/spiritual/reflection_journal_screen.dart';
-import '../../features/spiritual/book_journal_screen.dart';
+import '../../features/threshold/threshold_screen.dart';
 import '../../features/skills/skills_screen.dart';
 import '../../features/progress/progress_screen.dart';
 import '../../features/reflection/reflection_screen.dart';
@@ -52,6 +51,7 @@ class AppRouter {
     routes: [
       GoRoute(path: '/splash', pageBuilder: (context, state) => _buildPage(state, const SplashScreen())),
       GoRoute(path: '/onboarding', pageBuilder: (context, state) => _buildPage(state, const OnboardingScreen())),
+      GoRoute(path: '/threshold', pageBuilder: (context, state) => _buildPage(state, const ThresholdScreen())),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => AppShell(navigationShell: navigationShell),
         branches: [
@@ -73,8 +73,6 @@ class AppRouter {
               final chapter = chStr != null ? int.tryParse(chStr) : null;
               return _buildPage(state, BibleScreen(initialBookId: book, initialChapter: chapter));
             }),
-            GoRoute(path: '/bible/journal', pageBuilder: (context, state) => _buildPage(state, const ReflectionJournalScreen())),
-            GoRoute(path: '/bible/book-journal', pageBuilder: (context, state) => _buildPage(state, const BookJournalScreen())),
           ]),
           StatefulShellBranch(routes: [
             GoRoute(path: '/progress', pageBuilder: (context, state) => _buildPage(state, const ProgressScreen())),

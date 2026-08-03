@@ -1,40 +1,31 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../services/scripture_service.dart';
-import 'bible_read_provider.dart';
 
 const _fontSizeKey = 'reading_font_size';
 const _lineSpacingKey = 'reading_line_spacing';
-const _lastBookKey = 'last_read_book_id';
-const _lastChapterKey = 'last_read_chapter';
-const _lastLangKey = 'last_read_language';
+const _lastOpenPageKey = 'last_open_page';
 
 final fontSizeProvider = StateProvider<double>((ref) => 15.0);
 
 final lineSpacingProvider = StateProvider<double>((ref) => 1.6);
 
-final lastReadBookIdProvider = StateProvider<String?>((ref) => null);
-
-final lastReadChapterProvider = StateProvider<int?>((ref) => null);
-
-final lastReadLanguageProvider = StateProvider<String?>((ref) => null);
-
-class KeptVerse {
+class HighlightedVerse {
   final String bookId;
   final int chapter;
   final int verse;
   final String text;
-  final int timestamp;
   final bool isAm;
+  final String colorId;
 
-  KeptVerse({
+  const HighlightedVerse({
     required this.bookId,
     required this.chapter,
     required this.verse,
     required this.text,
-    required this.timestamp,
     required this.isAm,
+    this.colorId = 'yellow',
   });
 
   Map<String, dynamic> toJson() => {
@@ -42,25 +33,40 @@ class KeptVerse {
     'chapter': chapter,
     'verse': verse,
     'text': text,
-    'timestamp': timestamp,
     'isAm': isAm,
+    'colorId': colorId,
   };
 
-  factory KeptVerse.fromJson(Map<String, dynamic> j) => KeptVerse(
+  factory HighlightedVerse.fromJson(Map<String, dynamic> j) => HighlightedVerse(
     bookId: j['bookId'] as String,
     chapter: j['chapter'] as int,
     verse: j['verse'] as int,
     text: j['text'] as String,
-    timestamp: j['timestamp'] as int,
     isAm: j['isAm'] as bool,
+    colorId: (j['colorId'] as String?) ?? 'yellow',
   );
 }
 
-const _keptVerseKey = 'kept_verse';
-const _allKeptVersesKey = 'all_kept_verses';
+const List<({String id, Color color})> highlightColors = [
+  (id: 'yellow', color: Color(0xFFFFC107)),
+  (id: 'green', color: Color(0xFF4CAF50)),
+  (id: 'blue', color: Color(0xFF42A5F5)),
+  (id: 'orange', color: Color(0xFFFF9800)),
+  (id: 'pink', color: Color(0xFFEC407A)),
+  (id: 'purple', color: Color(0xFFAB47BC)),
+];
 
-final keptVerseProvider = StateProvider<KeptVerse?>((ref) => null);
-final allKeptVersesProvider = StateProvider<List<KeptVerse>>((ref) => []);
+Color highlightColorFor(String id) {
+  for (final h in highlightColors) {
+    if (h.id == id) return h.color;
+  }
+  return highlightColors.first.color;
+}
+
+const _highlightsKey = 'all_highlights';
+const _legacyKeptKey = 'all_kept_verses';
+
+final highlightsProvider = StateProvider<List<HighlightedVerse>>((ref) => []);
 
 class ReadingPreferences {
   static Future<void> loadFontSize(Ref ref) async {
@@ -81,31 +87,29 @@ class ReadingPreferences {
     await prefs.setDouble(_lineSpacingKey, spacing);
   }
 
-  static Future<void> saveLastRead(String bookId, int chapter, String language) async {
+  static Future<void> saveOpenPage(String bookId, int chapter, String language) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_lastBookKey, bookId);
-    await prefs.setInt(_lastChapterKey, chapter);
-    await prefs.setString(_lastLangKey, language);
+    await prefs.setString(_lastOpenPageKey, jsonEncode({
+      'bookId': bookId,
+      'chapter': chapter,
+      'language': language,
+    }));
   }
 
-  static Future<({String? bookId, int? chapter, String? language})> loadLastRead() async {
+  static Future<({String? bookId, int? chapter, String? language})> loadOpenPage() async {
     final prefs = await SharedPreferences.getInstance();
-    final bookId = prefs.getString(_lastBookKey);
-    final chapter = prefs.getInt(_lastChapterKey);
-    final language = prefs.getString(_lastLangKey);
-    return (bookId: bookId, chapter: chapter, language: language);
-  }
-
-  static Future<void> saveKeptVerse(KeptVerse v) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_keptVerseKey, jsonEncode(v.toJson()));
-  }
-
-  static Future<KeptVerse?> loadKeptVerse() async {
-    final prefs = await SharedPreferences.getInstance();
-    final j = prefs.getString(_keptVerseKey);
-    if (j == null) return null;
-    return KeptVerse.fromJson(jsonDecode(j) as Map<String, dynamic>);
+    final raw = prefs.getString(_lastOpenPageKey);
+    if (raw == null) return (bookId: null, chapter: null, language: null);
+    try {
+      final j = jsonDecode(raw) as Map<String, dynamic>;
+      return (
+        bookId: j['bookId'] as String?,
+        chapter: j['chapter'] as int?,
+        language: j['language'] as String?,
+      );
+    } catch (_) {
+      return (bookId: null, chapter: null, language: null);
+    }
   }
 
   static Future<void> saveJournalText(String verseId, String text) async {
@@ -118,43 +122,49 @@ class ReadingPreferences {
     return prefs.getString('journal_$verseId');
   }
 
-  static Future<List<KeptVerse>> loadAllKeptVerses() async {
+  static Future<List<HighlightedVerse>> loadAllHighlights() async {
     final prefs = await SharedPreferences.getInstance();
-    final j = prefs.getString(_allKeptVersesKey);
-    if (j == null) return [];
-    final list = jsonDecode(j) as List;
-    return list.map((e) => KeptVerse.fromJson(e as Map<String, dynamic>)).toList();
-  }
-
-  static Future<void> saveAllKeptVerses(List<KeptVerse> list) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_allKeptVersesKey, jsonEncode(list.map((e) => e.toJson()).toList()));
-  }
-
-  static void appendKeptVerse(List<KeptVerse> list, KeptVerse v) {
-    list.removeWhere((e) => e.bookId == v.bookId && e.chapter == v.chapter && e.verse == v.verse);
-    list.insert(0, v);
-    if (list.length > 20) list.removeLast();
-  }
-}
-
-final todaySuggestionProvider = FutureProvider<({String bookId, int chapter})?>((ref) async {
-  final todayReads = await ref.watch(todayBibleReadProvider.future);
-  if (todayReads.isNotEmpty) return null;
-
-  final last = await ReadingPreferences.loadLastRead();
-  if (last.bookId != null && last.chapter != null) {
-    final book = ScriptureService.bookMap[last.bookId!];
-    if (book != null) {
-      if (last.chapter! < book.chapters) {
-        return (bookId: last.bookId!, chapter: last.chapter! + 1);
-      }
-      final allBooks = ScriptureService.allBooks;
-      final idx = allBooks.indexWhere((b) => b.id == last.bookId);
-      if (idx >= 0 && idx + 1 < allBooks.length) {
-        return (bookId: allBooks[idx + 1].id, chapter: 1);
+    final j = prefs.getString(_highlightsKey);
+    if (j != null) {
+      try {
+        final list = jsonDecode(j) as List;
+        return list
+            .map((e) => HighlightedVerse.fromJson(e as Map<String, dynamic>))
+            .toList();
+      } catch (_) {
+        return [];
       }
     }
+    final legacy = prefs.getString(_legacyKeptKey);
+    if (legacy != null) {
+      try {
+        final list = jsonDecode(legacy) as List;
+        final migrated = <HighlightedVerse>[];
+        for (final e in list) {
+          final m = e as Map<String, dynamic>;
+          migrated.add(HighlightedVerse(
+            bookId: m['bookId'] as String,
+            chapter: m['chapter'] as int,
+            verse: m['verse'] as int,
+            text: m['text'] as String,
+            isAm: m['isAm'] as bool,
+            colorId: 'yellow',
+          ));
+        }
+        if (migrated.isNotEmpty) {
+          await prefs.setString(
+              _highlightsKey, jsonEncode(migrated.map((e) => e.toJson()).toList()));
+        }
+        return migrated;
+      } catch (_) {
+        return [];
+      }
+    }
+    return [];
   }
-  return (bookId: 'genesis', chapter: 1);
-});
+
+  static Future<void> saveAllHighlights(List<HighlightedVerse> list) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_highlightsKey, jsonEncode(list.map((e) => e.toJson()).toList()));
+  }
+}

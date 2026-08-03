@@ -71,15 +71,6 @@ class AudioCacheService {
     if (entry != null) {
       final file = File(entry.localPath);
       if (await file.exists()) {
-        await (_db.audioCache.update()
-              ..where((t) => t.id.equals(id)))
-            .write(AudioCacheCompanion(
-              lastPlayedAt: Value(DateTime.now()),
-            ));
-        await _db.customUpdate(
-          'UPDATE audio_cache SET play_count = play_count + 1 WHERE id = ?',
-          variables: [Variable.withString(id)],
-        );
         return file;
       }
     }
@@ -103,14 +94,7 @@ class AudioCacheService {
             localPath: file.path,
             sizeBytes: await file.length(),
             downloadedAt: now,
-            lastPlayedAt: Value(now),
             status: 'ready',
-          ));
-    } else {
-      await (_db.audioCache.update()
-            ..where((t) => t.id.equals(id)))
-          .write(AudioCacheCompanion(
-            lastPlayedAt: Value(DateTime.now()),
           ));
     }
 
@@ -256,23 +240,15 @@ class AudioCacheService {
       final stats = await getStats();
       if (stats.cacheMB <= maxCacheMB && stats.freeMB >= minFreeMB) break;
 
-      final now = DateTime.now();
       final all = await (_db.audioCache.select()
             ..where((t) => t.isPinned.equals(false))
-            ..orderBy([
-              (t) => OrderingTerm(
-                  expression: t.lastPlayedAt, mode: OrderingMode.asc),
-              (t) => OrderingTerm(
-                  expression: t.playCount, mode: OrderingMode.asc),
-            ]))
+            ..orderBy([(t) => OrderingTerm(
+                expression: t.downloadedAt, mode: OrderingMode.asc)]))
           .get();
 
-      final expired = all.where((t) =>
-          t.planRelevantUntil == null ||
-          t.planRelevantUntil!.isBefore(now));
-      if (expired.isEmpty) break;
+      if (all.isEmpty) break;
 
-      final victim = expired.first;
+      final victim = all.first;
       try {
         final file = File(victim.localPath);
         if (await file.exists()) await file.delete();
@@ -281,57 +257,6 @@ class AudioCacheService {
             ..where((t) => t.id.equals(victim.id)))
           .go();
     }
-  }
-
-  Future<void> prefetchNextChapters() async {
-    final stats = await getStats();
-    if (stats.cacheMB > maxCacheMB * 0.8) return;
-
-    try {
-      final plan = ScriptureService.getPlan('nt');
-      if (plan.isEmpty) return;
-
-      final todaysReading = ScriptureService.getTodaysReading('nt');
-      final startDay = todaysReading.day;
-
-      for (int offset = 1; offset <= 3; offset++) {
-        final dayIdx = startDay + offset;
-        if (dayIdx > plan.length) break;
-
-        final entry = plan[dayIdx - 1];
-        final parsed = ScriptureService.parseReference(entry.reference);
-        if (parsed == null) continue;
-
-        final book = ScriptureService.bookMap[parsed.bookId];
-        if (book == null) continue;
-
-        for (final lang in ['en', 'am']) {
-          final id = '${parsed.bookId}_${parsed.chapter}_$lang';
-          final existing = await (_db.audioCache.select()
-                ..where((t) => t.id.equals(id))
-                ..where((t) => t.status.equals('ready')))
-              .getSingleOrNull();
-          if (existing != null) continue;
-
-          final langCode = lang == 'am' ? '17' : '01';
-          final file = await WordProjectBibleService.getAudio(
-              book.wordprojectId, parsed.chapter,
-              languageCode: langCode);
-          if (file == null) continue;
-
-          await _db.into(_db.audioCache).insert(AudioCacheCompanion.insert(
-                id: id,
-                bookId: parsed.bookId,
-                chapter: parsed.chapter,
-                language: lang,
-                localPath: file.path,
-                sizeBytes: await file.length(),
-                downloadedAt: DateTime.now(),
-                status: 'ready',
-              ));
-        }
-      }
-    } catch (_) {}
   }
 
   Future<Set<int>> getDownloadedChapters(String bookId, String language) async {
@@ -351,35 +276,6 @@ class AudioCacheService {
               ..where((t) => t.id.equals(e.id)))
             .go();
       }
-    }
-  }
-
-  Future<void> updatePlanRelevance() async {
-    final now = DateTime.now();
-    final all = await _db.audioCache.select().get();
-    for (final e in all) {
-      if (e.planRelevantUntil != null &&
-          e.planRelevantUntil!.isBefore(now)) {
-        await (_db.audioCache.update()
-              ..where((t) => t.id.equals(e.id)))
-            .write(
-                const AudioCacheCompanion(planRelevantUntil: Value(null)));
-      }
-    }
-  }
-
-  Future<void> clearUnpinnedCache() async {
-    final unpinned = await (_db.audioCache.select()
-          ..where((t) => t.isPinned.equals(false)))
-        .get();
-    for (final e in unpinned) {
-      try {
-        final file = File(e.localPath);
-        if (await file.exists()) await file.delete();
-      } catch (_) {}
-      await (_db.audioCache.delete()
-            ..where((t) => t.id.equals(e.id)))
-          .go();
     }
   }
 

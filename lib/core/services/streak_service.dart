@@ -28,9 +28,7 @@ class StreakState {
 class StreakService {
   static Future<bool> didAnchorOnDate(AppDatabase db, String date) async {
     final prayers = await (db.select(db.prayerLogs)..where((t) => t.date.equals(date))).get();
-    if (prayers.isNotEmpty) return true;
-    final reads = await (db.select(db.bibleReads)..where((t) => t.date.equals(date))).get();
-    return reads.isNotEmpty;
+    return prayers.isNotEmpty;
   }
 
   static Future<StreakState> checkAndUpdate(AppDatabase db) async {
@@ -62,7 +60,7 @@ class StreakService {
     if (todayAnchor && todayLog.isEmpty) {
       await db.into(db.streakLog).insert(StreakLogCompanion.insert(
         id: const Uuid().v4(), date: today, counted: true, freezeUsed: false,
-        anchorType: 'prayer_bible', createdAt: DateTime.now().toIso8601String(),
+        anchorType: 'prayer', createdAt: DateTime.now().toIso8601String(),
       ));
       if (freeze.brokenDate != null) {
         await (db.update(db.streakFrozen)..where((t) => t.id.equals(freeze.id)))

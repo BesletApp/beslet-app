@@ -68,6 +68,11 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
     _updateState();
   }
 
+  Future<void> speakVerse(String text, {required bool isAmharic}) async {
+    await _service.speakVerse(text, isAmharic: isAmharic);
+    _updateState();
+  }
+
   Future<void> prepare(AudioChapterInfo info) async {
     await _service.loadChapter(info);
     _updateState();

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/providers/download_provider.dart';
-import '../../../core/providers/user_provider.dart';
 import '../../../core/services/scripture_service.dart';
 import '../../../core/services/bible_text_service.dart';
 
@@ -43,29 +42,8 @@ class _LibrarySheetState extends ConsumerState<LibrarySheet> {
     }
 
     final perLang = ref.watch(downloadedBooksProvider).valueOrNull ?? [];
-    final user = ref.watch(userProvider).valueOrNull;
 
     final downloadedIds = perLang.map((b) => b.bookId).toSet();
-
-    String? planBookId;
-    String? planBookName;
-    if (user != null) {
-      final plan = ScriptureService.getPlan(user.biblePlan);
-      if (plan.isNotEmpty) {
-        final today = ScriptureService.getTodaysReading(user.biblePlan);
-        final entry =
-            today.day <= plan.length ? plan[today.day - 1] : plan.last;
-        final parsed = ScriptureService.parseReference(entry.reference);
-        if (parsed != null) {
-          planBookId = parsed.bookId;
-          planBookName = isAm
-              ? ScriptureService.bookMap[parsed.bookId]?.nameAm
-              : ScriptureService.bookMap[parsed.bookId]?.nameEn;
-        }
-      }
-    }
-    final planDownloaded =
-        planBookId != null && downloadedIds.contains(planBookId);
 
     final downloadedBooks = ScriptureService.allBooks
         .where((b) => downloadedIds.contains(b.id))
@@ -109,30 +87,13 @@ class _LibrarySheetState extends ConsumerState<LibrarySheet> {
         ),
         const SizedBox(height: 8),
         Expanded(
-          child: downloadedBooks.isEmpty &&
-                  (planBookId == null || planDownloaded)
+          child: downloadedBooks.isEmpty
               ? _buildEmptyState(c, isAm, downloadedIds)
               : ListView(
                   padding: const EdgeInsets.all(AppSpacing.screenPadding),
                   children: [
-                    if (planBookId != null &&
-                        !planDownloaded &&
-                        planBookName != null)
-                      _buildPlanCard(c, isAm, planBookName, planBookId),
-                    if (downloadedBooks.isNotEmpty) ...[
-                      if (planBookId != null && !planDownloaded)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 16, bottom: 4),
-                          child: Text(isAm ? 'የወረዱ' : 'Downloaded',
-                              style: TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  color: c.textMuted)),
-                        ),
-                      ...downloadedBooks
-                          .map((b) => _buildBookRow(c, isAm, b)),
-                    ],
+                    ...downloadedBooks
+                        .map((b) => _buildBookRow(c, isAm, b)),
                     Padding(
                       padding: const EdgeInsets.only(top: 16),
                       child: OutlinedButton.icon(
@@ -318,88 +279,6 @@ class _LibrarySheetState extends ConsumerState<LibrarySheet> {
     );
   }
 
-  Widget _buildPlanCard(
-      ThemePalette c, bool isAm, String bookName, String bookId) {
-    final isDownloading = _downloading == bookId;
-
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppColors.primary.withValues(alpha: 0.1), c.card],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(12),
-        border:
-            Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Row(children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Icon(Icons.auto_stories,
-                size: 20, color: AppColors.primary),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                      isAm
-                          ? 'የንባብ እቅድህን ቀጥል'
-                          : 'Continue your plan',
-                      style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: c.textMuted)),
-                  const SizedBox(height: 2),
-                  Text(bookName,
-                      style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: c.textPrimary)),
-                ]),
-          ),
-          const SizedBox(width: 8),
-          if (isDownloading)
-            const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
-          else
-            InkWell(
-              onTap: () => _downloadBook(bookId),
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 14, vertical: 7),
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(isAm ? 'አውርድ' : 'Download',
-                    style: const TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white)),
-              ),
-            ),
-        ]),
-      ),
-    );
-  }
-
   Widget _buildBookRow(ThemePalette c, bool isAm, BibleBook book) {
     final isDownloading = _downloading == book.id;
     final progress = _downloadProgress[book.id];
@@ -519,10 +398,7 @@ class _LibrarySheetState extends ConsumerState<LibrarySheet> {
       }
 
       await service.pinBook(bookId, 'en');
-      if (mounted) setState(() => _downloadProgress[bookId] = 0.5);
-
       await service.pinBook(bookId, 'am');
-      if (mounted) setState(() => _downloadProgress[bookId] = 0.75);
 
       final all = <Future>[];
       for (int ch = 1; ch <= book.chapters; ch++) {

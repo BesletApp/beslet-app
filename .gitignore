@@ -57,3 +57,6 @@ debug-info/
 
 # API secrets — never commit the real key
 /lib/core/secrets.dart
+
+# Local opencode skill libraries (tooling, not part of the app)
+/.agents/

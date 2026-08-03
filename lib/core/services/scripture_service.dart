@@ -1,7 +1,4 @@
-import 'summer_service.dart';
-
-class Scripture {
-  final String reference;
+class Scripture {  final String reference;
   final String text;
   final String? textAm;
   const Scripture({required this.reference, required this.text, this.textAm});
@@ -30,12 +27,6 @@ class BibleBook {
     required this.wordprojectId,
     required this.themeEn, required this.themeAm,
   });
-}
-
-class BiblePlanEntry {
-  final int day;
-  final String reference;
-  const BiblePlanEntry({required this.day, required this.reference});
 }
 
 class ScriptureService {
@@ -134,31 +125,6 @@ class ScriptureService {
   static List<BibleBook> get otBooks => sections.where((s) => ['torah', 'history', 'poetry', 'majorProphets', 'minorProphets'].contains(s.id)).expand((s) => s.books).toList();
   static List<BibleBook> get ntBooks => sections.where((s) => ['gospels', 'acts', 'paulsLetters', 'generalEpistles', 'revelation'].contains(s.id)).expand((s) => s.books).toList();
 
-  /// Generates a reading plan for a given testament. Each entry is "Book Chapter:StartVerse" or "Book Chapter".
-  static List<BiblePlanEntry> getPlan(String planId, {int days = 90, int startChapter = 0}) {
-    final books = planId == 'ot' ? otBooks : ntBooks;
-    final totalChapters = books.fold<int>(0, (int s, b) => s + b.chapters);
-    final entries = <BiblePlanEntry>[];
-    int chapterIdx = startChapter;
-    for (int day = 0; day < days && chapterIdx < totalChapters; day++) {
-      final book = _bookForChapter(books, chapterIdx);
-      if (book == null) break;
-      final chInBook = chapterIdx - books.takeWhile((b) => b.id != book.id).fold<int>(0, (int s, b) => s + b.chapters) + 1;
-      entries.add(BiblePlanEntry(day: day + 1, reference: '${book.nameEn} $chInBook'));
-      chapterIdx++;
-    }
-    return entries;
-  }
-
-  static BibleBook? _bookForChapter(List<BibleBook> books, int globalChapter) {
-    int acc = 0;
-    for (final b in books) {
-      acc += b.chapters;
-      if (globalChapter < acc) return b;
-    }
-    return null;
-  }
-
   static final List<Scripture> verses = [
     Scripture(reference: 'Philippians 4:13', text: 'I can do all things through Christ who strengthens me.', textAm: 'ኃይልን በሚሰጠኝ በክርስቶስ ሁሉን እችላለሁ።'),
     Scripture(reference: 'Psalm 23:1', text: 'The Lord is my shepherd; I shall not want.', textAm: 'እግዚአብሔር እረኛዬ ነው፥ የሚያሳጣኝ የለም።'),
@@ -195,14 +161,6 @@ class ScriptureService {
   static const List<String> phaseNamesAm = ['ዲሲፕሊን', 'እምነት', 'ታዛዥነት', 'ተፅዕኖ'];
   static const List<String> phaseNamesEn = ['Discipline', 'Faith', 'Obedience', 'Impact'];
 
-  static int getPhase(int day, {int totalDays = 90}) {
-    final perPhase = totalDays ~/ 4;
-    if (day <= perPhase) return 0;
-    if (day <= perPhase * 2) return 1;
-    if (day <= perPhase * 3) return 2;
-    return 3;
-  }
-
   static String getBookName(String bookId, bool isAm) {
     final book = bookMap[bookId];
     return book != null ? (isAm ? book.nameAm : book.nameEn) : bookId;
@@ -226,13 +184,15 @@ class ScriptureService {
     return 'Encounter God through His Word';
   }
 
-  static Scripture getDailyScripture() => verses[DateTime.now().day % verses.length];
+  static Scripture getDailyScripture() => threadVerseFor(DateTime.now());
 
-  static BiblePlanEntry getTodaysReading(String planId, {int startChapter = 0, int days = 90}) {
-    final plan = getPlan(planId, days: days, startChapter: startChapter);
-    final elapsed = DateTime.now().difference(SummerService.summerStart).inDays;
-    final day = (elapsed.clamp(0, plan.length - 1));
-    return plan[day];
+  /// The Day's Thread: one fixed single verse per calendar day, cycling the
+  /// canon-verified list as a finite repeating loop. Pure math, offline,
+  /// serverless, untrackable.
+  static Scripture threadVerseFor(DateTime day) {
+    final epoch = DateTime(2025, 1, 1);
+    final idx = day.difference(epoch).inDays % verses.length;
+    return verses[idx < 0 ? idx + verses.length : idx];
   }
 
   static ({String bookId, int chapter})? parseReference(String reference) {
@@ -244,5 +204,20 @@ class ScriptureService {
       }
     }
     return null;
+  }
+
+  static String amharicReference(String reference) {
+    for (final book in allBooks) {
+      if (reference.startsWith(book.nameEn)) {
+        return reference.replaceFirst(book.nameEn, book.nameAm);
+      }
+    }
+    return reference;
+  }
+
+  static String referenceFor(String bookId, int chapter, int verse, bool isAm) {
+    final book = bookMap[bookId];
+    final name = book != null ? (isAm ? book.nameAm : book.nameEn) : bookId;
+    return '$name $chapter:$verse';
   }
 }

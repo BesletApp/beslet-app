@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 import 'app.dart';
@@ -20,6 +21,16 @@ void main() async {
   try { await PrayerAlarmSoundService.ensureChannel(await PrayerAlarmSoundService.resolveAndroidSound()); } catch (_) {}
   NotificationService.navigateTo = (route) => AppRouter.router.go(route);
   try { await NotificationService.requestPermissions(); } catch (_) {}
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final reminderTime = prefs.getString('reminderTime');
+    if (reminderTime != null) {
+      final parts = reminderTime.split(':');
+      final hour = int.tryParse(parts[0]) ?? 20;
+      final minute = parts.length > 1 ? (int.tryParse(parts[1]) ?? 0) : 0;
+      await NotificationService.scheduleDailyReminder(hour, minute);
+    }
+  } catch (_) {}
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,

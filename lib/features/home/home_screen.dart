@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:home_widget/home_widget.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/theme/app_spacing.dart';
@@ -17,17 +18,12 @@ import '../../core/database/app_database.dart';
 import '../../core/providers/user_provider.dart';
 import '../../core/providers/tracking_provider.dart';
 import '../../core/providers/prayer_provider.dart';
-import '../../core/providers/bible_read_provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../core/providers/fellowship_provider.dart';
 import '../../core/providers/todo_provider.dart';
 import '../../core/providers/streak_provider.dart';
-import '../../core/providers/reading_plan_provider.dart';
-import '../../core/services/plan_progress_service.dart';
 import '../../core/providers/soul_log_provider.dart';
 import '../../core/emotional/mood_content.dart';
-import '../../core/providers/database_provider.dart';
-import '../../core/services/loop_service.dart';
 import '../../services/update_checker.dart';
 import '../../shared/widgets/error_card.dart';
 import '../../shared/widgets/enkutatash_overlay.dart';
@@ -69,6 +65,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
     _checkForUpdates();
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkCommunityPrompt());
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkEnkutatash());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkLampInvitation());
     WidgetsBinding.instance.addPostFrameCallback((_) => _startStaggerOnce());
   }
 
@@ -139,31 +136,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
     );
   }
 
-  Future<void> _showLoopCompleteDialog(ReadingLoop loop) async {
-    final completed = await showDialog<int>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.of(context).card,
-        title: Text('Loop ${loop.loopNumber} Complete!', style: AppTextStyles.labelLarge),
-        content: Text('You finished ${loop.duration} days of reading. Start a new loop?', style: AppTextStyles.bodyMedium),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, -1), child: const Text('Not now', style: TextStyle(fontFamily: 'Inter'))),
-          TextButton(onPressed: () => Navigator.pop(ctx, 7), child: const Text('7 days', style: TextStyle(fontFamily: 'Inter'))),
-          TextButton(onPressed: () => Navigator.pop(ctx, 30), child: const Text('30 days', style: TextStyle(fontFamily: 'Inter'))),
-          TextButton(onPressed: () => Navigator.pop(ctx, 66), child: const Text('66 days', style: TextStyle(fontFamily: 'Inter'))),
-          TextButton(onPressed: () => Navigator.pop(ctx, 90), child: const Text('90 days', style: TextStyle(fontFamily: 'Inter'))),
-        ],
-      ),
-    );
-    if (completed != null && completed > 0 && mounted) {
-      final db = ref.read(databaseProvider);
-      final user = await db.select(db.users).get().then((u) => u.first);
-      await LoopService.createNextLoop(db, user.biblePlan, completed);
-      ref.invalidate(activeLoopProvider);
-      setState(() {});
-    }
-  }
-
   Future<void> _checkEnkutatash() async {
     final now = DateTime.now();
     if (now.month != 9 || now.day != 11) return;
@@ -179,6 +151,66 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
         builder: (_) => EnkutatashOverlay(onDismiss: () => nav.pop()),
       ));
     }
+  }
+
+  Future<void> _checkLampInvitation() async {
+    final prefs = await SharedPreferences.getInstance();
+    final seen = prefs.getBool('lampInviteSeen') ?? false;
+    if (seen || !mounted) return;
+    await prefs.setBool('lampInviteSeen', true);
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) {
+        final cc = AppColors.of(ctx);
+        return AlertDialog(
+          backgroundColor: cc.card,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.md)),
+          title: Text(
+            _isAm ? 'መብራት ወደ ቤትህ ማያ ገጽ' : 'The Lamp at Dawn',
+            style: TextStyle(color: cc.primary, fontSize: 16, fontWeight: FontWeight.w600),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _isAm
+                    ? 'አንድ ቃል በኪስህ የሚያስቀምጥ መብራት። በመንገድህ አይገባም፤ ምንም አይከታተልም።'
+                    : 'A lamp that keeps one Word in your pocket. It stays out of your way, and it tracks nothing.',
+                style: TextStyle(color: cc.textSecondary, fontSize: 13, height: 1.5),
+              ),
+              SizedBox(height: AppSpacing.sm),
+              Text(
+                _isAm
+                    ? 'ከሆነ በኋላ ፈልገህ ካወጣኸው፣ ዳግም አንጠይቅም።'
+                    : 'If you ever remove it, we will never bring it up again.',
+                style: TextStyle(color: cc.textMuted, fontSize: 12),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text(_isAm ? 'አልፈልግም' : 'No, thank you', style: TextStyle(color: cc.textMuted)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: cc.primary,
+                foregroundColor: cc.isDark ? const Color(0xFF07090E) : Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.sm)),
+              ),
+              onPressed: () async {
+                Navigator.of(ctx).pop();
+                await HomeWidget.requestPinWidget(androidName: 'BesletWidget');
+              },
+              child: Text(_isAm ? 'መብራቱን ጨምር' : 'Add the lamp'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> _checkForUpdates() async {
@@ -233,7 +265,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
       ref.refresh(userProvider.future),
       ref.refresh(trackingDataProvider.future),
       ref.refresh(todayPrayerLogProvider.future),
-      ref.refresh(todayBibleReadProvider.future),
       ref.refresh(todayFellowshipProvider.future),
       ref.refresh(todayTodoStatsProvider.future),
     ]);
@@ -244,11 +275,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
     final userAsync = ref.watch(userProvider);
     final trackingAsync = ref.watch(trackingDataProvider);
     final todayPrayer = ref.watch(todayPrayerLogProvider);
-    final todayBibleRead = ref.watch(todayBibleReadProvider);
     final todayFellowship = ref.watch(todayFellowshipProvider);
     final todayTodoStats = ref.watch(todayTodoStatsProvider);
-    final readingProgressAsync = ref.watch(readingProgressProvider);
-    final activeLoopAsync = ref.watch(activeLoopProvider);
     final tone = ref.watch(toneServiceProvider);
     final engine = ref.watch(personalizationEngineProvider);
 
@@ -263,7 +291,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
       data: (user) {
         final tracking = trackingAsync.valueOrNull;
         final prayed = todayPrayer.valueOrNull != null;
-        final bibleRead = todayBibleRead.valueOrNull != null;
         final skillsMin = tracking?.skillsMinutes ?? 0;
         final inSummer = SummerService.isInSummer;
         final daysElapsed = SummerService.daysElapsed;
@@ -271,26 +298,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
         final totalDays = SummerService.totalSummerDays;
         final connectedToday = todayFellowship.valueOrNull != null;
         final todoStats = todayTodoStats.valueOrNull ?? TodoStats(total: 0, completed: 0);
-        final progress = readingProgressAsync.valueOrNull;
-        final loop = activeLoopAsync.valueOrNull;
         final streak = tracking?.streak ?? 0;
 
         if (!_widgetUpdated) {
           _widgetUpdated = true;
           WidgetsBinding.instance.addPostFrameCallback((_) async {
-            final createdAt = DateTime.tryParse(user.createdAt) ?? DateTime.now();
-            final planDay = (DateTime.now().difference(createdAt).inDays % 90) + 1;
-            await WidgetService.updateWidgetData(planDay: planDay);
+            await WidgetService.updateWidgetData(isAm: _isAm);
           });
         }
 
         final tasksDone = todoStats.total > 0 && todoStats.completed >= todoStats.total;
-        final step1done = bibleRead;
-        final step2done = bibleRead && prayed;
-        final step3done = bibleRead && prayed && tasksDone;
-        final currentStep = step1done ? (step2done ? (step3done ? 3 : 2) : 1) : 0;
+        final step1done = prayed;
+        final step2done = prayed && tasksDone;
+        final currentStep = step1done ? (step2done ? 2 : 1) : 0;
 
-        final allComplete = bibleRead && prayed && skillsMin > 0 && connectedToday && todoStats.total > 0 && todoStats.completed >= todoStats.total;
+        final allComplete = prayed && skillsMin > 0 && connectedToday && todoStats.total > 0 && todoStats.completed >= todoStats.total;
 
         if (allComplete && !_celebrated) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -301,16 +323,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
           });
         } else if (!allComplete) {
           _celebrated = false;
-        }
-
-        if (loop != null && loop.status == 'active') {
-          final loopStart = DateTime.tryParse(loop.startDate);
-          if (loopStart != null) {
-            final loopDay = DateTime.now().difference(loopStart).inDays + 1;
-            if (loopDay > loop.duration && mounted) {
-              WidgetsBinding.instance.addPostFrameCallback((_) => _showLoopCompleteDialog(loop));
-            }
-          }
         }
 
         final season = AppSeason.fromStreak(streak);
@@ -349,11 +361,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
                 child: ZoneLayout(
                   orientation: _buildStaggered(0, _buildGreetingBlock(profile, user, inSummer, daysElapsed, totalDays, daysRemaining, l, tone, streak, streakState?.isAtRisk ?? false, todaySoulLog?.mood)),
                   primary: _buildStaggered(1, _buildPrimaryStepCard(
-                    profile, currentStep, bibleRead, prayed, todoStats,
+                    profile, currentStep, prayed, todoStats,
                     streakState?.isSabbathToday ?? false, allComplete, user.name, tone, l,
                   )),
                   support: _buildStaggered(2, _buildRhythmSurface(
-                    profile, skillsMin, connectedToday, progress, todaySoulLog, l,
+                    profile, skillsMin, connectedToday, todaySoulLog, l,
                   )),
                   anchor: _buildStaggered(3, _buildVerseCard(profile)),
                 ),
@@ -555,7 +567,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
   }
 
   Widget _buildPrimaryStepCard(
-    ExperienceProfile profile, int currentStep, bool bibleRead, bool prayed, TodoStats todoStats,
+    ExperienceProfile profile, int currentStep, bool prayed, TodoStats todoStats,
     bool isSabbath, bool allComplete, String userName, ToneService tone, AppLocalizations l,
   ) {
     if (isSabbath) {
@@ -564,7 +576,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
     if (allComplete) {
       return _buildCelebrationCard(profile, userName, tone, l);
     }
-    if (currentStep >= 3) {
+    if (currentStep >= 2) {
       return _buildRhythmCompleteCard(profile, l);
     }
     final stepData = _nextStepData(currentStep, todoStats, l);
@@ -575,21 +587,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
     switch (currentStep) {
       case 0:
         return _StepData(
-          icon: '📖',
-          title: _isAm ? 'ቃሉን አንብብ' : 'Read the Word',
-          subtitle: _isAm ? 'የእግዚአብሔርን ድምፅ ስማ' : 'Hear His voice',
-          ctaLabel: _isAm ? 'ማንበብ ጀምር' : 'Start Reading',
-          route: '/bible',
-        );
-      case 1:
-        return _StepData(
           icon: '🙏',
           title: _isAm ? 'ጸሎት' : 'Prayer',
           subtitle: _isAm ? 'ልብህን አፍስስ' : 'Pour out your heart',
           ctaLabel: _isAm ? 'ጸልይ' : 'Begin Prayer',
           route: '/prayer',
         );
-      case 2:
+      default:
         return _StepData(
           icon: '✅',
           title: _isAm ? 'የዛሬ ተግባራት' : "Today's Tasks",
@@ -600,14 +604,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
               ? (todoStats.total == 0 ? 'እቅድ ፍጠር' : 'አድርግ')
               : (todoStats.total == 0 ? 'Shape your day' : 'Do'),
           route: '/daily-todo',
-        );
-      default:
-        return _StepData(
-          icon: '📖',
-          title: 'Read the Word',
-          subtitle: 'Hear His voice',
-          ctaLabel: 'Start Reading',
-          route: '/bible',
         );
     }
   }
@@ -769,7 +765,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
 
   Widget _buildRhythmSurface(
     ExperienceProfile profile, int skillsMin, bool connectedToday,
-    PlanProgress? planProgress, SoulLogData? todaySoulLog, AppLocalizations l,
+    SoulLogData? todaySoulLog, AppLocalizations l,
   ) {
     final c = AppColors.of(context);
     return Container(
@@ -787,10 +783,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
             _buildActionPill('🎯', skillsMin > 0 ? '$skillsMin min' : (_isAm ? 'ጀምር' : 'Start'), () => context.go('/skills')),
             SizedBox(width: _h(AppSpacing.sm)),
             _buildActionPill('👥', connectedToday ? (_isAm ? 'ተገናኝተዋል' : 'Connected') : (_isAm ? 'አገናኝ' : 'Connect'), () => context.go('/fellowship')),
-            if (planProgress != null) ...[
-              SizedBox(width: _h(AppSpacing.sm)),
-              _buildActionPill('📖', '${(planProgress.biblePercent * 100).round()}%', () => context.go('/progress')),
-            ],
             SizedBox(width: _h(AppSpacing.sm)),
             _buildActionPill('📝', _isAm ? 'ማስታወሻ' : 'Journal', () => context.go('/journal')),
           ]),
@@ -867,83 +859,125 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
   }
 
   Widget _buildVerseCard(ExperienceProfile profile) {
-    final scripture = ScriptureService.getDailyScripture();
+    final scripture = ScriptureService.threadVerseFor(DateTime.now());
+    final light = WidgetService.lightStateFor(DateTime.now());
+    final lightLabel = switch (light) {
+      LampLight.dawn => _isAm ? 'ጠዋት' : 'Dawn',
+      LampLight.noon => _isAm ? 'ቀትር' : 'Noon',
+      LampLight.dusk => _isAm ? 'ምሽት' : 'Dusk',
+      LampLight.night => _isAm ? 'ሌሊት' : 'Night',
+    };
+    final lightGlyph = switch (light) {
+      LampLight.dawn => '🌅',
+      LampLight.noon => '☀️',
+      LampLight.dusk => '🌇',
+      LampLight.night => '🌙',
+    };
+    final lightTint = switch (light) {
+      LampLight.dawn => const Color(0x14C8A96E),
+      LampLight.noon => const Color(0x149FD0F0),
+      LampLight.dusk => const Color(0x14E8965C),
+      LampLight.night => const Color(0x148F8FD0),
+    };
     final c = AppColors.of(context);
     final l = AppLocalizations.of(context)!;
     return Column(
       children: [
         Divider(height: 1, thickness: 0.5, color: c.border.withValues(alpha: 0.15)),
         SizedBox(height: _h(AppSpacing.md)),
-        Container(
-          width: double.infinity,
-          padding: EdgeInsets.all(_h(AppSpacing.cardPadding)),
-          decoration: BoxDecoration(
-            color: c.textPrimary.withValues(alpha: 0.05),
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => context.go('/threshold'),
             borderRadius: BorderRadius.circular(8),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                '"${scripture.text}"',
-                style: AppTextStyles.of(context).displaySmall.copyWith(
-                  fontFamily: 'CormorantGaramond',
-                  fontStyle: FontStyle.italic,
-                  height: 1.6,
-                  fontSize: 20,
-                  color: c.textSecondary.withValues(alpha: 0.85),
-                ),
-                textAlign: TextAlign.center,
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(_h(AppSpacing.cardPadding)),
+              decoration: BoxDecoration(
+                color: lightTint,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: c.border.withValues(alpha: 0.15)),
               ),
-              SizedBox(height: _h(AppSpacing.sm)),
-              Text(
-                scripture.reference,
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: c.primary.withValues(alpha: 0.7),
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              if (scripture.textAm != null) ...[
-                SizedBox(height: _h(AppSpacing.sm)),
-                Text(
-                  scripture.textAm!,
-                  style: AppTextStyles.amharicBody.copyWith(
-                    fontSize: 13,
-                    height: 1.5,
-                    fontWeight: FontWeight.w500,
-                    color: c.textSecondary.withValues(alpha: 0.9),
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-              SizedBox(height: _h(AppSpacing.md)),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Material(color: Colors.transparent, child: InkWell(
-                    onTap: () => context.go('/bible'),
-                    borderRadius: BorderRadius.circular(4),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: _h(AppSpacing.sm), vertical: _h(AppSpacing.xs)),
-                      child: Text(l.listen, style: AppTextStyles.bodySmall.copyWith(fontSize: 12, color: c.textMuted)),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(lightGlyph, style: const TextStyle(fontSize: 13)),
+                      SizedBox(width: _h(AppSpacing.xs)),
+                      Text(
+                        '$lightLabel · ${_isAm ? 'የዕለቱ ክር' : "Today's Thread"}',
+                        style: AppTextStyles.bodySmall.copyWith(fontSize: 11, color: c.textMuted),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: _h(AppSpacing.sm)),
+                  Text(
+                    '"${scripture.text}"',
+                    style: AppTextStyles.of(context).displaySmall.copyWith(
+                      fontFamily: 'CormorantGaramond',
+                      fontStyle: FontStyle.italic,
+                      height: 1.6,
+                      fontSize: 20,
+                      color: c.textSecondary.withValues(alpha: 0.85),
                     ),
-                  )),
-                  SizedBox(width: _h(AppSpacing.xs)),
-                  Text('·', style: TextStyle(color: c.border)),
-                  SizedBox(width: _h(AppSpacing.xs)),
-                  Material(color: Colors.transparent, child: InkWell(
-                    onTap: () => context.go('/bible'),
-                    borderRadius: BorderRadius.circular(4),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: _h(AppSpacing.sm), vertical: _h(AppSpacing.xs)),
-                      child: Text(l.read, style: AppTextStyles.bodySmall.copyWith(fontSize: 12, color: c.textMuted)),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: _h(AppSpacing.sm)),
+                  Text(
+                    scripture.reference,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: c.primary.withValues(alpha: 0.7),
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.5,
                     ),
-                  )),
+                    textAlign: TextAlign.center,
+                  ),
+                  if (scripture.textAm != null) ...[
+                    SizedBox(height: _h(AppSpacing.sm)),
+                    Text(
+                      scripture.textAm!,
+                      style: AppTextStyles.amharicBody.copyWith(
+                        fontSize: 13,
+                        height: 1.5,
+                        fontWeight: FontWeight.w500,
+                        color: c.textSecondary.withValues(alpha: 0.9),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                  SizedBox(height: _h(AppSpacing.md)),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Material(color: Colors.transparent, child: InkWell(
+                        onTap: () => context.go('/bible'),
+                        borderRadius: BorderRadius.circular(4),
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: _h(AppSpacing.sm), vertical: _h(AppSpacing.xs)),
+                          child: Text(l.listen, style: AppTextStyles.bodySmall.copyWith(fontSize: 12, color: c.textMuted)),
+                        ),
+                      )),
+                      SizedBox(width: _h(AppSpacing.xs)),
+                      Text('·', style: TextStyle(color: c.border)),
+                      SizedBox(width: _h(AppSpacing.xs)),
+                      Material(color: Colors.transparent, child: InkWell(
+                        onTap: () => context.go('/threshold'),
+                        borderRadius: BorderRadius.circular(4),
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: _h(AppSpacing.sm), vertical: _h(AppSpacing.xs)),
+                          child: Text(
+                            _isAm ? 'ደፍ እወጣ' : 'Enter the Threshold',
+                            style: AppTextStyles.bodySmall.copyWith(fontSize: 12, color: c.textMuted),
+                          ),
+                        ),
+                      )),
+                    ],
+                  ),
                 ],
               ),
-            ],
+            ),
           ),
         ),
       ],

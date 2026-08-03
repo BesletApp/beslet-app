@@ -1,6 +1,5 @@
 class XpService {
   static const int habitComplete = 10;
-  static const int bibleRead = 20;
   static const int prayerComplete = 15;
   static const int skillSession = 5;
   static const int reflectionComplete = 15;
@@ -46,8 +45,8 @@ class XpService {
 
   static String nextActionSuggestion(int xp) {
     final remaining = xpToNextLevel(xp);
-    if (remaining <= 20) return 'Read 1 chapter -> +20 XP';
-    if (remaining <= 35) return 'Read + pray -> +35 XP';
+    if (remaining <= 15) return 'Complete a prayer + habit -> +25 XP';
+    if (remaining <= 30) return 'Complete habits + prayer -> +25 XP';
     if (remaining <= 50) return "Complete today's rhythm -> +50 XP";
     return 'Keep showing up daily to grow';
   }

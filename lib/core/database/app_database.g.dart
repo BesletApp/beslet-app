@@ -1499,356 +1499,6 @@ class PrayerLogsCompanion extends UpdateCompanion<PrayerLog> {
   }
 }
 
-class $BibleReadsTable extends BibleReads
-    with TableInfo<$BibleReadsTable, BibleRead> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $BibleReadsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-    'id',
-    aliasedName,
-    false,
-    hasAutoIncrement: true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
-  );
-  static const VerificationMeta _dateMeta = const VerificationMeta('date');
-  @override
-  late final GeneratedColumn<String> date = GeneratedColumn<String>(
-    'date',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _referenceMeta = const VerificationMeta(
-    'reference',
-  );
-  @override
-  late final GeneratedColumn<String> reference = GeneratedColumn<String>(
-    'reference',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _noteMeta = const VerificationMeta('note');
-  @override
-  late final GeneratedColumn<String> note = GeneratedColumn<String>(
-    'note',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _durationMinutesMeta = const VerificationMeta(
-    'durationMinutes',
-  );
-  @override
-  late final GeneratedColumn<int> durationMinutes = GeneratedColumn<int>(
-    'duration_minutes',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(10),
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    id,
-    date,
-    reference,
-    note,
-    durationMinutes,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'bible_reads';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<BibleRead> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('date')) {
-      context.handle(
-        _dateMeta,
-        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_dateMeta);
-    }
-    if (data.containsKey('reference')) {
-      context.handle(
-        _referenceMeta,
-        reference.isAcceptableOrUnknown(data['reference']!, _referenceMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_referenceMeta);
-    }
-    if (data.containsKey('note')) {
-      context.handle(
-        _noteMeta,
-        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
-      );
-    }
-    if (data.containsKey('duration_minutes')) {
-      context.handle(
-        _durationMinutesMeta,
-        durationMinutes.isAcceptableOrUnknown(
-          data['duration_minutes']!,
-          _durationMinutesMeta,
-        ),
-      );
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  BibleRead map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return BibleRead(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}id'],
-      )!,
-      date: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}date'],
-      )!,
-      reference: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}reference'],
-      )!,
-      note: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}note'],
-      ),
-      durationMinutes: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}duration_minutes'],
-      )!,
-    );
-  }
-
-  @override
-  $BibleReadsTable createAlias(String alias) {
-    return $BibleReadsTable(attachedDatabase, alias);
-  }
-}
-
-class BibleRead extends DataClass implements Insertable<BibleRead> {
-  final int id;
-  final String date;
-  final String reference;
-  final String? note;
-  final int durationMinutes;
-  const BibleRead({
-    required this.id,
-    required this.date,
-    required this.reference,
-    this.note,
-    required this.durationMinutes,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['date'] = Variable<String>(date);
-    map['reference'] = Variable<String>(reference);
-    if (!nullToAbsent || note != null) {
-      map['note'] = Variable<String>(note);
-    }
-    map['duration_minutes'] = Variable<int>(durationMinutes);
-    return map;
-  }
-
-  BibleReadsCompanion toCompanion(bool nullToAbsent) {
-    return BibleReadsCompanion(
-      id: Value(id),
-      date: Value(date),
-      reference: Value(reference),
-      note: note == null && nullToAbsent ? const Value.absent() : Value(note),
-      durationMinutes: Value(durationMinutes),
-    );
-  }
-
-  factory BibleRead.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return BibleRead(
-      id: serializer.fromJson<int>(json['id']),
-      date: serializer.fromJson<String>(json['date']),
-      reference: serializer.fromJson<String>(json['reference']),
-      note: serializer.fromJson<String?>(json['note']),
-      durationMinutes: serializer.fromJson<int>(json['durationMinutes']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
-      'date': serializer.toJson<String>(date),
-      'reference': serializer.toJson<String>(reference),
-      'note': serializer.toJson<String?>(note),
-      'durationMinutes': serializer.toJson<int>(durationMinutes),
-    };
-  }
-
-  BibleRead copyWith({
-    int? id,
-    String? date,
-    String? reference,
-    Value<String?> note = const Value.absent(),
-    int? durationMinutes,
-  }) => BibleRead(
-    id: id ?? this.id,
-    date: date ?? this.date,
-    reference: reference ?? this.reference,
-    note: note.present ? note.value : this.note,
-    durationMinutes: durationMinutes ?? this.durationMinutes,
-  );
-  BibleRead copyWithCompanion(BibleReadsCompanion data) {
-    return BibleRead(
-      id: data.id.present ? data.id.value : this.id,
-      date: data.date.present ? data.date.value : this.date,
-      reference: data.reference.present ? data.reference.value : this.reference,
-      note: data.note.present ? data.note.value : this.note,
-      durationMinutes: data.durationMinutes.present
-          ? data.durationMinutes.value
-          : this.durationMinutes,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('BibleRead(')
-          ..write('id: $id, ')
-          ..write('date: $date, ')
-          ..write('reference: $reference, ')
-          ..write('note: $note, ')
-          ..write('durationMinutes: $durationMinutes')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(id, date, reference, note, durationMinutes);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is BibleRead &&
-          other.id == this.id &&
-          other.date == this.date &&
-          other.reference == this.reference &&
-          other.note == this.note &&
-          other.durationMinutes == this.durationMinutes);
-}
-
-class BibleReadsCompanion extends UpdateCompanion<BibleRead> {
-  final Value<int> id;
-  final Value<String> date;
-  final Value<String> reference;
-  final Value<String?> note;
-  final Value<int> durationMinutes;
-  const BibleReadsCompanion({
-    this.id = const Value.absent(),
-    this.date = const Value.absent(),
-    this.reference = const Value.absent(),
-    this.note = const Value.absent(),
-    this.durationMinutes = const Value.absent(),
-  });
-  BibleReadsCompanion.insert({
-    this.id = const Value.absent(),
-    required String date,
-    required String reference,
-    this.note = const Value.absent(),
-    this.durationMinutes = const Value.absent(),
-  }) : date = Value(date),
-       reference = Value(reference);
-  static Insertable<BibleRead> custom({
-    Expression<int>? id,
-    Expression<String>? date,
-    Expression<String>? reference,
-    Expression<String>? note,
-    Expression<int>? durationMinutes,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (date != null) 'date': date,
-      if (reference != null) 'reference': reference,
-      if (note != null) 'note': note,
-      if (durationMinutes != null) 'duration_minutes': durationMinutes,
-    });
-  }
-
-  BibleReadsCompanion copyWith({
-    Value<int>? id,
-    Value<String>? date,
-    Value<String>? reference,
-    Value<String?>? note,
-    Value<int>? durationMinutes,
-  }) {
-    return BibleReadsCompanion(
-      id: id ?? this.id,
-      date: date ?? this.date,
-      reference: reference ?? this.reference,
-      note: note ?? this.note,
-      durationMinutes: durationMinutes ?? this.durationMinutes,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
-    }
-    if (date.present) {
-      map['date'] = Variable<String>(date.value);
-    }
-    if (reference.present) {
-      map['reference'] = Variable<String>(reference.value);
-    }
-    if (note.present) {
-      map['note'] = Variable<String>(note.value);
-    }
-    if (durationMinutes.present) {
-      map['duration_minutes'] = Variable<int>(durationMinutes.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('BibleReadsCompanion(')
-          ..write('id: $id, ')
-          ..write('date: $date, ')
-          ..write('reference: $reference, ')
-          ..write('note: $note, ')
-          ..write('durationMinutes: $durationMinutes')
-          ..write(')'))
-        .toString();
-  }
-}
-
 class $SkillsTable extends Skills with TableInfo<$SkillsTable, Skill> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -7098,1451 +6748,6 @@ class SoulLogCompanion extends UpdateCompanion<SoulLogData> {
   }
 }
 
-class $BibleSessionsTable extends BibleSessions
-    with TableInfo<$BibleSessionsTable, BibleSession> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $BibleSessionsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<String> id = GeneratedColumn<String>(
-    'id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _dateMeta = const VerificationMeta('date');
-  @override
-  late final GeneratedColumn<String> date = GeneratedColumn<String>(
-    'date',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _bookIdMeta = const VerificationMeta('bookId');
-  @override
-  late final GeneratedColumn<String> bookId = GeneratedColumn<String>(
-    'book_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _chapterStartMeta = const VerificationMeta(
-    'chapterStart',
-  );
-  @override
-  late final GeneratedColumn<int> chapterStart = GeneratedColumn<int>(
-    'chapter_start',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _chapterEndMeta = const VerificationMeta(
-    'chapterEnd',
-  );
-  @override
-  late final GeneratedColumn<int> chapterEnd = GeneratedColumn<int>(
-    'chapter_end',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _durationMinutesMeta = const VerificationMeta(
-    'durationMinutes',
-  );
-  @override
-  late final GeneratedColumn<int> durationMinutes = GeneratedColumn<int>(
-    'duration_minutes',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(0),
-  );
-  static const VerificationMeta _reflectionMeta = const VerificationMeta(
-    'reflection',
-  );
-  @override
-  late final GeneratedColumn<String> reflection = GeneratedColumn<String>(
-    'reflection',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _isPlanReadingMeta = const VerificationMeta(
-    'isPlanReading',
-  );
-  @override
-  late final GeneratedColumn<bool> isPlanReading = GeneratedColumn<bool>(
-    'is_plan_reading',
-    aliasedName,
-    false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("is_plan_reading" IN (0, 1))',
-    ),
-    defaultValue: const Constant(false),
-  );
-  static const VerificationMeta _planDayMeta = const VerificationMeta(
-    'planDay',
-  );
-  @override
-  late final GeneratedColumn<String> planDay = GeneratedColumn<String>(
-    'plan_day',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
-  );
-  @override
-  late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
-    'created_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    id,
-    date,
-    bookId,
-    chapterStart,
-    chapterEnd,
-    durationMinutes,
-    reflection,
-    isPlanReading,
-    planDay,
-    createdAt,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'bible_sessions';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<BibleSession> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
-    }
-    if (data.containsKey('date')) {
-      context.handle(
-        _dateMeta,
-        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_dateMeta);
-    }
-    if (data.containsKey('book_id')) {
-      context.handle(
-        _bookIdMeta,
-        bookId.isAcceptableOrUnknown(data['book_id']!, _bookIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_bookIdMeta);
-    }
-    if (data.containsKey('chapter_start')) {
-      context.handle(
-        _chapterStartMeta,
-        chapterStart.isAcceptableOrUnknown(
-          data['chapter_start']!,
-          _chapterStartMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_chapterStartMeta);
-    }
-    if (data.containsKey('chapter_end')) {
-      context.handle(
-        _chapterEndMeta,
-        chapterEnd.isAcceptableOrUnknown(data['chapter_end']!, _chapterEndMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_chapterEndMeta);
-    }
-    if (data.containsKey('duration_minutes')) {
-      context.handle(
-        _durationMinutesMeta,
-        durationMinutes.isAcceptableOrUnknown(
-          data['duration_minutes']!,
-          _durationMinutesMeta,
-        ),
-      );
-    }
-    if (data.containsKey('reflection')) {
-      context.handle(
-        _reflectionMeta,
-        reflection.isAcceptableOrUnknown(data['reflection']!, _reflectionMeta),
-      );
-    }
-    if (data.containsKey('is_plan_reading')) {
-      context.handle(
-        _isPlanReadingMeta,
-        isPlanReading.isAcceptableOrUnknown(
-          data['is_plan_reading']!,
-          _isPlanReadingMeta,
-        ),
-      );
-    }
-    if (data.containsKey('plan_day')) {
-      context.handle(
-        _planDayMeta,
-        planDay.isAcceptableOrUnknown(data['plan_day']!, _planDayMeta),
-      );
-    }
-    if (data.containsKey('created_at')) {
-      context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_createdAtMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  BibleSession map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return BibleSession(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}id'],
-      )!,
-      date: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}date'],
-      )!,
-      bookId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}book_id'],
-      )!,
-      chapterStart: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}chapter_start'],
-      )!,
-      chapterEnd: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}chapter_end'],
-      )!,
-      durationMinutes: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}duration_minutes'],
-      )!,
-      reflection: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}reflection'],
-      ),
-      isPlanReading: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}is_plan_reading'],
-      )!,
-      planDay: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}plan_day'],
-      ),
-      createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}created_at'],
-      )!,
-    );
-  }
-
-  @override
-  $BibleSessionsTable createAlias(String alias) {
-    return $BibleSessionsTable(attachedDatabase, alias);
-  }
-}
-
-class BibleSession extends DataClass implements Insertable<BibleSession> {
-  final String id;
-  final String date;
-  final String bookId;
-  final int chapterStart;
-  final int chapterEnd;
-  final int durationMinutes;
-  final String? reflection;
-  final bool isPlanReading;
-  final String? planDay;
-  final String createdAt;
-  const BibleSession({
-    required this.id,
-    required this.date,
-    required this.bookId,
-    required this.chapterStart,
-    required this.chapterEnd,
-    required this.durationMinutes,
-    this.reflection,
-    required this.isPlanReading,
-    this.planDay,
-    required this.createdAt,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<String>(id);
-    map['date'] = Variable<String>(date);
-    map['book_id'] = Variable<String>(bookId);
-    map['chapter_start'] = Variable<int>(chapterStart);
-    map['chapter_end'] = Variable<int>(chapterEnd);
-    map['duration_minutes'] = Variable<int>(durationMinutes);
-    if (!nullToAbsent || reflection != null) {
-      map['reflection'] = Variable<String>(reflection);
-    }
-    map['is_plan_reading'] = Variable<bool>(isPlanReading);
-    if (!nullToAbsent || planDay != null) {
-      map['plan_day'] = Variable<String>(planDay);
-    }
-    map['created_at'] = Variable<String>(createdAt);
-    return map;
-  }
-
-  BibleSessionsCompanion toCompanion(bool nullToAbsent) {
-    return BibleSessionsCompanion(
-      id: Value(id),
-      date: Value(date),
-      bookId: Value(bookId),
-      chapterStart: Value(chapterStart),
-      chapterEnd: Value(chapterEnd),
-      durationMinutes: Value(durationMinutes),
-      reflection: reflection == null && nullToAbsent
-          ? const Value.absent()
-          : Value(reflection),
-      isPlanReading: Value(isPlanReading),
-      planDay: planDay == null && nullToAbsent
-          ? const Value.absent()
-          : Value(planDay),
-      createdAt: Value(createdAt),
-    );
-  }
-
-  factory BibleSession.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return BibleSession(
-      id: serializer.fromJson<String>(json['id']),
-      date: serializer.fromJson<String>(json['date']),
-      bookId: serializer.fromJson<String>(json['bookId']),
-      chapterStart: serializer.fromJson<int>(json['chapterStart']),
-      chapterEnd: serializer.fromJson<int>(json['chapterEnd']),
-      durationMinutes: serializer.fromJson<int>(json['durationMinutes']),
-      reflection: serializer.fromJson<String?>(json['reflection']),
-      isPlanReading: serializer.fromJson<bool>(json['isPlanReading']),
-      planDay: serializer.fromJson<String?>(json['planDay']),
-      createdAt: serializer.fromJson<String>(json['createdAt']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<String>(id),
-      'date': serializer.toJson<String>(date),
-      'bookId': serializer.toJson<String>(bookId),
-      'chapterStart': serializer.toJson<int>(chapterStart),
-      'chapterEnd': serializer.toJson<int>(chapterEnd),
-      'durationMinutes': serializer.toJson<int>(durationMinutes),
-      'reflection': serializer.toJson<String?>(reflection),
-      'isPlanReading': serializer.toJson<bool>(isPlanReading),
-      'planDay': serializer.toJson<String?>(planDay),
-      'createdAt': serializer.toJson<String>(createdAt),
-    };
-  }
-
-  BibleSession copyWith({
-    String? id,
-    String? date,
-    String? bookId,
-    int? chapterStart,
-    int? chapterEnd,
-    int? durationMinutes,
-    Value<String?> reflection = const Value.absent(),
-    bool? isPlanReading,
-    Value<String?> planDay = const Value.absent(),
-    String? createdAt,
-  }) => BibleSession(
-    id: id ?? this.id,
-    date: date ?? this.date,
-    bookId: bookId ?? this.bookId,
-    chapterStart: chapterStart ?? this.chapterStart,
-    chapterEnd: chapterEnd ?? this.chapterEnd,
-    durationMinutes: durationMinutes ?? this.durationMinutes,
-    reflection: reflection.present ? reflection.value : this.reflection,
-    isPlanReading: isPlanReading ?? this.isPlanReading,
-    planDay: planDay.present ? planDay.value : this.planDay,
-    createdAt: createdAt ?? this.createdAt,
-  );
-  BibleSession copyWithCompanion(BibleSessionsCompanion data) {
-    return BibleSession(
-      id: data.id.present ? data.id.value : this.id,
-      date: data.date.present ? data.date.value : this.date,
-      bookId: data.bookId.present ? data.bookId.value : this.bookId,
-      chapterStart: data.chapterStart.present
-          ? data.chapterStart.value
-          : this.chapterStart,
-      chapterEnd: data.chapterEnd.present
-          ? data.chapterEnd.value
-          : this.chapterEnd,
-      durationMinutes: data.durationMinutes.present
-          ? data.durationMinutes.value
-          : this.durationMinutes,
-      reflection: data.reflection.present
-          ? data.reflection.value
-          : this.reflection,
-      isPlanReading: data.isPlanReading.present
-          ? data.isPlanReading.value
-          : this.isPlanReading,
-      planDay: data.planDay.present ? data.planDay.value : this.planDay,
-      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('BibleSession(')
-          ..write('id: $id, ')
-          ..write('date: $date, ')
-          ..write('bookId: $bookId, ')
-          ..write('chapterStart: $chapterStart, ')
-          ..write('chapterEnd: $chapterEnd, ')
-          ..write('durationMinutes: $durationMinutes, ')
-          ..write('reflection: $reflection, ')
-          ..write('isPlanReading: $isPlanReading, ')
-          ..write('planDay: $planDay, ')
-          ..write('createdAt: $createdAt')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(
-    id,
-    date,
-    bookId,
-    chapterStart,
-    chapterEnd,
-    durationMinutes,
-    reflection,
-    isPlanReading,
-    planDay,
-    createdAt,
-  );
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is BibleSession &&
-          other.id == this.id &&
-          other.date == this.date &&
-          other.bookId == this.bookId &&
-          other.chapterStart == this.chapterStart &&
-          other.chapterEnd == this.chapterEnd &&
-          other.durationMinutes == this.durationMinutes &&
-          other.reflection == this.reflection &&
-          other.isPlanReading == this.isPlanReading &&
-          other.planDay == this.planDay &&
-          other.createdAt == this.createdAt);
-}
-
-class BibleSessionsCompanion extends UpdateCompanion<BibleSession> {
-  final Value<String> id;
-  final Value<String> date;
-  final Value<String> bookId;
-  final Value<int> chapterStart;
-  final Value<int> chapterEnd;
-  final Value<int> durationMinutes;
-  final Value<String?> reflection;
-  final Value<bool> isPlanReading;
-  final Value<String?> planDay;
-  final Value<String> createdAt;
-  final Value<int> rowid;
-  const BibleSessionsCompanion({
-    this.id = const Value.absent(),
-    this.date = const Value.absent(),
-    this.bookId = const Value.absent(),
-    this.chapterStart = const Value.absent(),
-    this.chapterEnd = const Value.absent(),
-    this.durationMinutes = const Value.absent(),
-    this.reflection = const Value.absent(),
-    this.isPlanReading = const Value.absent(),
-    this.planDay = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.rowid = const Value.absent(),
-  });
-  BibleSessionsCompanion.insert({
-    required String id,
-    required String date,
-    required String bookId,
-    required int chapterStart,
-    required int chapterEnd,
-    this.durationMinutes = const Value.absent(),
-    this.reflection = const Value.absent(),
-    this.isPlanReading = const Value.absent(),
-    this.planDay = const Value.absent(),
-    required String createdAt,
-    this.rowid = const Value.absent(),
-  }) : id = Value(id),
-       date = Value(date),
-       bookId = Value(bookId),
-       chapterStart = Value(chapterStart),
-       chapterEnd = Value(chapterEnd),
-       createdAt = Value(createdAt);
-  static Insertable<BibleSession> custom({
-    Expression<String>? id,
-    Expression<String>? date,
-    Expression<String>? bookId,
-    Expression<int>? chapterStart,
-    Expression<int>? chapterEnd,
-    Expression<int>? durationMinutes,
-    Expression<String>? reflection,
-    Expression<bool>? isPlanReading,
-    Expression<String>? planDay,
-    Expression<String>? createdAt,
-    Expression<int>? rowid,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (date != null) 'date': date,
-      if (bookId != null) 'book_id': bookId,
-      if (chapterStart != null) 'chapter_start': chapterStart,
-      if (chapterEnd != null) 'chapter_end': chapterEnd,
-      if (durationMinutes != null) 'duration_minutes': durationMinutes,
-      if (reflection != null) 'reflection': reflection,
-      if (isPlanReading != null) 'is_plan_reading': isPlanReading,
-      if (planDay != null) 'plan_day': planDay,
-      if (createdAt != null) 'created_at': createdAt,
-      if (rowid != null) 'rowid': rowid,
-    });
-  }
-
-  BibleSessionsCompanion copyWith({
-    Value<String>? id,
-    Value<String>? date,
-    Value<String>? bookId,
-    Value<int>? chapterStart,
-    Value<int>? chapterEnd,
-    Value<int>? durationMinutes,
-    Value<String?>? reflection,
-    Value<bool>? isPlanReading,
-    Value<String?>? planDay,
-    Value<String>? createdAt,
-    Value<int>? rowid,
-  }) {
-    return BibleSessionsCompanion(
-      id: id ?? this.id,
-      date: date ?? this.date,
-      bookId: bookId ?? this.bookId,
-      chapterStart: chapterStart ?? this.chapterStart,
-      chapterEnd: chapterEnd ?? this.chapterEnd,
-      durationMinutes: durationMinutes ?? this.durationMinutes,
-      reflection: reflection ?? this.reflection,
-      isPlanReading: isPlanReading ?? this.isPlanReading,
-      planDay: planDay ?? this.planDay,
-      createdAt: createdAt ?? this.createdAt,
-      rowid: rowid ?? this.rowid,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<String>(id.value);
-    }
-    if (date.present) {
-      map['date'] = Variable<String>(date.value);
-    }
-    if (bookId.present) {
-      map['book_id'] = Variable<String>(bookId.value);
-    }
-    if (chapterStart.present) {
-      map['chapter_start'] = Variable<int>(chapterStart.value);
-    }
-    if (chapterEnd.present) {
-      map['chapter_end'] = Variable<int>(chapterEnd.value);
-    }
-    if (durationMinutes.present) {
-      map['duration_minutes'] = Variable<int>(durationMinutes.value);
-    }
-    if (reflection.present) {
-      map['reflection'] = Variable<String>(reflection.value);
-    }
-    if (isPlanReading.present) {
-      map['is_plan_reading'] = Variable<bool>(isPlanReading.value);
-    }
-    if (planDay.present) {
-      map['plan_day'] = Variable<String>(planDay.value);
-    }
-    if (createdAt.present) {
-      map['created_at'] = Variable<String>(createdAt.value);
-    }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('BibleSessionsCompanion(')
-          ..write('id: $id, ')
-          ..write('date: $date, ')
-          ..write('bookId: $bookId, ')
-          ..write('chapterStart: $chapterStart, ')
-          ..write('chapterEnd: $chapterEnd, ')
-          ..write('durationMinutes: $durationMinutes, ')
-          ..write('reflection: $reflection, ')
-          ..write('isPlanReading: $isPlanReading, ')
-          ..write('planDay: $planDay, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class $ReadingLoopsTable extends ReadingLoops
-    with TableInfo<$ReadingLoopsTable, ReadingLoop> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $ReadingLoopsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<String> id = GeneratedColumn<String>(
-    'id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _planIdMeta = const VerificationMeta('planId');
-  @override
-  late final GeneratedColumn<String> planId = GeneratedColumn<String>(
-    'plan_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _durationMeta = const VerificationMeta(
-    'duration',
-  );
-  @override
-  late final GeneratedColumn<int> duration = GeneratedColumn<int>(
-    'duration',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _startChapterMeta = const VerificationMeta(
-    'startChapter',
-  );
-  @override
-  late final GeneratedColumn<int> startChapter = GeneratedColumn<int>(
-    'start_chapter',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _startDateMeta = const VerificationMeta(
-    'startDate',
-  );
-  @override
-  late final GeneratedColumn<String> startDate = GeneratedColumn<String>(
-    'start_date',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _statusMeta = const VerificationMeta('status');
-  @override
-  late final GeneratedColumn<String> status = GeneratedColumn<String>(
-    'status',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _loopNumberMeta = const VerificationMeta(
-    'loopNumber',
-  );
-  @override
-  late final GeneratedColumn<int> loopNumber = GeneratedColumn<int>(
-    'loop_number',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
-  );
-  @override
-  late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
-    'created_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    id,
-    planId,
-    duration,
-    startChapter,
-    startDate,
-    status,
-    loopNumber,
-    createdAt,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'reading_loops';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<ReadingLoop> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
-    }
-    if (data.containsKey('plan_id')) {
-      context.handle(
-        _planIdMeta,
-        planId.isAcceptableOrUnknown(data['plan_id']!, _planIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_planIdMeta);
-    }
-    if (data.containsKey('duration')) {
-      context.handle(
-        _durationMeta,
-        duration.isAcceptableOrUnknown(data['duration']!, _durationMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_durationMeta);
-    }
-    if (data.containsKey('start_chapter')) {
-      context.handle(
-        _startChapterMeta,
-        startChapter.isAcceptableOrUnknown(
-          data['start_chapter']!,
-          _startChapterMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_startChapterMeta);
-    }
-    if (data.containsKey('start_date')) {
-      context.handle(
-        _startDateMeta,
-        startDate.isAcceptableOrUnknown(data['start_date']!, _startDateMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_startDateMeta);
-    }
-    if (data.containsKey('status')) {
-      context.handle(
-        _statusMeta,
-        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_statusMeta);
-    }
-    if (data.containsKey('loop_number')) {
-      context.handle(
-        _loopNumberMeta,
-        loopNumber.isAcceptableOrUnknown(data['loop_number']!, _loopNumberMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_loopNumberMeta);
-    }
-    if (data.containsKey('created_at')) {
-      context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_createdAtMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  ReadingLoop map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return ReadingLoop(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}id'],
-      )!,
-      planId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}plan_id'],
-      )!,
-      duration: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}duration'],
-      )!,
-      startChapter: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}start_chapter'],
-      )!,
-      startDate: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}start_date'],
-      )!,
-      status: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}status'],
-      )!,
-      loopNumber: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}loop_number'],
-      )!,
-      createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}created_at'],
-      )!,
-    );
-  }
-
-  @override
-  $ReadingLoopsTable createAlias(String alias) {
-    return $ReadingLoopsTable(attachedDatabase, alias);
-  }
-}
-
-class ReadingLoop extends DataClass implements Insertable<ReadingLoop> {
-  final String id;
-  final String planId;
-  final int duration;
-  final int startChapter;
-  final String startDate;
-  final String status;
-  final int loopNumber;
-  final String createdAt;
-  const ReadingLoop({
-    required this.id,
-    required this.planId,
-    required this.duration,
-    required this.startChapter,
-    required this.startDate,
-    required this.status,
-    required this.loopNumber,
-    required this.createdAt,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<String>(id);
-    map['plan_id'] = Variable<String>(planId);
-    map['duration'] = Variable<int>(duration);
-    map['start_chapter'] = Variable<int>(startChapter);
-    map['start_date'] = Variable<String>(startDate);
-    map['status'] = Variable<String>(status);
-    map['loop_number'] = Variable<int>(loopNumber);
-    map['created_at'] = Variable<String>(createdAt);
-    return map;
-  }
-
-  ReadingLoopsCompanion toCompanion(bool nullToAbsent) {
-    return ReadingLoopsCompanion(
-      id: Value(id),
-      planId: Value(planId),
-      duration: Value(duration),
-      startChapter: Value(startChapter),
-      startDate: Value(startDate),
-      status: Value(status),
-      loopNumber: Value(loopNumber),
-      createdAt: Value(createdAt),
-    );
-  }
-
-  factory ReadingLoop.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return ReadingLoop(
-      id: serializer.fromJson<String>(json['id']),
-      planId: serializer.fromJson<String>(json['planId']),
-      duration: serializer.fromJson<int>(json['duration']),
-      startChapter: serializer.fromJson<int>(json['startChapter']),
-      startDate: serializer.fromJson<String>(json['startDate']),
-      status: serializer.fromJson<String>(json['status']),
-      loopNumber: serializer.fromJson<int>(json['loopNumber']),
-      createdAt: serializer.fromJson<String>(json['createdAt']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<String>(id),
-      'planId': serializer.toJson<String>(planId),
-      'duration': serializer.toJson<int>(duration),
-      'startChapter': serializer.toJson<int>(startChapter),
-      'startDate': serializer.toJson<String>(startDate),
-      'status': serializer.toJson<String>(status),
-      'loopNumber': serializer.toJson<int>(loopNumber),
-      'createdAt': serializer.toJson<String>(createdAt),
-    };
-  }
-
-  ReadingLoop copyWith({
-    String? id,
-    String? planId,
-    int? duration,
-    int? startChapter,
-    String? startDate,
-    String? status,
-    int? loopNumber,
-    String? createdAt,
-  }) => ReadingLoop(
-    id: id ?? this.id,
-    planId: planId ?? this.planId,
-    duration: duration ?? this.duration,
-    startChapter: startChapter ?? this.startChapter,
-    startDate: startDate ?? this.startDate,
-    status: status ?? this.status,
-    loopNumber: loopNumber ?? this.loopNumber,
-    createdAt: createdAt ?? this.createdAt,
-  );
-  ReadingLoop copyWithCompanion(ReadingLoopsCompanion data) {
-    return ReadingLoop(
-      id: data.id.present ? data.id.value : this.id,
-      planId: data.planId.present ? data.planId.value : this.planId,
-      duration: data.duration.present ? data.duration.value : this.duration,
-      startChapter: data.startChapter.present
-          ? data.startChapter.value
-          : this.startChapter,
-      startDate: data.startDate.present ? data.startDate.value : this.startDate,
-      status: data.status.present ? data.status.value : this.status,
-      loopNumber: data.loopNumber.present
-          ? data.loopNumber.value
-          : this.loopNumber,
-      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('ReadingLoop(')
-          ..write('id: $id, ')
-          ..write('planId: $planId, ')
-          ..write('duration: $duration, ')
-          ..write('startChapter: $startChapter, ')
-          ..write('startDate: $startDate, ')
-          ..write('status: $status, ')
-          ..write('loopNumber: $loopNumber, ')
-          ..write('createdAt: $createdAt')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(
-    id,
-    planId,
-    duration,
-    startChapter,
-    startDate,
-    status,
-    loopNumber,
-    createdAt,
-  );
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is ReadingLoop &&
-          other.id == this.id &&
-          other.planId == this.planId &&
-          other.duration == this.duration &&
-          other.startChapter == this.startChapter &&
-          other.startDate == this.startDate &&
-          other.status == this.status &&
-          other.loopNumber == this.loopNumber &&
-          other.createdAt == this.createdAt);
-}
-
-class ReadingLoopsCompanion extends UpdateCompanion<ReadingLoop> {
-  final Value<String> id;
-  final Value<String> planId;
-  final Value<int> duration;
-  final Value<int> startChapter;
-  final Value<String> startDate;
-  final Value<String> status;
-  final Value<int> loopNumber;
-  final Value<String> createdAt;
-  final Value<int> rowid;
-  const ReadingLoopsCompanion({
-    this.id = const Value.absent(),
-    this.planId = const Value.absent(),
-    this.duration = const Value.absent(),
-    this.startChapter = const Value.absent(),
-    this.startDate = const Value.absent(),
-    this.status = const Value.absent(),
-    this.loopNumber = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.rowid = const Value.absent(),
-  });
-  ReadingLoopsCompanion.insert({
-    required String id,
-    required String planId,
-    required int duration,
-    required int startChapter,
-    required String startDate,
-    required String status,
-    required int loopNumber,
-    required String createdAt,
-    this.rowid = const Value.absent(),
-  }) : id = Value(id),
-       planId = Value(planId),
-       duration = Value(duration),
-       startChapter = Value(startChapter),
-       startDate = Value(startDate),
-       status = Value(status),
-       loopNumber = Value(loopNumber),
-       createdAt = Value(createdAt);
-  static Insertable<ReadingLoop> custom({
-    Expression<String>? id,
-    Expression<String>? planId,
-    Expression<int>? duration,
-    Expression<int>? startChapter,
-    Expression<String>? startDate,
-    Expression<String>? status,
-    Expression<int>? loopNumber,
-    Expression<String>? createdAt,
-    Expression<int>? rowid,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (planId != null) 'plan_id': planId,
-      if (duration != null) 'duration': duration,
-      if (startChapter != null) 'start_chapter': startChapter,
-      if (startDate != null) 'start_date': startDate,
-      if (status != null) 'status': status,
-      if (loopNumber != null) 'loop_number': loopNumber,
-      if (createdAt != null) 'created_at': createdAt,
-      if (rowid != null) 'rowid': rowid,
-    });
-  }
-
-  ReadingLoopsCompanion copyWith({
-    Value<String>? id,
-    Value<String>? planId,
-    Value<int>? duration,
-    Value<int>? startChapter,
-    Value<String>? startDate,
-    Value<String>? status,
-    Value<int>? loopNumber,
-    Value<String>? createdAt,
-    Value<int>? rowid,
-  }) {
-    return ReadingLoopsCompanion(
-      id: id ?? this.id,
-      planId: planId ?? this.planId,
-      duration: duration ?? this.duration,
-      startChapter: startChapter ?? this.startChapter,
-      startDate: startDate ?? this.startDate,
-      status: status ?? this.status,
-      loopNumber: loopNumber ?? this.loopNumber,
-      createdAt: createdAt ?? this.createdAt,
-      rowid: rowid ?? this.rowid,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<String>(id.value);
-    }
-    if (planId.present) {
-      map['plan_id'] = Variable<String>(planId.value);
-    }
-    if (duration.present) {
-      map['duration'] = Variable<int>(duration.value);
-    }
-    if (startChapter.present) {
-      map['start_chapter'] = Variable<int>(startChapter.value);
-    }
-    if (startDate.present) {
-      map['start_date'] = Variable<String>(startDate.value);
-    }
-    if (status.present) {
-      map['status'] = Variable<String>(status.value);
-    }
-    if (loopNumber.present) {
-      map['loop_number'] = Variable<int>(loopNumber.value);
-    }
-    if (createdAt.present) {
-      map['created_at'] = Variable<String>(createdAt.value);
-    }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('ReadingLoopsCompanion(')
-          ..write('id: $id, ')
-          ..write('planId: $planId, ')
-          ..write('duration: $duration, ')
-          ..write('startChapter: $startChapter, ')
-          ..write('startDate: $startDate, ')
-          ..write('status: $status, ')
-          ..write('loopNumber: $loopNumber, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class $WisdomNotesTable extends WisdomNotes
-    with TableInfo<$WisdomNotesTable, WisdomNote> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $WisdomNotesTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<String> id = GeneratedColumn<String>(
-    'id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _bookIdMeta = const VerificationMeta('bookId');
-  @override
-  late final GeneratedColumn<String> bookId = GeneratedColumn<String>(
-    'book_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _noteMeta = const VerificationMeta('note');
-  @override
-  late final GeneratedColumn<String> note = GeneratedColumn<String>(
-    'note',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
-  );
-  @override
-  late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
-    'created_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  @override
-  List<GeneratedColumn> get $columns => [id, bookId, note, createdAt];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'wisdom_notes';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<WisdomNote> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
-    }
-    if (data.containsKey('book_id')) {
-      context.handle(
-        _bookIdMeta,
-        bookId.isAcceptableOrUnknown(data['book_id']!, _bookIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_bookIdMeta);
-    }
-    if (data.containsKey('note')) {
-      context.handle(
-        _noteMeta,
-        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_noteMeta);
-    }
-    if (data.containsKey('created_at')) {
-      context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_createdAtMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  WisdomNote map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return WisdomNote(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}id'],
-      )!,
-      bookId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}book_id'],
-      )!,
-      note: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}note'],
-      )!,
-      createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}created_at'],
-      )!,
-    );
-  }
-
-  @override
-  $WisdomNotesTable createAlias(String alias) {
-    return $WisdomNotesTable(attachedDatabase, alias);
-  }
-}
-
-class WisdomNote extends DataClass implements Insertable<WisdomNote> {
-  final String id;
-  final String bookId;
-  final String note;
-  final String createdAt;
-  const WisdomNote({
-    required this.id,
-    required this.bookId,
-    required this.note,
-    required this.createdAt,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<String>(id);
-    map['book_id'] = Variable<String>(bookId);
-    map['note'] = Variable<String>(note);
-    map['created_at'] = Variable<String>(createdAt);
-    return map;
-  }
-
-  WisdomNotesCompanion toCompanion(bool nullToAbsent) {
-    return WisdomNotesCompanion(
-      id: Value(id),
-      bookId: Value(bookId),
-      note: Value(note),
-      createdAt: Value(createdAt),
-    );
-  }
-
-  factory WisdomNote.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return WisdomNote(
-      id: serializer.fromJson<String>(json['id']),
-      bookId: serializer.fromJson<String>(json['bookId']),
-      note: serializer.fromJson<String>(json['note']),
-      createdAt: serializer.fromJson<String>(json['createdAt']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<String>(id),
-      'bookId': serializer.toJson<String>(bookId),
-      'note': serializer.toJson<String>(note),
-      'createdAt': serializer.toJson<String>(createdAt),
-    };
-  }
-
-  WisdomNote copyWith({
-    String? id,
-    String? bookId,
-    String? note,
-    String? createdAt,
-  }) => WisdomNote(
-    id: id ?? this.id,
-    bookId: bookId ?? this.bookId,
-    note: note ?? this.note,
-    createdAt: createdAt ?? this.createdAt,
-  );
-  WisdomNote copyWithCompanion(WisdomNotesCompanion data) {
-    return WisdomNote(
-      id: data.id.present ? data.id.value : this.id,
-      bookId: data.bookId.present ? data.bookId.value : this.bookId,
-      note: data.note.present ? data.note.value : this.note,
-      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('WisdomNote(')
-          ..write('id: $id, ')
-          ..write('bookId: $bookId, ')
-          ..write('note: $note, ')
-          ..write('createdAt: $createdAt')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(id, bookId, note, createdAt);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is WisdomNote &&
-          other.id == this.id &&
-          other.bookId == this.bookId &&
-          other.note == this.note &&
-          other.createdAt == this.createdAt);
-}
-
-class WisdomNotesCompanion extends UpdateCompanion<WisdomNote> {
-  final Value<String> id;
-  final Value<String> bookId;
-  final Value<String> note;
-  final Value<String> createdAt;
-  final Value<int> rowid;
-  const WisdomNotesCompanion({
-    this.id = const Value.absent(),
-    this.bookId = const Value.absent(),
-    this.note = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.rowid = const Value.absent(),
-  });
-  WisdomNotesCompanion.insert({
-    required String id,
-    required String bookId,
-    required String note,
-    required String createdAt,
-    this.rowid = const Value.absent(),
-  }) : id = Value(id),
-       bookId = Value(bookId),
-       note = Value(note),
-       createdAt = Value(createdAt);
-  static Insertable<WisdomNote> custom({
-    Expression<String>? id,
-    Expression<String>? bookId,
-    Expression<String>? note,
-    Expression<String>? createdAt,
-    Expression<int>? rowid,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (bookId != null) 'book_id': bookId,
-      if (note != null) 'note': note,
-      if (createdAt != null) 'created_at': createdAt,
-      if (rowid != null) 'rowid': rowid,
-    });
-  }
-
-  WisdomNotesCompanion copyWith({
-    Value<String>? id,
-    Value<String>? bookId,
-    Value<String>? note,
-    Value<String>? createdAt,
-    Value<int>? rowid,
-  }) {
-    return WisdomNotesCompanion(
-      id: id ?? this.id,
-      bookId: bookId ?? this.bookId,
-      note: note ?? this.note,
-      createdAt: createdAt ?? this.createdAt,
-      rowid: rowid ?? this.rowid,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<String>(id.value);
-    }
-    if (bookId.present) {
-      map['book_id'] = Variable<String>(bookId.value);
-    }
-    if (note.present) {
-      map['note'] = Variable<String>(note.value);
-    }
-    if (createdAt.present) {
-      map['created_at'] = Variable<String>(createdAt.value);
-    }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('WisdomNotesCompanion(')
-          ..write('id: $id, ')
-          ..write('bookId: $bookId, ')
-          ..write('note: $note, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
 class $AudioCacheTable extends AudioCache
     with TableInfo<$AudioCacheTable, AudioCacheData> {
   @override
@@ -8622,29 +6827,6 @@ class $AudioCacheTable extends AudioCache
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _lastPlayedAtMeta = const VerificationMeta(
-    'lastPlayedAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> lastPlayedAt = GeneratedColumn<DateTime>(
-    'last_played_at',
-    aliasedName,
-    true,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _playCountMeta = const VerificationMeta(
-    'playCount',
-  );
-  @override
-  late final GeneratedColumn<int> playCount = GeneratedColumn<int>(
-    'play_count',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultValue: Constant(0),
-  );
   static const VerificationMeta _isPinnedMeta = const VerificationMeta(
     'isPinned',
   );
@@ -8660,18 +6842,6 @@ class $AudioCacheTable extends AudioCache
     ),
     defaultValue: Constant(false),
   );
-  static const VerificationMeta _planRelevantUntilMeta = const VerificationMeta(
-    'planRelevantUntil',
-  );
-  @override
-  late final GeneratedColumn<DateTime> planRelevantUntil =
-      GeneratedColumn<DateTime>(
-        'plan_relevant_until',
-        aliasedName,
-        true,
-        type: DriftSqlType.dateTime,
-        requiredDuringInsert: false,
-      );
   static const VerificationMeta _statusMeta = const VerificationMeta('status');
   @override
   late final GeneratedColumn<String> status = GeneratedColumn<String>(
@@ -8690,10 +6860,7 @@ class $AudioCacheTable extends AudioCache
     localPath,
     sizeBytes,
     downloadedAt,
-    lastPlayedAt,
-    playCount,
     isPinned,
-    planRelevantUntil,
     status,
   ];
   @override
@@ -8764,34 +6931,10 @@ class $AudioCacheTable extends AudioCache
     } else if (isInserting) {
       context.missing(_downloadedAtMeta);
     }
-    if (data.containsKey('last_played_at')) {
-      context.handle(
-        _lastPlayedAtMeta,
-        lastPlayedAt.isAcceptableOrUnknown(
-          data['last_played_at']!,
-          _lastPlayedAtMeta,
-        ),
-      );
-    }
-    if (data.containsKey('play_count')) {
-      context.handle(
-        _playCountMeta,
-        playCount.isAcceptableOrUnknown(data['play_count']!, _playCountMeta),
-      );
-    }
     if (data.containsKey('is_pinned')) {
       context.handle(
         _isPinnedMeta,
         isPinned.isAcceptableOrUnknown(data['is_pinned']!, _isPinnedMeta),
-      );
-    }
-    if (data.containsKey('plan_relevant_until')) {
-      context.handle(
-        _planRelevantUntilMeta,
-        planRelevantUntil.isAcceptableOrUnknown(
-          data['plan_relevant_until']!,
-          _planRelevantUntilMeta,
-        ),
       );
     }
     if (data.containsKey('status')) {
@@ -8839,22 +6982,10 @@ class $AudioCacheTable extends AudioCache
         DriftSqlType.dateTime,
         data['${effectivePrefix}downloaded_at'],
       )!,
-      lastPlayedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}last_played_at'],
-      ),
-      playCount: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}play_count'],
-      )!,
       isPinned: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}is_pinned'],
       )!,
-      planRelevantUntil: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}plan_relevant_until'],
-      ),
       status: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}status'],
@@ -8876,10 +7007,7 @@ class AudioCacheData extends DataClass implements Insertable<AudioCacheData> {
   final String localPath;
   final int sizeBytes;
   final DateTime downloadedAt;
-  final DateTime? lastPlayedAt;
-  final int playCount;
   final bool isPinned;
-  final DateTime? planRelevantUntil;
   final String status;
   const AudioCacheData({
     required this.id,
@@ -8889,10 +7017,7 @@ class AudioCacheData extends DataClass implements Insertable<AudioCacheData> {
     required this.localPath,
     required this.sizeBytes,
     required this.downloadedAt,
-    this.lastPlayedAt,
-    required this.playCount,
     required this.isPinned,
-    this.planRelevantUntil,
     required this.status,
   });
   @override
@@ -8905,14 +7030,7 @@ class AudioCacheData extends DataClass implements Insertable<AudioCacheData> {
     map['local_path'] = Variable<String>(localPath);
     map['size_bytes'] = Variable<int>(sizeBytes);
     map['downloaded_at'] = Variable<DateTime>(downloadedAt);
-    if (!nullToAbsent || lastPlayedAt != null) {
-      map['last_played_at'] = Variable<DateTime>(lastPlayedAt);
-    }
-    map['play_count'] = Variable<int>(playCount);
     map['is_pinned'] = Variable<bool>(isPinned);
-    if (!nullToAbsent || planRelevantUntil != null) {
-      map['plan_relevant_until'] = Variable<DateTime>(planRelevantUntil);
-    }
     map['status'] = Variable<String>(status);
     return map;
   }
@@ -8926,14 +7044,7 @@ class AudioCacheData extends DataClass implements Insertable<AudioCacheData> {
       localPath: Value(localPath),
       sizeBytes: Value(sizeBytes),
       downloadedAt: Value(downloadedAt),
-      lastPlayedAt: lastPlayedAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(lastPlayedAt),
-      playCount: Value(playCount),
       isPinned: Value(isPinned),
-      planRelevantUntil: planRelevantUntil == null && nullToAbsent
-          ? const Value.absent()
-          : Value(planRelevantUntil),
       status: Value(status),
     );
   }
@@ -8951,12 +7062,7 @@ class AudioCacheData extends DataClass implements Insertable<AudioCacheData> {
       localPath: serializer.fromJson<String>(json['localPath']),
       sizeBytes: serializer.fromJson<int>(json['sizeBytes']),
       downloadedAt: serializer.fromJson<DateTime>(json['downloadedAt']),
-      lastPlayedAt: serializer.fromJson<DateTime?>(json['lastPlayedAt']),
-      playCount: serializer.fromJson<int>(json['playCount']),
       isPinned: serializer.fromJson<bool>(json['isPinned']),
-      planRelevantUntil: serializer.fromJson<DateTime?>(
-        json['planRelevantUntil'],
-      ),
       status: serializer.fromJson<String>(json['status']),
     );
   }
@@ -8971,10 +7077,7 @@ class AudioCacheData extends DataClass implements Insertable<AudioCacheData> {
       'localPath': serializer.toJson<String>(localPath),
       'sizeBytes': serializer.toJson<int>(sizeBytes),
       'downloadedAt': serializer.toJson<DateTime>(downloadedAt),
-      'lastPlayedAt': serializer.toJson<DateTime?>(lastPlayedAt),
-      'playCount': serializer.toJson<int>(playCount),
       'isPinned': serializer.toJson<bool>(isPinned),
-      'planRelevantUntil': serializer.toJson<DateTime?>(planRelevantUntil),
       'status': serializer.toJson<String>(status),
     };
   }
@@ -8987,10 +7090,7 @@ class AudioCacheData extends DataClass implements Insertable<AudioCacheData> {
     String? localPath,
     int? sizeBytes,
     DateTime? downloadedAt,
-    Value<DateTime?> lastPlayedAt = const Value.absent(),
-    int? playCount,
     bool? isPinned,
-    Value<DateTime?> planRelevantUntil = const Value.absent(),
     String? status,
   }) => AudioCacheData(
     id: id ?? this.id,
@@ -9000,12 +7100,7 @@ class AudioCacheData extends DataClass implements Insertable<AudioCacheData> {
     localPath: localPath ?? this.localPath,
     sizeBytes: sizeBytes ?? this.sizeBytes,
     downloadedAt: downloadedAt ?? this.downloadedAt,
-    lastPlayedAt: lastPlayedAt.present ? lastPlayedAt.value : this.lastPlayedAt,
-    playCount: playCount ?? this.playCount,
     isPinned: isPinned ?? this.isPinned,
-    planRelevantUntil: planRelevantUntil.present
-        ? planRelevantUntil.value
-        : this.planRelevantUntil,
     status: status ?? this.status,
   );
   AudioCacheData copyWithCompanion(AudioCacheCompanion data) {
@@ -9019,14 +7114,7 @@ class AudioCacheData extends DataClass implements Insertable<AudioCacheData> {
       downloadedAt: data.downloadedAt.present
           ? data.downloadedAt.value
           : this.downloadedAt,
-      lastPlayedAt: data.lastPlayedAt.present
-          ? data.lastPlayedAt.value
-          : this.lastPlayedAt,
-      playCount: data.playCount.present ? data.playCount.value : this.playCount,
       isPinned: data.isPinned.present ? data.isPinned.value : this.isPinned,
-      planRelevantUntil: data.planRelevantUntil.present
-          ? data.planRelevantUntil.value
-          : this.planRelevantUntil,
       status: data.status.present ? data.status.value : this.status,
     );
   }
@@ -9041,10 +7129,7 @@ class AudioCacheData extends DataClass implements Insertable<AudioCacheData> {
           ..write('localPath: $localPath, ')
           ..write('sizeBytes: $sizeBytes, ')
           ..write('downloadedAt: $downloadedAt, ')
-          ..write('lastPlayedAt: $lastPlayedAt, ')
-          ..write('playCount: $playCount, ')
           ..write('isPinned: $isPinned, ')
-          ..write('planRelevantUntil: $planRelevantUntil, ')
           ..write('status: $status')
           ..write(')'))
         .toString();
@@ -9059,10 +7144,7 @@ class AudioCacheData extends DataClass implements Insertable<AudioCacheData> {
     localPath,
     sizeBytes,
     downloadedAt,
-    lastPlayedAt,
-    playCount,
     isPinned,
-    planRelevantUntil,
     status,
   );
   @override
@@ -9076,10 +7158,7 @@ class AudioCacheData extends DataClass implements Insertable<AudioCacheData> {
           other.localPath == this.localPath &&
           other.sizeBytes == this.sizeBytes &&
           other.downloadedAt == this.downloadedAt &&
-          other.lastPlayedAt == this.lastPlayedAt &&
-          other.playCount == this.playCount &&
           other.isPinned == this.isPinned &&
-          other.planRelevantUntil == this.planRelevantUntil &&
           other.status == this.status);
 }
 
@@ -9091,10 +7170,7 @@ class AudioCacheCompanion extends UpdateCompanion<AudioCacheData> {
   final Value<String> localPath;
   final Value<int> sizeBytes;
   final Value<DateTime> downloadedAt;
-  final Value<DateTime?> lastPlayedAt;
-  final Value<int> playCount;
   final Value<bool> isPinned;
-  final Value<DateTime?> planRelevantUntil;
   final Value<String> status;
   final Value<int> rowid;
   const AudioCacheCompanion({
@@ -9105,10 +7181,7 @@ class AudioCacheCompanion extends UpdateCompanion<AudioCacheData> {
     this.localPath = const Value.absent(),
     this.sizeBytes = const Value.absent(),
     this.downloadedAt = const Value.absent(),
-    this.lastPlayedAt = const Value.absent(),
-    this.playCount = const Value.absent(),
     this.isPinned = const Value.absent(),
-    this.planRelevantUntil = const Value.absent(),
     this.status = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -9120,10 +7193,7 @@ class AudioCacheCompanion extends UpdateCompanion<AudioCacheData> {
     required String localPath,
     required int sizeBytes,
     required DateTime downloadedAt,
-    this.lastPlayedAt = const Value.absent(),
-    this.playCount = const Value.absent(),
     this.isPinned = const Value.absent(),
-    this.planRelevantUntil = const Value.absent(),
     required String status,
     this.rowid = const Value.absent(),
   }) : id = Value(id),
@@ -9142,10 +7212,7 @@ class AudioCacheCompanion extends UpdateCompanion<AudioCacheData> {
     Expression<String>? localPath,
     Expression<int>? sizeBytes,
     Expression<DateTime>? downloadedAt,
-    Expression<DateTime>? lastPlayedAt,
-    Expression<int>? playCount,
     Expression<bool>? isPinned,
-    Expression<DateTime>? planRelevantUntil,
     Expression<String>? status,
     Expression<int>? rowid,
   }) {
@@ -9157,10 +7224,7 @@ class AudioCacheCompanion extends UpdateCompanion<AudioCacheData> {
       if (localPath != null) 'local_path': localPath,
       if (sizeBytes != null) 'size_bytes': sizeBytes,
       if (downloadedAt != null) 'downloaded_at': downloadedAt,
-      if (lastPlayedAt != null) 'last_played_at': lastPlayedAt,
-      if (playCount != null) 'play_count': playCount,
       if (isPinned != null) 'is_pinned': isPinned,
-      if (planRelevantUntil != null) 'plan_relevant_until': planRelevantUntil,
       if (status != null) 'status': status,
       if (rowid != null) 'rowid': rowid,
     });
@@ -9174,10 +7238,7 @@ class AudioCacheCompanion extends UpdateCompanion<AudioCacheData> {
     Value<String>? localPath,
     Value<int>? sizeBytes,
     Value<DateTime>? downloadedAt,
-    Value<DateTime?>? lastPlayedAt,
-    Value<int>? playCount,
     Value<bool>? isPinned,
-    Value<DateTime?>? planRelevantUntil,
     Value<String>? status,
     Value<int>? rowid,
   }) {
@@ -9189,10 +7250,7 @@ class AudioCacheCompanion extends UpdateCompanion<AudioCacheData> {
       localPath: localPath ?? this.localPath,
       sizeBytes: sizeBytes ?? this.sizeBytes,
       downloadedAt: downloadedAt ?? this.downloadedAt,
-      lastPlayedAt: lastPlayedAt ?? this.lastPlayedAt,
-      playCount: playCount ?? this.playCount,
       isPinned: isPinned ?? this.isPinned,
-      planRelevantUntil: planRelevantUntil ?? this.planRelevantUntil,
       status: status ?? this.status,
       rowid: rowid ?? this.rowid,
     );
@@ -9222,17 +7280,8 @@ class AudioCacheCompanion extends UpdateCompanion<AudioCacheData> {
     if (downloadedAt.present) {
       map['downloaded_at'] = Variable<DateTime>(downloadedAt.value);
     }
-    if (lastPlayedAt.present) {
-      map['last_played_at'] = Variable<DateTime>(lastPlayedAt.value);
-    }
-    if (playCount.present) {
-      map['play_count'] = Variable<int>(playCount.value);
-    }
     if (isPinned.present) {
       map['is_pinned'] = Variable<bool>(isPinned.value);
-    }
-    if (planRelevantUntil.present) {
-      map['plan_relevant_until'] = Variable<DateTime>(planRelevantUntil.value);
     }
     if (status.present) {
       map['status'] = Variable<String>(status.value);
@@ -9253,10 +7302,7 @@ class AudioCacheCompanion extends UpdateCompanion<AudioCacheData> {
           ..write('localPath: $localPath, ')
           ..write('sizeBytes: $sizeBytes, ')
           ..write('downloadedAt: $downloadedAt, ')
-          ..write('lastPlayedAt: $lastPlayedAt, ')
-          ..write('playCount: $playCount, ')
           ..write('isPinned: $isPinned, ')
-          ..write('planRelevantUntil: $planRelevantUntil, ')
           ..write('status: $status, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -9582,7 +7628,6 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $HabitsTable habits = $HabitsTable(this);
   late final $CompletionsTable completions = $CompletionsTable(this);
   late final $PrayerLogsTable prayerLogs = $PrayerLogsTable(this);
-  late final $BibleReadsTable bibleReads = $BibleReadsTable(this);
   late final $SkillsTable skills = $SkillsTable(this);
   late final $SkillSessionsTable skillSessions = $SkillSessionsTable(this);
   late final $ReflectionsTable reflections = $ReflectionsTable(this);
@@ -9599,9 +7644,6 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $StreakLogTable streakLog = $StreakLogTable(this);
   late final $StreakFrozenTable streakFrozen = $StreakFrozenTable(this);
   late final $SoulLogTable soulLog = $SoulLogTable(this);
-  late final $BibleSessionsTable bibleSessions = $BibleSessionsTable(this);
-  late final $ReadingLoopsTable readingLoops = $ReadingLoopsTable(this);
-  late final $WisdomNotesTable wisdomNotes = $WisdomNotesTable(this);
   late final $AudioCacheTable audioCache = $AudioCacheTable(this);
   late final $JournalEntryTable journalEntry = $JournalEntryTable(this);
   @override
@@ -9613,7 +7655,6 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     habits,
     completions,
     prayerLogs,
-    bibleReads,
     skills,
     skillSessions,
     reflections,
@@ -9627,9 +7668,6 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     streakLog,
     streakFrozen,
     soulLog,
-    bibleSessions,
-    readingLoops,
-    wisdomNotes,
     audioCache,
     journalEntry,
   ];
@@ -10661,199 +8699,6 @@ typedef $$PrayerLogsTableProcessedTableManager =
       $$PrayerLogsTableUpdateCompanionBuilder,
       (PrayerLog, BaseReferences<_$AppDatabase, $PrayerLogsTable, PrayerLog>),
       PrayerLog,
-      PrefetchHooks Function()
-    >;
-typedef $$BibleReadsTableCreateCompanionBuilder =
-    BibleReadsCompanion Function({
-      Value<int> id,
-      required String date,
-      required String reference,
-      Value<String?> note,
-      Value<int> durationMinutes,
-    });
-typedef $$BibleReadsTableUpdateCompanionBuilder =
-    BibleReadsCompanion Function({
-      Value<int> id,
-      Value<String> date,
-      Value<String> reference,
-      Value<String?> note,
-      Value<int> durationMinutes,
-    });
-
-class $$BibleReadsTableFilterComposer
-    extends Composer<_$AppDatabase, $BibleReadsTable> {
-  $$BibleReadsTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get date => $composableBuilder(
-    column: $table.date,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get reference => $composableBuilder(
-    column: $table.reference,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get note => $composableBuilder(
-    column: $table.note,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get durationMinutes => $composableBuilder(
-    column: $table.durationMinutes,
-    builder: (column) => ColumnFilters(column),
-  );
-}
-
-class $$BibleReadsTableOrderingComposer
-    extends Composer<_$AppDatabase, $BibleReadsTable> {
-  $$BibleReadsTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get date => $composableBuilder(
-    column: $table.date,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get reference => $composableBuilder(
-    column: $table.reference,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get note => $composableBuilder(
-    column: $table.note,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get durationMinutes => $composableBuilder(
-    column: $table.durationMinutes,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $$BibleReadsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $BibleReadsTable> {
-  $$BibleReadsTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get date =>
-      $composableBuilder(column: $table.date, builder: (column) => column);
-
-  GeneratedColumn<String> get reference =>
-      $composableBuilder(column: $table.reference, builder: (column) => column);
-
-  GeneratedColumn<String> get note =>
-      $composableBuilder(column: $table.note, builder: (column) => column);
-
-  GeneratedColumn<int> get durationMinutes => $composableBuilder(
-    column: $table.durationMinutes,
-    builder: (column) => column,
-  );
-}
-
-class $$BibleReadsTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $BibleReadsTable,
-          BibleRead,
-          $$BibleReadsTableFilterComposer,
-          $$BibleReadsTableOrderingComposer,
-          $$BibleReadsTableAnnotationComposer,
-          $$BibleReadsTableCreateCompanionBuilder,
-          $$BibleReadsTableUpdateCompanionBuilder,
-          (
-            BibleRead,
-            BaseReferences<_$AppDatabase, $BibleReadsTable, BibleRead>,
-          ),
-          BibleRead,
-          PrefetchHooks Function()
-        > {
-  $$BibleReadsTableTableManager(_$AppDatabase db, $BibleReadsTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$BibleReadsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$BibleReadsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$BibleReadsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                Value<String> date = const Value.absent(),
-                Value<String> reference = const Value.absent(),
-                Value<String?> note = const Value.absent(),
-                Value<int> durationMinutes = const Value.absent(),
-              }) => BibleReadsCompanion(
-                id: id,
-                date: date,
-                reference: reference,
-                note: note,
-                durationMinutes: durationMinutes,
-              ),
-          createCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                required String date,
-                required String reference,
-                Value<String?> note = const Value.absent(),
-                Value<int> durationMinutes = const Value.absent(),
-              }) => BibleReadsCompanion.insert(
-                id: id,
-                date: date,
-                reference: reference,
-                note: note,
-                durationMinutes: durationMinutes,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
-}
-
-typedef $$BibleReadsTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $BibleReadsTable,
-      BibleRead,
-      $$BibleReadsTableFilterComposer,
-      $$BibleReadsTableOrderingComposer,
-      $$BibleReadsTableAnnotationComposer,
-      $$BibleReadsTableCreateCompanionBuilder,
-      $$BibleReadsTableUpdateCompanionBuilder,
-      (BibleRead, BaseReferences<_$AppDatabase, $BibleReadsTable, BibleRead>),
-      BibleRead,
       PrefetchHooks Function()
     >;
 typedef $$SkillsTableCreateCompanionBuilder =
@@ -14164,753 +12009,6 @@ typedef $$SoulLogTableProcessedTableManager =
       SoulLogData,
       PrefetchHooks Function()
     >;
-typedef $$BibleSessionsTableCreateCompanionBuilder =
-    BibleSessionsCompanion Function({
-      required String id,
-      required String date,
-      required String bookId,
-      required int chapterStart,
-      required int chapterEnd,
-      Value<int> durationMinutes,
-      Value<String?> reflection,
-      Value<bool> isPlanReading,
-      Value<String?> planDay,
-      required String createdAt,
-      Value<int> rowid,
-    });
-typedef $$BibleSessionsTableUpdateCompanionBuilder =
-    BibleSessionsCompanion Function({
-      Value<String> id,
-      Value<String> date,
-      Value<String> bookId,
-      Value<int> chapterStart,
-      Value<int> chapterEnd,
-      Value<int> durationMinutes,
-      Value<String?> reflection,
-      Value<bool> isPlanReading,
-      Value<String?> planDay,
-      Value<String> createdAt,
-      Value<int> rowid,
-    });
-
-class $$BibleSessionsTableFilterComposer
-    extends Composer<_$AppDatabase, $BibleSessionsTable> {
-  $$BibleSessionsTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get date => $composableBuilder(
-    column: $table.date,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get bookId => $composableBuilder(
-    column: $table.bookId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get chapterStart => $composableBuilder(
-    column: $table.chapterStart,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get chapterEnd => $composableBuilder(
-    column: $table.chapterEnd,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get durationMinutes => $composableBuilder(
-    column: $table.durationMinutes,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get reflection => $composableBuilder(
-    column: $table.reflection,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<bool> get isPlanReading => $composableBuilder(
-    column: $table.isPlanReading,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get planDay => $composableBuilder(
-    column: $table.planDay,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
-  );
-}
-
-class $$BibleSessionsTableOrderingComposer
-    extends Composer<_$AppDatabase, $BibleSessionsTable> {
-  $$BibleSessionsTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get date => $composableBuilder(
-    column: $table.date,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get bookId => $composableBuilder(
-    column: $table.bookId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get chapterStart => $composableBuilder(
-    column: $table.chapterStart,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get chapterEnd => $composableBuilder(
-    column: $table.chapterEnd,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get durationMinutes => $composableBuilder(
-    column: $table.durationMinutes,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get reflection => $composableBuilder(
-    column: $table.reflection,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<bool> get isPlanReading => $composableBuilder(
-    column: $table.isPlanReading,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get planDay => $composableBuilder(
-    column: $table.planDay,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $$BibleSessionsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $BibleSessionsTable> {
-  $$BibleSessionsTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get date =>
-      $composableBuilder(column: $table.date, builder: (column) => column);
-
-  GeneratedColumn<String> get bookId =>
-      $composableBuilder(column: $table.bookId, builder: (column) => column);
-
-  GeneratedColumn<int> get chapterStart => $composableBuilder(
-    column: $table.chapterStart,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get chapterEnd => $composableBuilder(
-    column: $table.chapterEnd,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get durationMinutes => $composableBuilder(
-    column: $table.durationMinutes,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get reflection => $composableBuilder(
-    column: $table.reflection,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<bool> get isPlanReading => $composableBuilder(
-    column: $table.isPlanReading,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get planDay =>
-      $composableBuilder(column: $table.planDay, builder: (column) => column);
-
-  GeneratedColumn<String> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => column);
-}
-
-class $$BibleSessionsTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $BibleSessionsTable,
-          BibleSession,
-          $$BibleSessionsTableFilterComposer,
-          $$BibleSessionsTableOrderingComposer,
-          $$BibleSessionsTableAnnotationComposer,
-          $$BibleSessionsTableCreateCompanionBuilder,
-          $$BibleSessionsTableUpdateCompanionBuilder,
-          (
-            BibleSession,
-            BaseReferences<_$AppDatabase, $BibleSessionsTable, BibleSession>,
-          ),
-          BibleSession,
-          PrefetchHooks Function()
-        > {
-  $$BibleSessionsTableTableManager(_$AppDatabase db, $BibleSessionsTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$BibleSessionsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$BibleSessionsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$BibleSessionsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> id = const Value.absent(),
-                Value<String> date = const Value.absent(),
-                Value<String> bookId = const Value.absent(),
-                Value<int> chapterStart = const Value.absent(),
-                Value<int> chapterEnd = const Value.absent(),
-                Value<int> durationMinutes = const Value.absent(),
-                Value<String?> reflection = const Value.absent(),
-                Value<bool> isPlanReading = const Value.absent(),
-                Value<String?> planDay = const Value.absent(),
-                Value<String> createdAt = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => BibleSessionsCompanion(
-                id: id,
-                date: date,
-                bookId: bookId,
-                chapterStart: chapterStart,
-                chapterEnd: chapterEnd,
-                durationMinutes: durationMinutes,
-                reflection: reflection,
-                isPlanReading: isPlanReading,
-                planDay: planDay,
-                createdAt: createdAt,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String id,
-                required String date,
-                required String bookId,
-                required int chapterStart,
-                required int chapterEnd,
-                Value<int> durationMinutes = const Value.absent(),
-                Value<String?> reflection = const Value.absent(),
-                Value<bool> isPlanReading = const Value.absent(),
-                Value<String?> planDay = const Value.absent(),
-                required String createdAt,
-                Value<int> rowid = const Value.absent(),
-              }) => BibleSessionsCompanion.insert(
-                id: id,
-                date: date,
-                bookId: bookId,
-                chapterStart: chapterStart,
-                chapterEnd: chapterEnd,
-                durationMinutes: durationMinutes,
-                reflection: reflection,
-                isPlanReading: isPlanReading,
-                planDay: planDay,
-                createdAt: createdAt,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
-}
-
-typedef $$BibleSessionsTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $BibleSessionsTable,
-      BibleSession,
-      $$BibleSessionsTableFilterComposer,
-      $$BibleSessionsTableOrderingComposer,
-      $$BibleSessionsTableAnnotationComposer,
-      $$BibleSessionsTableCreateCompanionBuilder,
-      $$BibleSessionsTableUpdateCompanionBuilder,
-      (
-        BibleSession,
-        BaseReferences<_$AppDatabase, $BibleSessionsTable, BibleSession>,
-      ),
-      BibleSession,
-      PrefetchHooks Function()
-    >;
-typedef $$ReadingLoopsTableCreateCompanionBuilder =
-    ReadingLoopsCompanion Function({
-      required String id,
-      required String planId,
-      required int duration,
-      required int startChapter,
-      required String startDate,
-      required String status,
-      required int loopNumber,
-      required String createdAt,
-      Value<int> rowid,
-    });
-typedef $$ReadingLoopsTableUpdateCompanionBuilder =
-    ReadingLoopsCompanion Function({
-      Value<String> id,
-      Value<String> planId,
-      Value<int> duration,
-      Value<int> startChapter,
-      Value<String> startDate,
-      Value<String> status,
-      Value<int> loopNumber,
-      Value<String> createdAt,
-      Value<int> rowid,
-    });
-
-class $$ReadingLoopsTableFilterComposer
-    extends Composer<_$AppDatabase, $ReadingLoopsTable> {
-  $$ReadingLoopsTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get planId => $composableBuilder(
-    column: $table.planId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get duration => $composableBuilder(
-    column: $table.duration,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get startChapter => $composableBuilder(
-    column: $table.startChapter,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get startDate => $composableBuilder(
-    column: $table.startDate,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get status => $composableBuilder(
-    column: $table.status,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get loopNumber => $composableBuilder(
-    column: $table.loopNumber,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
-  );
-}
-
-class $$ReadingLoopsTableOrderingComposer
-    extends Composer<_$AppDatabase, $ReadingLoopsTable> {
-  $$ReadingLoopsTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get planId => $composableBuilder(
-    column: $table.planId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get duration => $composableBuilder(
-    column: $table.duration,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get startChapter => $composableBuilder(
-    column: $table.startChapter,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get startDate => $composableBuilder(
-    column: $table.startDate,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get status => $composableBuilder(
-    column: $table.status,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get loopNumber => $composableBuilder(
-    column: $table.loopNumber,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $$ReadingLoopsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $ReadingLoopsTable> {
-  $$ReadingLoopsTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get planId =>
-      $composableBuilder(column: $table.planId, builder: (column) => column);
-
-  GeneratedColumn<int> get duration =>
-      $composableBuilder(column: $table.duration, builder: (column) => column);
-
-  GeneratedColumn<int> get startChapter => $composableBuilder(
-    column: $table.startChapter,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get startDate =>
-      $composableBuilder(column: $table.startDate, builder: (column) => column);
-
-  GeneratedColumn<String> get status =>
-      $composableBuilder(column: $table.status, builder: (column) => column);
-
-  GeneratedColumn<int> get loopNumber => $composableBuilder(
-    column: $table.loopNumber,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => column);
-}
-
-class $$ReadingLoopsTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $ReadingLoopsTable,
-          ReadingLoop,
-          $$ReadingLoopsTableFilterComposer,
-          $$ReadingLoopsTableOrderingComposer,
-          $$ReadingLoopsTableAnnotationComposer,
-          $$ReadingLoopsTableCreateCompanionBuilder,
-          $$ReadingLoopsTableUpdateCompanionBuilder,
-          (
-            ReadingLoop,
-            BaseReferences<_$AppDatabase, $ReadingLoopsTable, ReadingLoop>,
-          ),
-          ReadingLoop,
-          PrefetchHooks Function()
-        > {
-  $$ReadingLoopsTableTableManager(_$AppDatabase db, $ReadingLoopsTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$ReadingLoopsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$ReadingLoopsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$ReadingLoopsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> id = const Value.absent(),
-                Value<String> planId = const Value.absent(),
-                Value<int> duration = const Value.absent(),
-                Value<int> startChapter = const Value.absent(),
-                Value<String> startDate = const Value.absent(),
-                Value<String> status = const Value.absent(),
-                Value<int> loopNumber = const Value.absent(),
-                Value<String> createdAt = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => ReadingLoopsCompanion(
-                id: id,
-                planId: planId,
-                duration: duration,
-                startChapter: startChapter,
-                startDate: startDate,
-                status: status,
-                loopNumber: loopNumber,
-                createdAt: createdAt,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String id,
-                required String planId,
-                required int duration,
-                required int startChapter,
-                required String startDate,
-                required String status,
-                required int loopNumber,
-                required String createdAt,
-                Value<int> rowid = const Value.absent(),
-              }) => ReadingLoopsCompanion.insert(
-                id: id,
-                planId: planId,
-                duration: duration,
-                startChapter: startChapter,
-                startDate: startDate,
-                status: status,
-                loopNumber: loopNumber,
-                createdAt: createdAt,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
-}
-
-typedef $$ReadingLoopsTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $ReadingLoopsTable,
-      ReadingLoop,
-      $$ReadingLoopsTableFilterComposer,
-      $$ReadingLoopsTableOrderingComposer,
-      $$ReadingLoopsTableAnnotationComposer,
-      $$ReadingLoopsTableCreateCompanionBuilder,
-      $$ReadingLoopsTableUpdateCompanionBuilder,
-      (
-        ReadingLoop,
-        BaseReferences<_$AppDatabase, $ReadingLoopsTable, ReadingLoop>,
-      ),
-      ReadingLoop,
-      PrefetchHooks Function()
-    >;
-typedef $$WisdomNotesTableCreateCompanionBuilder =
-    WisdomNotesCompanion Function({
-      required String id,
-      required String bookId,
-      required String note,
-      required String createdAt,
-      Value<int> rowid,
-    });
-typedef $$WisdomNotesTableUpdateCompanionBuilder =
-    WisdomNotesCompanion Function({
-      Value<String> id,
-      Value<String> bookId,
-      Value<String> note,
-      Value<String> createdAt,
-      Value<int> rowid,
-    });
-
-class $$WisdomNotesTableFilterComposer
-    extends Composer<_$AppDatabase, $WisdomNotesTable> {
-  $$WisdomNotesTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get bookId => $composableBuilder(
-    column: $table.bookId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get note => $composableBuilder(
-    column: $table.note,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
-  );
-}
-
-class $$WisdomNotesTableOrderingComposer
-    extends Composer<_$AppDatabase, $WisdomNotesTable> {
-  $$WisdomNotesTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get bookId => $composableBuilder(
-    column: $table.bookId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get note => $composableBuilder(
-    column: $table.note,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $$WisdomNotesTableAnnotationComposer
-    extends Composer<_$AppDatabase, $WisdomNotesTable> {
-  $$WisdomNotesTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get bookId =>
-      $composableBuilder(column: $table.bookId, builder: (column) => column);
-
-  GeneratedColumn<String> get note =>
-      $composableBuilder(column: $table.note, builder: (column) => column);
-
-  GeneratedColumn<String> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => column);
-}
-
-class $$WisdomNotesTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $WisdomNotesTable,
-          WisdomNote,
-          $$WisdomNotesTableFilterComposer,
-          $$WisdomNotesTableOrderingComposer,
-          $$WisdomNotesTableAnnotationComposer,
-          $$WisdomNotesTableCreateCompanionBuilder,
-          $$WisdomNotesTableUpdateCompanionBuilder,
-          (
-            WisdomNote,
-            BaseReferences<_$AppDatabase, $WisdomNotesTable, WisdomNote>,
-          ),
-          WisdomNote,
-          PrefetchHooks Function()
-        > {
-  $$WisdomNotesTableTableManager(_$AppDatabase db, $WisdomNotesTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$WisdomNotesTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$WisdomNotesTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$WisdomNotesTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> id = const Value.absent(),
-                Value<String> bookId = const Value.absent(),
-                Value<String> note = const Value.absent(),
-                Value<String> createdAt = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => WisdomNotesCompanion(
-                id: id,
-                bookId: bookId,
-                note: note,
-                createdAt: createdAt,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String id,
-                required String bookId,
-                required String note,
-                required String createdAt,
-                Value<int> rowid = const Value.absent(),
-              }) => WisdomNotesCompanion.insert(
-                id: id,
-                bookId: bookId,
-                note: note,
-                createdAt: createdAt,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
-}
-
-typedef $$WisdomNotesTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $WisdomNotesTable,
-      WisdomNote,
-      $$WisdomNotesTableFilterComposer,
-      $$WisdomNotesTableOrderingComposer,
-      $$WisdomNotesTableAnnotationComposer,
-      $$WisdomNotesTableCreateCompanionBuilder,
-      $$WisdomNotesTableUpdateCompanionBuilder,
-      (
-        WisdomNote,
-        BaseReferences<_$AppDatabase, $WisdomNotesTable, WisdomNote>,
-      ),
-      WisdomNote,
-      PrefetchHooks Function()
-    >;
 typedef $$AudioCacheTableCreateCompanionBuilder =
     AudioCacheCompanion Function({
       required String id,
@@ -14920,10 +12018,7 @@ typedef $$AudioCacheTableCreateCompanionBuilder =
       required String localPath,
       required int sizeBytes,
       required DateTime downloadedAt,
-      Value<DateTime?> lastPlayedAt,
-      Value<int> playCount,
       Value<bool> isPinned,
-      Value<DateTime?> planRelevantUntil,
       required String status,
       Value<int> rowid,
     });
@@ -14936,10 +12031,7 @@ typedef $$AudioCacheTableUpdateCompanionBuilder =
       Value<String> localPath,
       Value<int> sizeBytes,
       Value<DateTime> downloadedAt,
-      Value<DateTime?> lastPlayedAt,
-      Value<int> playCount,
       Value<bool> isPinned,
-      Value<DateTime?> planRelevantUntil,
       Value<String> status,
       Value<int> rowid,
     });
@@ -14988,23 +12080,8 @@ class $$AudioCacheTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<DateTime> get lastPlayedAt => $composableBuilder(
-    column: $table.lastPlayedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get playCount => $composableBuilder(
-    column: $table.playCount,
-    builder: (column) => ColumnFilters(column),
-  );
-
   ColumnFilters<bool> get isPinned => $composableBuilder(
     column: $table.isPinned,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get planRelevantUntil => $composableBuilder(
-    column: $table.planRelevantUntil,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -15058,23 +12135,8 @@ class $$AudioCacheTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<DateTime> get lastPlayedAt => $composableBuilder(
-    column: $table.lastPlayedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get playCount => $composableBuilder(
-    column: $table.playCount,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<bool> get isPinned => $composableBuilder(
     column: $table.isPinned,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get planRelevantUntil => $composableBuilder(
-    column: $table.planRelevantUntil,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -15116,21 +12178,8 @@ class $$AudioCacheTableAnnotationComposer
     builder: (column) => column,
   );
 
-  GeneratedColumn<DateTime> get lastPlayedAt => $composableBuilder(
-    column: $table.lastPlayedAt,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get playCount =>
-      $composableBuilder(column: $table.playCount, builder: (column) => column);
-
   GeneratedColumn<bool> get isPinned =>
       $composableBuilder(column: $table.isPinned, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get planRelevantUntil => $composableBuilder(
-    column: $table.planRelevantUntil,
-    builder: (column) => column,
-  );
 
   GeneratedColumn<String> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
@@ -15174,10 +12223,7 @@ class $$AudioCacheTableTableManager
                 Value<String> localPath = const Value.absent(),
                 Value<int> sizeBytes = const Value.absent(),
                 Value<DateTime> downloadedAt = const Value.absent(),
-                Value<DateTime?> lastPlayedAt = const Value.absent(),
-                Value<int> playCount = const Value.absent(),
                 Value<bool> isPinned = const Value.absent(),
-                Value<DateTime?> planRelevantUntil = const Value.absent(),
                 Value<String> status = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => AudioCacheCompanion(
@@ -15188,10 +12234,7 @@ class $$AudioCacheTableTableManager
                 localPath: localPath,
                 sizeBytes: sizeBytes,
                 downloadedAt: downloadedAt,
-                lastPlayedAt: lastPlayedAt,
-                playCount: playCount,
                 isPinned: isPinned,
-                planRelevantUntil: planRelevantUntil,
                 status: status,
                 rowid: rowid,
               ),
@@ -15204,10 +12247,7 @@ class $$AudioCacheTableTableManager
                 required String localPath,
                 required int sizeBytes,
                 required DateTime downloadedAt,
-                Value<DateTime?> lastPlayedAt = const Value.absent(),
-                Value<int> playCount = const Value.absent(),
                 Value<bool> isPinned = const Value.absent(),
-                Value<DateTime?> planRelevantUntil = const Value.absent(),
                 required String status,
                 Value<int> rowid = const Value.absent(),
               }) => AudioCacheCompanion.insert(
@@ -15218,10 +12258,7 @@ class $$AudioCacheTableTableManager
                 localPath: localPath,
                 sizeBytes: sizeBytes,
                 downloadedAt: downloadedAt,
-                lastPlayedAt: lastPlayedAt,
-                playCount: playCount,
                 isPinned: isPinned,
-                planRelevantUntil: planRelevantUntil,
                 status: status,
                 rowid: rowid,
               ),
@@ -15443,8 +12480,6 @@ class $AppDatabaseManager {
       $$CompletionsTableTableManager(_db, _db.completions);
   $$PrayerLogsTableTableManager get prayerLogs =>
       $$PrayerLogsTableTableManager(_db, _db.prayerLogs);
-  $$BibleReadsTableTableManager get bibleReads =>
-      $$BibleReadsTableTableManager(_db, _db.bibleReads);
   $$SkillsTableTableManager get skills =>
       $$SkillsTableTableManager(_db, _db.skills);
   $$SkillSessionsTableTableManager get skillSessions =>
@@ -15471,12 +12506,6 @@ class $AppDatabaseManager {
       $$StreakFrozenTableTableManager(_db, _db.streakFrozen);
   $$SoulLogTableTableManager get soulLog =>
       $$SoulLogTableTableManager(_db, _db.soulLog);
-  $$BibleSessionsTableTableManager get bibleSessions =>
-      $$BibleSessionsTableTableManager(_db, _db.bibleSessions);
-  $$ReadingLoopsTableTableManager get readingLoops =>
-      $$ReadingLoopsTableTableManager(_db, _db.readingLoops);
-  $$WisdomNotesTableTableManager get wisdomNotes =>
-      $$WisdomNotesTableTableManager(_db, _db.wisdomNotes);
   $$AudioCacheTableTableManager get audioCache =>
       $$AudioCacheTableTableManager(_db, _db.audioCache);
   $$JournalEntryTableTableManager get journalEntry =>

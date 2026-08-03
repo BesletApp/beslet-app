@@ -1,34 +1,20 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/services/scripture_service.dart';
-import '../../core/services/plan_progress_service.dart';
-import '../../core/providers/bible_read_provider.dart';
-import '../../core/providers/user_provider.dart';
 import '../../core/providers/audio_player_provider.dart';
-import '../../core/providers/database_provider.dart';
 import '../../core/providers/connectivity_provider.dart';
 import '../../core/providers/download_provider.dart';
 import '../../core/providers/scripture_provider.dart';
 import '../../core/providers/reading_preferences_provider.dart';
-import '../../core/providers/bible_session_provider.dart';
-import '../../core/services/audio_bible_service.dart';
-import '../../core/services/verse_reflection_service.dart';
-import '../../core/providers/ai_provider.dart';
-import '../../core/services/ai_service.dart';
-import '../../shared/widgets/error_card.dart';
 import 'widgets/audio_player_bar.dart';
 import 'widgets/verse_list_view.dart';
 import 'widgets/chapter_picker.dart';
-import 'widgets/wisdom_dialog.dart';
 import 'widgets/download_sheet.dart';
-import 'widgets/journal_sheet.dart';
-import 'widgets/kept_verses_sheet.dart';
+import 'widgets/verse_action_sheet.dart';
 
 class BibleScreen extends ConsumerStatefulWidget {
   final String? initialBookId;
@@ -40,20 +26,10 @@ class BibleScreen extends ConsumerStatefulWidget {
 }
 
 class _BibleScreenState extends ConsumerState<BibleScreen> {
-  List<BiblePlanEntry>? _cachedPlan;
   String? _selectedLang;
   String? _pickedBookId;
   int? _pickedChapter;
-  bool _completing = false;
   BibleBook? _offlineBook;
-  bool _cardVisible = false;
-  bool _showInlineReflection = false;
-  bool _showReflectionPrompt = false;
-  int? _pendingKeepIndex;
-  final _reflectionKey = GlobalKey();
-  Timer? _idleTimer;
-  Timer? _dismissTimer;
-  bool _showPeek = false;
 
   String get _effectiveLang {
     final locale = Localizations.localeOf(context).languageCode;
@@ -70,26 +46,8 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
       _pickedBookId = widget.initialBookId;
       _pickedChapter = widget.initialChapter;
     }
-    _tryRestoreLastRead();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (mounted) setState(() => _cardVisible = true);
-      final kept = await ReadingPreferences.loadKeptVerse();
-      if (mounted) ref.read(keptVerseProvider.notifier).state = kept;
-      final all = await ReadingPreferences.loadAllKeptVerses();
-      if (mounted) ref.read(allKeptVersesProvider.notifier).state = all;
-    });
-  }
-
-  Future<void> _tryRestoreLastRead() async {
-    if (_pickedBookId != null) return;
-    final last = await ReadingPreferences.loadLastRead();
-    if (last.bookId != null && last.chapter != null && mounted) {
-      setState(() {
-        _pickedBookId = last.bookId;
-        _pickedChapter = last.chapter;
-        if (last.language != null) _selectedLang = last.language;
-      });
-    }
+    _restoreOpenPage();
+    _loadHighlightsState();
   }
 
   @override
@@ -106,9 +64,27 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
     }
   }
 
-  void _saveReadingPosition() {
+  Future<void> _loadHighlightsState() async {
+    final all = await ReadingPreferences.loadAllHighlights();
+    if (!mounted) return;
+    ref.read(highlightsProvider.notifier).state = all;
+  }
+
+  Future<void> _restoreOpenPage() async {
+    if (_pickedBookId != null) return;
+    final last = await ReadingPreferences.loadOpenPage();
+    if (last.bookId != null && last.chapter != null && mounted) {
+      setState(() {
+        _pickedBookId = last.bookId;
+        _pickedChapter = last.chapter;
+        if (last.language != null) _selectedLang = last.language;
+      });
+    }
+  }
+
+  void _saveOpenPage() {
     if (_pickedBookId != null && _pickedChapter != null) {
-      ReadingPreferences.saveLastRead(_pickedBookId!, _pickedChapter!, _effectiveLang);
+      ReadingPreferences.saveOpenPage(_pickedBookId!, _pickedChapter!, _effectiveLang);
     }
   }
 
@@ -116,737 +92,158 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
     if (_pickedBookId != null && _pickedChapter != null) {
       return (bookId: _pickedBookId!, chapter: _pickedChapter!);
     }
-    final plan = _cachedPlan;
-    if (plan == null || plan.isEmpty) return null;
-    final day = ScriptureService.getTodaysReading(_planId).day;
-    final entry = day <= plan.length ? plan[day - 1] : plan.last;
-    return ScriptureService.parseReference(entry.reference);
+    return null;
   }
 
-  void _seekToVerse(int index) {
-    ref.read(audioPlayerProvider.notifier).seekToVerse(index);
-  }
-
-  int? _keptVerseIndex() {
-    final kept = ref.read(keptVerseProvider);
-    if (kept == null) return null;
+  Map<int, String> _highlightedVerseColors() {
     final parsed = _resolveParsed();
-    if (parsed == null) return null;
-    if (kept.bookId != parsed.bookId || kept.chapter != parsed.chapter) return null;
-    return kept.verse - 1;
+    if (parsed == null) return {};
+    return {
+      for (final h in ref.read(highlightsProvider))
+        if (h.bookId == parsed.bookId && h.chapter == parsed.chapter) h.verse: h.colorId,
+    };
   }
 
-  void _appendKeptVerse(KeptVerse v) {
-    final list = [...ref.read(allKeptVersesProvider)];
-    ReadingPreferences.appendKeptVerse(list, v);
-    ref.read(allKeptVersesProvider.notifier).state = list;
-    ReadingPreferences.saveAllKeptVerses(list);
-  }
-
-  void _confirmKeep(int verseNumber, String text) {
+  void _showVerseSheet(ScriptureVerse verse, int index) {
     final parsed = _resolveParsed();
     if (parsed == null) return;
-    final kept = KeptVerse(
-      bookId: parsed.bookId, chapter: parsed.chapter, verse: verseNumber,
-      text: text, timestamp: DateTime.now().millisecondsSinceEpoch, isAm: _isAm,
-    );
-    ref.read(keptVerseProvider.notifier).state = kept;
-    ReadingPreferences.saveKeptVerse(kept);
-    _appendKeptVerse(kept);
-    setState(() => _pendingKeepIndex = null);
-  }
-
-  void _handleReflectionAvailable(bool v) {
-    setState(() => _showReflectionPrompt = v);
-  }
-
-  void _openReflection(int verseNumber, String text) {
-    final parsed = _resolveParsed();
-    if (parsed == null) return;
-    final book = ScriptureService.bookMap[parsed.bookId];
-    final kept = KeptVerse(
-      bookId: parsed.bookId, chapter: parsed.chapter, verse: verseNumber,
-      text: text, timestamp: DateTime.now().millisecondsSinceEpoch, isAm: _isAm,
-    );
-    ref.read(keptVerseProvider.notifier).state = kept;
-    ReadingPreferences.saveKeptVerse(kept);
-    _appendKeptVerse(kept);
-    setState(() { _pendingKeepIndex = null; _showReflectionPrompt = false; });
-    _showReflectionSheet(verseNumber, text, parsed.bookId, book?.nameEn ?? parsed.bookId);
-  }
-
-  void _showReflectionSheet(int verseNumber, String text, String bookId, String bookName) {
-    final svc = VerseReflectionService();
-    final fallback = svc.forVerse(bookId, text, _isAm);
-    final reflectionNotifier = ValueNotifier(fallback);
-    final errorNotifier = ValueNotifier<String?>(null);
-    final ai = ref.read(aiServiceProvider);
+    final reference = ScriptureService.referenceFor(
+        parsed.bookId, parsed.chapter, verse.number, _isAm);
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      sheetAnimationStyle: AnimationStyle(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut),
-      builder: (ctx) => _ReflectionSheet(
-        text: text,
-        reference: '$bookName $verseNumber',
-        reflectionNotifier: reflectionNotifier,
-        errorNotifier: errorNotifier,
-        onVerseTap: () {
-          Navigator.pop(ctx);
-          Future.delayed(const Duration(milliseconds: 300), () {
-            if (mounted) _openJournalFromVerse(verseNumber, text, bookId);
-          });
-        },
-      ),
-    );
-    _generateAiReflection(ai, text, '$bookName $verseNumber', fallback, reflectionNotifier, errorNotifier);
-  }
-
-  Future<void> _generateAiReflection(AiService ai, String verseText, String reference, String fallback, ValueNotifier<String> notifier, ValueNotifier<String?> errorNotifier) async {
-    try {
-      final result = await ai.reflectionForVerse(
-        verseText: verseText,
+      sheetAnimationStyle: AnimationStyle(
+          duration: const Duration(milliseconds: 300), curve: Curves.easeInOut),
+      builder: (_) => VerseActionSheet(
+        bookId: parsed.bookId,
+        chapter: parsed.chapter,
+        verseNumber: verse.number,
+        text: verse.text,
         reference: reference,
         isAm: _isAm,
-      );
-      if (result.isNotEmpty && mounted) notifier.value = result;
-    } catch (e, st) {
-      debugPrint('AI reflection error: $e');
-      debugPrint('Stack trace: $st');
-      if (mounted) errorNotifier.value = e.toString();
-    }
-  }
-
-  void _openJournalFromVerse(int verseNumber, String text, String bookId) {
-    final book = ScriptureService.bookMap[bookId];
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      sheetAnimationStyle: AnimationStyle(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut),
-      builder: (_) => JournalSheet(
-        reference: '${book?.nameEn ?? bookId} $verseNumber',
-        verseText: text,
-        verseId: '${bookId}_$verseNumber',
+        verseIndex: index,
       ),
     );
-  }
-
-  static const _reflectionTextEn = [
-    'What\'s happening here',
-    'Something about God in these words',
-    'Something that stays',
-  ];
-
-  static const _reflectionTextAm = [
-    'እዚህ ምን እየተከሰተ ነው',
-    'በእነዚህ ቃላት ውስጥ ስለ እግዚአብሔር',
-    'የሚቀመጥ ነገር',
-  ];
-
-  void _resetIdleTimers() {
-    _idleTimer?.cancel();
-    _dismissTimer?.cancel();
-    if (_showPeek) setState(() => _showPeek = false);
-    _idleTimer = Timer(const Duration(milliseconds: 1800), _showPeekSheet);
-  }
-
-  void _showPeekSheet() {
-    final verses = ref.read(allKeptVersesProvider);
-    if (verses.isEmpty || !mounted) return;
-    setState(() => _showPeek = true);
-    _dismissTimer = Timer(const Duration(seconds: 5), _dismissPeek);
-  }
-
-  void _dismissPeek() {
-    _idleTimer?.cancel();
-    if (mounted) setState(() => _showPeek = false);
-  }
-
-  void _openFullKeptVersesSheet() {
-    setState(() => _showPeek = false);
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      sheetAnimationStyle: AnimationStyle(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut),
-      builder: (_) => KeptVersesSheet(isAm: _isAm),
-    );
-  }
-
-  Widget _buildPeekSheet() {
-    final verses = ref.read(allKeptVersesProvider);
-    final v = verses.first;
-    final c = AppColors.of(context);
-    final book = ScriptureService.bookMap[v.bookId];
-    final refStr = '${_isAm ? book?.nameAm ?? v.bookId : book?.nameEn ?? v.bookId} ${v.verse}';
-    final peekHeight = MediaQuery.of(context).size.height * 0.18;
-
-    return Positioned(
-      bottom: 0,
-      left: 0,
-      right: 0,
-      child: AnimatedSlide(
-        duration: const Duration(milliseconds: 380),
-        curve: Curves.easeInOut,
-        offset: _showPeek ? Offset.zero : const Offset(0, 1),
-        child: GestureDetector(
-          onTap: () {
-            setState(() => _showPeek = false);
-            showModalBottomSheet(
-              context: context,
-              backgroundColor: Colors.transparent,
-              isScrollControlled: true,
-              sheetAnimationStyle: AnimationStyle(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut),
-              builder: (_) => JournalSheet(
-                reference: refStr,
-                verseText: v.text,
-                verseId: '${v.bookId}_${v.verse}',
-              ),
-            );
-          },
-          onVerticalDragEnd: (details) {
-            if (details.primaryVelocity != null && details.primaryVelocity! < -200) {
-              _openFullKeptVersesSheet();
-            }
-          },
-          child: Container(
-            height: peekHeight,
-            decoration: BoxDecoration(
-              color: c.background,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.06),
-                  blurRadius: 8,
-                  offset: const Offset(0, -2),
-                ),
-              ],
-            ),
-            child: Column(children: [
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        refStr,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: c.textMuted,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        v.text,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: c.textPrimary,
-                          height: 1.5,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ]),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildKeepPrompt() {
-    final c = AppColors.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: c.card,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: c.border),
-        ),
-        child: Row(children: [
-          Icon(Icons.bookmark_outline, size: 18, color: AppColors.primary),
-          SizedBox(width: 8),
-          Expanded(child: Text(
-            _isAm ? 'ቃሉን ጠብቅ' : 'Keep this verse',
-            style: TextStyle(fontSize: 13, color: c.textSecondary),
-          )),
-        ]),
-      ),
-    );
-  }
-
-  Widget _buildReflectionPrompt() {
-    final primary = AppColors.primary;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: primary.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: primary.withValues(alpha: 0.2)),
-        ),
-        child: Row(children: [
-          Icon(Icons.auto_awesome, size: 16, color: primary),
-          SizedBox(width: 8),
-          Expanded(child: Text(
-            _isAm ? 'ማሰላሰል ትፈልጋለህ?' : 'Pause and reflect?',
-            style: TextStyle(fontSize: 13, color: primary, fontWeight: FontWeight.w500),
-          )),
-        ]),
-      ),
-    );
-  }
-
-  Widget _buildKeptVerseBanner() {
-    final kept = ref.watch(keptVerseProvider);
-    if (kept == null) return const SizedBox.shrink();
-    final c = AppColors.of(context);
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-      child: Text(
-        kept.text,
-        style: TextStyle(
-          fontSize: 13,
-          color: c.textPrimary.withValues(alpha: 0.7),
-          height: 1.4,
-        ),
-        maxLines: 3,
-        overflow: TextOverflow.ellipsis,
-      ),
-    );
-  }
-
-  Widget _buildInlineReflection({Key? key}) {
-    final prompts = _isAm ? _reflectionTextAm : _reflectionTextEn;
-    final c = AppColors.of(context);
-    return Column(
-      key: key,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SizedBox(height: 12),
-        Text(prompts[0],
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 14, color: c.textPrimary, height: 1.6)),
-        SizedBox(height: 12),
-        Text(prompts[1],
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 13,
-            color: c.textPrimary.withValues(alpha: 0.75), height: 1.6)),
-        SizedBox(height: 10),
-        Text(prompts[2],
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 12,
-            color: c.textPrimary.withValues(alpha: 0.5), height: 1.6)),
-        SizedBox(height: 16),
-      ],
-    );
-  }
-
-  String get _planId {
-    final user = ref.read(userProvider).valueOrNull;
-    return user?.biblePlan ?? 'nt';
-  }
-
-  void _onAudioComplete(AudioPlayerState? prev, AudioPlayerState next) {
-    final wasActive = prev?.state == AudioState.playing ||
-        prev?.state == AudioState.paused;
-    final nowStopped = next.state == AudioState.stopped;
-
-    if (wasActive && nowStopped && !_completing) {
-      _handleChapterComplete();
-    }
-  }
-
-  Future<void> _handleChapterComplete() async {
-    if (_completing) return;
-    _completing = true;
-
-    final parsed = _resolveParsed();
-    if (parsed == null) {
-      _completing = false;
-      return;
-    }
-
-    final book = ScriptureService.bookMap[parsed.bookId];
-    if (book == null) {
-      _completing = false;
-      return;
-    }
-    final refStr =
-        '${_isAm ? book.nameAm : book.nameEn} ${parsed.chapter}';
-
-    await ref
-        .read(bibleNotifierProvider.notifier)
-        .markAsRead(refStr);
-
-    ref.read(bibleSessionNotifierProvider.notifier).logSession(
-      bookId: parsed.bookId,
-      chapterStart: parsed.chapter,
-      chapterEnd: parsed.chapter,
-      durationMinutes: 10,
-    );
-
-    if (!mounted) { _completing = false; return; }
-
-    final db = ref.read(databaseProvider);
-    final prog = await PlanProgressService.compute(db);
-    final bookCompleted = prog.otProgress
-            .any((p) => p.book.id == parsed.bookId && p.isComplete) ||
-        prog.ntProgress
-            .any((p) => p.book.id == parsed.bookId && p.isComplete);
-
-    if (bookCompleted && mounted) {
-      showWisdomDialog(context, ref, parsed.bookId, _isAm);
-    }
-
-    if (mounted) {
-      _showChapterCompleteModal(book, parsed.chapter);
-    }
-
-    _completing = false;
-  }
-
-  static const _completionMessages = [
-    'Showing up matters.',
-    'A few minutes with the Word is never wasted.',
-    'He is present.',
-  ];
-
-  static const _completionMessagesAm = [
-    'መገኘት ትርጉም አለው።',
-    'ጥቂት ደቂቃ ከቃሉ ጋር ፍሬ አለው።',
-    'እሱ አለ።',
-  ];
-
-  void _showChapterCompleteModal(BibleBook book, int chapter) {
-    final c = AppColors.of(context);
-    final isAm = _isAm;
-    final msgIdx = DateTime.now().millisecond % _completionMessages.length;
-
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: c.card,
-        content: Column(mainAxisSize: MainAxisSize.min, children: [
-          Text('📖', style: TextStyle(fontSize: 32)),
-          SizedBox(height: 12),
-          Text(
-            isAm ? _completionMessagesAm[msgIdx] : _completionMessages[msgIdx],
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 13, color: c.textSecondary, fontStyle: FontStyle.italic),
-          ),
-          SizedBox(height: 20),
-          Row(children: [
-            Expanded(
-              child: TextButton(
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  _continueToNextChapter(book, chapter);
-                },
-                child: Text(isAm ? 'ቀጥል' : 'Continue'),
-              ),
-            ),
-            SizedBox(width: 8),
-            Expanded(
-              child: TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: Text(isAm ? 'ዝጋ' : 'Close'),
-              ),
-            ),
-          ]),
-        ]),
-      ),
-    );
-  }
-
-  void _continueToNextChapter(BibleBook book, int chapter) {
-    setState(() {
-      _showInlineReflection = false;
-      _showReflectionPrompt = false;
-      _pendingKeepIndex = null;
-    });
-    final allBooks = ScriptureService.allBooks;
-    if (chapter < book.chapters) {
-      setState(() {
-        _pickedBookId = book.id;
-        _pickedChapter = chapter + 1;
-      });
-      _saveReadingPosition();
-      return;
-    }
-    final idx = allBooks.indexWhere((b) => b.id == book.id);
-    if (idx >= 0 && idx + 1 < allBooks.length) {
-      setState(() {
-        _pickedBookId = allBooks[idx + 1].id;
-        _pickedChapter = 1;
-      });
-      _saveReadingPosition();
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    ref.listen(audioPlayerProvider, _onAudioComplete);
-
     final isOnline = ref.watch(connectivityProvider).valueOrNull ?? true;
 
     if (!isOnline) {
       return _buildOfflineView();
     }
 
-    final userAsync = ref.watch(userProvider);
-
-    return userAsync.when(
-      loading: () => const Scaffold(
-          body: Center(child: CircularProgressIndicator())),
-      error: (e, _) =>
-          Scaffold(body: ErrorCard(message: 'Could not load Bible plan')),
-      data: (user) {
-        final planId = user.biblePlan;
-        _cachedPlan ??= ScriptureService.getPlan(planId);
-
-        final parsed = _resolveParsed();
-        final c = AppColors.of(context);
-
-        if (parsed != null) {
-          _saveReadingPosition();
-        }
-
-        final scriptureAsync = parsed != null
-            ? ref.watch(scriptureProvider((
-                bookId: parsed.bookId,
-                chapter: parsed.chapter,
-                isAmharic: _isAm,
-              )))
-            : null;
-
-        final playerState = ref.watch(audioPlayerProvider);
-        final audioChapterLoaded = playerState.chapter != null &&
-            playerState.verseTexts.isNotEmpty;
-
-        String title;
-        if (parsed != null) {
-          final book = ScriptureService.bookMap[parsed.bookId];
-          title = book != null
-              ? '📖 ${_isAm ? book.nameAm : book.nameEn} ${parsed.chapter}'
-              : (_isAm ? '📖 መጽሐፍ ቅዱስ' : '📖 Bible');
-        } else {
-          title = _isAm ? 'መጽሐፍ ቅዱስ' : 'Bible';
-        }
-
-        return Scaffold(
-          backgroundColor: c.background,
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            surfaceTintColor: Colors.transparent,
-            leading: IconButton(
-              icon: Icon(Icons.arrow_back, color: c.textPrimary.withValues(alpha: 0.4)),
-              onPressed: () => context.go('/'),
-            ),
-            title: Text(title,
-                style: AppTextStyles.displaySmall.copyWith(fontSize: 20)),
-            actions: [
-              _buildLangToggle(),
-              IconButton(
-                icon: Icon(Icons.text_fields,
-                    color: c.textSecondary.withValues(alpha: 0.4), size: 18),
-                tooltip: _isAm ? 'የቃላት መጠን' : 'Font Size',
-                onPressed: () => _showFontSettings(context),
-              ),
-              IconButton(
-                icon: Icon(Icons.menu_book,
-                    color: c.textSecondary.withValues(alpha: 0.4), size: 18),
-                tooltip: _isAm ? 'መጻሕፍት' : 'Books',
-                onPressed: () => _showBookPicker(context),
-              ),
-              IconButton(
-                icon: Icon(Icons.download_outlined,
-                    color: c.textSecondary.withValues(alpha: 0.4), size: 18),
-                tooltip: _isAm ? 'የወረዱ' : 'Downloads',
-                onPressed: () => _showLibrary(context),
-              ),
-            ],
-          ),
-          body: Stack(
-            children: [
-              Listener(
-                onPointerDown: (_) => _resetIdleTimers(),
-                onPointerUp: (_) => _resetIdleTimers(),
-                child: Column(
-                  children: [
-                    AudioPlayerBar(isAm: _isAm),
-                    _buildKeptVerseBanner(),
-                    _buildStartTodayCard(),
-                    Expanded(
-                      child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        child: KeyedSubtree(
-                          key: ValueKey(parsed != null ? '${parsed.bookId}:${parsed.chapter}' : 'null'),
-                          child: scriptureAsync != null
-                              ? scriptureAsync.when(
-                              loading: () => VerseListView(
-                                chapter: null,
-                                isAm: _isAm,
-                                pendingKeepIndex: _pendingKeepIndex,
-                                keptVerseIndex: _keptVerseIndex(),
-                                onKeepPendingChanged: (i) => setState(() => _pendingKeepIndex = i),
-                                onKeepConfirmed: (vNum, text) { _confirmKeep(vNum, text); Future.delayed(const Duration(milliseconds: 300), () { if (mounted) _resetIdleTimers(); }); },
-                                onReflectionRequested: (vNum, text) { _openReflection(vNum, text); Future.delayed(const Duration(milliseconds: 300), () { if (mounted) _resetIdleTimers(); }); },
-                                onReflectionAvailable: _handleReflectionAvailable,
-                                trailing: parsed != null
-                                    ? (_showInlineReflection
-                                        ? TweenAnimationBuilder<double>(
-                                            tween: Tween(begin: 0, end: 1),
-                                            duration: Duration(milliseconds: 400),
-                                            builder: (ctx, value, child) =>
-                                                Opacity(opacity: value, child: child),
-                                            child: _buildInlineReflection(key: _reflectionKey),
-                                          )
-                                        : _showReflectionPrompt
-                                            ? _buildReflectionPrompt()
-                                            : _pendingKeepIndex != null
-                                                ? _buildKeepPrompt()
-                                                : null)
-                                    : null,
-                              ),
-                              error: (e, _) => Center(
-                                child: Text(
-                                  _isAm ? 'ጽሑፉን ማምጣት አልተቻለም' : 'Couldn\'t load this passage',
-                                  style: TextStyle(color: c.textSecondary),
-                                ),
-                              ),
-                              data: (chapter) => VerseListView(
-                                chapter: chapter,
-                                currentVerseIndex: audioChapterLoaded
-                                    ? playerState.currentVerse
-                                    : null,
-                                isAm: _isAm,
-                                onVerseTap: audioChapterLoaded ? (i) { _seekToVerse(i); _resetIdleTimers(); } : null,
-                                pendingKeepIndex: _pendingKeepIndex,
-                                keptVerseIndex: _keptVerseIndex(),
-                                onKeepPendingChanged: (i) => setState(() => _pendingKeepIndex = i),
-                                onKeepConfirmed: (vNum, text) { _confirmKeep(vNum, text); Future.delayed(const Duration(milliseconds: 300), () { if (mounted) _resetIdleTimers(); }); },
-                                onReflectionRequested: (vNum, text) { _openReflection(vNum, text); Future.delayed(const Duration(milliseconds: 300), () { if (mounted) _resetIdleTimers(); }); },
-                                onReflectionAvailable: _handleReflectionAvailable,
-                                trailing: parsed != null
-                                    ? (_showInlineReflection
-                                        ? TweenAnimationBuilder<double>(
-                                            tween: Tween(begin: 0, end: 1),
-                                            duration: Duration(milliseconds: 400),
-                                            builder: (ctx, value, child) =>
-                                                Opacity(opacity: value, child: child),
-                                            child: _buildInlineReflection(key: _reflectionKey),
-                                          )
-                                        : _showReflectionPrompt
-                                            ? _buildReflectionPrompt()
-                                            : _pendingKeepIndex != null
-                                                ? _buildKeepPrompt()
-                                                : null)
-                                    : null,
-                              ),
-                            )
-                          : VerseListView(
-                              chapter: null,
-                              isAm: _isAm,
-                            ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (_showPeek) _buildPeekSheet(),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildStartTodayCard() {
+    final parsed = _resolveParsed();
     final c = AppColors.of(context);
-    final todayReads = ref.watch(todayBibleReadProvider).valueOrNull ?? [];
-    final alreadyRead = todayReads.isNotEmpty;
 
-    Widget card;
-    if (alreadyRead) {
-      card = Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: AppColors.success.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(children: [
-          Text('🕊️', style: TextStyle(fontSize: 14)),
-          SizedBox(width: 8),
-          Text(
-            _isAm ? 'ዛሬ ተነቧል።' : 'Read today.',
-            style: TextStyle(fontSize: 12, color: AppColors.success),
-          ),
-        ]),
-      );
+    final scriptureAsync = parsed != null
+        ? ref.watch(scriptureProvider((
+            bookId: parsed.bookId,
+            chapter: parsed.chapter,
+            isAmharic: _isAm,
+          )))
+        : null;
+
+    final playerState = ref.watch(audioPlayerProvider);
+    final audioChapterLoaded = playerState.chapter != null &&
+        playerState.verseTexts.isNotEmpty &&
+        parsed != null &&
+        playerState.chapter!.bookId == parsed.bookId &&
+        playerState.chapter!.chapter == parsed.chapter &&
+        playerState.chapter!.isAmharic == _isAm;
+    final highlightedVerseColors = _highlightedVerseColors();
+
+    String title;
+    if (parsed != null) {
+      final book = ScriptureService.bookMap[parsed.bookId];
+      title = book != null
+          ? '📖 ${_isAm ? book.nameAm : book.nameEn} ${parsed.chapter}'
+          : (_isAm ? '📖 መጽሐፍ ቅዱስ' : '📖 Bible');
     } else {
-      final suggestion = ref.watch(todaySuggestionProvider).valueOrNull;
-      if (suggestion == null) return const SizedBox.shrink();
-      final book = ScriptureService.bookMap[suggestion.bookId];
-      if (book == null) return const SizedBox.shrink();
-
-      card = Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: c.card,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(children: [
-          Text('☀️', style: TextStyle(fontSize: 14)),
-          SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              '${_isAm ? book.nameAm : book.nameEn} ${suggestion.chapter}',
-              style: TextStyle(fontSize: 12, color: c.textPrimary),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              setState(() {
-                _showInlineReflection = false;
-                _showReflectionPrompt = false;
-                _pendingKeepIndex = null;
-                _pickedBookId = suggestion.bookId;
-                _pickedChapter = suggestion.chapter;
-              });
-              _saveReadingPosition();
-            },
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
-            child: Text(
-              _isAm ? 'ክፈት' : 'Open',
-              style: TextStyle(fontSize: 12, color: AppColors.primary),
-            ),
-          ),
-        ]),
-      );
+      title = _isAm ? 'መጽሐፍ ቅዱስ' : 'Bible';
     }
 
-    return AnimatedOpacity(
-      opacity: _cardVisible ? 1.0 : 0.0,
-      duration: const Duration(milliseconds: 500),
-      child: card,
+    return Scaffold(
+      backgroundColor: c.background,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: c.textPrimary.withValues(alpha: 0.4)),
+          onPressed: () {
+            _saveOpenPage();
+            context.go('/');
+          },
+        ),
+        title: Text(title,
+            style: AppTextStyles.displaySmall.copyWith(fontSize: 20)),
+        actions: [
+          _buildLangToggle(),
+          IconButton(
+            icon: Icon(Icons.text_fields,
+                color: c.textSecondary.withValues(alpha: 0.4), size: 18),
+            tooltip: _isAm ? 'የቃላት መጠን' : 'Font Size',
+            onPressed: () => _showFontSettings(context),
+          ),
+          IconButton(
+            icon: Icon(Icons.menu_book,
+                color: c.textSecondary.withValues(alpha: 0.4), size: 18),
+            tooltip: _isAm ? 'መጻሕፍት' : 'Books',
+            onPressed: () => _showBookPicker(context),
+          ),
+          IconButton(
+            icon: Icon(Icons.download_outlined,
+                color: c.textSecondary.withValues(alpha: 0.4), size: 18),
+            tooltip: _isAm ? 'የወረዱ' : 'Downloads',
+            onPressed: () => _showLibrary(context),
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          AudioPlayerBar(
+            isAm: _isAm,
+            bookId: parsed?.bookId,
+            chapterNum: parsed?.chapter,
+          ),
+          Expanded(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: KeyedSubtree(
+                key: ValueKey(parsed != null ? '${parsed.bookId}:${parsed.chapter}' : 'null'),
+                child: scriptureAsync != null
+                    ? scriptureAsync.when(
+                        loading: () => VerseListView(
+                          chapter: null,
+                          isAm: _isAm,
+                        ),
+                        error: (e, _) => Center(
+                          child: Text(
+                            _isAm ? 'ጽሑፉን ማምጣት አልተቻለም' : 'Couldn\'t load this passage',
+                            style: TextStyle(color: c.textSecondary),
+                          ),
+                        ),
+                        data: (chapter) => VerseListView(
+                          chapter: chapter,
+                          currentVerseIndex: audioChapterLoaded
+                              ? playerState.currentVerse
+                              : null,
+                          isAm: _isAm,
+                          onVerseTap: _showVerseSheet,
+                          highlightedVerseColors: highlightedVerseColors,
+                        ),
+                      )
+                    : VerseListView(
+                        chapter: null,
+                        isAm: _isAm,
+                      ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -867,13 +264,8 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
     return GestureDetector(
       onTap: () {
         if (_effectiveLang != lang) {
-          setState(() {
-            _showInlineReflection = false;
-            _showReflectionPrompt = false;
-            _pendingKeepIndex = null;
-            _selectedLang = lang;
-          });
-          _saveReadingPosition();
+          setState(() => _selectedLang = lang);
+          _saveOpenPage();
         }
       },
       child: Container(
@@ -1009,13 +401,10 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
             onSelected: (bookId, chapter) {
               Navigator.pop(ctx);
               setState(() {
-                _showInlineReflection = false;
-                _showReflectionPrompt = false;
-                _pendingKeepIndex = null;
                 _pickedBookId = bookId;
                 _pickedChapter = chapter;
               });
-              _saveReadingPosition();
+              _saveOpenPage();
             },
           ),
         );
@@ -1033,14 +422,11 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
         isAm: _isAm,
         onBookSelected: (bookId, chapter, language) {
           setState(() {
-            _showInlineReflection = false;
-            _showReflectionPrompt = false;
-            _pendingKeepIndex = null;
             _selectedLang = language;
             _pickedBookId = bookId;
             _pickedChapter = chapter;
           });
-          _saveReadingPosition();
+          _saveOpenPage();
         },
       ),
     );
@@ -1215,7 +601,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
                     _pickedChapter = ch;
                     _offlineBook = null;
                   });
-                  _saveReadingPosition();
+                  _saveOpenPage();
                 },
                 child: Container(
                   decoration: BoxDecoration(
@@ -1245,86 +631,6 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
                 ),
               );
             },
-          ),
-        ),
-      ]),
-    );
-  }
-}
-
-class _ReflectionSheet extends StatelessWidget {
-  final String text;
-  final String reference;
-  final ValueNotifier<String> reflectionNotifier;
-  final ValueNotifier<String?> errorNotifier;
-  final VoidCallback? onVerseTap;
-  const _ReflectionSheet({
-    required this.text, required this.reference, required this.reflectionNotifier,
-    required this.errorNotifier,
-    this.onVerseTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final c = AppColors.of(context);
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.5,
-      decoration: BoxDecoration(
-        color: c.background,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: Column(children: [
-        Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(children: [
-                  Expanded(child: Text(reference,
-                    style: TextStyle(fontSize: 11,
-                      color: c.textMuted, fontWeight: FontWeight.w500))),
-                  ValueListenableBuilder<String>(
-                    valueListenable: reflectionNotifier,
-                    builder: (ctx, reflection, _) => IconButton(
-                      icon: Icon(Icons.share, size: 18, color: c.textMuted),
-                      onPressed: () {
-                        SharePlus.instance.share(ShareParams(
-                          text: '$reference\n\n$text\n\n$reflection',
-                        ));
-                      },
-                    ),
-                  ),
-                ]),
-                SizedBox(height: 12),
-                GestureDetector(
-                  onTap: onVerseTap,
-                  child: Text(text,
-                    style: TextStyle(fontSize: 15,
-                      color: c.textPrimary.withValues(alpha: 0.9),
-                      height: 1.6, fontStyle: FontStyle.italic)),
-                ),
-                SizedBox(height: 20),
-                ValueListenableBuilder<String>(
-                  valueListenable: reflectionNotifier,
-                  builder: (ctx, reflection, _) => Text(reflection,
-                    style: TextStyle(fontSize: 14,
-                      color: c.textPrimary, height: 1.7)),
-                ),
-                ValueListenableBuilder<String?>(
-                  valueListenable: errorNotifier,
-                  builder: (ctx, error, _) => error != null
-                      ? Padding(
-                          padding: const EdgeInsets.only(top: 12),
-                          child: Text(error,
-                            style: TextStyle(fontSize: 10,
-                              color: c.textMuted.withValues(alpha: 0.5)),
-                          ),
-                        )
-                      : const SizedBox.shrink(),
-                ),
-              ],
-            ),
           ),
         ),
       ]),

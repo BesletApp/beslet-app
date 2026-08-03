@@ -7,7 +7,6 @@ import 'tables/user_table.dart';
 import 'tables/habit_table.dart';
 import 'tables/completion_table.dart';
 import 'tables/prayer_table.dart';
-import 'tables/bible_read_table.dart';
 import 'tables/skill_table.dart';
 import 'tables/reflection_table.dart';
 import 'tables/challenge_table.dart';
@@ -19,18 +18,15 @@ import 'tables/daily_reflection_table.dart';
 import 'tables/streak_log_table.dart';
 import 'tables/streak_freeze_table.dart';
 import 'tables/soul_log_table.dart';
-import 'tables/bible_sessions_table.dart';
-import 'tables/reading_loops_table.dart';
-import 'tables/wisdom_notes_table.dart';
 import 'tables/audio_cache_table.dart';
 import 'tables/journal_table.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Users, Habits, Completions, PrayerLogs, BibleReads, Skills, SkillSessions, Reflections, Challenges, ChallengeParticipants, FellowshipLogs, FamilyTimeLogs, Goals, TodoItems, DailyReflections, StreakLog, StreakFrozen, SoulLog, BibleSessions, ReadingLoops, WisdomNotes, AudioCache, JournalEntry])
+@DriftDatabase(tables: [Users, Habits, Completions, PrayerLogs, Skills, SkillSessions, Reflections, Challenges, ChallengeParticipants, FellowshipLogs, FamilyTimeLogs, Goals, TodoItems, DailyReflections, StreakLog, StreakFrozen, SoulLog, AudioCache, JournalEntry])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
-  @override int get schemaVersion => 17;
+  @override int get schemaVersion => 18;
 
   @override
   MigrationStrategy get migration {
@@ -41,14 +37,8 @@ class AppDatabase extends _$AppDatabase {
           await m.createTable(fellowshipLogs);
           await m.createTable(familyTimeLogs);
         }
-        if (from < 3) {
-          await m.addColumn(bibleReads, bibleReads.note);
-        }
         if (from < 4) {
           await m.addColumn(users, users.biblePlan);
-        }
-        if (from < 5) {
-          await m.addColumn(bibleReads, bibleReads.durationMinutes);
         }
         if (from < 6) {
           await m.createTable(goals);
@@ -61,38 +51,39 @@ class AppDatabase extends _$AppDatabase {
           await m.createTable(streakLog);
           await m.createTable(streakFrozen);
         }
-        if (from < 9) {
-          await m.createTable(bibleSessions);
-          await customStatement('CREATE TABLE IF NOT EXISTS bible_book_cache (book_id TEXT PRIMARY KEY, json_data TEXT NOT NULL, cached_at TEXT NOT NULL)');
-        }
-        if (from < 10) {
-          await customStatement('DROP TABLE IF EXISTS bible_book_cache');
-        }
         if (from < 11) {
           await m.addColumn(users, users.sabbathDay);
         }
         if (from < 12) {
           await m.createTable(soulLog);
         }
-        if (from < 13) {
-          await m.createTable(readingLoops);
-        }
         if (from < 14) {
           await m.addColumn(fellowshipLogs, fellowshipLogs.promptType);
-          await m.createTable(wisdomNotes);
-        }
-        if (from < 15) {
-          await m.createTable(audioCache);
-        }
-        if (from < 16) {
-          await customStatement('CREATE TABLE bible_reads_temp AS SELECT * FROM bible_reads');
-          await m.deleteTable('bible_reads');
-          await m.createTable(bibleReads);
-          await customStatement('INSERT OR IGNORE INTO bible_reads SELECT * FROM bible_reads_temp');
-          await customStatement('DROP TABLE IF EXISTS bible_reads_temp');
         }
         if (from < 17) {
           await m.createTable(journalEntry);
+        }
+        if (from < 18) {
+          await customStatement('DROP TABLE IF EXISTS bible_reads');
+          await customStatement('DROP TABLE IF EXISTS bible_sessions');
+          await customStatement('DROP TABLE IF EXISTS reading_loops');
+          await customStatement('DROP TABLE IF EXISTS wisdom_notes');
+          await customStatement('DROP TABLE IF EXISTS bible_book_cache');
+          final audioCols = await customSelect('PRAGMA table_info(audio_cache)').get();
+          if (audioCols.isEmpty) {
+            await m.createTable(audioCache);
+          } else {
+            final names = audioCols.map((c) => c.data['name'] as String).toSet();
+            if (names.contains('last_played_at')) {
+              await customStatement('ALTER TABLE audio_cache DROP COLUMN last_played_at');
+            }
+            if (names.contains('play_count')) {
+              await customStatement('ALTER TABLE audio_cache DROP COLUMN play_count');
+            }
+            if (names.contains('plan_relevant_until')) {
+              await customStatement('ALTER TABLE audio_cache DROP COLUMN plan_relevant_until');
+            }
+          }
         }
       },
     );

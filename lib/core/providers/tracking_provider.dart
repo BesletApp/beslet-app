@@ -16,7 +16,6 @@ class TrackingData {
   final int freezeTokens;
   final bool streakAtRisk;
   final int prayerMinutes;
-  final int bibleDays;
   final int habitsDone;
   final int skillsMinutes;
   final int todosDone;
@@ -33,7 +32,6 @@ class TrackingData {
     required this.freezeTokens,
     required this.streakAtRisk,
     required this.prayerMinutes,
-    required this.bibleDays,
     required this.habitsDone,
     required this.skillsMinutes,
     required this.todosDone,
@@ -58,9 +56,6 @@ final trackingDataProvider = FutureProvider<TrackingData>((ref) async {
   final prayerMinutes = prayerLogsThisWeek.fold(0, (int sum, l) => sum + l.minutes);
   final prayerDaysThisWeek = prayerLogsThisWeek.map((l) => l.date).toSet().length;
 
-  final reads = await (db.select(db.bibleReads)..where((t) => t.date.equals(today))).get();
-  final bibleDays = reads.length;
-
   final sessions = await (db.select(db.skillSessions)..where((t) => t.date.equals(today))).get();
   final skillsMinutes = sessions.fold(0, (int sum, s) => sum + s.minutes);
 
@@ -75,7 +70,6 @@ final trackingDataProvider = FutureProvider<TrackingData>((ref) async {
     final todoXp = todosDone * XpService.todoComplete + (allTodosDone ? XpService.allTodosBonus : 0);
 
     final totalXp = habitsDone * XpService.habitComplete +
-        bibleDays * XpService.bibleRead +
         prayerDaysThisWeek * XpService.prayerComplete +
         skillsMinutes * XpService.skillSession +
         reflectionDone * XpService.reflectionComplete +
@@ -96,7 +90,7 @@ final trackingDataProvider = FutureProvider<TrackingData>((ref) async {
   final isSabbath = sabbathDay >= 0 && DateTime.now().weekday == sabbathDay;
   final streakAtRisk = frozenRows.isNotEmpty && !todayAnchor && !isSabbath;
 
-  final badges = BadgeService.checkBadges(totalXp, streak, prayerMinutes, bibleDays, todosCompleted: todosCompletedAll, unifiedStreak: bestStreak);
+  final badges = BadgeService.checkBadges(totalXp, streak, prayerMinutes, todosCompleted: todosCompletedAll, unifiedStreak: bestStreak);
 
   return TrackingData(
     totalXp: totalXp,
@@ -107,7 +101,6 @@ final trackingDataProvider = FutureProvider<TrackingData>((ref) async {
     freezeTokens: freezeTokens,
     streakAtRisk: streakAtRisk,
     prayerMinutes: prayerMinutes,
-    bibleDays: bibleDays,
     habitsDone: habitsDone,
     skillsMinutes: skillsMinutes,
     todosDone: todosDone,
