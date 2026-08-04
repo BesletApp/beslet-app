@@ -7,6 +7,7 @@ import 'core/providers/theme_provider.dart';
 import 'core/providers/locale_provider.dart';
 import 'core/services/notification_service.dart';
 import 'l10n/app_localizations.dart';
+import 'core/services/vineyard_reminder_service.dart';
 
 class BesletApp extends ConsumerWidget {
   const BesletApp({super.key});
@@ -16,6 +17,7 @@ class BesletApp extends ConsumerWidget {
     final paletteOption = ref.watch(themePaletteProvider);
     final locale = ref.watch(localeProvider);
     NotificationService.setLanguage(locale.languageCode == 'am');
+    VineyardReminderService.setLanguage(locale.languageCode == 'am');
     return MaterialApp.router(
       title: 'ብስለት — Maturity',
       debugShowCheckedModeBanner: false,

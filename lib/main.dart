@@ -10,8 +10,11 @@ import 'core/services/notification_service.dart';
 import 'core/services/widget_service.dart';
 import 'core/services/prayer_reminder_service.dart';
 import 'core/services/prayer_alarm_sound_service.dart';
+import 'core/services/vineyard_reminder_service.dart';
 import 'core/personalization/personalization_engine.dart';
 import 'core/personalization/personalization_providers.dart';
+import 'core/providers/database_provider.dart';
+import 'core/providers/user_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -46,11 +49,23 @@ void main() async {
 
   final engine = await PersonalizationEngine.init();
 
+  final container = ProviderContainer(
+    overrides: [
+      personalizationEngineProvider.overrideWithValue(engine),
+    ],
+  );
+  final db = container.read(databaseProvider);
+  String lang = 'en';
+  try {
+    final user = await container.read(userProvider.future);
+    lang = user.lang;
+  } catch (_) {}
+  VineyardReminderService.configure(db, isAm: lang == 'am');
+  try { await VineyardReminderService.refresh(); } catch (_) {}
+
   runApp(
-    ProviderScope(
-      overrides: [
-        personalizationEngineProvider.overrideWithValue(engine),
-      ],
+    UncontrolledProviderScope(
+      container: container,
       child: const BesletApp(),
     ),
   );

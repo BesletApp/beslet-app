@@ -190,5 +190,13 @@
   "theHarvest": "The Harvest",
   "continueAbiding": "Continue abiding",
   "harvestVerb": "Harvest",
-  "close": "Close"
+  "close": "Close",
+  "vineyardVisits": "Vineyard visits",
+  "vineyardVisitsSubtitle": "Gentle, irregular encouragement from your vine — never a nag.",
+  "visitsOff": "Off",
+  "visitsGentle": "Gentle (every few days)",
+  "visitsAttentive": "Attentive (daily)",
+  "visitWindow": "Visit window",
+  "windowEvening": "Evening",
+  "windowMorning": "Morning"
 }

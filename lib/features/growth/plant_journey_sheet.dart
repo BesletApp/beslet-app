@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers/growth_provider.dart';
 import '../../../core/services/growth_content.dart';
+import '../../../core/services/vineyard_reminder_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -48,6 +49,7 @@ class _PlantJourneySheetState extends ConsumerState<_PlantJourneySheet> {
           GrowthContent.daysFor(_timeframe),
           note: _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
         );
+    try { await VineyardReminderService.refresh(); } catch (_) {}
     if (mounted) Navigator.of(context).pop(true);
   }
 

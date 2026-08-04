@@ -6,6 +6,7 @@ import '../../core/providers/growth_provider.dart';
 import '../../core/providers/journal_provider.dart';
 import '../../core/providers/soul_log_provider.dart';
 import '../../core/services/growth_content.dart';
+import '../../core/services/vineyard_reminder_service.dart';
 import '../../core/services/scripture_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
@@ -437,6 +438,7 @@ Future<void> _openHarvestSheet(
   );
   if (choice == HarvestChoice.harvest && context.mounted) {
     await ref.read(journeyNotifierProvider.notifier).harvestJourney();
+    try { await VineyardReminderService.refresh(); } catch (_) {}
   }
 }
 

@@ -1243,6 +1243,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Close'**
   String get close;
+
+  /// No description provided for @vineyardVisits.
+  ///
+  /// In en, this message translates to:
+  /// **'Vineyard visits'**
+  String get vineyardVisits;
+
+  /// No description provided for @vineyardVisitsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Gentle, irregular encouragement from your vine — never a nag.'**
+  String get vineyardVisitsSubtitle;
+
+  /// No description provided for @visitsOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get visitsOff;
+
+  /// No description provided for @visitsGentle.
+  ///
+  /// In en, this message translates to:
+  /// **'Gentle (every few days)'**
+  String get visitsGentle;
+
+  /// No description provided for @visitsAttentive.
+  ///
+  /// In en, this message translates to:
+  /// **'Attentive (daily)'**
+  String get visitsAttentive;
+
+  /// No description provided for @visitWindow.
+  ///
+  /// In en, this message translates to:
+  /// **'Visit window'**
+  String get visitWindow;
+
+  /// No description provided for @windowEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'Evening'**
+  String get windowEvening;
+
+  /// No description provided for @windowMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Morning'**
+  String get windowMorning;
 }
 
 class _AppLocalizationsDelegate

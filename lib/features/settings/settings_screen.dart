@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -11,6 +11,8 @@ import '../../core/providers/user_provider.dart';
 import '../../core/providers/database_provider.dart';
 import '../../core/database/app_database.dart';
 import '../../core/services/notification_service.dart';
+import '../../core/services/vineyard_reminder_service.dart';
+import '../../core/services/vineyard_reminder_content.dart';
 import '../../core/providers/streak_provider.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/widgets/zone_layout.dart';
@@ -30,17 +32,125 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final _remindersKey = GlobalKey();
   final _aboutKey = GlobalKey();
   String _reminderTime = '20:00';
+  bool _visitsEnabled = false;
+  String _visitsFrequency = 'gentle';
+  String _visitsWindow = 'evening';
 
   @override
   void initState() {
     super.initState();
     _loadReminderTime();
+    _loadVisits();
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSection());
   }
 
   Future<void> _loadReminderTime() async {
     final prefs = await SharedPreferences.getInstance();
     if (mounted) setState(() => _reminderTime = prefs.getString('reminderTime') ?? '20:00');
+  }
+
+  Future<void> _loadVisits() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    setState(() {
+      _visitsEnabled = prefs.getBool('vineyardVisitsEnabled') ?? false;
+      _visitsFrequency = prefs.getString('vineyardVisitsFrequency') ?? 'gentle';
+      _visitsWindow = prefs.getString('vineyardVisitsWindow') ?? 'evening';
+    });
+  }
+
+  String _visitsModeLabel(bool isAm) {
+    final l = AppLocalizations.of(context)!;
+    if (!_visitsEnabled) return l.visitsOff;
+    final freq = _visitsFrequency == 'attentive' ? l.visitsAttentive : l.visitsGentle;
+    final window = _visitsWindow == 'morning' ? l.windowMorning : l.windowEvening;
+    return '$freq Â· $window';
+  }
+
+  Future<void> _pickVineyardVisits(BuildContext context) async {
+    final l = AppLocalizations.of(context)!;
+    final result = await showModalBottomSheet<(String, String)>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (sheet) => Material(
+        color: AppColors.of(context).background,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        clipBehavior: Clip.antiAlias,
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l.vineyardVisits, style: AppTextStyles.displaySmall),
+                const SizedBox(height: AppSpacing.xs),
+                Text(l.vineyardVisitsSubtitle,
+                    style: AppTextStyles.bodySmall.copyWith(color: AppColors.of(context).textSecondary)),
+                const SizedBox(height: AppSpacing.sm),
+                _visitsOption(sheet, 'off', l.visitsOff, !_visitsEnabled),
+                _visitsOption(sheet, 'gentle', l.visitsGentle, _visitsEnabled && _visitsFrequency == 'gentle'),
+                _visitsOption(sheet, 'attentive', l.visitsAttentive, _visitsEnabled && _visitsFrequency == 'attentive'),
+                const Divider(height: 24),
+                Text(l.visitWindow,
+                    style: AppTextStyles.labelLarge.copyWith(color: AppColors.of(context).textSecondary)),
+                const SizedBox(height: AppSpacing.xs),
+                _windowOption(sheet, 'evening', l.windowEvening, _visitsWindow == 'evening'),
+                _windowOption(sheet, 'morning', l.windowMorning, _visitsWindow == 'morning'),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    if (result == null) return;
+    final kind = result.$1;
+    final value = result.$2;
+    if (kind == 'freq') {
+      final enabled = value != 'off';
+      setState(() {
+        _visitsEnabled = enabled;
+        if (enabled) _visitsFrequency = value;
+      });
+      if (!enabled) {
+        await VineyardReminderService.setEnabled(false);
+      } else {
+        await VineyardReminderService.setFrequency(
+          value == 'attentive' ? ReminderFrequency.attentive : ReminderFrequency.gentle,
+        );
+        await VineyardReminderService.setEnabled(true);
+      }
+    } else {
+      setState(() => _visitsWindow = value);
+      await VineyardReminderService.setWindow(value == 'morning');
+    }
+  }
+
+  Widget _visitsOption(BuildContext context, String value, String label, bool selected) {
+    return ListTile(
+      dense: true,
+      contentPadding: EdgeInsets.zero,
+      leading: Icon(
+        selected ? Icons.radio_button_checked : Icons.radio_button_off,
+        color: selected ? AppColors.primary : AppColors.of(context).textMuted,
+      ),
+      title: Text(label, style: AppTextStyles.bodyMedium),
+      onTap: () => Navigator.of(context).pop(('freq', value)),
+    );
+  }
+
+  Widget _windowOption(BuildContext context, String value, String label, bool selected) {
+    return ListTile(
+      dense: true,
+      contentPadding: EdgeInsets.zero,
+      leading: Icon(
+        selected ? Icons.radio_button_checked : Icons.radio_button_off,
+        color: selected ? AppColors.primary : AppColors.of(context).textMuted,
+      ),
+      title: Text(label, style: AppTextStyles.bodyMedium),
+      onTap: () => Navigator.of(context).pop(('window', value)),
+    );
   }
 
   void _scrollToSection() {
@@ -83,7 +193,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: c.border)),
               child: SwitchListTile(
                 title: Text(l.darkMode, style: AppTextStyles.bodyMedium),
-                subtitle: Text(isAm ? 'የጨለማ/የብርሃን ሁነታን ቀይር' : 'Toggle light/dark theme', style: AppTextStyles.bodySmall),
+                subtitle: Text(isAm ? 'á‹¨áŒ¨áˆˆáˆ›/á‹¨á‰¥áˆ­áˆƒáŠ• áˆáŠá‰³áŠ• á‰€á‹­áˆ­' : 'Toggle light/dark theme', style: AppTextStyles.bodySmall),
                 value: themeMode == ThemeMode.dark,
                 onChanged: (val) => ref.read(themeModeProvider.notifier).toggle(),
                 activeThumbColor: AppColors.primary,
@@ -91,7 +201,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
             ),
             SizedBox(height: AppSpacing.md),
-            Text(isAm ? 'ገጽታ' : 'Theme', style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
+            Text(isAm ? 'áŒˆáŒ½á‰³' : 'Theme', style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
             SizedBox(height: AppSpacing.sm),
             _ThemePalettePicker(),
           ]),
@@ -103,9 +213,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: c.border)),
               child: userAsync.when(
                 data: (user) => Column(children: [
-                  _langTile(context, ref, user, 'en', l.english, '🇬🇧'),
+                  _langTile(context, ref, user, 'en', l.english, 'ðŸ‡¬ðŸ‡§'),
                   const Divider(height: 1),
-                  _langTile(context, ref, user, 'am', l.amharic, '🇪🇹'),
+                  _langTile(context, ref, user, 'am', l.amharic, 'ðŸ‡ªðŸ‡¹'),
                 ]),
                 loading: () => const SizedBox(height: 48, child: Center(child: CircularProgressIndicator())),
                 error: (e, _) => Text('$e'),
@@ -113,7 +223,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
           ]),
           support: Column(children: [
-            Text(isAm ? '🕊️ የእረፍት ቀን' : '🕊️ Sabbath Rest', style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
+            Text(isAm ? 'ðŸ•Šï¸ á‹¨áŠ¥áˆ¨áá‰µ á‰€áŠ•' : 'ðŸ•Šï¸ Sabbath Rest', style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
             SizedBox(height: AppSpacing.sm),
             Container(
               padding: const EdgeInsets.all(16),
@@ -121,10 +231,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               child: userAsync.when(
                 data: (user) => ListTile(
                   leading: const Icon(Icons.weekend, color: AppColors.primary),
-                  title: Text(isAm ? 'የእረፍት ቀንህን ምረጥ' : 'Choose your rest day', style: AppTextStyles.bodyMedium),
+                  title: Text(isAm ? 'á‹¨áŠ¥áˆ¨áá‰µ á‰€áŠ•áˆ…áŠ• áˆáˆ¨áŒ¥' : 'Choose your rest day', style: AppTextStyles.bodyMedium),
                   subtitle: Text(
                     user.sabbathDay == -1
-                        ? (isAm ? 'አልተመረጠም። እረፍት የሌለበት ቀን' : 'Not set — no rest day')
+                        ? (isAm ? 'áŠ áˆá‰°áˆ˜áˆ¨áŒ áˆá¢ áŠ¥áˆ¨áá‰µ á‹¨áˆŒáˆˆá‰ á‰µ á‰€áŠ•' : 'Not set â€” no rest day')
                         : (isAm ? _dayName(user.sabbathDay, isAm) : _dayName(user.sabbathDay, isAm)),
                     style: AppTextStyles.bodySmall.copyWith(color: c.textSecondary)),
                   trailing: Text(
@@ -143,30 +253,46 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: c.border)),
-              child: ListTile(
-                leading: const Icon(Icons.access_time, color: AppColors.primary),
-                title: Text(isAm ? 'ዕለታዊ ማሳሰቢያ' : 'Daily reading reminder', style: AppTextStyles.bodyMedium),
-                subtitle: Text(isAm ? 'በየቀኑ ለማንበብ ያስታውስሃል' : 'Reminds you to read daily', style: AppTextStyles.bodySmall),
-                trailing: Text(_reminderTime, style: const TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.primary)),
-                contentPadding: EdgeInsets.zero,
-                onTap: () async {
-                  final parts = _reminderTime.split(':');
-                  final initial = TimeOfDay(hour: int.tryParse(parts[0]) ?? 20, minute: int.tryParse(parts[1]) ?? 0);
-                  final time = await showTimePicker(context: context, initialTime: initial);
-                  if (time != null) {
-                    final formatted = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
-                    final prefs = await SharedPreferences.getInstance();
-                    await prefs.setString('reminderTime', formatted);
-                    await NotificationService.scheduleDailyReminder(time.hour, time.minute);
-                    if (context.mounted) {
-                      setState(() => _reminderTime = formatted);
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(isAm ? 'ማሳሰቢያ ተቀናብሯል በ$formatted' : 'Reminder set at $formatted'),
-                        backgroundColor: AppColors.success, behavior: SnackBarBehavior.floating, duration: Duration(seconds: 2),
-                      ));
-                    }
-                  }
-                },
+              child: Column(
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.access_time, color: AppColors.primary),
+                    title: Text(isAm ? 'á‹•áˆˆá‰³á‹Š áˆ›áˆ³áˆ°á‰¢á‹«' : 'Daily reading reminder', style: AppTextStyles.bodyMedium),
+                    subtitle: Text(isAm ? 'á‰ á‹¨á‰€áŠ‘ áˆˆáˆ›áŠ•á‰ á‰¥ á‹«áˆµá‰³á‹áˆµáˆƒáˆ' : 'Reminds you to read daily', style: AppTextStyles.bodySmall),
+                    trailing: Text(_reminderTime, style: const TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.primary)),
+                    contentPadding: EdgeInsets.zero,
+                    onTap: () async {
+                      final parts = _reminderTime.split(':');
+                      final initial = TimeOfDay(hour: int.tryParse(parts[0]) ?? 20, minute: int.tryParse(parts[1]) ?? 0);
+                      final time = await showTimePicker(context: context, initialTime: initial);
+                      if (time != null) {
+                        final formatted = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs.setString('reminderTime', formatted);
+                        await NotificationService.scheduleDailyReminder(time.hour, time.minute);
+                        if (context.mounted) {
+                          setState(() => _reminderTime = formatted);
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text(isAm ? 'áˆ›áˆ³áˆ°á‰¢á‹« á‰°á‰€áŠ“á‰¥áˆ¯áˆ á‰ $formatted' : 'Reminder set at $formatted'),
+                            backgroundColor: AppColors.success, behavior: SnackBarBehavior.floating, duration: Duration(seconds: 2),
+                          ));
+                        }
+                      }
+                    },
+                  ),
+                  const Divider(height: 24),
+                  ListTile(
+                    leading: const Icon(Icons.eco, color: AppColors.primary),
+                    title: Text(l.vineyardVisits, style: AppTextStyles.bodyMedium),
+                    subtitle: Text(_visitsModeLabel(isAm), style: AppTextStyles.bodySmall.copyWith(color: c.textSecondary)),
+                    trailing: Icon(
+                      _visitsEnabled ? Icons.chevron_right : Icons.toggle_off_outlined,
+                      color: _visitsEnabled ? AppColors.primary : c.textMuted,
+                    ),
+                    contentPadding: EdgeInsets.zero,
+                    onTap: () => _pickVineyardVisits(context),
+                  ),
+                ],
               ),
             ),
           ]),
@@ -178,12 +304,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: c.border)),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('ብስለት — Beslet', style: const TextStyle(fontFamily: 'CormorantGaramond', fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.primary)),
+                Text('á‰¥áˆµáˆˆá‰µ â€” Beslet', style: const TextStyle(fontFamily: 'CormorantGaramond', fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.primary)),
                 const SizedBox(height: AppSpacing.sm),
-                Text(isAm ? 'በአርባ ምንጭ ዩኒቨርሲቲ ውስጥ ላሉ ክርስቲያን ተማሪዎች የበጋ የ90 ቀን የመንፈሳዊ እድገት መተግበሪያ።' : 'A 90-day summer spiritual growth app for Christian students at Arba Minch University and beyond.', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: c.textSecondary, height: 1.4)),
+                Text(isAm ? 'á‰ áŠ áˆ­á‰£ áˆáŠ•áŒ­ á‹©áŠ’á‰¨áˆ­áˆ²á‰² á‹áˆµáŒ¥ áˆ‹áˆ‰ áŠ­áˆ­áˆµá‰²á‹«áŠ• á‰°áˆ›áˆªá‹Žá‰½ á‹¨á‰ áŒ‹ á‹¨90 á‰€áŠ• á‹¨áˆ˜áŠ•áˆáˆ³á‹Š áŠ¥á‹µáŒˆá‰µ áˆ˜á‰°áŒá‰ áˆªá‹«á¢' : 'A 90-day summer spiritual growth app for Christian students at Arba Minch University and beyond.', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: c.textSecondary, height: 1.4)),
                 const SizedBox(height: AppSpacing.sm),
                 Text('Made by Amanuel Lamesa', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: c.textMuted)),
-                Text('Summer 2026 · v1.0', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: c.textMuted)),
+                Text('Summer 2026 Â· v1.0', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: c.textMuted)),
                 const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
@@ -192,7 +318,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       launchUrl(Uri.parse('https://t.me/emnverse'), mode: LaunchMode.externalApplication);
                     },
                     icon: const Icon(Icons.chat_bubble_outline, size: 16),
-                    label: Text(isAm ? 'አስተያየት እና አስተያየት' : 'Comment & Suggestions'),
+                    label: Text(isAm ? 'áŠ áˆµá‰°á‹«á‹¨á‰µ áŠ¥áŠ“ áŠ áˆµá‰°á‹«á‹¨á‰µ' : 'Comment & Suggestions'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.primary,
                       side: const BorderSide(color: AppColors.primary),
@@ -236,8 +362,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   String _dayName(int day, bool isAm) {
     const names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    const amNames = ['ሰኞ', 'ማክሰኞ', 'ረቡዕ', 'ሐሙስ', 'አርብ', 'ቅዳሜ', 'እሁድ'];
-    if (day < 0 || day > 6) return isAm ? 'አልተመረጠም' : 'Not set';
+    const amNames = ['áˆ°áŠž', 'áˆ›áŠ­áˆ°áŠž', 'áˆ¨á‰¡á‹•', 'áˆáˆ™áˆµ', 'áŠ áˆ­á‰¥', 'á‰…á‹³áˆœ', 'áŠ¥áˆá‹µ'];
+    if (day < 0 || day > 6) return isAm ? 'áŠ áˆá‰°áˆ˜áˆ¨áŒ áˆ' : 'Not set';
     return isAm ? amNames[day] : names[day];
   }
 
@@ -249,18 +375,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           final cc = AppColors.of(ctx);
           return SimpleDialog(
             backgroundColor: cc.card,
-            title: Text(isAm ? 'የእረፍት ቀንህን ምረጥ' : 'Choose your rest day', style: AppTextStyles.labelLarge),
+            title: Text(isAm ? 'á‹¨áŠ¥áˆ¨áá‰µ á‰€áŠ•áˆ…áŠ• áˆáˆ¨áŒ¥' : 'Choose your rest day', style: AppTextStyles.labelLarge),
             children: List.generate(8, (i) {
               if (i == 7) {
                 return SimpleDialogOption(
                   onPressed: () => Navigator.pop(ctx, -1),
-                  child: Text(isAm ? 'የለም (የእረፍት ቀን የለም)' : 'None (no rest day)',
+                  child: Text(isAm ? 'á‹¨áˆˆáˆ (á‹¨áŠ¥áˆ¨áá‰µ á‰€áŠ• á‹¨áˆˆáˆ)' : 'None (no rest day)',
                       style: AppTextStyles.bodyMedium.copyWith(color: cc.textMuted)),
                 );
               }
               return SimpleDialogOption(
                 onPressed: () => Navigator.pop(ctx, i),
-                child: Text('${_dayName(i, isAm)}${i == 6 ? (isAm ? ' (እሁድ)' : ' (Sunday)') : ''}',
+                child: Text('${_dayName(i, isAm)}${i == 6 ? (isAm ? ' (áŠ¥áˆá‹µ)' : ' (Sunday)') : ''}',
                     style: AppTextStyles.bodyMedium),
               );
             }),
@@ -276,7 +402,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 }
 
-// ─── Theme Palette Picker ─────────────────────────────────────
+// â”€â”€â”€ Theme Palette Picker â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 class _ThemePalettePicker extends ConsumerWidget {
   @override Widget build(BuildContext context, WidgetRef ref) {
     final selected = ref.watch(themePaletteProvider);
@@ -308,11 +434,11 @@ class _ThemePalettePicker extends ConsumerWidget {
   };
 
   String _paletteNameAm(AppThemeOption opt) => switch (opt) {
-    AppThemeOption.classic => 'ክላሲክ ወርቅ',
-    AppThemeOption.sepia => 'ሴፒያ',
-    AppThemeOption.calmBlue => 'ሰላማዊ ሰማያዊ',
-    AppThemeOption.forestGreen => 'ደን አረንጓዴ',
-    AppThemeOption.midnight => 'እኩለ ሌሊት',
+    AppThemeOption.classic => 'áŠ­áˆ‹áˆ²áŠ­ á‹ˆáˆ­á‰…',
+    AppThemeOption.sepia => 'áˆ´á’á‹«',
+    AppThemeOption.calmBlue => 'áˆ°áˆ‹áˆ›á‹Š áˆ°áˆ›á‹«á‹Š',
+    AppThemeOption.forestGreen => 'á‹°áŠ• áŠ áˆ¨áŠ•áŒ“á‹´',
+    AppThemeOption.midnight => 'áŠ¥áŠ©áˆˆ áˆŒáˆŠá‰µ',
   };
 }
 
@@ -368,3 +494,4 @@ class _PaletteChip extends StatelessWidget {
     );
   }
 }
+

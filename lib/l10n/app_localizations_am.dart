@@ -533,7 +533,7 @@ class AppLocalizationsAm extends AppLocalizations {
   String get vineyardTitle => 'የወይን እርሻ';
 
   @override
-  String get soilYoursGrowingHis => 'አፈሩ የአንተ ነው፤ ማደጉ የእርሱ ነው።';
+  String get soilYoursGrowingHis => 'አፈሩ የአንተ ነው፤ ማደጉ ግን የእግዚአብሔር ነው።';
 
   @override
   String get vineyardEmptyBody =>
@@ -579,7 +579,7 @@ class AppLocalizationsAm extends AppLocalizations {
   String get writeYourAnswer => 'መልስህን ጻፍ...';
 
   @override
-  String get weatherOfTheHeart => 'የልብ የአየር ሁኔታ';
+  String get weatherOfTheHeart => 'የልብ ሁኔታ';
 
   @override
   String get theSeason => 'ወቅቱ';
@@ -607,11 +607,36 @@ class AppLocalizationsAm extends AppLocalizations {
   String get theHarvest => 'መከር';
 
   @override
-  String get continueAbiding => 'መቀጠል';
+  String get continueAbiding => 'መቆየትህን ቀጥል';
 
   @override
-  String get harvestVerb => 'ማጨድ';
+  String get harvestVerb => 'መሰብሰብ';
 
   @override
   String get close => 'ዝጋ';
+
+  @override
+  String get vineyardVisits => 'የወይን እርሻ ጉብኝቶች';
+
+  @override
+  String get vineyardVisitsSubtitle =>
+      'ከወይንህ ገር፣ ያልተደጋጋሚ ማበረታቻ — ፈጽሞ ግፊት አይደለም።';
+
+  @override
+  String get visitsOff => 'ጠፍቷል';
+
+  @override
+  String get visitsGentle => 'ገር (በየጥቂት ቀን)';
+
+  @override
+  String get visitsAttentive => 'የየቀኑ (በየቀኑ)';
+
+  @override
+  String get visitWindow => 'የጉብኝት ሰዓት';
+
+  @override
+  String get windowEvening => 'ማታ';
+
+  @override
+  String get windowMorning => 'ጠዋት';
 }

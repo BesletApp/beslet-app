@@ -617,4 +617,29 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get close => 'Close';
+
+  @override
+  String get vineyardVisits => 'Vineyard visits';
+
+  @override
+  String get vineyardVisitsSubtitle =>
+      'Gentle, irregular encouragement from your vine — never a nag.';
+
+  @override
+  String get visitsOff => 'Off';
+
+  @override
+  String get visitsGentle => 'Gentle (every few days)';
+
+  @override
+  String get visitsAttentive => 'Attentive (daily)';
+
+  @override
+  String get visitWindow => 'Visit window';
+
+  @override
+  String get windowEvening => 'Evening';
+
+  @override
+  String get windowMorning => 'Morning';
 }
