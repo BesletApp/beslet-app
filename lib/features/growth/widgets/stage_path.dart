@@ -8,11 +8,11 @@ import '../../../l10n/app_localizations.dart';
 
 /// The journey as a path of five stages — seed, sprout, rooted, blooming,
 /// fruiting. The vine stands where it stands; the path is grace, not a race.
+/// Shown as pure dots and a single quiet line — see, not read.
 class StagePath extends StatelessWidget {
   final VineStage stage;
-  final bool isAm;
 
-  const StagePath({super.key, required this.stage, required this.isAm});
+  const StagePath({super.key, required this.stage});
 
   static const List<VineStage> _order = [
     VineStage.seed,
@@ -29,7 +29,6 @@ class StagePath extends StatelessWidget {
     final l = AppLocalizations.of(context)!;
     final currentIndex = _order.indexOf(stage);
     final reached = currentIndex < 0 ? 0 : currentIndex + 1;
-    final line = GrowthContent.vineStageLine(stage);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,23 +68,20 @@ class StagePath extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: AppSpacing.md),
-        Text(
-          isAm ? line.am : line.en,
-          style: t.bodyMedium.copyWith(color: c.textSecondary, height: 1.5),
-        ),
-        const SizedBox(height: AppSpacing.xs),
-        Text(
-          l.theSeasonChanged,
-          style: t.labelSmall.copyWith(color: c.textMuted),
-        ),
         const SizedBox(height: AppSpacing.sm),
-        Align(
-          alignment: Alignment.centerRight,
-          child: Text(
-            '${l.dayLabel} $reached / ${_order.length}',
-            style: t.labelSmall.copyWith(color: c.textMuted, letterSpacing: 0.6),
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                l.theSeasonChanged,
+                style: t.labelSmall.copyWith(color: c.textMuted),
+              ),
+            ),
+            Text(
+              '${l.dayLabel} $reached / ${_order.length}',
+              style: t.labelSmall.copyWith(color: c.textMuted, letterSpacing: 0.6),
+            ),
+          ],
         ),
       ],
     );

@@ -205,5 +205,8 @@
   "theSeasonChanged": "ወቅቱ ተለውጧል — ወይኑ በእግዚአብሔር ጊዜ ያድጋል።",
   "streakFlameGrace": "ዛሬ በጸጋ ተሸክሟል።",
   "streakFlameGentle": "በቀስታ፣ በየቀኑ ተጠብቋል።",
-  "freezeChip": "የጸጋ መሸከሚያ"
+  "freezeChip": "የጸጋ መሸከሚያ",
+  "tourVine": "ይህ የአንተ ወይን ነው።",
+  "tourGrows": "እንደምትኖርበት ያድጋል — በእግዚአብሔር ጊዜ።",
+  "tourMood": "ዛሬ ልብህ እንዴት ነው? ከታች ተመልከት"
 }

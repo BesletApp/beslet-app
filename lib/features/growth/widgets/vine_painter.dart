@@ -180,28 +180,80 @@ class VinePainter extends CustomPainter {
       final t = (seg.depth / 4).clamp(0.0, 1.0);
       final color = Color.lerp(palette.trunk, palette.branch, t)!;
       branchPaint.color = color;
-      branchPaint.strokeWidth = seg.width * (1 - t * 0.55);
+      branchPaint.strokeWidth = seg.width * (1 - t * 0.55) * (0.92 + branchOpen * 0.16);
       canvas.drawLine(seg.from, seg.to, branchPaint);
     }
 
     _paintLeaves(canvas, geometry.tips);
+    _paintOpenArms(canvas, size);
     if (showBlossoms) _paintBlossoms(canvas, geometry.tips);
     _paintFruits(canvas, geometry.tips);
   }
 
   void _paintSoil(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = palette.soil
-      ..style = PaintingStyle.fill;
     final soilY = size.height * 0.9;
+    final cx = size.width / 2;
     final w = size.width * 0.72;
-    canvas.drawOval(Rect.fromCenter(center: Offset(size.width / 2, soilY + 2), width: w, height: w * 0.18), paint);
-    paint.color = palette.soil.withValues(alpha: 0.4 + hydration * 0.2);
-    canvas.drawOval(Rect.fromCenter(center: Offset(size.width / 2, soilY + 6), width: w * 0.86, height: w * 0.16), paint);
-    if (hydration > 0.6) {
-      paint.color = const Color(0xFFD9F0A8).withValues(alpha: (hydration - 0.6) * 0.35);
-      canvas.drawOval(Rect.fromCenter(center: Offset(size.width / 2, soilY - 2), width: w * 0.5, height: w * 0.1), paint);
+    final wet = (hydration - 0.6).clamp(0.0, 1.0);
+
+    final paint = Paint()..style = PaintingStyle.fill;
+
+    paint.color = palette.soil;
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(cx, soilY + 2), width: w, height: w * 0.18),
+      paint,
+    );
+
+    paint.color = Color.lerp(palette.soil.withValues(alpha: 0.4), palette.soil, wet)!;
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(cx, soilY + 6), width: w * 0.86, height: w * 0.16),
+      paint,
+    );
+
+    if (wet > 0.15) {
+      paint.color = const Color(0xFF2E4A22).withValues(alpha: wet * 0.5);
+      canvas.drawOval(
+        Rect.fromCenter(center: Offset(cx, soilY - 2), width: w * 0.55, height: w * 0.09),
+        paint,
+      );
     }
+
+    if (wet > 0.5) {
+      paint.color = const Color(0xFFBFE8F7).withValues(alpha: (wet - 0.5) * 0.85);
+      const drops = 5;
+      for (var i = 0; i < drops; i++) {
+        final dx = cx - w * 0.2 + (w * 0.4) * i / (drops - 1) + math.sin(i * 3.7) * 5;
+        final dy = soilY - 5 - ((i % 2) * 7);
+        canvas.drawOval(
+          Rect.fromCenter(center: Offset(dx, dy), width: 6, height: 3.5),
+          paint,
+        );
+      }
+    }
+  }
+
+  /// Fellowship opens the vine outward: two gentle arms reach from the canopy
+  /// when a connection is made. A structural change, not a tint.
+  void _paintOpenArms(Canvas canvas, Size size) {
+    final open = (branchOpen - 0.5).clamp(0.0, 1.0);
+    if (open <= 0) return;
+    final cx = size.width / 2;
+    final baseY = size.height * 0.6;
+    final paint = Paint()
+      ..color = palette.branch.withValues(alpha: 0.55 + open * 0.4)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(
+      Offset(cx - 30, baseY),
+      Offset(cx - 120 * open, baseY - 34 * open),
+      paint,
+    );
+    canvas.drawLine(
+      Offset(cx + 30, baseY),
+      Offset(cx + 120 * open, baseY - 34 * open),
+      paint,
+    );
   }
 
   void _paintLeaves(Canvas canvas, List<Offset> tips) {
@@ -251,7 +303,7 @@ class VinePainter extends CustomPainter {
     final paint = Paint()..style = PaintingStyle.fill;
     for (var i = 0; i < count; i++) {
       final c = tips[i];
-      final radius = 5.5 * (0.7 + branchOpen * 0.3);
+      final radius = 5.5 * (0.8 + branchOpen * 0.4);
       paint.color = fruitColor;
       canvas.drawCircle(c + const Offset(0, -8), radius, paint);
       paint.color = fruitColor.withValues(alpha: 0.5);

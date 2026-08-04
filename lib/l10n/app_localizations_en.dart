@@ -666,4 +666,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get freezeChip => 'grace-carry';
+
+  @override
+  String get tourVine => 'This is your vine.';
+
+  @override
+  String get tourGrows => 'It grows as you live — quietly, on God\'s clock.';
+
+  @override
+  String get tourMood => 'How is your heart today? Look below.';
 }

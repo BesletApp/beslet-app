@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -134,17 +136,67 @@ class _EmptyVineyard extends ConsumerWidget {
 
 /// The active journey: a living vine fed by the day's Word, weather, and the
 /// user's own planted answers.
-class _LivingVineyard extends ConsumerWidget {
+class _LivingVineyard extends ConsumerStatefulWidget {
   final GrowthJourneyData journey;
   const _LivingVineyard({required this.journey});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_LivingVineyard> createState() => _LivingVineyardState();
+}
+
+class _LivingVineyardState extends ConsumerState<_LivingVineyard> {
+  /// Guards the delayed recap replay so it dies if the screen is left.
+  int? _recapToken;
+
+  @override
+  void initState() {
+    super.initState();
+    _scheduleRecap();
+  }
+
+  @override
+  void dispose() {
+    _recapToken = null;
+    super.dispose();
+  }
+
+  /// If disciplines were logged on other screens since the last visit, replay
+  /// them as a short recap so the vine is honest about the day. A discipline is
+  /// never silent.
+  void _scheduleRecap() {
+    final bus = ref.read(sceneEventBusProvider);
+    final pending = bus.pendingRecap();
+    if (pending.isEmpty) return;
+    final reduced = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    if (reduced) {
+      bus.markRecapped();
+      return;
+    }
+    final token = DateTime.now().microsecondsSinceEpoch;
+    _recapToken = token;
+    Future.delayed(const Duration(milliseconds: 350), () {
+      if (!mounted || _recapToken != token) return;
+      for (var i = 0; i < pending.length; i++) {
+        Future.delayed(Duration(milliseconds: i * 420), () {
+          if (!mounted || _recapToken != token) return;
+          bus.value = pending[i];
+        });
+      }
+      Future.delayed(Duration(milliseconds: pending.length * 420 + 900), () {
+        if (!mounted || _recapToken != token) return;
+        bus.markRecapped();
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final c = AppColors.of(context);
     final t = AppTextStyles.of(context);
     final l = AppLocalizations.of(context)!;
     final isAm = l.localeName == 'am';
 
+    final journey = widget.journey;
     final day = ref.watch(journeyDayProvider);
     final intention = ref.watch(activeIntentionProvider) ?? JourneyIntention.abide;
     final timeframeDays = ref.watch(activeTimeframeDaysProvider);
@@ -161,6 +213,8 @@ class _LivingVineyard extends ConsumerWidget {
     final rhythm = ref.watch(todayRhythmProvider);
     final streak = ref.watch(streakStateProvider).valueOrNull;
     final week = ref.watch(weekLivingProvider).valueOrNull ?? const <int>[];
+    final tourSeen = ref.watch(growthTourProvider);
+    final showTour = tourSeen.valueOrNull == false;
 
     final seed = journey.id.hashCode;
     final fruitColor = Color.lerp(const Color(0xFF7FB36A), const Color(0xFFE8C53A), geometry.growth01)!;
@@ -170,129 +224,242 @@ class _LivingVineyard extends ConsumerWidget {
         .where((e) => e.date.compareTo(journey.startDate) >= 0 && e.content?.trim().isNotEmpty == true)
         .toList();
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.screenPadding,
-        AppSpacing.sm,
-        AppSpacing.screenPadding,
-        AppSpacing.bottomPadding,
-      ),
+    return Stack(
       children: [
-        _vineyardHeader(c, t, l),
-        const SizedBox(height: AppSpacing.md),
-        SizedBox(
-          height: 280,
-          child: VineyardScene(
-            seed: seed,
-            growth01: geometry.growth01,
-            branches: geometry.branches,
-            fruitCount: _fruitCountFor(day, geometry.growth01),
-            fruitColor: fruitColor,
-            mood: mood,
-            showBlossoms: stage == VineStage.blooming,
-            hydration: vitality.hydration01,
-            leafGlow: vitality.leafGlow01,
-            branchOpen: vitality.branchOpen01,
-            ripen: vitality.ripen01,
-            eventSource: eventSource,
-            onFruitTap: fruits.isEmpty
-                ? null
-                : (i) {
-                    if (i < fruits.length) {
-                      final entry = fruits[i];
-                      showFruitDialog(
-                        context,
-                        content: entry.content ?? '',
-                        day: GrowthContent.journeyDay(
-                          DateTime.parse(journey.startDate),
-                          DateTime.parse(entry.date),
-                        ),
-                        isAm: isAm,
-                      );
-                    }
-                  },
+        ListView(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.screenPadding,
+            AppSpacing.sm,
+            AppSpacing.screenPadding,
+            AppSpacing.bottomPadding,
           ),
-        ),
-        const SizedBox(height: AppSpacing.md),
-        BesletCard(
-          variant: CardVariant.secondary,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+          children: [
+            _vineyardHeader(c, t, l),
+            const SizedBox(height: AppSpacing.md),
+            SizedBox(
+              height: 440,
+              child: VineyardScene(
+                seed: seed,
+                growth01: geometry.growth01,
+                branches: geometry.branches,
+                fruitCount: _fruitCountFor(day, geometry.growth01),
+                fruitColor: fruitColor,
+                mood: mood,
+                showBlossoms: stage == VineStage.blooming,
+                hydration: vitality.hydration01,
+                leafGlow: vitality.leafGlow01,
+                branchOpen: vitality.branchOpen01,
+                ripen: vitality.ripen01,
+                eventSource: eventSource,
+                onFruitTap: fruits.isEmpty
+                    ? null
+                    : (i) {
+                        if (i < fruits.length) {
+                          final entry = fruits[i];
+                          showFruitDialog(
+                            context,
+                            content: entry.content ?? '',
+                            day: GrowthContent.journeyDay(
+                              DateTime.parse(journey.startDate),
+                              DateTime.parse(entry.date),
+                            ),
+                            isAm: isAm,
+                          );
+                        }
+                      },
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            BesletCard(
+              variant: CardVariant.secondary,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.eco, size: 18, color: AppColors.of(context).primary),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: Text(
-                      isAm ? intentionLabel.am : intentionLabel.en,
-                      style: t.bodyLarge.copyWith(fontWeight: FontWeight.w700),
-                    ),
+                  Row(
+                    children: [
+                      Icon(Icons.eco, size: 18, color: AppColors.of(context).primary),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: Text(
+                          isAm ? intentionLabel.am : intentionLabel.en,
+                          style: t.bodyLarge.copyWith(fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                      Text(
+                        '${l.dayLabel} $day',
+                        style: t.labelSmall.copyWith(color: c.textMuted),
+                      ),
+                    ],
                   ),
+                  const SizedBox(height: AppSpacing.xs),
                   Text(
-                    '${l.dayLabel} $day',
-                    style: t.labelSmall.copyWith(color: c.textMuted),
+                    isAm ? movementTitle.am : movementTitle.en,
+                    style: t.bodyMedium.copyWith(color: AppColors.of(context).primary, fontWeight: FontWeight.w600),
                   ),
+                  const SizedBox(height: AppSpacing.md),
+                  StagePath(stage: stage),
                 ],
               ),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                isAm ? movementTitle.am : movementTitle.en,
-                style: t.bodyMedium.copyWith(color: AppColors.of(context).primary, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            DisclosureTile(
+              icon: Icons.auto_awesome,
+              title: l.todayRhythm,
+              initiallyOpen: showTour,
+              trailing: Text(
+                '${rhythm.done}/${rhythm.total}',
+                style: t.labelLarge.copyWith(color: AppColors.of(context).primary),
               ),
-              const SizedBox(height: AppSpacing.md),
-              StagePath(stage: stage, isAm: isAm),
-            ],
+              children: const [RhythmRing()],
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            DisclosureTile(
+              icon: Icons.calendar_view_week_outlined,
+              title: l.thisWeek,
+              initiallyOpen: showTour,
+              trailing: Text(
+                '${week.isEmpty ? 0 : week.last}',
+                style: t.labelLarge.copyWith(color: AppColors.of(context).primary),
+              ),
+              children: const [WeekBars()],
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            DisclosureTile(
+              icon: Icons.local_fire_department,
+              title: l.abiding,
+              initiallyOpen: showTour,
+              trailing: Text(
+                '${streak?.currentStreak ?? 0}',
+                style: t.labelLarge.copyWith(color: AppColors.of(context).primary),
+              ),
+              children: const [StreakFlame()],
+            ),
+            const SizedBox(height: AppSpacing.md),
+            QuestionCard(
+              question: GrowthContent.questionFor(intention, day).en,
+              questionAm: GrowthContent.questionFor(intention, day).am,
+              isAm: isAm,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            WeatherCard(mood: mood, isAm: isAm),
+            const SizedBox(height: AppSpacing.sm),
+            DayWordChip(verse: ScriptureService.threadVerseFor(DateTime.now()), isAm: isAm),
+            const SizedBox(height: AppSpacing.sm),
+            FruitDrawer(
+              startDate: journey.startDate,
+              isAm: isAm,
+              fruitCount: fruits.length,
+              onHarvest: () => _openHarvestSheet(context, ref, fruits),
+            ),
+          ],
+        ),
+        if (showTour)
+          _TourPill(
+            messages: [l.tourVine, l.tourGrows, l.tourMood],
+            onDone: () => ref.read(growthTourProvider.notifier).markSeen(),
           ),
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        DisclosureTile(
-          icon: Icons.auto_awesome,
-          title: l.todayRhythm,
-          trailing: Text(
-            '${rhythm.done}/${rhythm.total}',
-            style: t.labelLarge.copyWith(color: AppColors.of(context).primary),
-          ),
-          children: const [RhythmRing()],
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        DisclosureTile(
-          icon: Icons.calendar_view_week_outlined,
-          title: l.thisWeek,
-          trailing: Text(
-            '${week.isEmpty ? 0 : week.last}',
-            style: t.labelLarge.copyWith(color: AppColors.of(context).primary),
-          ),
-          children: const [WeekBars()],
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        DisclosureTile(
-          icon: Icons.local_fire_department,
-          title: l.abiding,
-          trailing: Text(
-            '${streak?.currentStreak ?? 0}',
-            style: t.labelLarge.copyWith(color: AppColors.of(context).primary),
-          ),
-          children: const [StreakFlame()],
-        ),
-        const SizedBox(height: AppSpacing.md),
-        QuestionCard(
-          question: GrowthContent.questionFor(intention, day).en,
-          questionAm: GrowthContent.questionFor(intention, day).am,
-          isAm: isAm,
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        WeatherCard(mood: mood, isAm: isAm),
-        const SizedBox(height: AppSpacing.sm),
-        DayWordChip(verse: ScriptureService.threadVerseFor(DateTime.now()), isAm: isAm),
-        const SizedBox(height: AppSpacing.sm),
-        FruitDrawer(
-          startDate: journey.startDate,
-          isAm: isAm,
-          fruitCount: fruits.length,
-          onHarvest: () => _openHarvestSheet(context, ref, fruits),
-        ),
       ],
+    );
+  }
+}
+
+/// A gentle three-beat hint shown only on the first visit: the vine, how it
+/// grows, and where the day's question lives. Taps advance it; it never blocks.
+class _TourPill extends StatefulWidget {
+  final List<String> messages;
+  final VoidCallback onDone;
+
+  const _TourPill({required this.messages, required this.onDone});
+
+  @override
+  State<_TourPill> createState() => _TourPillState();
+}
+
+class _TourPillState extends State<_TourPill> {
+  int _index = 0;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _restartTimer();
+  }
+
+  void _restartTimer() {
+    _timer?.cancel();
+    _timer = Timer(const Duration(milliseconds: 3400), () {
+      if (!mounted) return;
+      if (_index < widget.messages.length - 1) {
+        setState(() => _index++);
+        _restartTimer();
+      } else {
+        _finish();
+      }
+    });
+  }
+
+  void _next() {
+    if (_index < widget.messages.length - 1) {
+      setState(() => _index++);
+      _restartTimer();
+    } else {
+      _finish();
+    }
+  }
+
+  void _finish() {
+    _timer?.cancel();
+    widget.onDone();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = AppColors.of(context);
+    final t = AppTextStyles.of(context);
+    return Positioned(
+      left: AppSpacing.md,
+      right: AppSpacing.md,
+      bottom: AppSpacing.md,
+      child: SafeArea(
+        top: false,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: _next,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 12),
+              decoration: BoxDecoration(
+                color: c.primary.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: c.primary.withValues(alpha: 0.35)),
+              ),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 250),
+                child: Row(
+                  key: ValueKey(_index),
+                  children: [
+                    Expanded(
+                      child: Text(
+                        widget.messages[_index],
+                        style: t.bodyMedium.copyWith(color: c.textPrimary, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Icon(Icons.arrow_forward_rounded, size: 18, color: c.primary),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

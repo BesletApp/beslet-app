@@ -1333,6 +1333,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'grace-carry'**
   String get freezeChip;
+
+  /// No description provided for @tourVine.
+  ///
+  /// In en, this message translates to:
+  /// **'This is your vine.'**
+  String get tourVine;
+
+  /// No description provided for @tourGrows.
+  ///
+  /// In en, this message translates to:
+  /// **'It grows as you live — quietly, on God\'s clock.'**
+  String get tourGrows;
+
+  /// No description provided for @tourMood.
+  ///
+  /// In en, this message translates to:
+  /// **'How is your heart today? Look below.'**
+  String get tourMood;
 }
 
 class _AppLocalizationsDelegate

@@ -205,5 +205,8 @@
   "theSeasonChanged": "The season changed — the vine grows on God's clock.",
   "streakFlameGrace": "Carried today by grace.",
   "streakFlameGentle": "Kept gently, day by day.",
-  "freezeChip": "grace-carry"
+  "freezeChip": "grace-carry",
+  "tourVine": "This is your vine.",
+  "tourGrows": "It grows as you live — quietly, on God's clock.",
+  "tourMood": "How is your heart today? Look below."
 }

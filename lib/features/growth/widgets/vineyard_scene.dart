@@ -22,7 +22,7 @@ class VineyardScene extends StatefulWidget {
   final double leafGlow;
   final double branchOpen;
   final double ripen;
-  final ValueNotifier<SceneEvent?>? eventSource;
+  final SceneEventBus? eventSource;
   final void Function(int fruitIndex)? onFruitTap;
 
   const VineyardScene({
@@ -61,13 +61,20 @@ class _VineyardSceneState extends State<VineyardScene>
     _sway = AnimationController(vsync: this, duration: const Duration(seconds: 7));
     _montage = AnimationController(vsync: this, duration: const Duration(milliseconds: 2000));
     _burst = AnimationController(vsync: this, duration: const Duration(milliseconds: 700));
+    _sway.addListener(_onTicker);
+    _montage.addListener(_onTicker);
     widget.eventSource?.addListener(_onSceneEvent);
+  }
+
+  void _onTicker() {
+    if (mounted) setState(() {});
   }
 
   void _onSceneEvent() {
     final event = widget.eventSource?.value;
     if (event == null) return;
     _activeType = event.type;
+    widget.eventSource?.markRecappedThrough(event.id);
     _burst.forward(from: 0);
   }
 
@@ -112,6 +119,8 @@ class _VineyardSceneState extends State<VineyardScene>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _sway.removeListener(_onTicker);
+    _montage.removeListener(_onTicker);
     widget.eventSource?.removeListener(_onSceneEvent);
     _sway.dispose();
     _montage.dispose();
@@ -149,65 +158,170 @@ class _VineyardSceneState extends State<VineyardScene>
               size: size,
               sway: sway,
             );
-            return Stack(
-              fit: StackFit.expand,
-              children: [
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [atmosphere.skyTop, atmosphere.skyBottom],
+            return _TweenedVitals(
+              hydration: widget.hydration,
+              leafGlow: widget.leafGlow,
+              branchOpen: widget.branchOpen,
+              ripen: widget.ripen,
+              builder: (context, hydration, leafGlow, branchOpen, ripen) {
+                return Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [atmosphere.skyTop, atmosphere.skyBottom],
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                _LampGlow(light: light, isDark: isDark, size: size),
-                CustomPaint(
-                  painter: VinePainter(
-                    seed: widget.seed,
-                    growth01: displayed,
-                    branches: widget.branches,
-                    fruitCount: widget.fruitCount,
-                    fruitColor: widget.fruitColor,
-                    palette: palette,
-                    sway: sway,
-                    showBlossoms: widget.showBlossoms,
-                    hydration: widget.hydration,
-                    leafGlow: widget.leafGlow,
-                    branchOpen: widget.branchOpen,
-                    ripen: widget.ripen,
-                    droop: droop,
-                    blossomOpen: blossomOpen,
-                  ),
-                ),
-                CustomPaint(
-                  painter: _ParticlePainter(
-                    seed: widget.seed,
-                    t: _montage.value < 1 ? 0 : (_sway.value),
-                    particle: atmosphere.particle,
-                    isDark: isDark,
-                  ),
-                ),
-                if (burst01 > 0 && burstType != null)
-                  CustomPaint(
-                    painter: _BurstPainter(
-                      t: burst01,
-                      type: burstType,
-                      isDark: isDark,
-                      color: palette.leaf,
-                      soilY: size.height * 0.9,
+                    _LampGlow(light: light, isDark: isDark, size: size, boost: leafGlow),
+                    CustomPaint(
+                      painter: VinePainter(
+                        seed: widget.seed,
+                        growth01: displayed,
+                        branches: widget.branches,
+                        fruitCount: widget.fruitCount,
+                        fruitColor: widget.fruitColor,
+                        palette: palette,
+                        sway: sway,
+                        showBlossoms: widget.showBlossoms,
+                        hydration: hydration,
+                        leafGlow: leafGlow,
+                        branchOpen: branchOpen,
+                        ripen: ripen,
+                        droop: droop,
+                        blossomOpen: blossomOpen,
+                      ),
                     ),
-                  ),
-                if (widget.onFruitTap != null)
-                  _FruitTapLayer(
-                    tips: geometry.tips,
-                    fruitCount: widget.fruitCount,
-                    onFruitTap: widget.onFruitTap!,
-                  ),
-              ],
+                    CustomPaint(
+                      painter: _ParticlePainter(
+                        seed: widget.seed,
+                        t: _montage.value < 1 ? 0 : (_sway.value),
+                        particle: atmosphere.particle,
+                        isDark: isDark,
+                      ),
+                    ),
+                    if (burst01 > 0 && burstType != null)
+                      CustomPaint(
+                        painter: _BurstPainter(
+                          t: burst01,
+                          type: burstType,
+                          isDark: isDark,
+                          color: palette.leaf,
+                          soilY: size.height * 0.9,
+                        ),
+                      ),
+                    if (widget.onFruitTap != null)
+                      _FruitTapLayer(
+                        tips: geometry.tips,
+                        fruitCount: widget.fruitCount,
+                        onFruitTap: widget.onFruitTap!,
+                      ),
+                  ],
+                );
+              },
             );
           },
         ),
+      ),
+    );
+  }
+}
+
+/// Tweens the four vitality channels so a discipline visibly *arrives* — the
+/// soil darkens, the lamp warms, the arms open, the fruit swells — instead of
+/// snapping between sub-threshold values. Resting states stay discrete.
+class _TweenedVitals extends StatefulWidget {
+  final double hydration;
+  final double leafGlow;
+  final double branchOpen;
+  final double ripen;
+  final Widget Function(
+    BuildContext context,
+    double hydration,
+    double leafGlow,
+    double branchOpen,
+    double ripen,
+  ) builder;
+
+  const _TweenedVitals({
+    required this.hydration,
+    required this.leafGlow,
+    required this.branchOpen,
+    required this.ripen,
+    required this.builder,
+  });
+
+  @override
+  State<_TweenedVitals> createState() => _TweenedVitalsState();
+}
+
+class _TweenedVitalsState extends State<_TweenedVitals>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late Animation<double> _hydration;
+  late Animation<double> _leafGlow;
+  late Animation<double> _branchOpen;
+  late Animation<double> _ripen;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _apply(
+      widget.hydration,
+      widget.leafGlow,
+      widget.branchOpen,
+      widget.ripen,
+    );
+  }
+
+  @override
+  void didUpdateWidget(_TweenedVitals oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.hydration != widget.hydration ||
+        oldWidget.leafGlow != widget.leafGlow ||
+        oldWidget.branchOpen != widget.branchOpen ||
+        oldWidget.ripen != widget.ripen) {
+      _apply(
+        oldWidget.hydration,
+        oldWidget.leafGlow,
+        oldWidget.branchOpen,
+        oldWidget.ripen,
+      );
+      _controller.forward(from: 0);
+    }
+  }
+
+  void _apply(double fromH, double fromG, double fromB, double fromR) {
+    final curved = CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic);
+    _hydration = Tween<double>(begin: fromH, end: widget.hydration).animate(curved);
+    _leafGlow = Tween<double>(begin: fromG, end: widget.leafGlow).animate(curved);
+    _branchOpen = Tween<double>(begin: fromB, end: widget.branchOpen).animate(curved);
+    _ripen = Tween<double>(begin: fromR, end: widget.ripen).animate(curved);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) => widget.builder(
+        context,
+        _hydration.value,
+        _leafGlow.value,
+        _branchOpen.value,
+        _ripen.value,
       ),
     );
   }
@@ -217,8 +331,9 @@ class _LampGlow extends StatelessWidget {
   final LampLight light;
   final bool isDark;
   final Size size;
+  final double boost;
 
-  const _LampGlow({required this.light, required this.isDark, required this.size});
+  const _LampGlow({required this.light, required this.isDark, required this.size, this.boost = 0});
 
   @override
   Widget build(BuildContext context) {
@@ -228,8 +343,10 @@ class _LampGlow extends StatelessWidget {
       LampLight.dusk => const Color(0xFFF2A65A),
       LampLight.night => const Color(0xFF8FB0E8),
     };
-    final glow = base.withValues(alpha: isDark ? 0.6 : 0.45);
-    final d = size.width * 0.5;
+    final glow = base.withValues(
+      alpha: ((isDark ? 0.6 : 0.45) + boost * 0.35).clamp(0.0, 1.0),
+    );
+    final d = size.width * (0.5 + boost * 0.18);
     return Positioned(
       top: size.height * 0.04 - d * 0.28,
       left: size.width * 0.5 - d * 0.5,

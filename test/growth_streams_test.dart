@@ -89,5 +89,39 @@ void main() {
       expect(seen?.type, SceneEventType.bloom);
       bus.dispose();
     });
+
+    test('keeps today events as a pending recap until marked', () {
+      final bus = SceneEventBus();
+      expect(bus.pendingRecap(), isEmpty);
+      bus.emit(SceneEventType.water);
+      bus.emit(SceneEventType.leafLight);
+      expect(bus.pendingRecap().length, 2);
+      expect(bus.pendingRecap().first.type, SceneEventType.water);
+      bus.markRecapped();
+      expect(bus.pendingRecap(), isEmpty);
+      bus.dispose();
+    });
+
+    test('marks a single event as already seen', () {
+      final bus = SceneEventBus();
+      bus.emit(SceneEventType.water);
+      bus.emit(SceneEventType.fruitPop);
+      bus.markRecappedThrough(1);
+      final pending = bus.pendingRecap();
+      expect(pending.length, 1);
+      expect(pending.first.type, SceneEventType.fruitPop);
+      bus.dispose();
+    });
+
+    test('events carry a timestamp', () {
+      final bus = SceneEventBus();
+      final before = DateTime.now();
+      bus.emit(SceneEventType.milestone);
+      final at = bus.value!.at;
+      final after = DateTime.now();
+      expect(at.isBefore(after) || at.isAtSameMomentAs(after), isTrue);
+      expect(at.isAfter(before) || at.isAtSameMomentAs(before), isTrue);
+      bus.dispose();
+    });
   });
 }

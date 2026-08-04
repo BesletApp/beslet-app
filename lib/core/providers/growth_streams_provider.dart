@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
 import '../database/app_database.dart';
@@ -110,6 +111,28 @@ final weekLivingProvider = FutureProvider<List<int>>((ref) async {
   }
   return result;
 });
+
+/// Whether the user has seen the Growth Zone's short first-run tour. On the
+/// first visit the stat sections open and a three-beat hint explains the vine;
+/// afterwards the zone rests quiet, as designed.
+final growthTourProvider =
+    AsyncNotifierProvider<GrowthTourNotifier, bool>(GrowthTourNotifier.new);
+
+class GrowthTourNotifier extends AsyncNotifier<bool> {
+  static const _key = 'growthTourSeen';
+
+  @override
+  Future<bool> build() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_key) ?? false;
+  }
+
+  Future<void> markSeen() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_key, true);
+    state = const AsyncData(true);
+  }
+}
 
 /// Today's living vitality for the vine — prayer waters, the Word lights the
 /// leaves, fellowship opens the branches, consistency ripens the fruit.

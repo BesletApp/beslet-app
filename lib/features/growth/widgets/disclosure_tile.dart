@@ -12,12 +12,17 @@ class DisclosureTile extends StatefulWidget {
   final Widget trailing;
   final List<Widget> children;
 
+  /// Whether the tile starts expanded. The first visit opens every tile so the
+  /// visuals are seen once; afterwards they rest closed.
+  final bool initiallyOpen;
+
   const DisclosureTile({
     super.key,
     required this.icon,
     required this.title,
     required this.trailing,
     required this.children,
+    this.initiallyOpen = false,
   });
 
   @override
@@ -25,7 +30,7 @@ class DisclosureTile extends StatefulWidget {
 }
 
 class _DisclosureTileState extends State<DisclosureTile> {
-  bool _open = false;
+  late bool _open = widget.initiallyOpen;
 
   @override
   Widget build(BuildContext context) {

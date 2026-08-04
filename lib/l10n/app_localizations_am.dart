@@ -662,4 +662,13 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get freezeChip => 'የጸጋ መሸከሚያ';
+
+  @override
+  String get tourVine => 'ይህ የአንተ ወይን ነው።';
+
+  @override
+  String get tourGrows => 'እንደምትኖርበት ያድጋል — በእግዚአብሔር ጊዜ።';
+
+  @override
+  String get tourMood => 'ዛሬ ልብህ እንዴት ነው? ከታች ተመልከት';
 }

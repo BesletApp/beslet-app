@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:beslet_app/core/database/app_database.dart';
 import 'package:beslet_app/core/providers/fellowship_provider.dart';
@@ -20,6 +21,13 @@ import 'package:beslet_app/features/growth/widgets/stage_path.dart';
 import 'package:beslet_app/features/growth/widgets/streak_flame.dart';
 import 'package:beslet_app/features/growth/widgets/week_bars.dart';
 import 'package:beslet_app/features/growth/widgets/vineyard_scene.dart';
+
+class _FakeGrowthTourNotifier extends GrowthTourNotifier {
+  _FakeGrowthTourNotifier(this.seen);
+  final bool seen;
+  @override
+  Future<bool> build() async => seen;
+}
 
 GrowthJourneyData journey({
   required int daysAgo,
@@ -44,6 +52,7 @@ void main() {
     GrowthJourneyData? data,
     List<JournalEntryData> history = const [],
     Locale? locale,
+    bool tourSeen = true,
   }) async {
     await tester.pumpWidget(
       ProviderScope(
@@ -56,6 +65,7 @@ void main() {
           todayReadingProvider.overrideWith((ref) async => null),
           todayFellowshipProvider.overrideWith((ref) async => null),
           todayCompletionsProvider.overrideWith((ref) async => const <String>{}),
+          growthTourProvider.overrideWith(() => _FakeGrowthTourNotifier(tourSeen)),
           trackingDataProvider.overrideWith(
             (ref) async => TrackingData(
               totalXp: 0,
@@ -218,6 +228,31 @@ void main() {
       await pumpGrowth(tester, data: harvestedJourney);
       expect(find.text('The harvest is gathered.'), findsOneWidget);
       expect(find.text('Plant again'), findsOneWidget);
+    });
+
+    testWidgets('first visit shows the three-beat tour and dismisses it', (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      tester.view.physicalSize = const Size(800, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+      await pumpGrowth(tester, data: journey(daysAgo: 5), tourSeen: false);
+
+      expect(find.text('This is your vine.'), findsOneWidget);
+
+      await tester.tap(find.text('This is your vine.'));
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('It grows as you live — quietly, on God\u0027s clock.'), findsOneWidget);
+
+      await tester.tap(find.text('It grows as you live — quietly, on God\u0027s clock.'));
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('How is your heart today? Look below.'), findsOneWidget);
+
+      await tester.tap(find.text('How is your heart today? Look below.'));
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('How is your heart today? Look below.'), findsNothing);
     });
   });
 }
