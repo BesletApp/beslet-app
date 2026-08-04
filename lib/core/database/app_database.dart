@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'tables/user_table.dart';
@@ -20,13 +21,16 @@ import 'tables/streak_freeze_table.dart';
 import 'tables/soul_log_table.dart';
 import 'tables/audio_cache_table.dart';
 import 'tables/journal_table.dart';
+import 'tables/growth_journey_table.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Users, Habits, Completions, PrayerLogs, Skills, SkillSessions, Reflections, Challenges, ChallengeParticipants, FellowshipLogs, FamilyTimeLogs, Goals, TodoItems, DailyReflections, StreakLog, StreakFrozen, SoulLog, AudioCache, JournalEntry])
+@DriftDatabase(tables: [Users, Habits, Completions, PrayerLogs, Skills, SkillSessions, Reflections, Challenges, ChallengeParticipants, FellowshipLogs, FamilyTimeLogs, Goals, TodoItems, DailyReflections, StreakLog, StreakFrozen, SoulLog, AudioCache, JournalEntry, GrowthJourney])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
-  @override int get schemaVersion => 18;
+  @visibleForTesting
+  AppDatabase.forTesting(super.executor);
+  @override int get schemaVersion => 19;
 
   @override
   MigrationStrategy get migration {
@@ -84,6 +88,9 @@ class AppDatabase extends _$AppDatabase {
               await customStatement('ALTER TABLE audio_cache DROP COLUMN plan_relevant_until');
             }
           }
+        }
+        if (from < 19) {
+          await m.createTable(growthJourney);
         }
       },
     );

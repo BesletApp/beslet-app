@@ -1075,6 +1075,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Keep going to earn badges'**
   String get noBadgesYet;
+
+  /// No description provided for @vineyardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The Vineyard'**
+  String get vineyardTitle;
+
+  /// No description provided for @soilYoursGrowingHis.
+  ///
+  /// In en, this message translates to:
+  /// **'The soil is yours; the growing is His.'**
+  String get soilYoursGrowingHis;
+
+  /// No description provided for @vineyardEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Plant a seed — an intention and a season — and watch what He grows. No tracking, no pressure; the vine ripens on its own clock.'**
+  String get vineyardEmptyBody;
+
+  /// No description provided for @enterTheVineyard.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the Vineyard'**
+  String get enterTheVineyard;
+
+  /// No description provided for @yourIntention.
+  ///
+  /// In en, this message translates to:
+  /// **'Your intention'**
+  String get yourIntention;
+
+  /// No description provided for @howLong.
+  ///
+  /// In en, this message translates to:
+  /// **'How long?'**
+  String get howLong;
+
+  /// No description provided for @vineWordOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'A word for the vine (optional)'**
+  String get vineWordOptional;
+
+  /// No description provided for @vineWordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. patience, humility, rest'**
+  String get vineWordHint;
+
+  /// No description provided for @plantIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Plant it'**
+  String get plantIt;
+
+  /// No description provided for @plantedSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'Planted. The harvest remembers it.'**
+  String get plantedSnack;
+
+  /// No description provided for @dayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Day'**
+  String get dayLabel;
+
+  /// No description provided for @daysWord.
+  ///
+  /// In en, this message translates to:
+  /// **'Day\'s Word'**
+  String get daysWord;
+
+  /// No description provided for @oneQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'One Question'**
+  String get oneQuestion;
+
+  /// No description provided for @answerIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer it'**
+  String get answerIt;
+
+  /// No description provided for @answeredTapToRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Answered — tap to read'**
+  String get answeredTapToRead;
+
+  /// No description provided for @writeYourAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Write your answer...'**
+  String get writeYourAnswer;
+
+  /// No description provided for @weatherOfTheHeart.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather of the Heart'**
+  String get weatherOfTheHeart;
+
+  /// No description provided for @theSeason.
+  ///
+  /// In en, this message translates to:
+  /// **'The Season'**
+  String get theSeason;
+
+  /// No description provided for @yourFruit.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Fruit'**
+  String get yourFruit;
+
+  /// No description provided for @vineRemembersEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No fruit yet — the vine remembers every answer you plant.'**
+  String get vineRemembersEmpty;
+
+  /// No description provided for @harvestGathered.
+  ///
+  /// In en, this message translates to:
+  /// **'The harvest is gathered.'**
+  String get harvestGathered;
+
+  /// No description provided for @harvestGatheredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Every answer you planted is remembered. When you are ready, plant again — or keep abiding.'**
+  String get harvestGatheredBody;
+
+  /// No description provided for @plantAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Plant again'**
+  String get plantAgain;
+
+  /// No description provided for @harvestWhenReady.
+  ///
+  /// In en, this message translates to:
+  /// **'The harvest — when you are ready'**
+  String get harvestWhenReady;
+
+  /// No description provided for @theHarvest.
+  ///
+  /// In en, this message translates to:
+  /// **'The Harvest'**
+  String get theHarvest;
+
+  /// No description provided for @continueAbiding.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue abiding'**
+  String get continueAbiding;
+
+  /// No description provided for @harvestVerb.
+  ///
+  /// In en, this message translates to:
+  /// **'Harvest'**
+  String get harvestVerb;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
 }
 
 class _AppLocalizationsDelegate

@@ -530,4 +530,91 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noBadgesYet => 'Keep going to earn badges';
+
+  @override
+  String get vineyardTitle => 'The Vineyard';
+
+  @override
+  String get soilYoursGrowingHis => 'The soil is yours; the growing is His.';
+
+  @override
+  String get vineyardEmptyBody =>
+      'Plant a seed — an intention and a season — and watch what He grows. No tracking, no pressure; the vine ripens on its own clock.';
+
+  @override
+  String get enterTheVineyard => 'Enter the Vineyard';
+
+  @override
+  String get yourIntention => 'Your intention';
+
+  @override
+  String get howLong => 'How long?';
+
+  @override
+  String get vineWordOptional => 'A word for the vine (optional)';
+
+  @override
+  String get vineWordHint => 'e.g. patience, humility, rest';
+
+  @override
+  String get plantIt => 'Plant it';
+
+  @override
+  String get plantedSnack => 'Planted. The harvest remembers it.';
+
+  @override
+  String get dayLabel => 'Day';
+
+  @override
+  String get daysWord => 'Day\'s Word';
+
+  @override
+  String get oneQuestion => 'One Question';
+
+  @override
+  String get answerIt => 'Answer it';
+
+  @override
+  String get answeredTapToRead => 'Answered — tap to read';
+
+  @override
+  String get writeYourAnswer => 'Write your answer...';
+
+  @override
+  String get weatherOfTheHeart => 'Weather of the Heart';
+
+  @override
+  String get theSeason => 'The Season';
+
+  @override
+  String get yourFruit => 'Your Fruit';
+
+  @override
+  String get vineRemembersEmpty =>
+      'No fruit yet — the vine remembers every answer you plant.';
+
+  @override
+  String get harvestGathered => 'The harvest is gathered.';
+
+  @override
+  String get harvestGatheredBody =>
+      'Every answer you planted is remembered. When you are ready, plant again — or keep abiding.';
+
+  @override
+  String get plantAgain => 'Plant again';
+
+  @override
+  String get harvestWhenReady => 'The harvest — when you are ready';
+
+  @override
+  String get theHarvest => 'The Harvest';
+
+  @override
+  String get continueAbiding => 'Continue abiding';
+
+  @override
+  String get harvestVerb => 'Harvest';
+
+  @override
+  String get close => 'Close';
 }

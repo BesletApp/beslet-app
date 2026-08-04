@@ -7621,6 +7621,477 @@ class JournalEntryCompanion extends UpdateCompanion<JournalEntryData> {
   }
 }
 
+class $GrowthJourneyTable extends GrowthJourney
+    with TableInfo<$GrowthJourneyTable, GrowthJourneyData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $GrowthJourneyTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _intentionMeta = const VerificationMeta(
+    'intention',
+  );
+  @override
+  late final GeneratedColumn<String> intention = GeneratedColumn<String>(
+    'intention',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _timeframeDaysMeta = const VerificationMeta(
+    'timeframeDays',
+  );
+  @override
+  late final GeneratedColumn<int> timeframeDays = GeneratedColumn<int>(
+    'timeframe_days',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _startDateMeta = const VerificationMeta(
+    'startDate',
+  );
+  @override
+  late final GeneratedColumn<String> startDate = GeneratedColumn<String>(
+    'start_date',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _harvestedMeta = const VerificationMeta(
+    'harvested',
+  );
+  @override
+  late final GeneratedColumn<bool> harvested = GeneratedColumn<bool>(
+    'harvested',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("harvested" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    intention,
+    timeframeDays,
+    startDate,
+    note,
+    harvested,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'growth_journey';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<GrowthJourneyData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('intention')) {
+      context.handle(
+        _intentionMeta,
+        intention.isAcceptableOrUnknown(data['intention']!, _intentionMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_intentionMeta);
+    }
+    if (data.containsKey('timeframe_days')) {
+      context.handle(
+        _timeframeDaysMeta,
+        timeframeDays.isAcceptableOrUnknown(
+          data['timeframe_days']!,
+          _timeframeDaysMeta,
+        ),
+      );
+    }
+    if (data.containsKey('start_date')) {
+      context.handle(
+        _startDateMeta,
+        startDate.isAcceptableOrUnknown(data['start_date']!, _startDateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_startDateMeta);
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    if (data.containsKey('harvested')) {
+      context.handle(
+        _harvestedMeta,
+        harvested.isAcceptableOrUnknown(data['harvested']!, _harvestedMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  GrowthJourneyData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return GrowthJourneyData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      intention: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}intention'],
+      )!,
+      timeframeDays: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}timeframe_days'],
+      ),
+      startDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}start_date'],
+      )!,
+      note: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note'],
+      ),
+      harvested: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}harvested'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $GrowthJourneyTable createAlias(String alias) {
+    return $GrowthJourneyTable(attachedDatabase, alias);
+  }
+}
+
+class GrowthJourneyData extends DataClass
+    implements Insertable<GrowthJourneyData> {
+  final String id;
+  final String intention;
+  final int? timeframeDays;
+  final String startDate;
+  final String? note;
+  final bool harvested;
+  final String createdAt;
+  const GrowthJourneyData({
+    required this.id,
+    required this.intention,
+    this.timeframeDays,
+    required this.startDate,
+    this.note,
+    required this.harvested,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['intention'] = Variable<String>(intention);
+    if (!nullToAbsent || timeframeDays != null) {
+      map['timeframe_days'] = Variable<int>(timeframeDays);
+    }
+    map['start_date'] = Variable<String>(startDate);
+    if (!nullToAbsent || note != null) {
+      map['note'] = Variable<String>(note);
+    }
+    map['harvested'] = Variable<bool>(harvested);
+    map['created_at'] = Variable<String>(createdAt);
+    return map;
+  }
+
+  GrowthJourneyCompanion toCompanion(bool nullToAbsent) {
+    return GrowthJourneyCompanion(
+      id: Value(id),
+      intention: Value(intention),
+      timeframeDays: timeframeDays == null && nullToAbsent
+          ? const Value.absent()
+          : Value(timeframeDays),
+      startDate: Value(startDate),
+      note: note == null && nullToAbsent ? const Value.absent() : Value(note),
+      harvested: Value(harvested),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory GrowthJourneyData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return GrowthJourneyData(
+      id: serializer.fromJson<String>(json['id']),
+      intention: serializer.fromJson<String>(json['intention']),
+      timeframeDays: serializer.fromJson<int?>(json['timeframeDays']),
+      startDate: serializer.fromJson<String>(json['startDate']),
+      note: serializer.fromJson<String?>(json['note']),
+      harvested: serializer.fromJson<bool>(json['harvested']),
+      createdAt: serializer.fromJson<String>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'intention': serializer.toJson<String>(intention),
+      'timeframeDays': serializer.toJson<int?>(timeframeDays),
+      'startDate': serializer.toJson<String>(startDate),
+      'note': serializer.toJson<String?>(note),
+      'harvested': serializer.toJson<bool>(harvested),
+      'createdAt': serializer.toJson<String>(createdAt),
+    };
+  }
+
+  GrowthJourneyData copyWith({
+    String? id,
+    String? intention,
+    Value<int?> timeframeDays = const Value.absent(),
+    String? startDate,
+    Value<String?> note = const Value.absent(),
+    bool? harvested,
+    String? createdAt,
+  }) => GrowthJourneyData(
+    id: id ?? this.id,
+    intention: intention ?? this.intention,
+    timeframeDays: timeframeDays.present
+        ? timeframeDays.value
+        : this.timeframeDays,
+    startDate: startDate ?? this.startDate,
+    note: note.present ? note.value : this.note,
+    harvested: harvested ?? this.harvested,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  GrowthJourneyData copyWithCompanion(GrowthJourneyCompanion data) {
+    return GrowthJourneyData(
+      id: data.id.present ? data.id.value : this.id,
+      intention: data.intention.present ? data.intention.value : this.intention,
+      timeframeDays: data.timeframeDays.present
+          ? data.timeframeDays.value
+          : this.timeframeDays,
+      startDate: data.startDate.present ? data.startDate.value : this.startDate,
+      note: data.note.present ? data.note.value : this.note,
+      harvested: data.harvested.present ? data.harvested.value : this.harvested,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('GrowthJourneyData(')
+          ..write('id: $id, ')
+          ..write('intention: $intention, ')
+          ..write('timeframeDays: $timeframeDays, ')
+          ..write('startDate: $startDate, ')
+          ..write('note: $note, ')
+          ..write('harvested: $harvested, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    intention,
+    timeframeDays,
+    startDate,
+    note,
+    harvested,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is GrowthJourneyData &&
+          other.id == this.id &&
+          other.intention == this.intention &&
+          other.timeframeDays == this.timeframeDays &&
+          other.startDate == this.startDate &&
+          other.note == this.note &&
+          other.harvested == this.harvested &&
+          other.createdAt == this.createdAt);
+}
+
+class GrowthJourneyCompanion extends UpdateCompanion<GrowthJourneyData> {
+  final Value<String> id;
+  final Value<String> intention;
+  final Value<int?> timeframeDays;
+  final Value<String> startDate;
+  final Value<String?> note;
+  final Value<bool> harvested;
+  final Value<String> createdAt;
+  final Value<int> rowid;
+  const GrowthJourneyCompanion({
+    this.id = const Value.absent(),
+    this.intention = const Value.absent(),
+    this.timeframeDays = const Value.absent(),
+    this.startDate = const Value.absent(),
+    this.note = const Value.absent(),
+    this.harvested = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  GrowthJourneyCompanion.insert({
+    required String id,
+    required String intention,
+    this.timeframeDays = const Value.absent(),
+    required String startDate,
+    this.note = const Value.absent(),
+    this.harvested = const Value.absent(),
+    required String createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       intention = Value(intention),
+       startDate = Value(startDate),
+       createdAt = Value(createdAt);
+  static Insertable<GrowthJourneyData> custom({
+    Expression<String>? id,
+    Expression<String>? intention,
+    Expression<int>? timeframeDays,
+    Expression<String>? startDate,
+    Expression<String>? note,
+    Expression<bool>? harvested,
+    Expression<String>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (intention != null) 'intention': intention,
+      if (timeframeDays != null) 'timeframe_days': timeframeDays,
+      if (startDate != null) 'start_date': startDate,
+      if (note != null) 'note': note,
+      if (harvested != null) 'harvested': harvested,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  GrowthJourneyCompanion copyWith({
+    Value<String>? id,
+    Value<String>? intention,
+    Value<int?>? timeframeDays,
+    Value<String>? startDate,
+    Value<String?>? note,
+    Value<bool>? harvested,
+    Value<String>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return GrowthJourneyCompanion(
+      id: id ?? this.id,
+      intention: intention ?? this.intention,
+      timeframeDays: timeframeDays ?? this.timeframeDays,
+      startDate: startDate ?? this.startDate,
+      note: note ?? this.note,
+      harvested: harvested ?? this.harvested,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (intention.present) {
+      map['intention'] = Variable<String>(intention.value);
+    }
+    if (timeframeDays.present) {
+      map['timeframe_days'] = Variable<int>(timeframeDays.value);
+    }
+    if (startDate.present) {
+      map['start_date'] = Variable<String>(startDate.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (harvested.present) {
+      map['harvested'] = Variable<bool>(harvested.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<String>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('GrowthJourneyCompanion(')
+          ..write('id: $id, ')
+          ..write('intention: $intention, ')
+          ..write('timeframeDays: $timeframeDays, ')
+          ..write('startDate: $startDate, ')
+          ..write('note: $note, ')
+          ..write('harvested: $harvested, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -7646,6 +8117,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $SoulLogTable soulLog = $SoulLogTable(this);
   late final $AudioCacheTable audioCache = $AudioCacheTable(this);
   late final $JournalEntryTable journalEntry = $JournalEntryTable(this);
+  late final $GrowthJourneyTable growthJourney = $GrowthJourneyTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -7670,6 +8142,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     soulLog,
     audioCache,
     journalEntry,
+    growthJourney,
   ];
 }
 
@@ -7949,7 +8422,7 @@ final class $$HabitsTableReferences
   static MultiTypedResultKey<$CompletionsTable, List<Completion>>
   _completionsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.completions,
-    aliasName: $_aliasNameGenerator(db.habits.id, db.completions.habitId),
+    aliasName: 'habits__id__completions__habit_id',
   );
 
   $$CompletionsTableProcessedTableManager get completionsRefs {
@@ -8270,9 +8743,8 @@ final class $$CompletionsTableReferences
     extends BaseReferences<_$AppDatabase, $CompletionsTable, Completion> {
   $$CompletionsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $HabitsTable _habitIdTable(_$AppDatabase db) => db.habits.createAlias(
-    $_aliasNameGenerator(db.completions.habitId, db.habits.id),
-  );
+  static $HabitsTable _habitIdTable(_$AppDatabase db) =>
+      db.habits.createAlias('completions__habit_id__habits__id');
 
   $$HabitsTableProcessedTableManager get habitId {
     final $_column = $_itemColumn<String>('habit_id')!;
@@ -8729,7 +9201,7 @@ final class $$SkillsTableReferences
   static MultiTypedResultKey<$SkillSessionsTable, List<SkillSession>>
   _skillSessionsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.skillSessions,
-    aliasName: $_aliasNameGenerator(db.skills.id, db.skillSessions.skillId),
+    aliasName: 'skills__id__skill_sessions__skill_id',
   );
 
   $$SkillSessionsTableProcessedTableManager get skillSessionsRefs {
@@ -9047,9 +9519,8 @@ final class $$SkillSessionsTableReferences
     super.$_typedResult,
   );
 
-  static $SkillsTable _skillIdTable(_$AppDatabase db) => db.skills.createAlias(
-    $_aliasNameGenerator(db.skillSessions.skillId, db.skills.id),
-  );
+  static $SkillsTable _skillIdTable(_$AppDatabase db) =>
+      db.skills.createAlias('skill_sessions__skill_id__skills__id');
 
   $$SkillsTableProcessedTableManager get skillId {
     final $_column = $_itemColumn<String>('skill_id')!;
@@ -9593,10 +10064,7 @@ final class $$ChallengesTableReferences
   _challengeParticipantsRefsTable(_$AppDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.challengeParticipants,
-        aliasName: $_aliasNameGenerator(
-          db.challenges.id,
-          db.challengeParticipants.challengeId,
-        ),
+        aliasName: 'challenges__id__challenge_participants__challenge_id',
       );
 
   $$ChallengeParticipantsTableProcessedTableManager
@@ -9967,13 +10435,8 @@ final class $$ChallengeParticipantsTableReferences
     super.$_typedResult,
   );
 
-  static $ChallengesTable _challengeIdTable(_$AppDatabase db) =>
-      db.challenges.createAlias(
-        $_aliasNameGenerator(
-          db.challengeParticipants.challengeId,
-          db.challenges.id,
-        ),
-      );
+  static $ChallengesTable _challengeIdTable(_$AppDatabase db) => db.challenges
+      .createAlias('challenge_participants__challenge_id__challenges__id');
 
   $$ChallengesTableProcessedTableManager get challengeId {
     final $_column = $_itemColumn<String>('challenge_id')!;
@@ -12468,6 +12931,250 @@ typedef $$JournalEntryTableProcessedTableManager =
       JournalEntryData,
       PrefetchHooks Function()
     >;
+typedef $$GrowthJourneyTableCreateCompanionBuilder =
+    GrowthJourneyCompanion Function({
+      required String id,
+      required String intention,
+      Value<int?> timeframeDays,
+      required String startDate,
+      Value<String?> note,
+      Value<bool> harvested,
+      required String createdAt,
+      Value<int> rowid,
+    });
+typedef $$GrowthJourneyTableUpdateCompanionBuilder =
+    GrowthJourneyCompanion Function({
+      Value<String> id,
+      Value<String> intention,
+      Value<int?> timeframeDays,
+      Value<String> startDate,
+      Value<String?> note,
+      Value<bool> harvested,
+      Value<String> createdAt,
+      Value<int> rowid,
+    });
+
+class $$GrowthJourneyTableFilterComposer
+    extends Composer<_$AppDatabase, $GrowthJourneyTable> {
+  $$GrowthJourneyTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get intention => $composableBuilder(
+    column: $table.intention,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get timeframeDays => $composableBuilder(
+    column: $table.timeframeDays,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get startDate => $composableBuilder(
+    column: $table.startDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get harvested => $composableBuilder(
+    column: $table.harvested,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$GrowthJourneyTableOrderingComposer
+    extends Composer<_$AppDatabase, $GrowthJourneyTable> {
+  $$GrowthJourneyTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get intention => $composableBuilder(
+    column: $table.intention,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get timeframeDays => $composableBuilder(
+    column: $table.timeframeDays,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get startDate => $composableBuilder(
+    column: $table.startDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get harvested => $composableBuilder(
+    column: $table.harvested,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$GrowthJourneyTableAnnotationComposer
+    extends Composer<_$AppDatabase, $GrowthJourneyTable> {
+  $$GrowthJourneyTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get intention =>
+      $composableBuilder(column: $table.intention, builder: (column) => column);
+
+  GeneratedColumn<int> get timeframeDays => $composableBuilder(
+    column: $table.timeframeDays,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get startDate =>
+      $composableBuilder(column: $table.startDate, builder: (column) => column);
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<bool> get harvested =>
+      $composableBuilder(column: $table.harvested, builder: (column) => column);
+
+  GeneratedColumn<String> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$GrowthJourneyTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $GrowthJourneyTable,
+          GrowthJourneyData,
+          $$GrowthJourneyTableFilterComposer,
+          $$GrowthJourneyTableOrderingComposer,
+          $$GrowthJourneyTableAnnotationComposer,
+          $$GrowthJourneyTableCreateCompanionBuilder,
+          $$GrowthJourneyTableUpdateCompanionBuilder,
+          (
+            GrowthJourneyData,
+            BaseReferences<
+              _$AppDatabase,
+              $GrowthJourneyTable,
+              GrowthJourneyData
+            >,
+          ),
+          GrowthJourneyData,
+          PrefetchHooks Function()
+        > {
+  $$GrowthJourneyTableTableManager(_$AppDatabase db, $GrowthJourneyTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$GrowthJourneyTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$GrowthJourneyTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$GrowthJourneyTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> intention = const Value.absent(),
+                Value<int?> timeframeDays = const Value.absent(),
+                Value<String> startDate = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+                Value<bool> harvested = const Value.absent(),
+                Value<String> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => GrowthJourneyCompanion(
+                id: id,
+                intention: intention,
+                timeframeDays: timeframeDays,
+                startDate: startDate,
+                note: note,
+                harvested: harvested,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String intention,
+                Value<int?> timeframeDays = const Value.absent(),
+                required String startDate,
+                Value<String?> note = const Value.absent(),
+                Value<bool> harvested = const Value.absent(),
+                required String createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => GrowthJourneyCompanion.insert(
+                id: id,
+                intention: intention,
+                timeframeDays: timeframeDays,
+                startDate: startDate,
+                note: note,
+                harvested: harvested,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$GrowthJourneyTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $GrowthJourneyTable,
+      GrowthJourneyData,
+      $$GrowthJourneyTableFilterComposer,
+      $$GrowthJourneyTableOrderingComposer,
+      $$GrowthJourneyTableAnnotationComposer,
+      $$GrowthJourneyTableCreateCompanionBuilder,
+      $$GrowthJourneyTableUpdateCompanionBuilder,
+      (
+        GrowthJourneyData,
+        BaseReferences<_$AppDatabase, $GrowthJourneyTable, GrowthJourneyData>,
+      ),
+      GrowthJourneyData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -12510,4 +13217,6 @@ class $AppDatabaseManager {
       $$AudioCacheTableTableManager(_db, _db.audioCache);
   $$JournalEntryTableTableManager get journalEntry =>
       $$JournalEntryTableTableManager(_db, _db.journalEntry);
+  $$GrowthJourneyTableTableManager get growthJourney =>
+      $$GrowthJourneyTableTableManager(_db, _db.growthJourney);
 }

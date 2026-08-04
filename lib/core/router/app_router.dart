@@ -14,7 +14,7 @@ import '../../features/spiritual/prayer_screen.dart';
 import '../../features/spiritual/bible_screen.dart';
 import '../../features/threshold/threshold_screen.dart';
 import '../../features/skills/skills_screen.dart';
-import '../../features/progress/progress_screen.dart';
+import '../../features/growth/growth_screen.dart';
 import '../../features/reflection/reflection_screen.dart';
 import '../../features/reflection/daily_journal_screen.dart';
 import '../../features/fellowship/fellowship_screen.dart';
@@ -75,7 +75,7 @@ class AppRouter {
             }),
           ]),
           StatefulShellBranch(routes: [
-            GoRoute(path: '/progress', pageBuilder: (context, state) => _buildPage(state, const ProgressScreen())),
+            GoRoute(path: '/progress', pageBuilder: (context, state) => _buildPage(state, const GrowthScreen())),
           ]),
           StatefulShellBranch(routes: [
             GoRoute(path: '/profile', pageBuilder: (context, state) => _buildPage(state, const ProfileScreen())),

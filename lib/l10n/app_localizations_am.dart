@@ -528,4 +528,90 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get noBadgesYet => 'ሜዳሊያ ለማግኘት ቀጥል';
+
+  @override
+  String get vineyardTitle => 'የወይን እርሻ';
+
+  @override
+  String get soilYoursGrowingHis => 'አፈሩ የአንተ ነው፤ ማደጉ የእርሱ ነው።';
+
+  @override
+  String get vineyardEmptyBody =>
+      'ዘር ትክል — ዓላማ እና ጊዜ — እርሱ የሚያድገውን ተመልከት። ክትትል የለም፣ ግፊት የለም፤ ወይኑ በራሱ ጊዜ ይበስላል።';
+
+  @override
+  String get enterTheVineyard => 'ወደ ወይን እርሻ ግባ';
+
+  @override
+  String get yourIntention => 'ዓላማህ';
+
+  @override
+  String get howLong => 'ለምን ያህል ጊዜ?';
+
+  @override
+  String get vineWordOptional => 'ለወይኑ አንድ ቃል (አማራጭ)';
+
+  @override
+  String get vineWordHint => 'ለምሳሌ ትዕግስት፣ ትሕትና፣ ዕረፍት';
+
+  @override
+  String get plantIt => 'ትክል';
+
+  @override
+  String get plantedSnack => 'ተክለሃል። መከሩ ያስታውሰዋል።';
+
+  @override
+  String get dayLabel => 'ቀን';
+
+  @override
+  String get daysWord => 'የቀኑ ቃል';
+
+  @override
+  String get oneQuestion => 'አንድ ጥያቄ';
+
+  @override
+  String get answerIt => 'መልስ ስጥ';
+
+  @override
+  String get answeredTapToRead => 'መልስ ተሰጥቷል — ለማንበብ ንካ';
+
+  @override
+  String get writeYourAnswer => 'መልስህን ጻፍ...';
+
+  @override
+  String get weatherOfTheHeart => 'የልብ የአየር ሁኔታ';
+
+  @override
+  String get theSeason => 'ወቅቱ';
+
+  @override
+  String get yourFruit => 'ፍሬህ';
+
+  @override
+  String get vineRemembersEmpty => 'እስካሁን ፍሬ የለም — ወይኑ የተከልከውን መልስ ሁሉ ያስታውሳል።';
+
+  @override
+  String get harvestGathered => 'መከሩ ተሰብስቧል።';
+
+  @override
+  String get harvestGatheredBody =>
+      'የተከልከው መልስ ሁሉ ይታወሳል። ዝግጁ ስትሆን እንደገና ትክል — ወይም በእርሱ ውስጥ መቀመጥህን ቀጥል።';
+
+  @override
+  String get plantAgain => 'እንደገና ትክል';
+
+  @override
+  String get harvestWhenReady => 'መከሩ — ዝግጁ ስትሆን';
+
+  @override
+  String get theHarvest => 'መከር';
+
+  @override
+  String get continueAbiding => 'መቀጠል';
+
+  @override
+  String get harvestVerb => 'ማጨድ';
+
+  @override
+  String get close => 'ዝጋ';
 }
