@@ -6,6 +6,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/database/app_database.dart';
 import '../../core/providers/fellowship_provider.dart';
+import '../../core/services/scene_event_bus.dart';
 
 class _Prompt {
   final String emoji;
@@ -153,6 +154,7 @@ class FellowshipScreen extends ConsumerWidget {
             onPressed: () {
               SharePlus.instance.share(ShareParams(text: prompt.msg(isAm)));
               ref.read(fellowshipNotifierProvider.notifier).logConnection(promptType: _todayPromptIndex());
+              ref.read(sceneEventBusProvider).emit(SceneEventType.branchGrow);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
@@ -169,7 +171,10 @@ class FellowshipScreen extends ConsumerWidget {
         child: OutlinedButton.icon(
           icon: Icon(Icons.check, size: 16),
           label: Text(isAm ? 'ተከናውኗል ብቻ' : 'Just Log It', style: const TextStyle(fontSize: 13)),
-          onPressed: () => ref.read(fellowshipNotifierProvider.notifier).logConnection(promptType: _todayPromptIndex()),
+          onPressed: () {
+            ref.read(fellowshipNotifierProvider.notifier).logConnection(promptType: _todayPromptIndex());
+            ref.read(sceneEventBusProvider).emit(SceneEventType.branchGrow);
+          },
           style: OutlinedButton.styleFrom(
             foregroundColor: AppColors.primary,
             side: BorderSide(color: AppColors.primary.withValues(alpha: 0.4)),

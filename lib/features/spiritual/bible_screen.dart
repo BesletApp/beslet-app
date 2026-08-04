@@ -10,6 +10,8 @@ import '../../core/providers/connectivity_provider.dart';
 import '../../core/providers/download_provider.dart';
 import '../../core/providers/scripture_provider.dart';
 import '../../core/providers/reading_preferences_provider.dart';
+import '../../core/providers/growth_streams_provider.dart';
+import '../../core/services/scene_event_bus.dart';
 import 'widgets/audio_player_bar.dart';
 import 'widgets/verse_list_view.dart';
 import 'widgets/chapter_picker.dart';
@@ -86,6 +88,15 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
     if (_pickedBookId != null && _pickedChapter != null) {
       ReadingPreferences.saveOpenPage(_pickedBookId!, _pickedChapter!, _effectiveLang);
     }
+  }
+
+  void _onChapterOpened() {
+    ref.read(readingNotifierProvider.notifier).logReading(
+      minutes: 1,
+      bookId: _pickedBookId,
+      chapter: _pickedChapter,
+    );
+    ref.read(sceneEventBusProvider).emit(SceneEventType.leafLight);
   }
 
   ({String bookId, int chapter})? _resolveParsed() {
@@ -405,6 +416,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
                 _pickedChapter = chapter;
               });
               _saveOpenPage();
+              _onChapterOpened();
             },
           ),
         );
@@ -427,6 +439,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
             _pickedChapter = chapter;
           });
           _saveOpenPage();
+          _onChapterOpened();
         },
       ),
     );
@@ -602,6 +615,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
                     _offlineBook = null;
                   });
                   _saveOpenPage();
+                  _onChapterOpened();
                 },
                 child: Container(
                   decoration: BoxDecoration(

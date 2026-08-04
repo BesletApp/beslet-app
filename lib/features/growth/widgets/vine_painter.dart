@@ -136,6 +136,12 @@ class VinePainter extends CustomPainter {
   final double sway;
   final VinePalette palette;
   final bool showBlossoms;
+  final double hydration;
+  final double leafGlow;
+  final double branchOpen;
+  final double ripen;
+  final double droop;
+  final double blossomOpen;
 
   const VinePainter({
     required this.seed,
@@ -146,6 +152,12 @@ class VinePainter extends CustomPainter {
     required this.palette,
     this.sway = 0,
     this.showBlossoms = false,
+    this.hydration = 1,
+    this.leafGlow = 1,
+    this.branchOpen = 1,
+    this.ripen = 0,
+    this.droop = 0,
+    this.blossomOpen = 1,
   });
 
   @override
@@ -184,40 +196,52 @@ class VinePainter extends CustomPainter {
     final soilY = size.height * 0.9;
     final w = size.width * 0.72;
     canvas.drawOval(Rect.fromCenter(center: Offset(size.width / 2, soilY + 2), width: w, height: w * 0.18), paint);
-    paint.color = palette.soil.withValues(alpha: 0.5);
+    paint.color = palette.soil.withValues(alpha: 0.4 + hydration * 0.2);
     canvas.drawOval(Rect.fromCenter(center: Offset(size.width / 2, soilY + 6), width: w * 0.86, height: w * 0.16), paint);
+    if (hydration > 0.6) {
+      paint.color = const Color(0xFFD9F0A8).withValues(alpha: (hydration - 0.6) * 0.35);
+      canvas.drawOval(Rect.fromCenter(center: Offset(size.width / 2, soilY - 2), width: w * 0.5, height: w * 0.1), paint);
+    }
   }
 
   void _paintLeaves(Canvas canvas, List<Offset> tips) {
+    final tinted = Color.lerp(palette.leaf, const Color(0xFFD9F0A8), leafGlow * 0.4)!;
+    final vivid = Color.lerp(palette.leaf, tinted, hydration * 0.5)!;
     final paint = Paint()
-      ..color = palette.leaf.withValues(alpha: 0.9)
+      ..color = vivid.withValues(alpha: 0.9)
       ..style = PaintingStyle.fill;
-    for (final tip in tips) {
-      final base = tip + const Offset(0, 2);
+    for (var i = 0; i < tips.length; i++) {
+      final tip = tips[i];
+      final droopDir = i.isEven ? 1.0 : -1.0;
+      canvas.save();
+      canvas.translate(tip.dx, tip.dy + 2);
+      canvas.rotate(droop * droopDir);
       final left = Path()
-        ..moveTo(base.dx, base.dy)
-        ..quadraticBezierTo(base.dx - 10, base.dy - 8, base.dx - 12, base.dy - 16)
-        ..quadraticBezierTo(base.dx - 4, base.dy - 12, base.dx, base.dy - 8)
+        ..moveTo(0, 0)
+        ..quadraticBezierTo(-10, -8, -12, -16)
+        ..quadraticBezierTo(-4, -12, 0, -8)
         ..close();
       final right = Path()
-        ..moveTo(base.dx, base.dy)
-        ..quadraticBezierTo(base.dx + 10, base.dy - 8, base.dx + 12, base.dy - 16)
-        ..quadraticBezierTo(base.dx + 4, base.dy - 12, base.dx, base.dy - 8)
+        ..moveTo(0, 0)
+        ..quadraticBezierTo(10, -8, 12, -16)
+        ..quadraticBezierTo(4, -12, 0, -8)
         ..close();
       canvas.drawPath(left, paint);
       canvas.drawPath(right, paint);
+      canvas.restore();
     }
   }
 
   void _paintBlossoms(Canvas canvas, List<Offset> tips) {
     final paint = Paint()..style = PaintingStyle.fill;
+    final open = 0.3 + blossomOpen * 0.7;
     final half = tips.length ~/ 2;
     for (var i = 0; i < half; i++) {
       final c = tips[i];
       paint.color = palette.blossom.withValues(alpha: 0.75);
-      canvas.drawCircle(c + const Offset(0, -6), 3.2, paint);
+      canvas.drawCircle(c + const Offset(0, -6), 3.2 * open, paint);
       paint.color = palette.blossom;
-      canvas.drawCircle(c + const Offset(0, -6), 1.6, paint);
+      canvas.drawCircle(c + const Offset(0, -6), 1.6 * open, paint);
     }
   }
 
@@ -227,11 +251,15 @@ class VinePainter extends CustomPainter {
     final paint = Paint()..style = PaintingStyle.fill;
     for (var i = 0; i < count; i++) {
       final c = tips[i];
-      final radius = 5.5;
+      final radius = 5.5 * (0.7 + branchOpen * 0.3);
       paint.color = fruitColor;
       canvas.drawCircle(c + const Offset(0, -8), radius, paint);
       paint.color = fruitColor.withValues(alpha: 0.5);
       canvas.drawCircle(c + Offset(-1.5, -9.5), radius * 0.45, paint);
+      if (ripen > 0.4) {
+        paint.color = const Color(0xFFF8E26A).withValues(alpha: (ripen - 0.4) * 0.5);
+        canvas.drawCircle(c + const Offset(0, -8), radius + 4, paint);
+      }
     }
   }
 
@@ -244,6 +272,12 @@ class VinePainter extends CustomPainter {
         old.fruitColor != fruitColor ||
         old.sway != sway ||
         old.palette != palette ||
-        old.showBlossoms != showBlossoms;
+        old.showBlossoms != showBlossoms ||
+        old.hydration != hydration ||
+        old.leafGlow != leafGlow ||
+        old.branchOpen != branchOpen ||
+        old.ripen != ripen ||
+        old.droop != droop ||
+        old.blossomOpen != blossomOpen;
   }
 }

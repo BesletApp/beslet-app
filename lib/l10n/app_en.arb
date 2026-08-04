@@ -198,5 +198,12 @@
   "visitsAttentive": "Attentive (daily)",
   "visitWindow": "Visit window",
   "windowEvening": "Evening",
-  "windowMorning": "Morning"
+  "windowMorning": "Morning",
+  "todayRhythm": "Today's rhythm",
+  "abiding": "Abiding",
+  "stepsOf": "{done} of {total} steps",
+  "theSeasonChanged": "The season changed — the vine grows on God's clock.",
+  "streakFlameGrace": "Carried today by grace.",
+  "streakFlameGentle": "Kept gently, day by day.",
+  "freezeChip": "grace-carry"
 }

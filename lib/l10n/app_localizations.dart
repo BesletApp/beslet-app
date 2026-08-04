@@ -1291,6 +1291,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Morning'**
   String get windowMorning;
+
+  /// No description provided for @todayRhythm.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s rhythm'**
+  String get todayRhythm;
+
+  /// No description provided for @abiding.
+  ///
+  /// In en, this message translates to:
+  /// **'Abiding'**
+  String get abiding;
+
+  /// No description provided for @stepsOf.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {total} steps'**
+  String stepsOf(Object done, Object total);
+
+  /// No description provided for @theSeasonChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'The season changed — the vine grows on God\'s clock.'**
+  String get theSeasonChanged;
+
+  /// No description provided for @streakFlameGrace.
+  ///
+  /// In en, this message translates to:
+  /// **'Carried today by grace.'**
+  String get streakFlameGrace;
+
+  /// No description provided for @streakFlameGentle.
+  ///
+  /// In en, this message translates to:
+  /// **'Kept gently, day by day.'**
+  String get streakFlameGentle;
+
+  /// No description provided for @freezeChip.
+  ///
+  /// In en, this message translates to:
+  /// **'grace-carry'**
+  String get freezeChip;
 }
 
 class _AppLocalizationsDelegate

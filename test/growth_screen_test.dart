@@ -3,12 +3,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:beslet_app/core/database/app_database.dart';
+import 'package:beslet_app/core/providers/fellowship_provider.dart';
 import 'package:beslet_app/core/providers/growth_provider.dart';
+import 'package:beslet_app/core/providers/growth_streams_provider.dart';
+import 'package:beslet_app/core/providers/habits_provider.dart';
 import 'package:beslet_app/core/providers/journal_provider.dart';
+import 'package:beslet_app/core/providers/prayer_provider.dart';
 import 'package:beslet_app/core/providers/soul_log_provider.dart';
+import 'package:beslet_app/core/providers/streak_provider.dart';
+import 'package:beslet_app/core/providers/tracking_provider.dart';
+import 'package:beslet_app/core/services/streak_service.dart';
 import 'package:beslet_app/l10n/app_localizations.dart';
 import 'package:beslet_app/features/growth/growth_screen.dart';
-import 'package:beslet_app/features/growth/widgets/season_story_card.dart';
+import 'package:beslet_app/features/growth/widgets/rhythm_ring.dart';
+import 'package:beslet_app/features/growth/widgets/stage_path.dart';
+import 'package:beslet_app/features/growth/widgets/streak_flame.dart';
+import 'package:beslet_app/features/growth/widgets/week_bars.dart';
 import 'package:beslet_app/features/growth/widgets/vineyard_scene.dart';
 
 GrowthJourneyData journey({
@@ -42,6 +52,39 @@ void main() {
           todaySoulLogProvider.overrideWith((ref) async => null),
           journalEntryProvider.overrideWith((ref) async => null),
           journalHistoryProvider.overrideWith((ref) async => history),
+          todayPrayerLogProvider.overrideWith((ref) async => null),
+          todayReadingProvider.overrideWith((ref) async => null),
+          todayFellowshipProvider.overrideWith((ref) async => null),
+          todayCompletionsProvider.overrideWith((ref) async => const <String>{}),
+          trackingDataProvider.overrideWith(
+            (ref) async => TrackingData(
+              totalXp: 0,
+              level: 1,
+              levelName: 'Seed',
+              streak: 0,
+              bestStreak: 0,
+              freezeTokens: 0,
+              streakAtRisk: false,
+              prayerMinutes: 0,
+              habitsDone: 0,
+              skillsMinutes: 0,
+              todosDone: 0,
+              todosTotal: 0,
+              badges: const [],
+              levelProgress: 0,
+            ),
+          ),
+          weekLivingProvider.overrideWith((ref) async => const [1, 2, 3, 4, 5, 6, 0]),
+          streakStateProvider.overrideWith(
+            (ref) async => StreakState(
+              currentStreak: 3,
+              bestStreak: 5,
+              freezeTokens: 0,
+              isAtRisk: false,
+              isBroken: false,
+              weekDays: const [false, false, false, true, true, true, false],
+            ),
+          ),
         ],
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -78,8 +121,8 @@ void main() {
       expect(find.byType(VineyardScene), findsOneWidget);
     });
 
-    testWidgets('shows the season story, encouragement, and fruit list', (tester) async {
-      tester.view.physicalSize = const Size(800, 1800);
+    testWidgets('shows the stage path and the living stat tiles', (tester) async {
+      tester.view.physicalSize = const Size(800, 2400);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
       final today = DateTime.now().toIso8601String().substring(0, 10);
@@ -95,10 +138,11 @@ void main() {
           ),
         ],
       );
-      expect(find.text('The Season'), findsOneWidget);
       expect(find.text('Your Fruit'), findsOneWidget);
-      expect(find.textContaining('rest in Him today'), findsOneWidget);
-      expect(find.byType(SeasonStoryCard), findsOneWidget);
+      expect(find.byType(StagePath), findsOneWidget);
+      expect(find.byType(RhythmRing), findsOneWidget);
+      expect(find.byType(WeekBars), findsOneWidget);
+      expect(find.byType(StreakFlame), findsOneWidget);
     });
 
     testWidgets('open journey sheet shows intentions and timeframes', (tester) async {
@@ -130,7 +174,7 @@ void main() {
     });
 
     testWidgets('harvest action opens the Harvest Letter sheet', (tester) async {
-      tester.view.physicalSize = const Size(800, 1800);
+      tester.view.physicalSize = const Size(800, 2400);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
       final today = DateTime.now().toIso8601String().substring(0, 10);
@@ -146,6 +190,9 @@ void main() {
           ),
         ],
       );
+      await tester.tap(find.text('Your Fruit'));
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
       await tester.tap(find.text('The harvest — when you are ready'));
       await tester.pump(const Duration(milliseconds: 300));
       await tester.pump(const Duration(milliseconds: 300));

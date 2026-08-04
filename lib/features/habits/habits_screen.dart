@@ -6,6 +6,7 @@ import '../../core/theme/app_text_styles.dart';
 import '../../core/database/app_database.dart';
 import '../../core/providers/habits_provider.dart';
 import '../../core/providers/tracking_provider.dart';
+import '../../core/services/scene_event_bus.dart';
 
 final _habitCategories = [
   {'name': 'Spiritual', 'icon': '🙏'},
@@ -118,7 +119,10 @@ class HabitsScreen extends ConsumerWidget {
         title: Text(habit.name, style: AppTextStyles.bodyMedium.copyWith(decoration: completed ? TextDecoration.lineThrough : null)),
         subtitle: Text(habit.category, style: AppTextStyles.bodySmall.copyWith(color: c.textMuted)),
         trailing: GestureDetector(
-          onTap: () => ref.read(habitsNotifierProvider.notifier).toggleCompletion(habit.id),
+          onTap: () {
+            ref.read(habitsNotifierProvider.notifier).toggleCompletion(habit.id);
+            ref.read(sceneEventBusProvider).emit(SceneEventType.fruitPop);
+          },
           child: Container(
             width: 28, height: 28,
             decoration: BoxDecoration(

@@ -639,4 +639,27 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get windowMorning => 'ጠዋት';
+
+  @override
+  String get todayRhythm => 'የዛሬ ሪትም';
+
+  @override
+  String get abiding => 'መቆየት';
+
+  @override
+  String stepsOf(Object done, Object total) {
+    return '$done ከ $total እርምጃዎች';
+  }
+
+  @override
+  String get theSeasonChanged => 'ወቅቱ ተለውጧል — ወይኑ በእግዚአብሔር ጊዜ ያድጋል።';
+
+  @override
+  String get streakFlameGrace => 'ዛሬ በጸጋ ተሸክሟል።';
+
+  @override
+  String get streakFlameGentle => 'በቀስታ፣ በየቀኑ ተጠብቋል።';
+
+  @override
+  String get freezeChip => 'የጸጋ መሸከሚያ';
 }

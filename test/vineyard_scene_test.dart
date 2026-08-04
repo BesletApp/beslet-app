@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
+import 'package:beslet_app/core/services/scene_event_bus.dart';
 import 'package:beslet_app/features/growth/widgets/vine_painter.dart';
 import 'package:beslet_app/features/growth/widgets/vineyard_scene.dart';
 
@@ -114,6 +115,52 @@ void main() {
       expect(tester.takeException(), isNull);
       await tester.pump(const Duration(seconds: 3));
       expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('accepts vitality values with the default eventSource', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: VineyardScene(
+              seed: 5,
+              growth01: 0.7,
+              branches: 6,
+              fruitCount: 3,
+              fruitColor: Color(0xFFE8C53A),
+              hydration: 0.35,
+              leafGlow: 0.9,
+              branchOpen: 1,
+              ripen: 0.5,
+            ),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('plays a burst when the eventSource emits', (tester) async {
+      final bus = SceneEventBus();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: VineyardScene(
+              seed: 5,
+              growth01: 0.7,
+              branches: 6,
+              fruitCount: 3,
+              fruitColor: const Color(0xFFE8C53A),
+              eventSource: bus,
+            ),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      bus.emit(SceneEventType.water);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 750));
+      expect(tester.takeException(), isNull);
+      bus.dispose();
     });
   });
 }

@@ -198,5 +198,12 @@
   "visitsAttentive": "የየቀኑ (በየቀኑ)",
   "visitWindow": "የጉብኝት ሰዓት",
   "windowEvening": "ማታ",
-  "windowMorning": "ጠዋት"
+  "windowMorning": "ጠዋት",
+  "todayRhythm": "የዛሬ ሪትም",
+  "abiding": "መቆየት",
+  "stepsOf": "{done} ከ {total} እርምጃዎች",
+  "theSeasonChanged": "ወቅቱ ተለውጧል — ወይኑ በእግዚአብሔር ጊዜ ያድጋል።",
+  "streakFlameGrace": "ዛሬ በጸጋ ተሸክሟል።",
+  "streakFlameGentle": "በቀስታ፣ በየቀኑ ተጠብቋል።",
+  "freezeChip": "የጸጋ መሸከሚያ"
 }

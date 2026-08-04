@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers/journal_provider.dart';
+import '../../../core/services/scene_event_bus.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -129,6 +130,7 @@ class _AnswerSheetState extends ConsumerState<_AnswerSheet> {
 
   Future<void> _save() async {
     await ref.read(journalNotifierProvider.notifier).saveEntry(_ctrl.text);
+    ref.read(sceneEventBusProvider).emit(SceneEventType.fruitPop);
     if (mounted) Navigator.of(context).pop();
   }
 

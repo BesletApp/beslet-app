@@ -3,9 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/database/app_database.dart';
 import '../../core/providers/growth_provider.dart';
+import '../../core/providers/growth_streams_provider.dart';
 import '../../core/providers/journal_provider.dart';
 import '../../core/providers/soul_log_provider.dart';
+import '../../core/providers/streak_provider.dart';
 import '../../core/services/growth_content.dart';
+import '../../core/services/scene_event_bus.dart';
 import '../../core/services/vineyard_reminder_service.dart';
 import '../../core/services/scripture_service.dart';
 import '../../core/theme/app_colors.dart';
@@ -16,12 +19,16 @@ import '../../shared/widgets/beslet_card.dart';
 import '../../shared/widgets/error_card.dart';
 import 'plant_journey_sheet.dart';
 import 'harvest_letter_sheet.dart';
-import 'widgets/day_word_card.dart';
-import 'widgets/encouragement_card.dart';
+import 'widgets/day_word_chip.dart';
+import 'widgets/disclosure_tile.dart';
+import 'widgets/fruit_drawer.dart';
 import 'widgets/fruit_list.dart';
 import 'widgets/question_card.dart';
-import 'widgets/season_story_card.dart';
+import 'widgets/rhythm_ring.dart';
+import 'widgets/stage_path.dart';
+import 'widgets/streak_flame.dart';
 import 'widgets/weather_card.dart';
+import 'widgets/week_bars.dart';
 import 'widgets/vineyard_scene.dart';
 
 class GrowthScreen extends ConsumerWidget {
@@ -148,8 +155,12 @@ class _LivingVineyard extends ConsumerWidget {
     final stage = GrowthContent.vineStageFor(day, timeframeDays);
     final intentionLabel = GrowthContent.intentionLabel(intention);
     final movementTitle = GrowthContent.movementTitle(movement);
-    final stageLine = GrowthContent.vineStageLine(stage);
-    final grace = GrowthContent.graceNote();
+
+    final vitality = ref.watch(growthVitalityProvider);
+    final eventSource = ref.watch(sceneEventBusProvider);
+    final rhythm = ref.watch(todayRhythmProvider);
+    final streak = ref.watch(streakStateProvider).valueOrNull;
+    final week = ref.watch(weekLivingProvider).valueOrNull ?? const <int>[];
 
     final seed = journey.id.hashCode;
     final fruitColor = Color.lerp(const Color(0xFF7FB36A), const Color(0xFFE8C53A), geometry.growth01)!;
@@ -179,6 +190,11 @@ class _LivingVineyard extends ConsumerWidget {
             fruitColor: fruitColor,
             mood: mood,
             showBlossoms: stage == VineStage.blooming,
+            hydration: vitality.hydration01,
+            leafGlow: vitality.leafGlow01,
+            branchOpen: vitality.branchOpen01,
+            ripen: vitality.ripen01,
+            eventSource: eventSource,
             onFruitTap: fruits.isEmpty
                 ? null
                 : (i) {
@@ -219,42 +235,47 @@ class _LivingVineyard extends ConsumerWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: AppSpacing.sm),
+              const SizedBox(height: AppSpacing.xs),
               Text(
                 isAm ? movementTitle.am : movementTitle.en,
                 style: t.bodyMedium.copyWith(color: AppColors.of(context).primary, fontWeight: FontWeight.w600),
               ),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                isAm ? stageLine.am : stageLine.en,
-                style: t.bodyMedium.copyWith(color: c.textSecondary),
-              ),
+              const SizedBox(height: AppSpacing.md),
+              StagePath(stage: stage, isAm: isAm),
             ],
           ),
         ),
         const SizedBox(height: AppSpacing.sm),
-        BesletCard(
-          variant: CardVariant.tertiary,
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(Icons.light_mode_outlined, size: 16, color: AppColors.of(context).primary),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Text(
-                  isAm ? grace.am : grace.en,
-                  style: t.bodySmall.copyWith(color: c.textMuted),
-                ),
-              ),
-            ],
+        DisclosureTile(
+          icon: Icons.auto_awesome,
+          title: l.todayRhythm,
+          trailing: Text(
+            '${rhythm.done}/${rhythm.total}',
+            style: t.labelLarge.copyWith(color: AppColors.of(context).primary),
           ),
+          children: const [RhythmRing()],
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        DisclosureTile(
+          icon: Icons.calendar_view_week_outlined,
+          title: l.thisWeek,
+          trailing: Text(
+            '${week.isEmpty ? 0 : week.last}',
+            style: t.labelLarge.copyWith(color: AppColors.of(context).primary),
+          ),
+          children: const [WeekBars()],
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        DisclosureTile(
+          icon: Icons.local_fire_department,
+          title: l.abiding,
+          trailing: Text(
+            '${streak?.currentStreak ?? 0}',
+            style: t.labelLarge.copyWith(color: AppColors.of(context).primary),
+          ),
+          children: const [StreakFlame()],
         ),
         const SizedBox(height: AppSpacing.md),
-        SeasonStoryCard(movement: movement, isAm: isAm),
-        const SizedBox(height: AppSpacing.sm),
-        DayWordCard(verse: ScriptureService.threadVerseFor(DateTime.now()), isAm: isAm),
-        const SizedBox(height: AppSpacing.sm),
         QuestionCard(
           question: GrowthContent.questionFor(intention, day).en,
           questionAm: GrowthContent.questionFor(intention, day).am,
@@ -263,82 +284,15 @@ class _LivingVineyard extends ConsumerWidget {
         const SizedBox(height: AppSpacing.sm),
         WeatherCard(mood: mood, isAm: isAm),
         const SizedBox(height: AppSpacing.sm),
-        EncouragementCard(day: day, mood: mood, isAm: isAm),
+        DayWordChip(verse: ScriptureService.threadVerseFor(DateTime.now()), isAm: isAm),
         const SizedBox(height: AppSpacing.sm),
-        FruitList(startDate: journey.startDate, isAm: isAm),
-        const SizedBox(height: AppSpacing.sm),
-        _HarvestActionCard(
+        FruitDrawer(
+          startDate: journey.startDate,
           isAm: isAm,
-          answers: fruits.map((e) => e.content ?? '').toList(),
-          movement: movement,
+          fruitCount: fruits.length,
           onHarvest: () => _openHarvestSheet(context, ref, fruits),
         ),
       ],
-    );
-  }
-}
-
-class _HarvestActionCard extends ConsumerWidget {
-  final bool isAm;
-  final List<String> answers;
-  final JourneyMovement movement;
-  final VoidCallback onHarvest;
-
-  const _HarvestActionCard({
-    required this.isAm,
-    required this.answers,
-    required this.movement,
-    required this.onHarvest,
-  });
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final c = AppColors.of(context);
-    final t = AppTextStyles.of(context);
-    final l = AppLocalizations.of(context)!;
-    final horizon = GrowthContent.horizonLine();
-    return BesletCard(
-      variant: CardVariant.secondary,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            isAm ? horizon.am : horizon.en,
-            style: t.bodyMedium.copyWith(color: c.textSecondary, fontStyle: FontStyle.italic),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(12),
-              onTap: onHarvest,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 12),
-                decoration: BoxDecoration(
-                  color: AppColors.of(context).primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.of(context).primary.withValues(alpha: 0.3)),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.shopping_basket_outlined, size: 18, color: AppColors.of(context).primary),
-                    const SizedBox(width: AppSpacing.xs),
-                    Text(
-                      l.harvestWhenReady,
-                      style: t.labelLarge.copyWith(
-                        color: AppColors.of(context).primary,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

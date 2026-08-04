@@ -9,6 +9,7 @@ import '../../core/database/app_database.dart';
 import '../../core/providers/prayer_provider.dart';
 import '../../core/services/prayer_reminder_service.dart';
 import '../../core/services/prayer_alarm_sound_service.dart';
+import '../../core/services/scene_event_bus.dart';
 import '../../l10n/app_localizations.dart';
 
 class PrayerScreen extends ConsumerStatefulWidget {
@@ -86,6 +87,7 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
     final note = _noteController.text.trim();
     ref.read(prayerNotifierProvider.notifier).logPrayer(0, note: note.isEmpty ? null : note);
     _noteController.clear();
+    ref.read(sceneEventBusProvider).emit(SceneEventType.water);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text('+15 XP — Prayer logged!', style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: Color(0xFF07090E))),
@@ -109,6 +111,7 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
     final note = _noteController.text.trim();
     ref.read(prayerNotifierProvider.notifier).logPrayer(minutes, note: note.isEmpty ? null : note);
     _noteController.clear();
+    ref.read(sceneEventBusProvider).emit(SceneEventType.water);
     setState(() { _startTime = null; _isRunning = false; _timerExpanded = false; });
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(

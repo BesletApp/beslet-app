@@ -642,4 +642,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get windowMorning => 'Morning';
+
+  @override
+  String get todayRhythm => 'Today\'s rhythm';
+
+  @override
+  String get abiding => 'Abiding';
+
+  @override
+  String stepsOf(Object done, Object total) {
+    return '$done of $total steps';
+  }
+
+  @override
+  String get theSeasonChanged =>
+      'The season changed — the vine grows on God\'s clock.';
+
+  @override
+  String get streakFlameGrace => 'Carried today by grace.';
+
+  @override
+  String get streakFlameGentle => 'Kept gently, day by day.';
+
+  @override
+  String get freezeChip => 'grace-carry';
 }

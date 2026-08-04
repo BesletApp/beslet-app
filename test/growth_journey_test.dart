@@ -33,12 +33,12 @@ void main() {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
 
   group('schema', () {
-    test('schema version is 19 and growth_journey is part of the schema', () {
+    test('schema version is 20 and growth_journey is part of the schema', () {
       // A lazy database that never opens — schema/table metadata only.
       final db = AppDatabase.forTesting(LazyDatabase(() async {
         throw StateError('should not open');
       }));
-      expect(db.schemaVersion, 19);
+      expect(db.schemaVersion, 20);
     });
   });
 

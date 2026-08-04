@@ -23,6 +23,7 @@ import '../../core/providers/fellowship_provider.dart';
 import '../../core/providers/todo_provider.dart';
 import '../../core/providers/streak_provider.dart';
 import '../../core/providers/soul_log_provider.dart';
+import '../../core/services/scene_event_bus.dart';
 import '../../core/emotional/mood_content.dart';
 import '../../services/update_checker.dart';
 import '../../shared/widgets/error_card.dart';
@@ -318,6 +319,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) {
               _showCelebration(user.name, tone, l);
+              ref.read(sceneEventBusProvider).emit(SceneEventType.bloom);
               setState(() => _celebrated = true);
             }
           });

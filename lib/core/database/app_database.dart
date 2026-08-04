@@ -22,15 +22,16 @@ import 'tables/soul_log_table.dart';
 import 'tables/audio_cache_table.dart';
 import 'tables/journal_table.dart';
 import 'tables/growth_journey_table.dart';
+import 'tables/reading_session_table.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Users, Habits, Completions, PrayerLogs, Skills, SkillSessions, Reflections, Challenges, ChallengeParticipants, FellowshipLogs, FamilyTimeLogs, Goals, TodoItems, DailyReflections, StreakLog, StreakFrozen, SoulLog, AudioCache, JournalEntry, GrowthJourney])
+@DriftDatabase(tables: [Users, Habits, Completions, PrayerLogs, Skills, SkillSessions, Reflections, Challenges, ChallengeParticipants, FellowshipLogs, FamilyTimeLogs, Goals, TodoItems, DailyReflections, StreakLog, StreakFrozen, SoulLog, AudioCache, JournalEntry, GrowthJourney, ReadingSessions])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
   @visibleForTesting
   AppDatabase.forTesting(super.executor);
-  @override int get schemaVersion => 19;
+  @override int get schemaVersion => 20;
 
   @override
   MigrationStrategy get migration {
@@ -91,6 +92,9 @@ class AppDatabase extends _$AppDatabase {
         }
         if (from < 19) {
           await m.createTable(growthJourney);
+        }
+        if (from < 20) {
+          await m.createTable(readingSessions);
         }
       },
     );
