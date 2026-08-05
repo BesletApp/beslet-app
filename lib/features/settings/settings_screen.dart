@@ -13,6 +13,7 @@ import '../../core/database/app_database.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/services/vineyard_reminder_service.dart';
 import '../../core/services/vineyard_reminder_content.dart';
+import '../../core/services/vine_chime_service.dart';
 import '../../core/providers/streak_provider.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/widgets/zone_layout.dart';
@@ -35,6 +36,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _visitsEnabled = false;
   String _visitsFrequency = 'gentle';
   String _visitsWindow = 'evening';
+  bool _chimeEnabled = false;
 
   @override
   void initState() {
@@ -56,6 +58,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       _visitsEnabled = prefs.getBool('vineyardVisitsEnabled') ?? false;
       _visitsFrequency = prefs.getString('vineyardVisitsFrequency') ?? 'gentle';
       _visitsWindow = prefs.getString('vineyardVisitsWindow') ?? 'evening';
+      _chimeEnabled = prefs.getBool('vineChimeEnabled') ?? false;
     });
   }
 
@@ -291,6 +294,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                     contentPadding: EdgeInsets.zero,
                     onTap: () => _pickVineyardVisits(context),
+                  ),
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    secondary: const Icon(Icons.self_improvement, color: AppColors.primary),
+                    title: Text(l.vineSound, style: AppTextStyles.bodyMedium),
+                    subtitle: Text(l.vineSoundSubtitle,
+                        style: AppTextStyles.bodySmall.copyWith(color: c.textSecondary)),
+                    value: _chimeEnabled,
+                    onChanged: (value) async {
+                      setState(() => _chimeEnabled = value);
+                      await VineChime.setEnabled(value);
+                      if (value) await VineChime.chime();
+                    },
                   ),
                 ],
               ),

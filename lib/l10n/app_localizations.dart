@@ -1351,6 +1351,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'How is your heart today? Look below.'**
   String get tourMood;
+
+  /// No description provided for @gardenWelcomeBack.
+  ///
+  /// In en, this message translates to:
+  /// **'The garden kept a quiet vigil while you were away.'**
+  String get gardenWelcomeBack;
+
+  /// No description provided for @gardenRevived.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back — the vine drank deep of your presence.'**
+  String get gardenRevived;
+
+  /// No description provided for @vineSound.
+  ///
+  /// In en, this message translates to:
+  /// **'Vine chime'**
+  String get vineSound;
+
+  /// No description provided for @vineSoundSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A soft tone when the vine responds — off by default.'**
+  String get vineSoundSubtitle;
 }
 
 class _AppLocalizationsDelegate

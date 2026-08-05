@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
@@ -125,57 +126,63 @@ class VinePalette {
   );
 }
 
-/// Paints the living vine. Ripening is visual only: [fruitColor] is expected to
-/// be ramped from green to gold by the caller as the journey grows.
-class VinePainter extends CustomPainter {
-  final int seed;
-  final double growth01;
-  final int branches;
-  final int fruitCount;
-  final Color fruitColor;
-  final double sway;
-  final VinePalette palette;
-  final bool showBlossoms;
-  final double hydration;
-  final double leafGlow;
-  final double branchOpen;
-  final double ripen;
-  final double droop;
-  final double blossomOpen;
+/// The static skeleton (soil + trunk + branches) is cached as a [ui.Picture]
+/// so per-frame painting only replays the recorded canvas and draws the small
+/// living parts (leaves, fruits, dew) — cheap for low-end devices.
+class _SkeletonCache {
+  static final Map<_SkeletonKey, ui.Picture> _cache = {};
+  static const int _max = 10;
 
-  const VinePainter({
-    required this.seed,
-    required this.growth01,
-    required this.branches,
-    required this.fruitCount,
-    required this.fruitColor,
-    required this.palette,
-    this.sway = 0,
-    this.showBlossoms = false,
-    this.hydration = 1,
-    this.leafGlow = 1,
-    this.branchOpen = 1,
-    this.ripen = 0,
-    this.droop = 0,
-    this.blossomOpen = 1,
-  });
+  static ui.Picture pictureFor({
+    required int seed,
+    required double growth01,
+    required int branches,
+    required Size size,
+    required VinePalette palette,
+    required double branchOpen,
+  }) {
+    final key = _SkeletonKey(
+      seed: seed,
+      growth: (growth01 * 100).roundToDouble() / 100,
+      branches: branches,
+      width: size.width,
+      height: size.height,
+      paletteHash: palette.hashCode,
+      branchOpenBucket: (branchOpen * 100).round(),
+    );
+    final cached = _cache[key];
+    if (cached != null) return cached;
 
-  @override
-  void paint(Canvas canvas, Size size) {
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    _drawSkeleton(canvas, size, palette, branchOpen, seed, growth01, branches);
+    final picture = recorder.endRecording();
+    _cache[key] = picture;
+    if (_cache.length > _max) {
+      _cache.remove(_cache.keys.first);
+    }
+    return picture;
+  }
+
+  static void _drawSkeleton(
+    Canvas canvas,
+    Size size,
+    VinePalette palette,
+    double branchOpen,
+    int seed,
+    double growth01,
+    int branches,
+  ) {
     final geometry = buildVine(
       seed: seed,
       growth01: growth01,
       branches: branches,
       size: size,
-      sway: sway,
     );
-
-    _paintSoil(canvas, size);
-
+    _paintSoil(canvas, size, palette, branchOpen);
     final branchPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
-
     for (final seg in geometry.segments) {
       final t = (seg.depth / 4).clamp(0.0, 1.0);
       final color = Color.lerp(palette.trunk, palette.branch, t)!;
@@ -183,14 +190,10 @@ class VinePainter extends CustomPainter {
       branchPaint.strokeWidth = seg.width * (1 - t * 0.55) * (0.92 + branchOpen * 0.16);
       canvas.drawLine(seg.from, seg.to, branchPaint);
     }
-
-    _paintLeaves(canvas, geometry.tips);
-    _paintOpenArms(canvas, size);
-    if (showBlossoms) _paintBlossoms(canvas, geometry.tips);
-    _paintFruits(canvas, geometry.tips);
+    _paintOpenArms(canvas, size, palette, branchOpen);
   }
 
-  void _paintSoil(Canvas canvas, Size size) {
+  static void _paintSoil(Canvas canvas, Size size, VinePalette palette, double hydration) {
     final soilY = size.height * 0.9;
     final cx = size.width / 2;
     final w = size.width * 0.72;
@@ -234,7 +237,7 @@ class VinePainter extends CustomPainter {
 
   /// Fellowship opens the vine outward: two gentle arms reach from the canopy
   /// when a connection is made. A structural change, not a tint.
-  void _paintOpenArms(Canvas canvas, Size size) {
+  static void _paintOpenArms(Canvas canvas, Size size, VinePalette palette, double branchOpen) {
     final open = (branchOpen - 0.5).clamp(0.0, 1.0);
     if (open <= 0) return;
     final cx = size.width / 2;
@@ -255,19 +258,137 @@ class VinePainter extends CustomPainter {
       paint,
     );
   }
+}
+
+class _SkeletonKey {
+  final int seed;
+  final double growth;
+  final int branches;
+  final double width;
+  final double height;
+  final int paletteHash;
+  final int branchOpenBucket;
+
+  const _SkeletonKey({
+    required this.seed,
+    required this.growth,
+    required this.branches,
+    required this.width,
+    required this.height,
+    required this.paletteHash,
+    required this.branchOpenBucket,
+  });
+
+  @override
+  bool operator ==(Object other) =>
+      other is _SkeletonKey &&
+      other.seed == seed &&
+      other.growth == growth &&
+      other.branches == branches &&
+      other.width == width &&
+      other.height == height &&
+      other.paletteHash == paletteHash &&
+      other.branchOpenBucket == branchOpenBucket;
+
+  @override
+  int get hashCode =>
+      Object.hash(seed, growth, branches, width, height, paletteHash, branchOpenBucket);
+}
+
+/// Paints the living vine. Ripening is visual only: [fruitColor] is expected to
+/// be ramped from green to gold by the caller as the journey grows. [bend] is a
+/// horizontal shear (bottom pinned at the soil) so physical spring gestures and
+/// the perpetual sway move the whole canopy without rebuilding the skeleton.
+class VinePainter extends CustomPainter {
+  final int seed;
+  final double growth01;
+  final int branches;
+  final int fruitCount;
+  final Color fruitColor;
+  final double sway;
+  final VinePalette palette;
+  final bool showBlossoms;
+  final double hydration;
+  final double leafGlow;
+  final double branchOpen;
+  final double ripen;
+  final double droop;
+  final double blossomOpen;
+  final double bend;
+  final double lifeT;
+  final double flutterAmt;
+  final double dew;
+  final double wilt;
+
+  const VinePainter({
+    required this.seed,
+    required this.growth01,
+    required this.branches,
+    required this.fruitCount,
+    required this.fruitColor,
+    required this.palette,
+    this.sway = 0,
+    this.showBlossoms = false,
+    this.hydration = 1,
+    this.leafGlow = 1,
+    this.branchOpen = 1,
+    this.ripen = 0,
+    this.droop = 0,
+    this.blossomOpen = 1,
+    this.bend = 0,
+    this.lifeT = 0,
+    this.flutterAmt = 1,
+    this.dew = 0,
+    this.wilt = 0,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final geometry = buildVine(
+      seed: seed,
+      growth01: growth01,
+      branches: branches,
+      size: size,
+    );
+
+    final skeleton = _SkeletonCache.pictureFor(
+      seed: seed,
+      growth01: growth01,
+      branches: branches,
+      size: size,
+      palette: palette,
+      branchOpen: branchOpen,
+    );
+
+    final soilY = size.height * 0.9;
+    canvas.save();
+    canvas.translate(0, soilY);
+    canvas.skew(bend, 0);
+    canvas.translate(0, -soilY);
+    canvas.drawPicture(skeleton);
+    _paintLeaves(canvas, geometry.tips);
+    if (showBlossoms) _paintBlossoms(canvas, geometry.tips);
+    _paintFruits(canvas, geometry.tips);
+    if (dew > 0.02) _paintDew(canvas, geometry.tips);
+    canvas.restore();
+  }
 
   void _paintLeaves(Canvas canvas, List<Offset> tips) {
     final tinted = Color.lerp(palette.leaf, const Color(0xFFD9F0A8), leafGlow * 0.4)!;
     final vivid = Color.lerp(palette.leaf, tinted, hydration * 0.5)!;
+    final dulled =
+        Color.lerp(vivid, Color.lerp(palette.leaf, const Color(0xFF7A6A50), 0.4)!, wilt)!;
     final paint = Paint()
-      ..color = vivid.withValues(alpha: 0.9)
+      ..color = dulled.withValues(alpha: 0.9 - wilt * 0.2)
       ..style = PaintingStyle.fill;
     for (var i = 0; i < tips.length; i++) {
       final tip = tips[i];
       final droopDir = i.isEven ? 1.0 : -1.0;
+      final flutter = math.sin(lifeT * 6 + i * 1.7) * 0.10 * flutterAmt;
+      final wiltAngle = wilt * 0.7 * droopDir;
       canvas.save();
       canvas.translate(tip.dx, tip.dy + 2);
-      canvas.rotate(droop * droopDir);
+      canvas.rotate(droop * droopDir + flutter + wiltAngle);
       final left = Path()
         ..moveTo(0, 0)
         ..quadraticBezierTo(-10, -8, -12, -16)
@@ -290,10 +411,11 @@ class VinePainter extends CustomPainter {
     final half = tips.length ~/ 2;
     for (var i = 0; i < half; i++) {
       final c = tips[i];
+      final sway = math.sin(lifeT * 5 + i * 2.1) * 0.5 * flutterAmt;
       paint.color = palette.blossom.withValues(alpha: 0.75);
-      canvas.drawCircle(c + const Offset(0, -6), 3.2 * open, paint);
+      canvas.drawCircle(c + Offset(sway, -6), 3.2 * open, paint);
       paint.color = palette.blossom;
-      canvas.drawCircle(c + const Offset(0, -6), 1.6 * open, paint);
+      canvas.drawCircle(c + Offset(sway, -6), 1.6 * open, paint);
     }
   }
 
@@ -304,14 +426,34 @@ class VinePainter extends CustomPainter {
     for (var i = 0; i < count; i++) {
       final c = tips[i];
       final radius = 5.5 * (0.8 + branchOpen * 0.4);
+      final squash = 1 + 0.12 * math.sin(lifeT * 4 + i * 2.3);
       paint.color = fruitColor;
-      canvas.drawCircle(c + const Offset(0, -8), radius, paint);
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: c + const Offset(0, -8),
+          width: radius * 2 * squash,
+          height: radius * 2 * (2 - squash),
+        ),
+        paint,
+      );
       paint.color = fruitColor.withValues(alpha: 0.5);
       canvas.drawCircle(c + Offset(-1.5, -9.5), radius * 0.45, paint);
       if (ripen > 0.4) {
         paint.color = const Color(0xFFF8E26A).withValues(alpha: (ripen - 0.4) * 0.5);
         canvas.drawCircle(c + const Offset(0, -8), radius + 4, paint);
       }
+    }
+  }
+
+  /// Dew sparkles on the leaves at dawn — little flashes of morning light.
+  void _paintDew(Canvas canvas, List<Offset> tips) {
+    final paint = Paint();
+    for (var i = 0; i < tips.length; i++) {
+      if (i % 3 != 0) continue;
+      final twinkle = math.sin(lifeT * 5 + i * 1.3);
+      if (twinkle < 0.4) continue;
+      paint.color = const Color(0xFFFFFFFF).withValues(alpha: dew * (twinkle - 0.4) * 0.9);
+      canvas.drawCircle(tips[i] + const Offset(2, -12), 1.6, paint);
     }
   }
 
@@ -330,6 +472,11 @@ class VinePainter extends CustomPainter {
         old.branchOpen != branchOpen ||
         old.ripen != ripen ||
         old.droop != droop ||
-        old.blossomOpen != blossomOpen;
+        old.blossomOpen != blossomOpen ||
+        old.bend != bend ||
+        old.lifeT != lifeT ||
+        old.flutterAmt != flutterAmt ||
+        old.dew != dew ||
+        old.wilt != wilt;
   }
 }

@@ -8498,6 +8498,453 @@ class ReadingSessionsCompanion extends UpdateCompanion<ReadingSession> {
   }
 }
 
+class $VineDayTable extends VineDay with TableInfo<$VineDayTable, VineDayData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $VineDayTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _dateMeta = const VerificationMeta('date');
+  @override
+  late final GeneratedColumn<String> date = GeneratedColumn<String>(
+    'date',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _prayerAtMeta = const VerificationMeta(
+    'prayerAt',
+  );
+  @override
+  late final GeneratedColumn<String> prayerAt = GeneratedColumn<String>(
+    'prayer_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _readingAtMeta = const VerificationMeta(
+    'readingAt',
+  );
+  @override
+  late final GeneratedColumn<String> readingAt = GeneratedColumn<String>(
+    'reading_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _fellowshipAtMeta = const VerificationMeta(
+    'fellowshipAt',
+  );
+  @override
+  late final GeneratedColumn<String> fellowshipAt = GeneratedColumn<String>(
+    'fellowship_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _lastVisitAtMeta = const VerificationMeta(
+    'lastVisitAt',
+  );
+  @override
+  late final GeneratedColumn<String> lastVisitAt = GeneratedColumn<String>(
+    'last_visit_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _momentsPlayedMeta = const VerificationMeta(
+    'momentsPlayed',
+  );
+  @override
+  late final GeneratedColumn<int> momentsPlayed = GeneratedColumn<int>(
+    'moments_played',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    date,
+    prayerAt,
+    readingAt,
+    fellowshipAt,
+    lastVisitAt,
+    momentsPlayed,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'vine_day';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<VineDayData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('date')) {
+      context.handle(
+        _dateMeta,
+        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dateMeta);
+    }
+    if (data.containsKey('prayer_at')) {
+      context.handle(
+        _prayerAtMeta,
+        prayerAt.isAcceptableOrUnknown(data['prayer_at']!, _prayerAtMeta),
+      );
+    }
+    if (data.containsKey('reading_at')) {
+      context.handle(
+        _readingAtMeta,
+        readingAt.isAcceptableOrUnknown(data['reading_at']!, _readingAtMeta),
+      );
+    }
+    if (data.containsKey('fellowship_at')) {
+      context.handle(
+        _fellowshipAtMeta,
+        fellowshipAt.isAcceptableOrUnknown(
+          data['fellowship_at']!,
+          _fellowshipAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('last_visit_at')) {
+      context.handle(
+        _lastVisitAtMeta,
+        lastVisitAt.isAcceptableOrUnknown(
+          data['last_visit_at']!,
+          _lastVisitAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('moments_played')) {
+      context.handle(
+        _momentsPlayedMeta,
+        momentsPlayed.isAcceptableOrUnknown(
+          data['moments_played']!,
+          _momentsPlayedMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {date};
+  @override
+  VineDayData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return VineDayData(
+      date: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}date'],
+      )!,
+      prayerAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}prayer_at'],
+      ),
+      readingAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reading_at'],
+      ),
+      fellowshipAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}fellowship_at'],
+      ),
+      lastVisitAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}last_visit_at'],
+      ),
+      momentsPlayed: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}moments_played'],
+      )!,
+    );
+  }
+
+  @override
+  $VineDayTable createAlias(String alias) {
+    return $VineDayTable(attachedDatabase, alias);
+  }
+}
+
+class VineDayData extends DataClass implements Insertable<VineDayData> {
+  /// Calendar day, YYYY-MM-DD.
+  final String date;
+
+  /// The moment the user prayed — water for the vine.
+  final String? prayerAt;
+
+  /// The moment the user last opened the Word — light for the leaves.
+  final String? readingAt;
+
+  /// The moment the user reached out in fellowship — warmth for the branches.
+  final String? fellowshipAt;
+
+  /// The last time the Growth Zone was opened. Presence, not merit — this is
+  /// what lets the garden feel missing the user and rejoice on return.
+  final String? lastVisitAt;
+
+  /// How many transcendence moments were played that day.
+  final int momentsPlayed;
+  const VineDayData({
+    required this.date,
+    this.prayerAt,
+    this.readingAt,
+    this.fellowshipAt,
+    this.lastVisitAt,
+    required this.momentsPlayed,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['date'] = Variable<String>(date);
+    if (!nullToAbsent || prayerAt != null) {
+      map['prayer_at'] = Variable<String>(prayerAt);
+    }
+    if (!nullToAbsent || readingAt != null) {
+      map['reading_at'] = Variable<String>(readingAt);
+    }
+    if (!nullToAbsent || fellowshipAt != null) {
+      map['fellowship_at'] = Variable<String>(fellowshipAt);
+    }
+    if (!nullToAbsent || lastVisitAt != null) {
+      map['last_visit_at'] = Variable<String>(lastVisitAt);
+    }
+    map['moments_played'] = Variable<int>(momentsPlayed);
+    return map;
+  }
+
+  VineDayCompanion toCompanion(bool nullToAbsent) {
+    return VineDayCompanion(
+      date: Value(date),
+      prayerAt: prayerAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(prayerAt),
+      readingAt: readingAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(readingAt),
+      fellowshipAt: fellowshipAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(fellowshipAt),
+      lastVisitAt: lastVisitAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastVisitAt),
+      momentsPlayed: Value(momentsPlayed),
+    );
+  }
+
+  factory VineDayData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return VineDayData(
+      date: serializer.fromJson<String>(json['date']),
+      prayerAt: serializer.fromJson<String?>(json['prayerAt']),
+      readingAt: serializer.fromJson<String?>(json['readingAt']),
+      fellowshipAt: serializer.fromJson<String?>(json['fellowshipAt']),
+      lastVisitAt: serializer.fromJson<String?>(json['lastVisitAt']),
+      momentsPlayed: serializer.fromJson<int>(json['momentsPlayed']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'date': serializer.toJson<String>(date),
+      'prayerAt': serializer.toJson<String?>(prayerAt),
+      'readingAt': serializer.toJson<String?>(readingAt),
+      'fellowshipAt': serializer.toJson<String?>(fellowshipAt),
+      'lastVisitAt': serializer.toJson<String?>(lastVisitAt),
+      'momentsPlayed': serializer.toJson<int>(momentsPlayed),
+    };
+  }
+
+  VineDayData copyWith({
+    String? date,
+    Value<String?> prayerAt = const Value.absent(),
+    Value<String?> readingAt = const Value.absent(),
+    Value<String?> fellowshipAt = const Value.absent(),
+    Value<String?> lastVisitAt = const Value.absent(),
+    int? momentsPlayed,
+  }) => VineDayData(
+    date: date ?? this.date,
+    prayerAt: prayerAt.present ? prayerAt.value : this.prayerAt,
+    readingAt: readingAt.present ? readingAt.value : this.readingAt,
+    fellowshipAt: fellowshipAt.present ? fellowshipAt.value : this.fellowshipAt,
+    lastVisitAt: lastVisitAt.present ? lastVisitAt.value : this.lastVisitAt,
+    momentsPlayed: momentsPlayed ?? this.momentsPlayed,
+  );
+  VineDayData copyWithCompanion(VineDayCompanion data) {
+    return VineDayData(
+      date: data.date.present ? data.date.value : this.date,
+      prayerAt: data.prayerAt.present ? data.prayerAt.value : this.prayerAt,
+      readingAt: data.readingAt.present ? data.readingAt.value : this.readingAt,
+      fellowshipAt: data.fellowshipAt.present
+          ? data.fellowshipAt.value
+          : this.fellowshipAt,
+      lastVisitAt: data.lastVisitAt.present
+          ? data.lastVisitAt.value
+          : this.lastVisitAt,
+      momentsPlayed: data.momentsPlayed.present
+          ? data.momentsPlayed.value
+          : this.momentsPlayed,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('VineDayData(')
+          ..write('date: $date, ')
+          ..write('prayerAt: $prayerAt, ')
+          ..write('readingAt: $readingAt, ')
+          ..write('fellowshipAt: $fellowshipAt, ')
+          ..write('lastVisitAt: $lastVisitAt, ')
+          ..write('momentsPlayed: $momentsPlayed')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    date,
+    prayerAt,
+    readingAt,
+    fellowshipAt,
+    lastVisitAt,
+    momentsPlayed,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is VineDayData &&
+          other.date == this.date &&
+          other.prayerAt == this.prayerAt &&
+          other.readingAt == this.readingAt &&
+          other.fellowshipAt == this.fellowshipAt &&
+          other.lastVisitAt == this.lastVisitAt &&
+          other.momentsPlayed == this.momentsPlayed);
+}
+
+class VineDayCompanion extends UpdateCompanion<VineDayData> {
+  final Value<String> date;
+  final Value<String?> prayerAt;
+  final Value<String?> readingAt;
+  final Value<String?> fellowshipAt;
+  final Value<String?> lastVisitAt;
+  final Value<int> momentsPlayed;
+  final Value<int> rowid;
+  const VineDayCompanion({
+    this.date = const Value.absent(),
+    this.prayerAt = const Value.absent(),
+    this.readingAt = const Value.absent(),
+    this.fellowshipAt = const Value.absent(),
+    this.lastVisitAt = const Value.absent(),
+    this.momentsPlayed = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  VineDayCompanion.insert({
+    required String date,
+    this.prayerAt = const Value.absent(),
+    this.readingAt = const Value.absent(),
+    this.fellowshipAt = const Value.absent(),
+    this.lastVisitAt = const Value.absent(),
+    this.momentsPlayed = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : date = Value(date);
+  static Insertable<VineDayData> custom({
+    Expression<String>? date,
+    Expression<String>? prayerAt,
+    Expression<String>? readingAt,
+    Expression<String>? fellowshipAt,
+    Expression<String>? lastVisitAt,
+    Expression<int>? momentsPlayed,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (date != null) 'date': date,
+      if (prayerAt != null) 'prayer_at': prayerAt,
+      if (readingAt != null) 'reading_at': readingAt,
+      if (fellowshipAt != null) 'fellowship_at': fellowshipAt,
+      if (lastVisitAt != null) 'last_visit_at': lastVisitAt,
+      if (momentsPlayed != null) 'moments_played': momentsPlayed,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  VineDayCompanion copyWith({
+    Value<String>? date,
+    Value<String?>? prayerAt,
+    Value<String?>? readingAt,
+    Value<String?>? fellowshipAt,
+    Value<String?>? lastVisitAt,
+    Value<int>? momentsPlayed,
+    Value<int>? rowid,
+  }) {
+    return VineDayCompanion(
+      date: date ?? this.date,
+      prayerAt: prayerAt ?? this.prayerAt,
+      readingAt: readingAt ?? this.readingAt,
+      fellowshipAt: fellowshipAt ?? this.fellowshipAt,
+      lastVisitAt: lastVisitAt ?? this.lastVisitAt,
+      momentsPlayed: momentsPlayed ?? this.momentsPlayed,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (date.present) {
+      map['date'] = Variable<String>(date.value);
+    }
+    if (prayerAt.present) {
+      map['prayer_at'] = Variable<String>(prayerAt.value);
+    }
+    if (readingAt.present) {
+      map['reading_at'] = Variable<String>(readingAt.value);
+    }
+    if (fellowshipAt.present) {
+      map['fellowship_at'] = Variable<String>(fellowshipAt.value);
+    }
+    if (lastVisitAt.present) {
+      map['last_visit_at'] = Variable<String>(lastVisitAt.value);
+    }
+    if (momentsPlayed.present) {
+      map['moments_played'] = Variable<int>(momentsPlayed.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('VineDayCompanion(')
+          ..write('date: $date, ')
+          ..write('prayerAt: $prayerAt, ')
+          ..write('readingAt: $readingAt, ')
+          ..write('fellowshipAt: $fellowshipAt, ')
+          ..write('lastVisitAt: $lastVisitAt, ')
+          ..write('momentsPlayed: $momentsPlayed, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -8527,6 +8974,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ReadingSessionsTable readingSessions = $ReadingSessionsTable(
     this,
   );
+  late final $VineDayTable vineDay = $VineDayTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -8553,6 +9001,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     journalEntry,
     growthJourney,
     readingSessions,
+    vineDay,
   ];
 }
 
@@ -13810,6 +14259,228 @@ typedef $$ReadingSessionsTableProcessedTableManager =
       ReadingSession,
       PrefetchHooks Function()
     >;
+typedef $$VineDayTableCreateCompanionBuilder =
+    VineDayCompanion Function({
+      required String date,
+      Value<String?> prayerAt,
+      Value<String?> readingAt,
+      Value<String?> fellowshipAt,
+      Value<String?> lastVisitAt,
+      Value<int> momentsPlayed,
+      Value<int> rowid,
+    });
+typedef $$VineDayTableUpdateCompanionBuilder =
+    VineDayCompanion Function({
+      Value<String> date,
+      Value<String?> prayerAt,
+      Value<String?> readingAt,
+      Value<String?> fellowshipAt,
+      Value<String?> lastVisitAt,
+      Value<int> momentsPlayed,
+      Value<int> rowid,
+    });
+
+class $$VineDayTableFilterComposer
+    extends Composer<_$AppDatabase, $VineDayTable> {
+  $$VineDayTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get prayerAt => $composableBuilder(
+    column: $table.prayerAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get readingAt => $composableBuilder(
+    column: $table.readingAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get fellowshipAt => $composableBuilder(
+    column: $table.fellowshipAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get lastVisitAt => $composableBuilder(
+    column: $table.lastVisitAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get momentsPlayed => $composableBuilder(
+    column: $table.momentsPlayed,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$VineDayTableOrderingComposer
+    extends Composer<_$AppDatabase, $VineDayTable> {
+  $$VineDayTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get prayerAt => $composableBuilder(
+    column: $table.prayerAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get readingAt => $composableBuilder(
+    column: $table.readingAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get fellowshipAt => $composableBuilder(
+    column: $table.fellowshipAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get lastVisitAt => $composableBuilder(
+    column: $table.lastVisitAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get momentsPlayed => $composableBuilder(
+    column: $table.momentsPlayed,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$VineDayTableAnnotationComposer
+    extends Composer<_$AppDatabase, $VineDayTable> {
+  $$VineDayTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<String> get prayerAt =>
+      $composableBuilder(column: $table.prayerAt, builder: (column) => column);
+
+  GeneratedColumn<String> get readingAt =>
+      $composableBuilder(column: $table.readingAt, builder: (column) => column);
+
+  GeneratedColumn<String> get fellowshipAt => $composableBuilder(
+    column: $table.fellowshipAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get lastVisitAt => $composableBuilder(
+    column: $table.lastVisitAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get momentsPlayed => $composableBuilder(
+    column: $table.momentsPlayed,
+    builder: (column) => column,
+  );
+}
+
+class $$VineDayTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $VineDayTable,
+          VineDayData,
+          $$VineDayTableFilterComposer,
+          $$VineDayTableOrderingComposer,
+          $$VineDayTableAnnotationComposer,
+          $$VineDayTableCreateCompanionBuilder,
+          $$VineDayTableUpdateCompanionBuilder,
+          (
+            VineDayData,
+            BaseReferences<_$AppDatabase, $VineDayTable, VineDayData>,
+          ),
+          VineDayData,
+          PrefetchHooks Function()
+        > {
+  $$VineDayTableTableManager(_$AppDatabase db, $VineDayTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$VineDayTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$VineDayTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$VineDayTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> date = const Value.absent(),
+                Value<String?> prayerAt = const Value.absent(),
+                Value<String?> readingAt = const Value.absent(),
+                Value<String?> fellowshipAt = const Value.absent(),
+                Value<String?> lastVisitAt = const Value.absent(),
+                Value<int> momentsPlayed = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => VineDayCompanion(
+                date: date,
+                prayerAt: prayerAt,
+                readingAt: readingAt,
+                fellowshipAt: fellowshipAt,
+                lastVisitAt: lastVisitAt,
+                momentsPlayed: momentsPlayed,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String date,
+                Value<String?> prayerAt = const Value.absent(),
+                Value<String?> readingAt = const Value.absent(),
+                Value<String?> fellowshipAt = const Value.absent(),
+                Value<String?> lastVisitAt = const Value.absent(),
+                Value<int> momentsPlayed = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => VineDayCompanion.insert(
+                date: date,
+                prayerAt: prayerAt,
+                readingAt: readingAt,
+                fellowshipAt: fellowshipAt,
+                lastVisitAt: lastVisitAt,
+                momentsPlayed: momentsPlayed,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$VineDayTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $VineDayTable,
+      VineDayData,
+      $$VineDayTableFilterComposer,
+      $$VineDayTableOrderingComposer,
+      $$VineDayTableAnnotationComposer,
+      $$VineDayTableCreateCompanionBuilder,
+      $$VineDayTableUpdateCompanionBuilder,
+      (VineDayData, BaseReferences<_$AppDatabase, $VineDayTable, VineDayData>),
+      VineDayData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -13856,4 +14527,6 @@ class $AppDatabaseManager {
       $$GrowthJourneyTableTableManager(_db, _db.growthJourney);
   $$ReadingSessionsTableTableManager get readingSessions =>
       $$ReadingSessionsTableTableManager(_db, _db.readingSessions);
+  $$VineDayTableTableManager get vineDay =>
+      $$VineDayTableTableManager(_db, _db.vineDay);
 }

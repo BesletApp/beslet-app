@@ -10,6 +10,7 @@ import '../../core/providers/prayer_provider.dart';
 import '../../core/services/prayer_reminder_service.dart';
 import '../../core/services/prayer_alarm_sound_service.dart';
 import '../../core/services/scene_event_bus.dart';
+import '../growth/widgets/mini_vine.dart';
 import '../../l10n/app_localizations.dart';
 
 class PrayerScreen extends ConsumerStatefulWidget {
@@ -294,6 +295,12 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(children: [
+          MiniVine(
+            seed: 901,
+            emphasis: MiniVineEmphasis.water,
+            eventSource: ref.read(sceneEventBusProvider),
+          ),
+          const SizedBox(height: 20),
           _buildPrayerCard(todayLog, l),
           const SizedBox(height: 20),
           _buildWeekDots(weekDays, l),

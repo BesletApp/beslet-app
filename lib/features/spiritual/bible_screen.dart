@@ -12,6 +12,7 @@ import '../../core/providers/scripture_provider.dart';
 import '../../core/providers/reading_preferences_provider.dart';
 import '../../core/providers/growth_streams_provider.dart';
 import '../../core/services/scene_event_bus.dart';
+import '../growth/widgets/mini_vine.dart';
 import 'widgets/audio_player_bar.dart';
 import 'widgets/verse_list_view.dart';
 import 'widgets/chapter_picker.dart';
@@ -214,6 +215,12 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
       ),
       body: Column(
         children: [
+          MiniVine(
+            seed: 902,
+            emphasis: MiniVineEmphasis.light,
+            eventSource: ref.read(sceneEventBusProvider),
+            height: 68,
+          ),
           AudioPlayerBar(
             isAm: _isAm,
             bookId: parsed?.bookId,

@@ -7,6 +7,7 @@ import '../../core/database/app_database.dart';
 import '../../core/providers/habits_provider.dart';
 import '../../core/providers/tracking_provider.dart';
 import '../../core/services/scene_event_bus.dart';
+import '../growth/widgets/mini_vine.dart';
 
 final _habitCategories = [
   {'name': 'Spiritual', 'icon': '🙏'},
@@ -55,13 +56,20 @@ class HabitsScreen extends ConsumerWidget {
             onRefresh: () async { ref.invalidate(habitsWithCompletionsProvider); ref.invalidate(trackingDataProvider); },
             child: ListView.separated(
             padding: const EdgeInsets.all(20),
-            itemCount: habits.length + 1,
+            itemCount: habits.length + 2,
             separatorBuilder: (_, __) => const SizedBox(height: 8),
             itemBuilder: (context, index) {
               if (index == 0) {
+                return MiniVine(
+                  seed: 904,
+                  emphasis: MiniVineEmphasis.diligence,
+                  eventSource: ref.read(sceneEventBusProvider),
+                );
+              }
+              if (index == 1) {
                 return _buildStreakHeader(trackingAsync, c);
               }
-              final item = habits[index - 1];
+              final item = habits[index - 2];
               final habit = item['habit'] as Habit;
               final completed = item['completed'] as bool;
               return _buildHabitTile(context, ref, habit, completed);

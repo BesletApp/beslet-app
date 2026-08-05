@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/database/app_database.dart';
 import '../../core/providers/growth_provider.dart';
@@ -9,6 +10,7 @@ import '../../core/providers/growth_streams_provider.dart';
 import '../../core/providers/journal_provider.dart';
 import '../../core/providers/soul_log_provider.dart';
 import '../../core/providers/streak_provider.dart';
+import '../../core/providers/vine_life_provider.dart';
 import '../../core/services/growth_content.dart';
 import '../../core/services/scene_event_bus.dart';
 import '../../core/services/vineyard_reminder_service.dart';
@@ -31,6 +33,7 @@ import 'widgets/stage_path.dart';
 import 'widgets/streak_flame.dart';
 import 'widgets/weather_card.dart';
 import 'widgets/week_bars.dart';
+import 'widgets/scene_moment.dart';
 import 'widgets/vineyard_scene.dart';
 
 class GrowthScreen extends ConsumerWidget {
@@ -148,15 +151,106 @@ class _LivingVineyardState extends ConsumerState<_LivingVineyard> {
   /// Guards the delayed recap replay so it dies if the screen is left.
   int? _recapToken;
 
+  /// Whether the garden is celebrating a return after absence.
+  bool _revived = false;
+  int? _revivalToken;
+
+  /// Transcendence moments the garden may earn.
+  late final SceneMomentController _moment = SceneMomentController();
+  bool _lampFlared = false;
+  JourneyMovement? _lastMovement;
+
   @override
   void initState() {
     super.initState();
     _scheduleRecap();
+    _stampVisit();
+    _checkAbsence();
+    _maybeDawnGrace();
+  }
+
+  /// The garden remembers the user was here — presence, not merit. This is
+  /// the thread that lets it feel missed and rejoice on return.
+  void _stampVisit() {
+    try {
+      ref.read(vineLifeWriterProvider).touchLastVisit();
+    } catch (_) {}
+  }
+
+  /// After an absence, the garden rejoices on return: the vine drinks deep of
+  /// the user's presence and then settles back into its quiet vigil.
+  void _checkAbsence() {
+    ref.read(vineLifeProvider.future).then((state) {
+      if (!mounted || state.daysMissed <= 0) return;
+      final token = DateTime.now().microsecondsSinceEpoch;
+      _revivalToken = token;
+      setState(() => _revived = true);
+      Future.delayed(const Duration(milliseconds: 4200), () {
+        if (!mounted || _revivalToken != token) return;
+        setState(() => _revived = false);
+      });
+    }).catchError((_) {});
+  }
+
+  /// Plays a transcendence moment just after the frame (so the scene can
+  /// listen) and counts it in the garden's memory.
+  void _scheduleMoment(SceneMomentKind kind) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _moment.play(kind);
+      try {
+        ref.read(vineLifeWriterProvider).recordMoment();
+      } catch (_) {}
+    });
+  }
+
+  /// The first morning visit of the day is greeted with a dawn of grace — but
+  /// only once, gently, so it never becomes routine noise.
+  Future<void> _maybeDawnGrace() async {
+    final hour = DateTime.now().hour;
+    if (hour < 5 || hour >= 9) return;
+    final d = DateTime.now();
+    final today =
+        '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (prefs.getString('vineMomentDawn') == today) return;
+      await prefs.setString('vineMomentDawn', today);
+      if (!mounted) return;
+      Future.delayed(const Duration(milliseconds: 1100), () {
+        if (!mounted) return;
+        _scheduleMoment(SceneMomentKind.dawnGrace);
+      });
+    } catch (_) {}
+  }
+
+  /// When the Word's light climbs high, the lamp flares once in thanks.
+  void _maybeLampFlare(double light) {
+    if (light > 0.75 && !_lampFlared) {
+      _lampFlared = true;
+      _scheduleMoment(SceneMomentKind.lampFlare);
+    } else if (light <= 0.75) {
+      _lampFlared = false;
+    }
+  }
+
+  /// When the movement of the journey turns, the garden remembers the season.
+  void _maybeSeasonTurn(JourneyMovement movement) {
+    if (_lastMovement == null) {
+      _lastMovement = movement;
+      return;
+    }
+    if (_lastMovement != movement) {
+      _lastMovement = movement;
+      _scheduleMoment(SceneMomentKind.seasonTurn);
+    }
   }
 
   @override
   void dispose() {
     _recapToken = null;
+    _revivalToken = null;
+    _moment.dispose();
     super.dispose();
   }
 
@@ -215,6 +309,10 @@ class _LivingVineyardState extends ConsumerState<_LivingVineyard> {
     final week = ref.watch(weekLivingProvider).valueOrNull ?? const <int>[];
     final tourSeen = ref.watch(growthTourProvider);
     final showTour = tourSeen.valueOrNull == false;
+    final vineState = ref.watch(vineLifeProvider).valueOrNull;
+
+    _maybeLampFlare(vineState?.light ?? 0);
+    _maybeSeasonTurn(movement);
 
     final seed = journey.id.hashCode;
     final fruitColor = Color.lerp(const Color(0xFF7FB36A), const Color(0xFFE8C53A), geometry.growth01)!;
@@ -251,6 +349,8 @@ class _LivingVineyardState extends ConsumerState<_LivingVineyard> {
                 branchOpen: vitality.branchOpen01,
                 ripen: vitality.ripen01,
                 eventSource: eventSource,
+                revival: _revived,
+                momentController: _moment,
                 onFruitTap: fruits.isEmpty
                     ? null
                     : (i) {
@@ -358,7 +458,57 @@ class _LivingVineyardState extends ConsumerState<_LivingVineyard> {
             messages: [l.tourVine, l.tourGrows, l.tourMood],
             onDone: () => ref.read(growthTourProvider.notifier).markSeen(),
           ),
+        if (_revived)
+          _WelcomeBackPill(
+            message: l.gardenWelcomeBack,
+          ),
       ],
+    );
+  }
+}
+
+/// A quiet word on returning after absence: the garden kept a vigil and is
+/// glad to see the user again. Never a guilt trip — just warmth.
+class _WelcomeBackPill extends StatelessWidget {
+  final String message;
+
+  const _WelcomeBackPill({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = AppColors.of(context);
+    final t = AppTextStyles.of(context);
+    return Positioned(
+      left: AppSpacing.md,
+      right: AppSpacing.md,
+      top: AppSpacing.md,
+      child: SafeArea(
+        bottom: false,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 10),
+          decoration: BoxDecoration(
+            color: c.primary.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: c.primary.withValues(alpha: 0.35)),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.wb_twilight, size: 18, color: Color(0xFFE8C53A)),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(
+                  message,
+                  style: t.bodySmall.copyWith(
+                    color: c.textPrimary,
+                    fontWeight: FontWeight.w600,
+                    height: 1.35,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

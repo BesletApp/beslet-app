@@ -675,4 +675,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tourMood => 'How is your heart today? Look below.';
+
+  @override
+  String get gardenWelcomeBack =>
+      'The garden kept a quiet vigil while you were away.';
+
+  @override
+  String get gardenRevived =>
+      'Welcome back — the vine drank deep of your presence.';
+
+  @override
+  String get vineSound => 'Vine chime';
+
+  @override
+  String get vineSoundSubtitle =>
+      'A soft tone when the vine responds — off by default.';
 }

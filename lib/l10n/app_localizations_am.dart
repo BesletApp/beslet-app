@@ -671,4 +671,16 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get tourMood => 'ዛሬ ልብህ እንዴት ነው? ከታች ተመልከት';
+
+  @override
+  String get gardenWelcomeBack => 'ራቅክ/ራቅሽ ስትሆን አትክልቱ በፀጥታ ጠብቆህ/ሽ ነበር።';
+
+  @override
+  String get gardenRevived => 'እንኳን ደህና ተመለስክ/ሽ — ወይኑ መገኘትህን/ሽን ውሃ አድርጎ ጠጣ።';
+
+  @override
+  String get vineSound => 'የወይን ድምፅ';
+
+  @override
+  String get vineSoundSubtitle => 'ወይኑ ምላሽ ሲሰጥ የሚሰማ ገር ድምፅ — በነባሪ ጠፍቷል።';
 }

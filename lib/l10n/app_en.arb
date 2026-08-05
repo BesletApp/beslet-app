@@ -208,5 +208,9 @@
   "freezeChip": "grace-carry",
   "tourVine": "This is your vine.",
   "tourGrows": "It grows as you live — quietly, on God's clock.",
-  "tourMood": "How is your heart today? Look below."
+  "tourMood": "How is your heart today? Look below.",
+  "gardenWelcomeBack": "The garden kept a quiet vigil while you were away.",
+  "gardenRevived": "Welcome back — the vine drank deep of your presence.",
+  "vineSound": "Vine chime",
+  "vineSoundSubtitle": "A soft tone when the vine responds — off by default."
 }

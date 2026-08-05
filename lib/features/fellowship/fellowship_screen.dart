@@ -7,6 +7,7 @@ import '../../core/theme/app_text_styles.dart';
 import '../../core/database/app_database.dart';
 import '../../core/providers/fellowship_provider.dart';
 import '../../core/services/scene_event_bus.dart';
+import '../growth/widgets/mini_vine.dart';
 
 class _Prompt {
   final String emoji;
@@ -88,6 +89,12 @@ class FellowshipScreen extends ConsumerWidget {
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(20),
           child: Column(children: [
+            MiniVine(
+              seed: 903,
+              emphasis: MiniVineEmphasis.warmth,
+              eventSource: ref.read(sceneEventBusProvider),
+            ),
+            const SizedBox(height: 16),
             _buildMissionCard(context, prompt, todayLog, ref, isAm, c),
             const SizedBox(height: 24),
             _buildWeeklyCount(weeklyCountAsync.valueOrNull ?? 0, c, isAm),
