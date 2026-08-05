@@ -3,70 +3,37 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
-import 'vine_painter.dart' show buildVine, VineGeometry, VinePalette;
+import 'vine_painter.dart' show buildVine, VineGeometry;
+import 'vine_visual_state.dart' show VineVisualState;
 
 /// Pixar-style renderer for the Growth Zone vine: tapered curvy branches with
 /// toon shading, a layered cel-shaded canopy, detailed leaves, glossy fruits,
 /// and five-petal blossoms. Light comes from the top-left, coherent with the
-/// backdrop. Reuses [buildVine] geometry so fruit taps stay aligned.
+/// backdrop.
+///
+/// The painter is a pure function of a [VineVisualState]: it consumes the
+/// [VineVisualState.geometry] (rest, or the rig's posed geometry for living
+/// movement) and the channel values, and draws. It never decides *how* the
+/// vine behaves — that belongs to the scene and the rig.
 class MovieVinePainter extends CustomPainter {
-  final int seed;
-  final double growth01;
-  final int branches;
-  final int fruitCount;
-  final Color fruitColor;
-  final VinePalette palette;
-  final double sway;
-  final bool showBlossoms;
-  final double hydration;
-  final double leafGlow;
-  final double branchOpen;
-  final double ripen;
-  final double droop;
-  final double blossomOpen;
-  final double bend;
-  final double lifeT;
-  final double flutterAmt;
-  final double dew;
-  final double wilt;
-  final double fullness;
+  final VineVisualState state;
 
-  const MovieVinePainter({
-    required this.seed,
-    required this.growth01,
-    required this.branches,
-    required this.fruitCount,
-    required this.fruitColor,
-    required this.palette,
-    this.sway = 0,
-    this.showBlossoms = false,
-    this.hydration = 1,
-    this.leafGlow = 1,
-    this.branchOpen = 1,
-    this.ripen = 0,
-    this.droop = 0,
-    this.blossomOpen = 1,
-    this.bend = 0,
-    this.lifeT = 0,
-    this.flutterAmt = 1,
-    this.dew = 0,
-    this.wilt = 0,
-    this.fullness = 1,
-  });
+  const MovieVinePainter({required this.state});
 
   @override
   void paint(Canvas canvas, Size size) {
-    final geometry = buildVine(
-      seed: seed,
-      growth01: growth01,
-      branches: branches,
-      size: size,
-      fullness: fullness,
-    );
+    final geometry = state.geometry ??
+        buildVine(
+          seed: state.seed,
+          growth01: state.growth01,
+          branches: state.branches,
+          size: size,
+          fullness: state.fullness,
+        );
     final soilY = size.height * 0.9;
     canvas.save();
     canvas.translate(0, soilY);
-    canvas.skew(bend, 0);
+    canvas.skew(_bend, 0);
     canvas.translate(0, -soilY);
 
     _paintSoilWet(canvas, size, soilY);
@@ -75,18 +42,26 @@ class MovieVinePainter extends CustomPainter {
     _paintBranches(canvas, geometry);
     _paintCanopyMid(canvas, canopy, size);
     _paintFrontLeaves(canvas, geometry.tips);
-    if (showBlossoms) _paintBlossoms(canvas, geometry.tips);
+    if (state.showBlossoms) _paintBlossoms(canvas, geometry.tips);
     _paintFruits(canvas, geometry.tips);
-    if (dew > 0.02) _paintDew(canvas, geometry.tips);
+    if (state.dew > 0.02) _paintDew(canvas, geometry.tips);
     canvas.restore();
   }
 
+  /// A tiny residual global lean so the whole vine still answers the old
+  /// spring nudge even when the rig carries the per-joint motion.
+  double get _bend {
+    final sway = state.lifeT;
+    return sway * 0.002;
+  }
+
   Color _leafBase() {
-    final vivid = Color.lerp(palette.leaf, const Color(0xFFD9F0A8), leafGlow * 0.25)!;
+    final vivid = Color.lerp(
+        state.palette.leaf, const Color(0xFFD9F0A8), state.leafGlow * 0.25)!;
     final dulled = Color.lerp(
       vivid,
-      Color.lerp(palette.leaf, const Color(0xFF7A6A50), 0.5)!,
-      wilt,
+      Color.lerp(state.palette.leaf, const Color(0xFF7A6A50), 0.5)!,
+      state.wilt,
     )!;
     return dulled;
   }
@@ -110,11 +85,11 @@ class MovieVinePainter extends CustomPainter {
     for (final seg in geometry.segments) {
       final t = (seg.depth / 4).clamp(0.0, 1.0);
       final base = Color.lerp(
-        Color.lerp(palette.trunk, const Color(0xFF8A5A1E), 0.55)!,
-        Color.lerp(palette.branch, const Color(0xFFB77407), 0.35)!,
+        Color.lerp(state.palette.trunk, const Color(0xFF8A5A1E), 0.55)!,
+        Color.lerp(state.palette.branch, const Color(0xFFB77407), 0.35)!,
         t,
       )!;
-      final w0 = seg.width * (0.92 + branchOpen * 0.16);
+      final w0 = seg.width * (0.92 + state.branchOpen * 0.16);
       final w1 = w0 * 0.5;
       final dir = seg.to - seg.from;
       final len = dir.distance;
@@ -182,22 +157,24 @@ class MovieVinePainter extends CustomPainter {
 
   void _paintCanopyBack(Canvas canvas, List<Offset> pts, Size size) {
     if (pts.isEmpty) return;
-    final rng = math.Random(seed + 7);
-    final r0 = size.height * 0.075 * (0.55 + growth01 * 0.5);
+    final rng = math.Random(state.seed + 7);
+    final r0 = size.height * 0.075 * (0.55 + state.growth01 * 0.5);
+    final useHaze = state.haze.a > 0;
     for (var i = 0; i < pts.length; i++) {
       final p = pts[i];
       final r = r0 * (0.8 + rng.nextDouble() * 0.5);
       final fl = _flutter(i, r);
       final c = p + Offset(r * 0.14 + fl.dx, r * 0.2 + fl.dy);
-      final base = _greenAt(rng.nextDouble(), shadow: 0.42 + rng.nextDouble() * 0.1, light: 0.02);
+      var base = _greenAt(rng.nextDouble(), shadow: 0.42 + rng.nextDouble() * 0.1, light: 0.02);
+      if (useHaze) base = Color.lerp(base, state.haze, 0.28)!;
       _drawBlob(canvas, c, r, base, 0.95);
     }
   }
 
   void _paintCanopyMid(Canvas canvas, List<Offset> pts, Size size) {
     if (pts.isEmpty) return;
-    final rng = math.Random(seed + 9);
-    final r0 = size.height * 0.075 * (0.55 + growth01 * 0.5);
+    final rng = math.Random(state.seed + 9);
+    final r0 = size.height * 0.075 * (0.55 + state.growth01 * 0.5);
     for (var i = 0; i < pts.length; i++) {
       final p = pts[i];
       final r = r0 * (0.7 + rng.nextDouble() * 0.4);
@@ -210,7 +187,7 @@ class MovieVinePainter extends CustomPainter {
         ..color = Color.lerp(base, Colors.white, 0.35)!.withValues(alpha: 0.5);
       canvas.drawCircle(c + Offset(-r * 0.3, -r * 0.34), r * 0.34, hl);
       // Golden sun-dapple on the lit side, stronger when the Word is bright.
-      if (leafGlow > 0.3 && rng.nextDouble() < 0.35 * leafGlow) {
+      if (state.leafGlow > 0.3 && rng.nextDouble() < 0.35 * state.leafGlow) {
         final gold = Paint()
           ..color = const Color(0xFFF3D66A).withValues(alpha: 0.55);
         canvas.drawCircle(
@@ -223,26 +200,26 @@ class MovieVinePainter extends CustomPainter {
   }
 
   Offset _flutter(int i, double r) {
-    final amt = r * 0.06 * flutterAmt;
+    final amt = r * 0.06 * state.flutterAmt;
     return Offset(
-      math.sin(lifeT * 2 + i * 1.3) * amt,
-      math.cos(lifeT * 1.7 + i * 0.9) * amt * 0.7,
+      math.sin(state.lifeT * 2 + i * 1.3) * amt,
+      math.cos(state.lifeT * 1.7 + i * 0.9) * amt * 0.7,
     );
   }
 
   void _paintFrontLeaves(Canvas canvas, List<Offset> tips) {
-    final goldTint = 0.25 + leafGlow * 0.25;
+    final goldTint = 0.25 + state.leafGlow * 0.25;
     final base = Color.lerp(_leafBase(), const Color(0xFFE8E26A), goldTint)!;
     final paint = Paint()..style = PaintingStyle.fill;
     for (var i = 0; i < tips.length; i++) {
       final tip = tips[i];
       final droopDir = i.isEven ? 1.0 : -1.0;
-      final flutter = math.sin(lifeT * 6 + i * 1.7) * 0.12 * flutterAmt;
-      final wiltAngle = wilt * 0.6 * droopDir;
+      final flutter = math.sin(state.lifeT * 6 + i * 1.7) * 0.12 * state.flutterAmt;
+      final wiltAngle = state.wilt * 0.6 * droopDir;
       canvas.save();
       canvas.translate(tip.dx, tip.dy + 2);
-      canvas.rotate(droop * droopDir + flutter + wiltAngle);
-      paint.color = base.withValues(alpha: 0.95 - wilt * 0.15);
+      canvas.rotate(state.droop * droopDir + flutter + wiltAngle);
+      paint.color = base.withValues(alpha: 0.95 - state.wilt * 0.15);
       final leaf = Path()
         ..moveTo(0, 0)
         ..quadraticBezierTo(-8, -6, 0, -15)
@@ -266,12 +243,12 @@ class MovieVinePainter extends CustomPainter {
     final half = tips.length ~/ 2;
     for (var i = 0; i < half; i++) {
       final c = tips[i];
-      final sway2 = math.sin(lifeT * 5 + i * 2.1) * 0.5 * flutterAmt;
+      final sway2 = math.sin(state.lifeT * 5 + i * 2.1) * 0.5 * state.flutterAmt;
       final pos = c + Offset(sway2, -6);
-      final open = 0.3 + blossomOpen * 0.7;
+      final open = 0.3 + state.blossomOpen * 0.7;
       canvas.save();
       canvas.translate(pos.dx, pos.dy);
-      petal.color = palette.blossom.withValues(alpha: 0.85);
+      petal.color = state.palette.blossom.withValues(alpha: 0.85);
       for (var k = 0; k < 5; k++) {
         canvas.rotate(math.pi * 2 / 5);
         canvas.drawOval(Rect.fromCenter(center: Offset(0, -3.2 * open), width: 4.4 * open, height: 3.4 * open), petal);
@@ -283,12 +260,12 @@ class MovieVinePainter extends CustomPainter {
 
   void _paintFruits(Canvas canvas, List<Offset> tips) {
     if (tips.isEmpty) return;
-    final count = fruitCount.clamp(0, tips.length);
-    final ripeAmt = (ripen - 0.4).clamp(0.0, 1.0);
+    final count = state.fruitCount.clamp(0, tips.length);
+    final ripeAmt = (state.ripen - 0.4).clamp(0.0, 1.0);
     for (var i = 0; i < count; i++) {
       final c = tips[i];
-      final radius = 5.5 * (0.8 + branchOpen * 0.4) * (1 + ripeAmt * 0.18);
-      final squash = 1 + 0.12 * math.sin(lifeT * 4 + i * 2.3);
+      final radius = 5.5 * (0.8 + state.branchOpen * 0.4) * (1 + ripeAmt * 0.18);
+      final squash = 1 + 0.12 * math.sin(state.lifeT * 4 + i * 2.3);
       final pos = c + const Offset(0, -8);
 
       // soft contact shadow
@@ -301,7 +278,7 @@ class MovieVinePainter extends CustomPainter {
       );
 
       // glossy body — green→gold ramp, warmer as it ripens.
-      final body = Color.lerp(fruitColor, const Color(0xFFF5C132), ripeAmt * 0.6)!;
+      final body = Color.lerp(state.fruitColor, const Color(0xFFF5C132), ripeAmt * 0.6)!;
       final shader = ui.Gradient.radial(
         pos + Offset(-radius * 0.4, -radius * 0.45),
         radius * 1.5,
@@ -348,9 +325,9 @@ class MovieVinePainter extends CustomPainter {
       ..strokeWidth = 0.9;
     for (var i = 0; i < tips.length; i++) {
       if (i % 3 != 0) continue;
-      final twinkle = math.sin(lifeT * 5 + i * 1.3);
+      final twinkle = math.sin(state.lifeT * 5 + i * 1.3);
       if (twinkle < 0.4) continue;
-      final alpha = dew * (twinkle - 0.4) * 1.1;
+      final alpha = state.dew * (twinkle - 0.4) * 1.1;
       final pos = tips[i] + const Offset(2, -12);
       glint.color = const Color(0xFFFFFFFF).withValues(alpha: alpha.clamp(0.0, 0.9));
       canvas.drawLine(pos + const Offset(-3, 0), pos + const Offset(3, 0), glint);
@@ -359,7 +336,7 @@ class MovieVinePainter extends CustomPainter {
   }
 
   void _paintSoilWet(Canvas canvas, Size size, double soilY) {
-    final wet = (hydration - 0.6).clamp(0.0, 1.0);
+    final wet = (state.hydration - 0.6).clamp(0.0, 1.0);
     if (wet <= 0.15) return;
     final cx = size.width / 2;
     final w = size.width * 0.72;
@@ -383,25 +360,25 @@ class MovieVinePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant MovieVinePainter old) {
-    return old.seed != seed ||
-        old.growth01 != growth01 ||
-        old.branches != branches ||
-        old.fruitCount != fruitCount ||
-        old.fruitColor != fruitColor ||
-        old.palette != palette ||
-        old.sway != sway ||
-        old.showBlossoms != showBlossoms ||
-        old.hydration != hydration ||
-        old.leafGlow != leafGlow ||
-        old.branchOpen != branchOpen ||
-        old.ripen != ripen ||
-        old.droop != droop ||
-        old.blossomOpen != blossomOpen ||
-        old.bend != bend ||
-        old.lifeT != lifeT ||
-        old.flutterAmt != flutterAmt ||
-        old.dew != dew ||
-        old.wilt != wilt ||
-        old.fullness != fullness;
+    return old.state.seed != state.seed ||
+        old.state.growth01 != state.growth01 ||
+        old.state.branches != state.branches ||
+        old.state.fruitCount != state.fruitCount ||
+        old.state.fruitColor != state.fruitColor ||
+        old.state.palette != state.palette ||
+        old.state.showBlossoms != state.showBlossoms ||
+        old.state.hydration != state.hydration ||
+        old.state.leafGlow != state.leafGlow ||
+        old.state.branchOpen != state.branchOpen ||
+        old.state.ripen != state.ripen ||
+        old.state.droop != state.droop ||
+        old.state.blossomOpen != state.blossomOpen ||
+        old.state.lifeT != state.lifeT ||
+        old.state.flutterAmt != state.flutterAmt ||
+        old.state.dew != state.dew ||
+        old.state.wilt != state.wilt ||
+        old.state.fullness != state.fullness ||
+        old.state.haze != state.haze ||
+        old.state.geometry != state.geometry;
   }
 }

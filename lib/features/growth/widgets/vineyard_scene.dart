@@ -10,8 +10,11 @@ import 'ambient_painters.dart';
 import 'life_clock.dart';
 import 'movie_backdrop_painter.dart';
 import 'movie_vine_painter.dart';
+import 'scene_light_painter.dart';
 import 'scene_moment.dart';
 import 'vine_painter.dart';
+import 'vine_rig.dart';
+import 'vine_visual_state.dart';
 
 /// The living Vineyard: a self-contained animated scene (sky, breathing lamp,
 /// clouds, birds, vine with physical spring gestures, weather particles,
@@ -64,9 +67,14 @@ class _VineyardSceneState extends State<VineyardScene>
   late final AnimationController _burst;
   late final AnimationController _revival;
   late final AnimationController _moment;
+  late final AnimationController _plop;
   final VineSpring _spring = VineSpring();
+  VineRig? _rig;
+  String _rigKey = '';
   SceneEventType? _activeType;
   SceneMomentKind? _activeMoment;
+  int _plopIndex = -1;
+  double _dragStartX = 0;
   bool _paused = false;
 
   @override
@@ -78,15 +86,18 @@ class _VineyardSceneState extends State<VineyardScene>
     _burst = AnimationController(vsync: this, duration: const Duration(milliseconds: 700));
     _revival = AnimationController(vsync: this, duration: const Duration(milliseconds: 1800));
     _moment = AnimationController(vsync: this, duration: const Duration(milliseconds: 4000));
+    _plop = AnimationController(vsync: this, duration: const Duration(milliseconds: 420));
     _montage.addListener(_onTick);
     _burst.addListener(_onTick);
     _revival.addListener(_onTick);
     _moment.addListener(_onTick);
+    _plop.addListener(_onTick);
     widget.eventSource?.addListener(_onSceneEvent);
     widget.momentController?.addListener(_onMoment);
     if (widget.revival) {
       // The garden rejoices: a soft golden pulse and a snap to attention.
       _spring.impulse(120);
+      _rig?.impulse(70);
       _revival.forward(from: 0);
     }
   }
@@ -100,6 +111,7 @@ class _VineyardSceneState extends State<VineyardScene>
     }
     _activeMoment = kind;
     _spring.impulse(140);
+    _rig?.impulse(80);
     _moment.forward(from: 0).whenComplete(() {
       final ctrl = widget.momentController;
       if (ctrl != null && ctrl.current == kind) ctrl.clear();
@@ -114,7 +126,10 @@ class _VineyardSceneState extends State<VineyardScene>
   /// repaint so the whole garden (clouds, grass, leaves, lamp) breathes.
   void _onLife(double dt) {
     final reduced = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
-    if (!reduced && !_paused) _spring.update(dt);
+    if (!reduced && !_paused) {
+      _spring.update(dt);
+      _rig?.update(dt);
+    }
     if (mounted) setState(() {});
   }
 
@@ -133,17 +148,46 @@ class _VineyardSceneState extends State<VineyardScene>
       SceneEventType.milestone => 70.0,
     };
     _spring.impulse(force);
+    _rig?.impulse(force);
   }
 
   /// A tap anywhere nudges the vine like a fingertip on a real plant.
   void _nudge() {
     _spring.impulse(34);
+    _rig?.impulse(26);
     try {
       HapticFeedback.lightImpact();
     } catch (_) {
       // Some environments (tests, web) have no haptics channel.
     }
     setState(() {});
+  }
+
+  void _onPanStart(DragStartDetails details) {
+    _dragStartX = details.globalPosition.dx;
+  }
+
+  void _onPanUpdate(DragUpdateDetails details) {
+    final dx = details.globalPosition.dx - _dragStartX;
+    _rig?.drag(dx);
+    setState(() {});
+  }
+
+  void _onPanEnd(DragEndDetails details) {
+    _rig?.releaseDrag();
+    setState(() {});
+  }
+
+  void _onPanCancel() {
+    _rig?.releaseDrag();
+    setState(() {});
+  }
+
+  void _onFruitTap(int index) {
+    _plopIndex = index;
+    _plop.forward(from: 0);
+    _rig?.impulse(46);
+    widget.onFruitTap?.call(index);
   }
 
   @override
@@ -196,12 +240,14 @@ class _VineyardSceneState extends State<VineyardScene>
     _burst.removeListener(_onTick);
     _revival.removeListener(_onTick);
     _moment.removeListener(_onTick);
+    _plop.removeListener(_onTick);
     widget.eventSource?.removeListener(_onSceneEvent);
     widget.momentController?.removeListener(_onMoment);
     _montage.dispose();
     _burst.dispose();
     _revival.dispose();
     _moment.dispose();
+    _plop.dispose();
     super.dispose();
   }
 
@@ -230,7 +276,6 @@ class _VineyardSceneState extends State<VineyardScene>
 
     final lifeT = _life.t;
     final sway = reduced ? 0.0 : _life.swayPhase();
-    final bend = reduced ? 0.0 : (sway * 0.006 + _spring.value * 0.0035);
     final breath = _life.breath();
     final moment01 = reduced ? 0.0 : _moment.value;
     final momentKind = _activeMoment;
@@ -248,6 +293,21 @@ class _VineyardSceneState extends State<VineyardScene>
               size: size,
               fullness: 1,
             );
+
+            // Rebuild the rig only when the vine's structure changes (the
+            // same seed always yields the same rig). The montage changes
+            // growth01 each frame, so key on a coarse bucket to avoid
+            // rebuilding the skeleton while the vine grows in.
+            final rigKey =
+                '${widget.seed}|${widget.branches}|${(displayed * 20).round()}|${size.width}|${size.height}';
+            if (_rig == null || _rigKey != rigKey) {
+              _rig = VineRig.fromGeometry(geometry, seed: widget.seed, size: size);
+              _rigKey = rigKey;
+              if (widget.revival) _rig!.impulse(70);
+            }
+            _rig?.reduced = reduced;
+            final posed = _rig?.solve() ?? geometry;
+
             return _TweenedVitals(
               hydration: widget.hydration,
               leafGlow: widget.leafGlow,
@@ -261,20 +321,88 @@ class _VineyardSceneState extends State<VineyardScene>
                 final easedWilt =
                     wilt * (1 - Curves.easeOutCubic.transform(_revival.value));
                 final revivalGlow = 1.0 - _revival.value;
-                return GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTapUp: (_) => _nudge(),
+
+                final state = VineVisualState(
+                  seed: widget.seed,
+                  growth01: displayed,
+                  branches: widget.branches,
+                  fruitCount: widget.fruitCount,
+                  fruitColor: widget.fruitColor,
+                  palette: palette,
+                  showBlossoms: widget.showBlossoms,
+                  hydration: hydration,
+                  leafGlow: leafGlow,
+                  branchOpen: branchOpen,
+                  ripen: ripen,
+                  droop: droop,
+                  blossomOpen: blossomOpen,
+                  lifeT: lifeT,
+                  flutterAmt: reduced ? 0 : 1,
+                  dew: _dewFor(light),
+                  wilt: reduced ? 0 : easedWilt,
+                  fullness: 1,
+                  haze: Color.lerp(atmosphere.skyBottom, atmosphere.skyTop, 0.45)!,
+                  geometry: posed,
+                );
+
+                // Subtle faux-3D: the vine leans gently in perspective with
+                // its breathing and sway, rooted at the soil line.
+                final tilt = Transform(
+                  alignment: Alignment.bottomCenter,
+                  transform: reduced
+                      ? Matrix4.identity()
+                      : Matrix4.identity()
+                        ..setEntry(3, 2, 0.0012)
+                        ..rotateX(-breath * 0.02)
+                        ..rotateY(sway * 0.03),
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      CustomPaint(
-                        painter: MovieBackdropPainter(
-                          skyTop: atmosphere.skyTop,
-                          skyBottom: atmosphere.skyBottom,
-                          light: light,
-                          isDark: isDark,
-                          soil: palette.soil,
-                          seed: widget.seed,
+                      CustomPaint(painter: MovieVinePainter(state: state)),
+                      if (widget.onFruitTap != null)
+                        _FruitTapLayer(
+                          tips: posed.tips,
+                          fruitCount: widget.fruitCount,
+                          onFruitTap: _onFruitTap,
+                        ),
+                      if (_plop.value > 0 && _plopIndex >= 0 &&
+                          _plopIndex < posed.tips.length)
+                        CustomPaint(
+                          painter: _PlopPainter(
+                            t: _plop.value,
+                            center: posed.tips[_plopIndex],
+                            isDark: isDark,
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+
+                return GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTapUp: (_) => _nudge(),
+                  onPanStart: _onPanStart,
+                  onPanUpdate: _onPanUpdate,
+                  onPanEnd: _onPanEnd,
+                  onPanCancel: _onPanCancel,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      // Far layers drift opposite the vine for parallax.
+                      Transform(
+                        alignment: Alignment.center,
+                        transform: Matrix4.identity()
+                          ..translateByDouble(reduced ? 0 : -sway * 8, 0, 0, 1)
+                          ..scaleByDouble(1.03, 1.03, 1, 1),
+                        child: CustomPaint(
+                          painter: MovieBackdropPainter(
+                            skyTop: atmosphere.skyTop,
+                            skyBottom: atmosphere.skyBottom,
+                            light: light,
+                            isDark: isDark,
+                            soil: palette.soil,
+                            seed: widget.seed,
+                          ),
                         ),
                       ),
                       _LampGlow(
@@ -298,30 +426,7 @@ class _VineyardSceneState extends State<VineyardScene>
                           color: isDark ? const Color(0xFFB9C6DC) : const Color(0xFF7E8AA6),
                         ),
                       ),
-                      CustomPaint(
-                        painter: MovieVinePainter(
-                          seed: widget.seed,
-                          growth01: displayed,
-                          branches: widget.branches,
-                          fruitCount: widget.fruitCount,
-                          fruitColor: widget.fruitColor,
-                          palette: palette,
-                          sway: sway,
-                          showBlossoms: widget.showBlossoms,
-                          hydration: hydration,
-                          leafGlow: leafGlow,
-                          branchOpen: branchOpen,
-                          ripen: ripen,
-                          droop: droop,
-                          blossomOpen: blossomOpen,
-                          bend: bend,
-                          lifeT: lifeT,
-                          flutterAmt: reduced ? 0 : 1,
-                          dew: _dewFor(light),
-                          wilt: reduced ? 0 : easedWilt,
-                          fullness: 1,
-                        ),
-                      ),
+                      Positioned.fill(child: tilt),
                       CustomPaint(
                         painter: GrassPainter(
                           seed: widget.seed + 31,
@@ -337,6 +442,15 @@ class _VineyardSceneState extends State<VineyardScene>
                             color: palette.blossom,
                           ),
                         ),
+                      CustomPaint(
+                        painter: SceneLightPainter(
+                          light: light,
+                          isDark: isDark,
+                          t: lifeT,
+                          breath: breath,
+                          seed: widget.seed,
+                        ),
+                      ),
                       CustomPaint(
                         painter: _ParticlePainter(
                           seed: widget.seed,
@@ -366,12 +480,6 @@ class _VineyardSceneState extends State<VineyardScene>
                             color: palette.leaf,
                             soilY: size.height * 0.9,
                           ),
-                        ),
-                      if (widget.onFruitTap != null)
-                        _FruitTapLayer(
-                          tips: geometry.tips,
-                          fruitCount: widget.fruitCount,
-                          onFruitTap: widget.onFruitTap!,
                         ),
                     ],
                   ),
@@ -555,6 +663,53 @@ class _FruitTapLayer extends StatelessWidget {
     }
     return Stack(fit: StackFit.expand, children: children);
   }
+}
+
+/// A short, juicy squash-and-ring when a fruit is tapped — the fruit *plops*
+/// before the day's letter opens.
+class _PlopPainter extends CustomPainter {
+  final double t;
+  final Offset center;
+  final bool isDark;
+
+  const _PlopPainter({required this.t, required this.center, required this.isDark});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final ease = Curves.easeOutBack.transform(t);
+    final fade = (1 - t).clamp(0.0, 1.0);
+
+    final ring = Paint()
+      ..color = (isDark ? const Color(0xFFF8E26A) : const Color(0xFFE8C53A))
+          .withValues(alpha: 0.65 * fade)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5;
+    canvas.drawCircle(center, 6 + ease * 26, ring);
+
+    final glow = Paint()
+      ..color = (isDark ? const Color(0xFFF8E26A) : const Color(0xFFE8C53A))
+          .withValues(alpha: 0.35 * fade)
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(center, 5 + ease * 12, glow);
+
+    // A little burst of petals/sparks.
+    final spark = Paint()
+      ..color = const Color(0xFFF8E26A).withValues(alpha: 0.8 * fade)
+      ..style = PaintingStyle.fill;
+    for (var i = 0; i < 6; i++) {
+      final angle = (i / 6) * math.pi * 2;
+      final dist = 10 + ease * 30;
+      canvas.drawCircle(
+        center + Offset(math.cos(angle), math.sin(angle)) * dist,
+        1.6,
+        spark,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _PlopPainter old) =>
+      old.t != t || old.center != center || old.isDark != isDark;
 }
 
 /// Minimal weather: golden dust motes, night fireflies, or rain. Generated
