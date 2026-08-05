@@ -316,6 +316,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     ];
 
     if (p.badges.isEmpty) return const SizedBox.shrink();
+    final l = AppLocalizations.of(context)!;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.sm),
@@ -327,7 +328,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         Row(children: [
           const Icon(Icons.emoji_events, size: 14, color: AppColors.primary),
           const SizedBox(width: 6),
-          Text('Badges', style: TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.of(context).textSecondary)),
+          Text(l.badges, style: TextStyle(fontFamily: 'Inter', fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.of(context).textSecondary)),
           const Spacer(),
           Text('${p.badges.length}/${allBadges.length}', style: TextStyle(fontFamily: 'Inter', fontSize: 10, color: AppColors.of(context).textMuted)),
         ]),
@@ -544,7 +545,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final spots = dailyXp.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value)).toList();
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text('Weekly XP trend', style: TextStyle(fontFamily: 'Inter', fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.of(context).textMuted)),
+      Text(AppLocalizations.of(context)!.weeklyXpTrend, style: TextStyle(fontFamily: 'Inter', fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.of(context).textMuted)),
       const SizedBox(height: 6),
       SizedBox(
         height: 50,

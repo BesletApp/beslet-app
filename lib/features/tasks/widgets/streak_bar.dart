@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/services/streak_service.dart';
+import '../../../l10n/app_localizations.dart';
 
 class StreakBar extends StatelessWidget {
   final int currentStreak;
@@ -17,6 +18,7 @@ class StreakBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = AppColors.of(context);
+    final l = AppLocalizations.of(context)!;
     final color = StreakService.growthColor(currentStreak);
     final emoji = StreakService.growthEmoji(currentStreak);
     const labels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
@@ -41,10 +43,10 @@ class StreakBar extends StatelessWidget {
         ),
         const SizedBox(width: 10),
         Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-          Text('$currentStreak days consistent',
+          Text(l.daysConsistent(currentStreak),
               style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: color)),
           if (freezeTokens > 0)
-            Text('❄️ $freezeTokens freeze${freezeTokens != 1 ? 's' : ''}',
+            Text(l.freezeChips(freezeTokens),
                 style: TextStyle(fontSize: 10, color: c.textMuted)),
         ]),
         const Spacer(),

@@ -382,7 +382,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             ),
           ),
           const SizedBox(height: 32),
-          Text('Ready to grow!', style: AppTextStyles.displayMedium),
+          Text(l.readyToGrow, style: AppTextStyles.displayMedium),
           const SizedBox(height: 12),
           Text(
             _isAm ? 'የብስለት ጉዞህ ዛሬ ይጀምራል።' : 'Your journey of maturity begins today.',

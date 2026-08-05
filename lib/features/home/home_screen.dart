@@ -123,9 +123,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
     if (!mounted || prompted) return;
     await prefs.setBool('communityPrompted', true);
     if (!mounted) return;
+    final l = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: const Text('Join our community on Telegram'),
-      action: SnackBarAction(label: 'Join', onPressed: _openTelegram),
+      content: Text(l.joinTelegram),
+      action: SnackBarAction(label: l.join, onPressed: _openTelegram),
       duration: AppDurations.verySlow,
     ));
   }
@@ -410,7 +411,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: AppColors.of(context).primary.withValues(alpha: 0.25)),
               ),
-              child: Text('Day $daysElapsed of $totalDays · $daysRemaining left',
+              child: Text(l.summerDayCount(daysElapsed, daysRemaining, totalDays),
                   style: AppTextStyles.bodySmall.copyWith(color: AppColors.of(context).primary, fontSize: 11)),
             )
           else

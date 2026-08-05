@@ -7,6 +7,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/database/app_database.dart';
 import '../../core/providers/skills_provider.dart';
+import '../../l10n/app_localizations.dart';
 
 class SkillsScreen extends ConsumerStatefulWidget {
   const SkillsScreen({super.key});
@@ -45,10 +46,13 @@ class _SkillsScreenState extends ConsumerState<SkillsScreen> with WidgetsBinding
       final minutes = (_elapsedSeconds / 60).ceil().clamp(1, 999);
       ref.read(skillsNotifierProvider.notifier).logSession(_activeSkillId!, minutes);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Logged $minutes minutes!', style: AppTextStyles.bodyMedium),
-          backgroundColor: AppColors.success, behavior: SnackBarBehavior.floating,
-        ));
+        final l = AppLocalizations.of(context);
+        if (l != null) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(l.loggedMinutes(minutes), style: AppTextStyles.bodyMedium),
+            backgroundColor: AppColors.success, behavior: SnackBarBehavior.floating,
+          ));
+        }
       }
     }
     setState(() { _startTime = null; _isRunning = false; _activeSkillId = null; });
@@ -56,8 +60,9 @@ class _SkillsScreenState extends ConsumerState<SkillsScreen> with WidgetsBinding
 
   @override Widget build(BuildContext context) {
     final c = AppColors.of(context);
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/home')), title: const Text('Skills'), actions: [
+      appBar: AppBar(leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/home')), title: Text(l.skills), actions: [
         IconButton(icon: const Icon(Icons.add), onPressed: _showAddDialog),
       ]),
       body: ref.watch(allSkillsProvider).when(
@@ -71,11 +76,11 @@ class _SkillsScreenState extends ConsumerState<SkillsScreen> with WidgetsBinding
                 child: Column(mainAxisSize: MainAxisSize.min, children: [
                   Text('🎯', style: const TextStyle(fontSize: 64)),
                   const SizedBox(height: 16),
-                  Text('No skills yet', style: AppTextStyles.displaySmall),
+                  Text(l.noSkillsYet, style: AppTextStyles.displaySmall),
                   const SizedBox(height: 8),
-                  Text('Track skills you want to develop!', style: AppTextStyles.bodyMedium.copyWith(color: c.textSecondary)),
+                  Text(l.trackSkills, style: AppTextStyles.bodyMedium.copyWith(color: c.textSecondary)),
                   const SizedBox(height: 24),
-                  ElevatedButton.icon(icon: const Icon(Icons.add), label: const Text('Add Skill'), onPressed: _showAddDialog),
+                  ElevatedButton.icon(icon: const Icon(Icons.add), label: Text(l.addSkill), onPressed: _showAddDialog),
                 ]),
               ),
             );
@@ -85,14 +90,14 @@ class _SkillsScreenState extends ConsumerState<SkillsScreen> with WidgetsBinding
             child: ListView.builder(
             padding: const EdgeInsets.all(20),
             itemCount: skills.length,
-            itemBuilder: (_, i) => _buildSkillCard(skills[i], c),
+            itemBuilder: (_, i) => _buildSkillCard(skills[i], c, l),
           ));
         },
       ),
     );
   }
 
-  Widget _buildSkillCard(Skill skill, ThemePalette c) {
+  Widget _buildSkillCard(Skill skill, ThemePalette c, AppLocalizations l) {
     final isActive = _activeSkillId == skill.id;
 
     return Container(
@@ -110,7 +115,7 @@ class _SkillsScreenState extends ConsumerState<SkillsScreen> with WidgetsBinding
           child: Center(child: Text(skill.icon.isNotEmpty ? skill.icon : '📚', style: const TextStyle(fontSize: 24))),
         ),
         title: Text(skill.name, style: AppTextStyles.bodyMedium),
-        subtitle: Text('${skill.category} · ${skill.targetMinutes} min goal', style: AppTextStyles.bodySmall.copyWith(color: c.textMuted)),
+        subtitle: Text(l.skillMinGoal(_skillCategoryLabel(skill.category, l), skill.targetMinutes), style: AppTextStyles.bodySmall.copyWith(color: c.textMuted)),
         trailing: isActive
             ? GestureDetector(
                 onTap: _stopTimer,
@@ -129,7 +134,7 @@ class _SkillsScreenState extends ConsumerState<SkillsScreen> with WidgetsBinding
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.primary.withValues(alpha: 0.5))),
-                  child: Text('Start', style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary, fontSize: 12)),
+                  child: Text(l.start, style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary, fontSize: 12)),
                 ),
               ),
         onLongPress: () => _confirmDelete(skill.id, skill.name),
@@ -139,19 +144,21 @@ class _SkillsScreenState extends ConsumerState<SkillsScreen> with WidgetsBinding
 
   void _confirmDelete(String skillId, String skillName) {
     final c = AppColors.of(context);
+    final l = AppLocalizations.of(context)!;
     showDialog(context: context, builder: (ctx) => AlertDialog(
       backgroundColor: c.card,
-      title: Text('Delete $skillName?', style: AppTextStyles.labelLarge),
-      content: Text('This will remove the skill and all session logs.', style: AppTextStyles.bodyMedium.copyWith(color: c.textSecondary)),
+      title: Text(l.deleteSkillTitle(skillName), style: AppTextStyles.labelLarge),
+      content: Text(l.deleteSkillBody, style: AppTextStyles.bodyMedium.copyWith(color: c.textSecondary)),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-        TextButton(onPressed: () { Navigator.pop(ctx); ref.read(skillsNotifierProvider.notifier).deleteSkill(skillId); }, child: Text('Delete', style: TextStyle(color: AppColors.error))),
+        TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l.cancel)),
+        TextButton(onPressed: () { Navigator.pop(ctx); ref.read(skillsNotifierProvider.notifier).deleteSkill(skillId); }, child: Text(l.delete, style: TextStyle(color: AppColors.error))),
       ],
     ));
   }
 
   void _showAddDialog() {
     final c = AppColors.of(context);
+    final l = AppLocalizations.of(context)!;
     final nameCtrl = TextEditingController();
     String category = 'Creative';
     String icon = '🎯';
@@ -159,19 +166,19 @@ class _SkillsScreenState extends ConsumerState<SkillsScreen> with WidgetsBinding
     showDialog(context: context, builder: (ctx) => StatefulBuilder(
       builder: (ctx, setState) => AlertDialog(
         backgroundColor: c.card,
-        title: Text('New Skill', style: AppTextStyles.labelLarge),
+        title: Text(l.newSkill, style: AppTextStyles.labelLarge),
         content: Column(mainAxisSize: MainAxisSize.min, children: [
           TextField(
             controller: nameCtrl,
             style: AppTextStyles.bodyMedium,
             decoration: InputDecoration(
-              hintText: 'Skill name',
+              hintText: l.skillName,
               hintStyle: TextStyle(color: c.textMuted),
               filled: true, fillColor: c.surface, border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
             ),
           ),
           const SizedBox(height: 16),
-          Text('Category & Icon', style: AppTextStyles.bodySmall.copyWith(color: c.textSecondary)),
+          Text(l.categoryAndIcon, style: AppTextStyles.bodySmall.copyWith(color: c.textSecondary)),
           const SizedBox(height: 8),
           Wrap(spacing: 8, runSpacing: 8, children: [
             ['Creative', '🎵'], ['Writing', '✍️'], ['Tech', '💻'], ['Language', '🗣️'], ['Wellness', '🧘'], ['Art', '🎨'],
@@ -186,21 +193,33 @@ class _SkillsScreenState extends ConsumerState<SkillsScreen> with WidgetsBinding
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: isSelected ? AppColors.primary : c.border),
                 ),
-                child: Text('${item[1]} ${item[0]}', style: AppTextStyles.bodySmall.copyWith(color: isSelected ? AppColors.primary : c.textSecondary)),
+                child: Text('${item[1]} ${_skillCategoryLabel(item[0], l)}', style: AppTextStyles.bodySmall.copyWith(color: isSelected ? AppColors.primary : c.textSecondary)),
               ),
             );
           }).toList()),
         ]),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l.cancel)),
           ElevatedButton(onPressed: () {
             if (nameCtrl.text.trim().isEmpty) return;
             ref.read(skillsNotifierProvider.notifier).addSkill(nameCtrl.text.trim(), category, icon);
             Navigator.pop(ctx);
-          }, child: const Text('Add')),
+          }, child: Text(l.add)),
         ],
       ),
     ));
+  }
+
+  String _skillCategoryLabel(String name, AppLocalizations l) {
+    switch (name) {
+      case 'Creative': return l.skillCategoryCreative;
+      case 'Writing': return l.skillCategoryWriting;
+      case 'Tech': return l.skillCategoryTech;
+      case 'Language': return l.skillCategoryLanguage;
+      case 'Wellness': return l.skillCategoryWellness;
+      case 'Art': return l.skillCategoryArt;
+      default: return name;
+    }
   }
 
   String _formatTime(int secs) {

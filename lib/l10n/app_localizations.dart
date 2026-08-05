@@ -1375,6 +1375,402 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'A soft tone when the vine responds — off by default.'**
   String get vineSoundSubtitle;
+
+  /// No description provided for @tryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try Again'**
+  String get tryAgain;
+
+  /// No description provided for @add.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get add;
+
+  /// No description provided for @join.
+  ///
+  /// In en, this message translates to:
+  /// **'Join'**
+  String get join;
+
+  /// No description provided for @enkutatashTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enkutatash'**
+  String get enkutatashTitle;
+
+  /// No description provided for @enkutatashNewYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Ethiopian New Year 2019'**
+  String get enkutatashNewYear;
+
+  /// No description provided for @enterNewYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the New Year'**
+  String get enterNewYear;
+
+  /// No description provided for @readyToGrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to grow!'**
+  String get readyToGrow;
+
+  /// No description provided for @madeByAmanuel.
+  ///
+  /// In en, this message translates to:
+  /// **'Made by Amanuel Lamesa'**
+  String get madeByAmanuel;
+
+  /// No description provided for @versionTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Summer 2026 · v1.0'**
+  String get versionTag;
+
+  /// No description provided for @joinTelegram.
+  ///
+  /// In en, this message translates to:
+  /// **'Join our community on Telegram'**
+  String get joinTelegram;
+
+  /// No description provided for @summerDayCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Day {elapsed} of {total} · {left} left'**
+  String summerDayCount(Object elapsed, Object left, Object total);
+
+  /// No description provided for @addFirstHabit.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your first habit to start tracking!'**
+  String get addFirstHabit;
+
+  /// No description provided for @habitName.
+  ///
+  /// In en, this message translates to:
+  /// **'Habit name'**
+  String get habitName;
+
+  /// No description provided for @newHabit.
+  ///
+  /// In en, this message translates to:
+  /// **'New Habit'**
+  String get newHabit;
+
+  /// No description provided for @category.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get category;
+
+  /// No description provided for @dayStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Day {count} Streak'**
+  String dayStreak(Object count);
+
+  /// No description provided for @xpAndLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'{xp} XP · Level {level}'**
+  String xpAndLevel(Object level, Object xp);
+
+  /// No description provided for @deleteHabitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {name}?'**
+  String deleteHabitTitle(Object name);
+
+  /// No description provided for @deleteHabitBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This will remove the habit and all its completion history.'**
+  String get deleteHabitBody;
+
+  /// No description provided for @habitCategorySpiritual.
+  ///
+  /// In en, this message translates to:
+  /// **'Spiritual'**
+  String get habitCategorySpiritual;
+
+  /// No description provided for @habitCategoryHealth.
+  ///
+  /// In en, this message translates to:
+  /// **'Health'**
+  String get habitCategoryHealth;
+
+  /// No description provided for @habitCategoryStudy.
+  ///
+  /// In en, this message translates to:
+  /// **'Study'**
+  String get habitCategoryStudy;
+
+  /// No description provided for @habitCategoryProductivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Productivity'**
+  String get habitCategoryProductivity;
+
+  /// No description provided for @loggedMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Logged {minutes} minutes!'**
+  String loggedMinutes(Object minutes);
+
+  /// No description provided for @skillMinGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'{category} · {minutes} min goal'**
+  String skillMinGoal(Object category, Object minutes);
+
+  /// No description provided for @deleteSkillTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {name}?'**
+  String deleteSkillTitle(Object name);
+
+  /// No description provided for @deleteSkillBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This will remove the skill and all session logs.'**
+  String get deleteSkillBody;
+
+  /// No description provided for @skillCategoryCreative.
+  ///
+  /// In en, this message translates to:
+  /// **'Creative'**
+  String get skillCategoryCreative;
+
+  /// No description provided for @skillCategoryWriting.
+  ///
+  /// In en, this message translates to:
+  /// **'Writing'**
+  String get skillCategoryWriting;
+
+  /// No description provided for @skillCategoryTech.
+  ///
+  /// In en, this message translates to:
+  /// **'Tech'**
+  String get skillCategoryTech;
+
+  /// No description provided for @skillCategoryLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get skillCategoryLanguage;
+
+  /// No description provided for @skillCategoryWellness.
+  ///
+  /// In en, this message translates to:
+  /// **'Wellness'**
+  String get skillCategoryWellness;
+
+  /// No description provided for @skillCategoryArt.
+  ///
+  /// In en, this message translates to:
+  /// **'Art'**
+  String get skillCategoryArt;
+
+  /// No description provided for @noGoalsOfType.
+  ///
+  /// In en, this message translates to:
+  /// **'No {type} goals yet'**
+  String noGoalsOfType(Object type);
+
+  /// No description provided for @addFirstGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your first goal!'**
+  String get addFirstGoal;
+
+  /// No description provided for @active.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get active;
+
+  /// No description provided for @achieved.
+  ///
+  /// In en, this message translates to:
+  /// **'Achieved'**
+  String get achieved;
+
+  /// No description provided for @noPastGoals.
+  ///
+  /// In en, this message translates to:
+  /// **'No past goals yet'**
+  String get noPastGoals;
+
+  /// No description provided for @deleteGoalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete goal?'**
+  String get deleteGoalTitle;
+
+  /// No description provided for @deleteGoalBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This will remove \"{title}\" permanently.'**
+  String deleteGoalBody(Object title);
+
+  /// No description provided for @addTypeGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Add {type} Goal'**
+  String addTypeGoal(Object type);
+
+  /// No description provided for @goalHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What do you want to achieve?'**
+  String get goalHint;
+
+  /// No description provided for @weeklyType.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get weeklyType;
+
+  /// No description provided for @monthlyType.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get monthlyType;
+
+  /// No description provided for @yearlyType.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly'**
+  String get yearlyType;
+
+  /// No description provided for @currentGoals.
+  ///
+  /// In en, this message translates to:
+  /// **'Current goals'**
+  String get currentGoals;
+
+  /// No description provided for @pastGoals.
+  ///
+  /// In en, this message translates to:
+  /// **'Past goals'**
+  String get pastGoals;
+
+  /// No description provided for @weekOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Week of {start} — {end}'**
+  String weekOf(Object end, Object start);
+
+  /// No description provided for @hoursTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours}h total'**
+  String hoursTotal(Object hours);
+
+  /// No description provided for @loggedFamilyHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Logged {hours}h with family!'**
+  String loggedFamilyHours(Object hours);
+
+  /// No description provided for @saved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved!'**
+  String get saved;
+
+  /// No description provided for @saveReflection.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Reflection'**
+  String get saveReflection;
+
+  /// No description provided for @weeklyReflection.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly Reflection'**
+  String get weeklyReflection;
+
+  /// No description provided for @weeklyCheckIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly Check-in'**
+  String get weeklyCheckIn;
+
+  /// No description provided for @reflectOnWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a moment to reflect on your week'**
+  String get reflectOnWeek;
+
+  /// No description provided for @reflectionCompleteWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Reflection complete for this week'**
+  String get reflectionCompleteWeek;
+
+  /// No description provided for @reflectionSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Reflection saved!'**
+  String get reflectionSaved;
+
+  /// No description provided for @qGrew.
+  ///
+  /// In en, this message translates to:
+  /// **'What helped you grow this week?'**
+  String get qGrew;
+
+  /// No description provided for @qSlipped.
+  ///
+  /// In en, this message translates to:
+  /// **'Where did you slip or struggle?'**
+  String get qSlipped;
+
+  /// No description provided for @qFocus.
+  ///
+  /// In en, this message translates to:
+  /// **'What will you focus on next week?'**
+  String get qFocus;
+
+  /// No description provided for @writeThoughts.
+  ///
+  /// In en, this message translates to:
+  /// **'Write your thoughts...'**
+  String get writeThoughts;
+
+  /// No description provided for @prayerXpEarned.
+  ///
+  /// In en, this message translates to:
+  /// **'+15 XP — Prayer logged!'**
+  String get prayerXpEarned;
+
+  /// No description provided for @daysConsistent.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} days consistent'**
+  String daysConsistent(Object count);
+
+  /// No description provided for @freezeChips.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{❄️ 1 freeze} other{❄️ # freezes}}'**
+  String freezeChips(num count);
+
+  /// No description provided for @badges.
+  ///
+  /// In en, this message translates to:
+  /// **'Badges'**
+  String get badges;
+
+  /// No description provided for @weeklyXpTrend.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly XP trend'**
+  String get weeklyXpTrend;
 }
 
 class _AppLocalizationsDelegate

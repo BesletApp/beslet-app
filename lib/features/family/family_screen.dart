@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/providers/family_provider.dart';
+import '../../l10n/app_localizations.dart';
 
 class FamilyScreen extends ConsumerStatefulWidget {
   const FamilyScreen({super.key});
@@ -26,9 +27,10 @@ class _FamilyScreenState extends ConsumerState<FamilyScreen> {
     final weeklyHoursAsync = ref.watch(weeklyFamilyHoursProvider);
     final todayLog = todayAsync.valueOrNull;
     final c = AppColors.of(context);
+    final l = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/home')), title: const Text('Time with Family')),
+      appBar: AppBar(leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/home')), title: Text(l.familyTime)),
       body: RefreshIndicator(
         onRefresh: () async { ref.invalidate(todayFamilyProvider); ref.invalidate(weeklyFamilyHoursProvider); },
         child: SingleChildScrollView(
@@ -41,9 +43,9 @@ class _FamilyScreenState extends ConsumerState<FamilyScreen> {
             child: Column(children: [
               const Text('👨‍👩‍👧‍👧', style: TextStyle(fontSize: 48)),
               const SizedBox(height: 12),
-              Text(todayLog != null ? '${todayLog.hours}h logged today' : 'Log family time', style: AppTextStyles.displaySmall.copyWith(fontSize: 18)),
+              Text(todayLog != null ? l.familyHoursLogged(todayLog.hours.toStringAsFixed(1)) : l.logFamilyTime, style: AppTextStyles.displaySmall.copyWith(fontSize: 18)),
               const SizedBox(height: 4),
-              Text(todayLog != null ? 'Quality time matters. Keep it up!' : 'How much time did you spend with family today?',
+              Text(todayLog != null ? l.qualityTimeMatters : l.howMuchFamilyTime,
                   style: AppTextStyles.bodyMedium.copyWith(color: c.textSecondary)),
             ]),
           ),
@@ -53,7 +55,7 @@ class _FamilyScreenState extends ConsumerState<FamilyScreen> {
             decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: c.border)),
             child: Column(children: [
               Text(_hours.toStringAsFixed(1), style: AppTextStyles.displayLarge.copyWith(fontSize: 48, color: AppColors.primary)),
-              Text('hours', style: AppTextStyles.bodyMedium.copyWith(color: c.textMuted)),
+              Text(l.hours, style: AppTextStyles.bodyMedium.copyWith(color: c.textMuted)),
               const SizedBox(height: 16),
               Slider(
                 value: _hours,
@@ -74,7 +76,7 @@ class _FamilyScreenState extends ConsumerState<FamilyScreen> {
                 controller: _noteCtrl,
                 style: AppTextStyles.bodyMedium,
                 decoration: InputDecoration(
-                  hintText: 'What did you do? (optional)',
+                  hintText: l.whatDidYouDo,
                   hintStyle: TextStyle(color: c.textMuted),
                   filled: true, fillColor: c.surface, border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                 ),
@@ -86,7 +88,7 @@ class _FamilyScreenState extends ConsumerState<FamilyScreen> {
                 child: ElevatedButton(
                   onPressed: todayLog != null ? null : _save,
                   style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
-                  child: Text(todayLog != null ? 'Already logged today' : (_saved ? 'Saved!' : 'Log Time')),
+                  child: Text(todayLog != null ? l.alreadyLogged : (_saved ? l.saved : l.logTime)),
                 ),
               ),
             ]),
@@ -104,9 +106,9 @@ class _FamilyScreenState extends ConsumerState<FamilyScreen> {
               const SizedBox(width: 16),
               Expanded(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('This Week', style: AppTextStyles.bodySmall.copyWith(color: c.textSecondary)),
+                  Text(l.thisWeek, style: AppTextStyles.bodySmall.copyWith(color: c.textSecondary)),
                   const SizedBox(height: 4),
-                  Text('${weeklyHoursAsync.valueOrNull?.toStringAsFixed(1) ?? '0.0'}h total', style: AppTextStyles.displaySmall.copyWith(fontSize: 24)),
+                  Text(l.hoursTotal(weeklyHoursAsync.valueOrNull?.toStringAsFixed(1) ?? '0.0'), style: AppTextStyles.displaySmall.copyWith(fontSize: 24)),
                 ]),
               ),
             ]),
@@ -123,8 +125,9 @@ class _FamilyScreenState extends ConsumerState<FamilyScreen> {
       note: _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
     );
     setState(() => _saved = true);
+    final l = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text('Logged ${_hours.toStringAsFixed(1)}h with family!', style: AppTextStyles.bodyMedium),
+      content: Text(l.loggedFamilyHours(_hours.toStringAsFixed(1)), style: AppTextStyles.bodyMedium),
       backgroundColor: AppColors.success, behavior: SnackBarBehavior.floating,
     ));
   }

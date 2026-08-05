@@ -90,9 +90,10 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
     _noteController.clear();
     ref.read(sceneEventBusProvider).emit(SceneEventType.water);
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('+15 XP — Prayer logged!', style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: Color(0xFF07090E))),
-        backgroundColor: AppColors.primary, behavior: SnackBarBehavior.floating, duration: Duration(seconds: 2),
+      final l = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(l.prayerXpEarned, style: const TextStyle(fontFamily: 'Inter', fontSize: 14, color: Color(0xFF07090E))),
+        backgroundColor: AppColors.primary, behavior: SnackBarBehavior.floating, duration: const Duration(seconds: 2),
       ));
     }
   }
@@ -115,9 +116,10 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
     ref.read(sceneEventBusProvider).emit(SceneEventType.water);
     setState(() { _startTime = null; _isRunning = false; _timerExpanded = false; });
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('+15 XP — Prayer logged!', style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: Color(0xFF07090E))),
-        backgroundColor: AppColors.primary, behavior: SnackBarBehavior.floating, duration: Duration(seconds: 2),
+      final l = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(l.prayerXpEarned, style: const TextStyle(fontFamily: 'Inter', fontSize: 14, color: Color(0xFF07090E))),
+        backgroundColor: AppColors.primary, behavior: SnackBarBehavior.floating, duration: const Duration(seconds: 2),
       ));
     }
   }

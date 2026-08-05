@@ -690,4 +690,240 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get vineSoundSubtitle =>
       'A soft tone when the vine responds — off by default.';
+
+  @override
+  String get tryAgain => 'Try Again';
+
+  @override
+  String get add => 'Add';
+
+  @override
+  String get join => 'Join';
+
+  @override
+  String get enkutatashTitle => 'Enkutatash';
+
+  @override
+  String get enkutatashNewYear => 'Ethiopian New Year 2019';
+
+  @override
+  String get enterNewYear => 'Enter the New Year';
+
+  @override
+  String get readyToGrow => 'Ready to grow!';
+
+  @override
+  String get madeByAmanuel => 'Made by Amanuel Lamesa';
+
+  @override
+  String get versionTag => 'Summer 2026 · v1.0';
+
+  @override
+  String get joinTelegram => 'Join our community on Telegram';
+
+  @override
+  String summerDayCount(Object elapsed, Object left, Object total) {
+    return 'Day $elapsed of $total · $left left';
+  }
+
+  @override
+  String get addFirstHabit => 'Add your first habit to start tracking!';
+
+  @override
+  String get habitName => 'Habit name';
+
+  @override
+  String get newHabit => 'New Habit';
+
+  @override
+  String get category => 'Category';
+
+  @override
+  String dayStreak(Object count) {
+    return 'Day $count Streak';
+  }
+
+  @override
+  String xpAndLevel(Object level, Object xp) {
+    return '$xp XP · Level $level';
+  }
+
+  @override
+  String deleteHabitTitle(Object name) {
+    return 'Delete $name?';
+  }
+
+  @override
+  String get deleteHabitBody =>
+      'This will remove the habit and all its completion history.';
+
+  @override
+  String get habitCategorySpiritual => 'Spiritual';
+
+  @override
+  String get habitCategoryHealth => 'Health';
+
+  @override
+  String get habitCategoryStudy => 'Study';
+
+  @override
+  String get habitCategoryProductivity => 'Productivity';
+
+  @override
+  String loggedMinutes(Object minutes) {
+    return 'Logged $minutes minutes!';
+  }
+
+  @override
+  String skillMinGoal(Object category, Object minutes) {
+    return '$category · $minutes min goal';
+  }
+
+  @override
+  String deleteSkillTitle(Object name) {
+    return 'Delete $name?';
+  }
+
+  @override
+  String get deleteSkillBody =>
+      'This will remove the skill and all session logs.';
+
+  @override
+  String get skillCategoryCreative => 'Creative';
+
+  @override
+  String get skillCategoryWriting => 'Writing';
+
+  @override
+  String get skillCategoryTech => 'Tech';
+
+  @override
+  String get skillCategoryLanguage => 'Language';
+
+  @override
+  String get skillCategoryWellness => 'Wellness';
+
+  @override
+  String get skillCategoryArt => 'Art';
+
+  @override
+  String noGoalsOfType(Object type) {
+    return 'No $type goals yet';
+  }
+
+  @override
+  String get addFirstGoal => 'Add your first goal!';
+
+  @override
+  String get active => 'Active';
+
+  @override
+  String get achieved => 'Achieved';
+
+  @override
+  String get noPastGoals => 'No past goals yet';
+
+  @override
+  String get deleteGoalTitle => 'Delete goal?';
+
+  @override
+  String deleteGoalBody(Object title) {
+    return 'This will remove \"$title\" permanently.';
+  }
+
+  @override
+  String addTypeGoal(Object type) {
+    return 'Add $type Goal';
+  }
+
+  @override
+  String get goalHint => 'What do you want to achieve?';
+
+  @override
+  String get weeklyType => 'Weekly';
+
+  @override
+  String get monthlyType => 'Monthly';
+
+  @override
+  String get yearlyType => 'Yearly';
+
+  @override
+  String get currentGoals => 'Current goals';
+
+  @override
+  String get pastGoals => 'Past goals';
+
+  @override
+  String weekOf(Object end, Object start) {
+    return 'Week of $start — $end';
+  }
+
+  @override
+  String hoursTotal(Object hours) {
+    return '${hours}h total';
+  }
+
+  @override
+  String loggedFamilyHours(Object hours) {
+    return 'Logged ${hours}h with family!';
+  }
+
+  @override
+  String get saved => 'Saved!';
+
+  @override
+  String get saveReflection => 'Save Reflection';
+
+  @override
+  String get weeklyReflection => 'Weekly Reflection';
+
+  @override
+  String get weeklyCheckIn => 'Weekly Check-in';
+
+  @override
+  String get reflectOnWeek => 'Take a moment to reflect on your week';
+
+  @override
+  String get reflectionCompleteWeek => 'Reflection complete for this week';
+
+  @override
+  String get reflectionSaved => 'Reflection saved!';
+
+  @override
+  String get qGrew => 'What helped you grow this week?';
+
+  @override
+  String get qSlipped => 'Where did you slip or struggle?';
+
+  @override
+  String get qFocus => 'What will you focus on next week?';
+
+  @override
+  String get writeThoughts => 'Write your thoughts...';
+
+  @override
+  String get prayerXpEarned => '+15 XP — Prayer logged!';
+
+  @override
+  String daysConsistent(Object count) {
+    return '$count days consistent';
+  }
+
+  @override
+  String freezeChips(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '❄️ # freezes',
+      one: '❄️ 1 freeze',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get badges => 'Badges';
+
+  @override
+  String get weeklyXpTrend => 'Weekly XP trend';
 }

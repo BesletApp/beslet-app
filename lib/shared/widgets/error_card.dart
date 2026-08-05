@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../l10n/app_localizations.dart';
 
 class ErrorCard extends StatelessWidget {
   final String message;
@@ -28,7 +29,7 @@ class ErrorCard extends StatelessWidget {
               ElevatedButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh, size: 16),
-                label: const Text('Try Again', style: TextStyle(fontSize: 12)),
+                label: Text(AppLocalizations.of(context)!.tryAgain, style: const TextStyle(fontSize: 12)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: const Color(0xFF07090E),

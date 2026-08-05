@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/providers/tracking_provider.dart';
+import '../../l10n/app_localizations.dart';
 
 class ReflectionScreen extends ConsumerStatefulWidget {
   const ReflectionScreen({super.key});
@@ -36,9 +37,10 @@ class _ReflectionScreenState extends ConsumerState<ReflectionScreen> {
   @override Widget build(BuildContext context) {
     final reflectionAsync = ref.watch(reflectionProvider);
     final c = AppColors.of(context);
+    final l = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/home')), title: const Text('Weekly Reflection')),
+      appBar: AppBar(leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/home')), title: Text(l.weeklyReflection)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -48,24 +50,24 @@ class _ReflectionScreenState extends ConsumerState<ReflectionScreen> {
             child: Column(children: [
               Text('🤔', style: const TextStyle(fontSize: 48)),
               const SizedBox(height: 12),
-              Text('Weekly Check-in', style: AppTextStyles.displaySmall),
+              Text(l.weeklyCheckIn, style: AppTextStyles.displaySmall),
               const SizedBox(height: 4),
-              Text('Take a moment to reflect on your week', style: AppTextStyles.bodyMedium.copyWith(color: c.textSecondary)),
+              Text(l.reflectOnWeek, style: AppTextStyles.bodyMedium.copyWith(color: c.textSecondary)),
             ]),
           ),
           const SizedBox(height: 24),
-          _buildQuestion('What helped you grow this week?', '🙌', _grewCtrl, c),
+          _buildQuestion(l.qGrew, '🙌', _grewCtrl, c),
           const SizedBox(height: 20),
-          _buildQuestion('Where did you slip or struggle?', '💪', _slippedCtrl, c),
+          _buildQuestion(l.qSlipped, '💪', _slippedCtrl, c),
           const SizedBox(height: 20),
-          _buildQuestion('What will you focus on next week?', '🎯', _focusCtrl, c),
+          _buildQuestion(l.qFocus, '🎯', _focusCtrl, c),
           const SizedBox(height: 32),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               onPressed: _saved ? null : _save,
               style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
-              child: Text(_saved ? 'Saved ✓' : 'Save Reflection'),
+              child: Text(_saved ? '${l.saved} ✓' : l.saveReflection),
             ),
           ),
           if (reflectionAsync.valueOrNull != null) ...[
@@ -77,7 +79,7 @@ class _ReflectionScreenState extends ConsumerState<ReflectionScreen> {
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
                   const Icon(Icons.check_circle, color: AppColors.success, size: 16),
                   const SizedBox(width: 8),
-                  Text('Reflection complete for this week', style: AppTextStyles.bodySmall.copyWith(color: AppColors.success)),
+                  Text(l.reflectionCompleteWeek, style: AppTextStyles.bodySmall.copyWith(color: AppColors.success)),
                 ]),
               ),
             ),
@@ -100,7 +102,7 @@ class _ReflectionScreenState extends ConsumerState<ReflectionScreen> {
         maxLines: 3,
         style: AppTextStyles.bodyMedium,
         decoration: InputDecoration(
-          hintText: 'Write your thoughts...',
+          hintText: AppLocalizations.of(context)!.writeThoughts,
           hintStyle: TextStyle(color: c.textMuted),
           filled: true, fillColor: c.surface,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -117,8 +119,9 @@ class _ReflectionScreenState extends ConsumerState<ReflectionScreen> {
       nextFocus: _focusCtrl.text.trim().isEmpty ? null : _focusCtrl.text.trim(),
     );
     setState(() => _saved = true);
+    final l = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text('Reflection saved!', style: AppTextStyles.bodyMedium),
+      content: Text(l.reflectionSaved, style: AppTextStyles.bodyMedium),
       backgroundColor: AppColors.success, behavior: SnackBarBehavior.floating,
     ));
   }

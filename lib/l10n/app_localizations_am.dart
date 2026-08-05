@@ -683,4 +683,238 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get vineSoundSubtitle => 'ወይኑ ምላሽ ሲሰጥ የሚሰማ ገር ድምፅ — በነባሪ ጠፍቷል።';
+
+  @override
+  String get tryAgain => 'በድጋሚ ሞክር';
+
+  @override
+  String get add => 'አክል';
+
+  @override
+  String get join => 'ይቀላቀሉ';
+
+  @override
+  String get enkutatashTitle => 'እንቁጣጣሽ';
+
+  @override
+  String get enkutatashNewYear => 'የኢትዮጵያ አዲስ ዓመት 2019';
+
+  @override
+  String get enterNewYear => 'አዲስ ዓመት ግባ';
+
+  @override
+  String get readyToGrow => 'ለማደግ ዝግጁ ነህ!';
+
+  @override
+  String get madeByAmanuel => 'በአማኑኤል ላሜሳ የተሰራ';
+
+  @override
+  String get versionTag => 'በጋ 2026 · v1.0';
+
+  @override
+  String get joinTelegram => 'በቴሌግራም የእኛን ማህበረሰብ ይቀላቀሉ';
+
+  @override
+  String summerDayCount(Object elapsed, Object left, Object total) {
+    return 'ቀን $elapsed ከ$total · $left ቀርተዋል';
+  }
+
+  @override
+  String get addFirstHabit => 'መከታተል ለመጀመር የመጀመሪያ ልማድህን አክል!';
+
+  @override
+  String get habitName => 'የልማድ ስም';
+
+  @override
+  String get newHabit => 'አዲስ ልማድ';
+
+  @override
+  String get category => 'ምድብ';
+
+  @override
+  String dayStreak(Object count) {
+    return 'ተከታታይ ቀን $count';
+  }
+
+  @override
+  String xpAndLevel(Object level, Object xp) {
+    return '$xp ነጥብ · ደረጃ $level';
+  }
+
+  @override
+  String deleteHabitTitle(Object name) {
+    return '$name ይሰረዝ?';
+  }
+
+  @override
+  String get deleteHabitBody => 'ይህ ልማዱን እና ሙሉ የመጠናቀቂያ ታሪኩን ያስወግዳል።';
+
+  @override
+  String get habitCategorySpiritual => 'መንፈሳዊ';
+
+  @override
+  String get habitCategoryHealth => 'ጤና';
+
+  @override
+  String get habitCategoryStudy => 'ጥናት';
+
+  @override
+  String get habitCategoryProductivity => 'ምርታማነት';
+
+  @override
+  String loggedMinutes(Object minutes) {
+    return '$minutes ደቂቃ ተመዝግቧል!';
+  }
+
+  @override
+  String skillMinGoal(Object category, Object minutes) {
+    return '$category · $minutes ደቂቃ ግብ';
+  }
+
+  @override
+  String deleteSkillTitle(Object name) {
+    return '$name ይሰረዝ?';
+  }
+
+  @override
+  String get deleteSkillBody => 'ይህ ክህሎቱን እና ሁሉንም የክፍለ ጊዜ ምዝግቦች ያስወግዳል።';
+
+  @override
+  String get skillCategoryCreative => 'ፈጠራ';
+
+  @override
+  String get skillCategoryWriting => 'ጽሑፍ';
+
+  @override
+  String get skillCategoryTech => 'ቴክኖሎጂ';
+
+  @override
+  String get skillCategoryLanguage => 'ቋንቋ';
+
+  @override
+  String get skillCategoryWellness => 'ደህንነት';
+
+  @override
+  String get skillCategoryArt => 'ሥነ ጥበብ';
+
+  @override
+  String noGoalsOfType(Object type) {
+    return 'እስካሁን ምንም $type ግቦች የሉም';
+  }
+
+  @override
+  String get addFirstGoal => 'የመጀመሪያ ግብህን አክል!';
+
+  @override
+  String get active => 'ንቁ';
+
+  @override
+  String get achieved => 'የተሳካ';
+
+  @override
+  String get noPastGoals => 'እስካሁን የቀድሞ ግቦች የሉም';
+
+  @override
+  String get deleteGoalTitle => 'ግብ ይሰረዝ?';
+
+  @override
+  String deleteGoalBody(Object title) {
+    return 'ይህ \"$title\"ን በቋሚነት ያስወግዳል።';
+  }
+
+  @override
+  String addTypeGoal(Object type) {
+    return '$type ግብ አክል';
+  }
+
+  @override
+  String get goalHint => 'ምን ማሳካት ይፈልጋሉ?';
+
+  @override
+  String get weeklyType => 'ሳምንታዊ';
+
+  @override
+  String get monthlyType => 'ወርሃዊ';
+
+  @override
+  String get yearlyType => 'ዓመታዊ';
+
+  @override
+  String get currentGoals => 'የአሁኑ ግቦች';
+
+  @override
+  String get pastGoals => 'የቀድሞ ግቦች';
+
+  @override
+  String weekOf(Object end, Object start) {
+    return 'ሳምንት $start — $end';
+  }
+
+  @override
+  String hoursTotal(Object hours) {
+    return 'በጠቅላላ $hours ሰዓት';
+  }
+
+  @override
+  String loggedFamilyHours(Object hours) {
+    return 'ከቤተሰብ ጋር $hours ሰዓት ተመዝግቧል!';
+  }
+
+  @override
+  String get saved => 'ተቀምጧል!';
+
+  @override
+  String get saveReflection => 'ማሰላሰል አስቀምጥ';
+
+  @override
+  String get weeklyReflection => 'ሳምንታዊ ማሰላሰል';
+
+  @override
+  String get weeklyCheckIn => 'ሳምንታዊ ቼክ-ኢን';
+
+  @override
+  String get reflectOnWeek => 'ሳምንትህን ለማሰላሰል ትንሽ ጊዜ ውሰድ';
+
+  @override
+  String get reflectionCompleteWeek => 'ለዚህ ሳምንት ማሰላሰል ተጠናቋል';
+
+  @override
+  String get reflectionSaved => 'ማሰላሰል ተቀምጧል!';
+
+  @override
+  String get qGrew => 'በዚህ ሳምንት እንድታድግ ምን ረድቶሃል?';
+
+  @override
+  String get qSlipped => 'በየት ተንደደድክ ወይም ታገልክ?';
+
+  @override
+  String get qFocus => 'በሚቀጥለው ሳምንት በምን ላይ ትኩረት ታደርጋለህ?';
+
+  @override
+  String get writeThoughts => 'ሃሳቦችህን ጻፍ...';
+
+  @override
+  String get prayerXpEarned => '+15 ነጥብ — ጸሎት ተመዝግቧል!';
+
+  @override
+  String daysConsistent(Object count) {
+    return '$count ቀናት ተከታታይ';
+  }
+
+  @override
+  String freezeChips(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '❄️ # የጸጋ መሸከሚያዎች',
+      one: '❄️ 1 የጸጋ መሸከሚያ',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get badges => 'ሜዳሊያዎች';
+
+  @override
+  String get weeklyXpTrend => 'ሳምንታዊ የነጥብ አዝማሚያ';
 }

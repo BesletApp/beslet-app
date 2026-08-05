@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 
 class EnkutatashOverlay extends StatefulWidget {
   final VoidCallback onDismiss;
@@ -62,12 +63,13 @@ class _EnkutatashOverlayState extends State<EnkutatashOverlay> with SingleTicker
   }
 
   Widget _header() {
+    final l = AppLocalizations.of(context)!;
     return Column(children: [
       Text('🎉 የእንቁጣጣሽ', style: TextStyle(fontFamily: 'NotoSansEthiopic', fontSize: 14, color: const Color(0xFFE8C84A).withValues(alpha: 0.7))),
       const SizedBox(height: 8),
-      Text('Enkutatash', style: const TextStyle(fontFamily: 'CormorantGaramond', fontSize: 42, fontWeight: FontWeight.w700, color: Color(0xFFE8C84A))),
+      Text(l.enkutatashTitle, style: const TextStyle(fontFamily: 'CormorantGaramond', fontSize: 42, fontWeight: FontWeight.w700, color: Color(0xFFE8C84A))),
       const SizedBox(height: 4),
-      Text('Ethiopian New Year 2019', style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: const Color(0xFFE8C84A).withValues(alpha: 0.7))),
+      Text(l.enkutatashNewYear, style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: const Color(0xFFE8C84A).withValues(alpha: 0.7))),
       const SizedBox(height: 24),
       Container(
         width: 60, height: 2,
@@ -135,7 +137,7 @@ class _EnkutatashOverlayState extends State<EnkutatashOverlay> with SingleTicker
           padding: const EdgeInsets.symmetric(vertical: 14),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
         ),
-        child: const Text('Enter the New Year', style: TextStyle(fontFamily: 'Inter', fontSize: 15, fontWeight: FontWeight.w600)),
+        child: Text(AppLocalizations.of(context)!.enterNewYear, style: const TextStyle(fontFamily: 'Inter', fontSize: 15, fontWeight: FontWeight.w600)),
       ),
     );
   }

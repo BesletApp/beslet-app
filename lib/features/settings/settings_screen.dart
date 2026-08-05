@@ -324,8 +324,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 const SizedBox(height: AppSpacing.sm),
                 Text(isAm ? 'á‰ áŠ áˆ­á‰£ áˆáŠ•áŒ­ á‹©áŠ’á‰¨áˆ­áˆ²á‰² á‹áˆµáŒ¥ áˆ‹áˆ‰ áŠ­áˆ­áˆµá‰²á‹«áŠ• á‰°áˆ›áˆªá‹Žá‰½ á‹¨á‰ áŒ‹ á‹¨90 á‰€áŠ• á‹¨áˆ˜áŠ•áˆáˆ³á‹Š áŠ¥á‹µáŒˆá‰µ áˆ˜á‰°áŒá‰ áˆªá‹«á¢' : 'A 90-day summer spiritual growth app for Christian students at Arba Minch University and beyond.', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: c.textSecondary, height: 1.4)),
                 const SizedBox(height: AppSpacing.sm),
-                Text('Made by Amanuel Lamesa', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: c.textMuted)),
-                Text('Summer 2026 Â· v1.0', style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: c.textMuted)),
+                Text(l.madeByAmanuel, style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: c.textMuted)),
+                Text(l.versionTag, style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: c.textMuted)),
                 const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,

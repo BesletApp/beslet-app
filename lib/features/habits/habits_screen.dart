@@ -7,6 +7,7 @@ import '../../core/database/app_database.dart';
 import '../../core/providers/habits_provider.dart';
 import '../../core/providers/tracking_provider.dart';
 import '../../core/services/scene_event_bus.dart';
+import '../../l10n/app_localizations.dart';
 import '../growth/widgets/mini_vine.dart';
 
 final _habitCategories = [
@@ -23,9 +24,10 @@ class HabitsScreen extends ConsumerWidget {
     final habitsAsync = ref.watch(habitsWithCompletionsProvider);
     final trackingAsync = ref.watch(trackingDataProvider);
     final c = AppColors.of(context);
+    final l = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/home')), title: const Text('Daily Habits'), actions: [
+      appBar: AppBar(leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/home')), title: Text(l.dailyHabits), actions: [
         IconButton(icon: const Icon(Icons.add), onPressed: () => _showAddDialog(context, ref)),
       ]),
       body: habitsAsync.when(
@@ -39,13 +41,13 @@ class HabitsScreen extends ConsumerWidget {
                 child: Column(mainAxisSize: MainAxisSize.min, children: [
                   Text('📋', style: const TextStyle(fontSize: 64)),
                   const SizedBox(height: 16),
-                  Text('No habits yet', style: AppTextStyles.displaySmall),
+                  Text(l.noHabitsYet, style: AppTextStyles.displaySmall),
                   const SizedBox(height: 8),
-                  Text('Add your first habit to start tracking!', style: AppTextStyles.bodyMedium.copyWith(color: c.textSecondary)),
+                  Text(l.addFirstHabit, style: AppTextStyles.bodyMedium.copyWith(color: c.textSecondary)),
                   const SizedBox(height: 24),
                   ElevatedButton.icon(
                     icon: const Icon(Icons.add),
-                    label: const Text('Add Habit'),
+                    label: Text(l.addHabit),
                     onPressed: () => _showAddDialog(context, ref),
                   ),
                 ]),
@@ -67,7 +69,7 @@ class HabitsScreen extends ConsumerWidget {
                 );
               }
               if (index == 1) {
-                return _buildStreakHeader(trackingAsync, c);
+                return _buildStreakHeader(trackingAsync, c, l);
               }
               final item = habits[index - 2];
               final habit = item['habit'] as Habit;
@@ -79,7 +81,7 @@ class HabitsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildStreakHeader(AsyncValue<TrackingData> trackingAsync, ThemePalette c) {
+  Widget _buildStreakHeader(AsyncValue<TrackingData> trackingAsync, ThemePalette c, AppLocalizations l) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(gradient: AppColors.gradientGoldSoft, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.primary.withValues(alpha: 0.3))),
@@ -92,9 +94,9 @@ class HabitsScreen extends ConsumerWidget {
           ),
           const SizedBox(width: 16),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('Day ${data.streak} Streak', style: AppTextStyles.labelLarge),
+            Text(l.dayStreak(data.streak), style: AppTextStyles.labelLarge),
             const SizedBox(height: 4),
-            Text('${data.totalXp} XP · Level ${data.level + 1}', style: AppTextStyles.bodySmall.copyWith(color: c.textSecondary)),
+            Text(l.xpAndLevel(data.totalXp, data.level + 1), style: AppTextStyles.bodySmall.copyWith(color: c.textSecondary)),
             const SizedBox(height: 8),
             ClipRRect(
               borderRadius: BorderRadius.circular(4),
@@ -112,6 +114,7 @@ class HabitsScreen extends ConsumerWidget {
 
   Widget _buildHabitTile(BuildContext context, WidgetRef ref, Habit habit, bool completed) {
     final c = AppColors.of(context);
+    final l = AppLocalizations.of(context)!;
     final emojiIcon = habit.icon.isNotEmpty ? habit.icon : '✅';
     return Container(
       decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(12), border: Border.all(color: completed ? AppColors.primary.withValues(alpha: 0.5) : c.border)),
@@ -125,7 +128,7 @@ class HabitsScreen extends ConsumerWidget {
           child: Center(child: Text(emojiIcon, style: const TextStyle(fontSize: 20))),
         ),
         title: Text(habit.name, style: AppTextStyles.bodyMedium.copyWith(decoration: completed ? TextDecoration.lineThrough : null)),
-        subtitle: Text(habit.category, style: AppTextStyles.bodySmall.copyWith(color: c.textMuted)),
+        subtitle: Text(_habitCategoryLabel(habit.category, l), style: AppTextStyles.bodySmall.copyWith(color: c.textMuted)),
         trailing: GestureDetector(
           onTap: () {
             ref.read(habitsNotifierProvider.notifier).toggleCompletion(habit.id);
@@ -148,19 +151,21 @@ class HabitsScreen extends ConsumerWidget {
 
   void _confirmDelete(BuildContext context, WidgetRef ref, Habit habit) {
     final c = AppColors.of(context);
+    final l = AppLocalizations.of(context)!;
     showDialog(context: context, builder: (ctx) => AlertDialog(
       backgroundColor: c.card,
-      title: Text('Delete ${habit.name}?', style: AppTextStyles.labelLarge),
-      content: Text('This will remove the habit and all its completion history.', style: AppTextStyles.bodyMedium.copyWith(color: c.textSecondary)),
+      title: Text(l.deleteHabitTitle(habit.name), style: AppTextStyles.labelLarge),
+      content: Text(l.deleteHabitBody, style: AppTextStyles.bodyMedium.copyWith(color: c.textSecondary)),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-        TextButton(onPressed: () { Navigator.pop(ctx); ref.read(habitsNotifierProvider.notifier).deleteHabit(habit.id); }, child: Text('Delete', style: TextStyle(color: AppColors.error))),
+        TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l.cancel)),
+        TextButton(onPressed: () { Navigator.pop(ctx); ref.read(habitsNotifierProvider.notifier).deleteHabit(habit.id); }, child: Text(l.delete, style: TextStyle(color: AppColors.error))),
       ],
     ));
   }
 
   void _showAddDialog(BuildContext context, WidgetRef ref) {
     final c = AppColors.of(context);
+    final l = AppLocalizations.of(context)!;
     final nameCtrl = TextEditingController();
     String selectedCategory = 'Spiritual';
     String selectedIcon = '🙏';
@@ -168,19 +173,19 @@ class HabitsScreen extends ConsumerWidget {
     showDialog(context: context, builder: (ctx) => StatefulBuilder(
       builder: (ctx, setState) => AlertDialog(
         backgroundColor: c.card,
-        title: Text('New Habit', style: AppTextStyles.labelLarge),
+        title: Text(l.newHabit, style: AppTextStyles.labelLarge),
         content: Column(mainAxisSize: MainAxisSize.min, children: [
           TextField(
             controller: nameCtrl,
             style: AppTextStyles.bodyMedium,
             decoration: InputDecoration(
-              hintText: 'Habit name',
+              hintText: l.habitName,
               hintStyle: TextStyle(color: c.textMuted),
               filled: true, fillColor: c.surface, border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
             ),
           ),
           const SizedBox(height: 16),
-          Text('Category', style: AppTextStyles.bodySmall.copyWith(color: c.textSecondary)),
+          Text(l.category, style: AppTextStyles.bodySmall.copyWith(color: c.textSecondary)),
           const SizedBox(height: 8),
           Wrap(spacing: 8, runSpacing: 8, children: _habitCategories.map((cat) {
             final isSelected = selectedCategory == cat['name'];
@@ -193,20 +198,30 @@ class HabitsScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: isSelected ? AppColors.primary : c.border),
                 ),
-                child: Text('${cat['icon']} ${cat['name']}', style: AppTextStyles.bodySmall.copyWith(color: isSelected ? AppColors.primary : c.textSecondary)),
+                child: Text('${cat['icon']} ${_habitCategoryLabel(cat['name'] as String, l)}', style: AppTextStyles.bodySmall.copyWith(color: isSelected ? AppColors.primary : c.textSecondary)),
               ),
             );
           }).toList()),
         ]),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l.cancel)),
           ElevatedButton(onPressed: () {
             if (nameCtrl.text.trim().isEmpty) return;
             ref.read(habitsNotifierProvider.notifier).addHabit(nameCtrl.text.trim(), selectedCategory, selectedIcon);
             Navigator.pop(ctx);
-          }, child: const Text('Add')),
+          }, child: Text(l.add)),
         ],
       ),
     ));
+  }
+
+  String _habitCategoryLabel(String name, AppLocalizations l) {
+    switch (name) {
+      case 'Spiritual': return l.habitCategorySpiritual;
+      case 'Health': return l.habitCategoryHealth;
+      case 'Study': return l.habitCategoryStudy;
+      case 'Productivity': return l.habitCategoryProductivity;
+      default: return name;
+    }
   }
 }
