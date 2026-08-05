@@ -5,13 +5,16 @@ import 'package:flutter/material.dart';
 
 /// Deterministic, procedural vine geometry. The same [seed] always yields the
 /// same living vine — pure math, offline, untrackable. [sway] adds a tiny
-/// time-based wiggle without changing the underlying structure.
+/// time-based wiggle without changing the underlying structure. [fullness]
+/// (0..1) adds interior sub-branches for a lush, movie-style canopy; the
+/// default keeps the classic spare look (MiniVine).
 VineGeometry buildVine({
   required int seed,
   required double growth01,
   required int branches,
   required Size size,
   double sway = 0,
+  double fullness = 0,
 }) {
   final rng = math.Random(seed);
   final segments = <VineSegment>[];
@@ -35,6 +38,7 @@ VineGeometry buildVine({
     size.height * 0.30 * growth01,
     6.0,
     sway,
+    fullness,
     segments,
     tips,
     size,
@@ -61,6 +65,7 @@ void _grow(
   double length,
   double width,
   double sway,
+  double fullness,
   List<VineSegment> segments,
   List<Offset> tips,
   Size size,
@@ -76,7 +81,16 @@ void _grow(
     final to = from + Offset(math.cos(angle), math.sin(angle)) * len;
     if (to.dy < -24) continue;
     segments.add(VineSegment(from: from, to: to, width: width, depth: depth));
-    _grow(rng, to, depth - 1, angle, len, width * 0.72, sway, segments, tips, size);
+    _grow(rng, to, depth - 1, angle, len, width * 0.72, sway, fullness, segments, tips, size);
+  }
+  if (fullness > 0 && depth >= 2 && rng.nextDouble() < 0.7 * fullness) {
+    final midAngle = baseAngle + (rng.nextDouble() - 0.5) * 0.55;
+    final midLen = length * (0.5 + rng.nextDouble() * 0.16);
+    final to = from + Offset(math.cos(midAngle), math.sin(midAngle)) * midLen;
+    if (to.dy >= -24) {
+      segments.add(VineSegment(from: from, to: to, width: width * 0.7, depth: depth));
+      _grow(rng, to, depth - 1, midAngle, midLen, width * 0.62, sway, fullness, segments, tips, size);
+    }
   }
 }
 

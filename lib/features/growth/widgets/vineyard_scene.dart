@@ -8,6 +8,8 @@ import '../../../core/services/scene_event_bus.dart';
 import '../../../core/services/widget_service.dart';
 import 'ambient_painters.dart';
 import 'life_clock.dart';
+import 'movie_backdrop_painter.dart';
+import 'movie_vine_painter.dart';
 import 'scene_moment.dart';
 import 'vine_painter.dart';
 
@@ -244,6 +246,7 @@ class _VineyardSceneState extends State<VineyardScene>
               growth01: displayed,
               branches: widget.branches,
               size: size,
+              fullness: 1,
             );
             return _TweenedVitals(
               hydration: widget.hydration,
@@ -264,13 +267,14 @@ class _VineyardSceneState extends State<VineyardScene>
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [atmosphere.skyTop, atmosphere.skyBottom],
-                          ),
+                      CustomPaint(
+                        painter: MovieBackdropPainter(
+                          skyTop: atmosphere.skyTop,
+                          skyBottom: atmosphere.skyBottom,
+                          light: light,
+                          isDark: isDark,
+                          soil: palette.soil,
+                          seed: widget.seed,
                         ),
                       ),
                       _LampGlow(
@@ -295,7 +299,7 @@ class _VineyardSceneState extends State<VineyardScene>
                         ),
                       ),
                       CustomPaint(
-                        painter: VinePainter(
+                        painter: MovieVinePainter(
                           seed: widget.seed,
                           growth01: displayed,
                           branches: widget.branches,
@@ -315,6 +319,7 @@ class _VineyardSceneState extends State<VineyardScene>
                           flutterAmt: reduced ? 0 : 1,
                           dew: _dewFor(light),
                           wilt: reduced ? 0 : easedWilt,
+                          fullness: 1,
                         ),
                       ),
                       CustomPaint(
