@@ -278,5 +278,18 @@
   "daysConsistent": "{count} ቀናት ተከታታይ",
   "freezeChips": "{count, plural, =1{❄️ 1 የጸጋ መሸከሚያ} other{❄️ # የጸጋ መሸከሚያዎች}}",
   "badges": "ሜዳሊያዎች",
-  "weeklyXpTrend": "ሳምንታዊ የነጥብ አዝማሚያ"
+  "weeklyXpTrend": "ሳምንታዊ የነጥብ አዝማሚያ",
+  "todaysFlow": "የዛሬ ፍሰት",
+  "readToday": "የዛሬ ንባብ",
+  "planOpen": "ክፈት",
+  "readCompletedToday": "ዛሬ አንብበሃል ✓",
+  "readNotStarted": "አልተጠናቀቀም",
+  "markReadingDone": "የዛሬውን ንባብ ምልክት አድርግ",
+  "readingXpEarned": "+20 ነጥብ — ንባብ ተጠናቋል!",
+  "continueToPrayer": "ወደ ጸሎት ቀጥል",
+  "openWord": "ቃሉን ክፈት",
+  "beginPrayer": "ጸልይ",
+  "liveItOut": "በተግባር ኑር",
+  "beginWithWord": "በመጀመሪያ በቃሉ ጀምር",
+  "prayWhatYouRead": "ያነበብከውን መሠረት አድርገህ ጸልይ"
 }

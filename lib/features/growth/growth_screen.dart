@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/database/app_database.dart';
 import '../../core/providers/growth_provider.dart';
 import '../../core/providers/growth_streams_provider.dart';
+import '../../core/providers/daily_flow_provider.dart';
 import '../../core/providers/journal_provider.dart';
 import '../../core/providers/soul_log_provider.dart';
 import '../../core/providers/streak_provider.dart';
@@ -402,6 +403,8 @@ class _LivingVineyardState extends ConsumerState<_LivingVineyard> {
               ),
             ),
             const SizedBox(height: AppSpacing.sm),
+            const _TodayFlowCard(),
+            const SizedBox(height: AppSpacing.sm),
             DisclosureTile(
               icon: Icons.auto_awesome,
               title: l.todayRhythm,
@@ -463,6 +466,76 @@ class _LivingVineyardState extends ConsumerState<_LivingVineyard> {
             message: l.gardenWelcomeBack,
           ),
       ],
+    );
+  }
+}
+
+/// Today's guided flow as three pillar checkmarks — Bible, Prayer, Act — the
+/// same journey the Home card walks. A faithful day is all three; grace means
+/// even one counts.
+class _TodayFlowCard extends ConsumerWidget {
+  const _TodayFlowCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final c = AppColors.of(context);
+    final t = AppTextStyles.of(context);
+    final l = AppLocalizations.of(context)!;
+    final isAm = l.localeName == 'am';
+    final flow = ref.watch(dailyFlowProvider);
+    final pillars = <(bool, String, String)>[
+      (flow.bibleDone, '📖', isAm ? 'መጽሐፍ ቅዱስ' : 'Bible'),
+      (flow.prayerDone, '🙏', isAm ? 'ጸሎት' : 'Prayer'),
+      (flow.actionDone, '🌱', isAm ? 'ተግባር' : 'Act'),
+    ];
+
+    return BesletCard(
+      variant: CardVariant.secondary,
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Icon(Icons.flag_outlined, size: 18, color: c.primary),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(child: Text(l.todaysFlow, style: t.bodyLarge.copyWith(fontWeight: FontWeight.w700))),
+          Text('${flow.done}/${flow.total}', style: t.labelLarge.copyWith(color: c.primary)),
+        ]),
+        const SizedBox(height: AppSpacing.sm),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: LinearProgressIndicator(
+            value: flow.total == 0 ? 0 : flow.done / flow.total,
+            minHeight: 6,
+            backgroundColor: c.border,
+            valueColor: AlwaysStoppedAnimation(c.primary),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Row(children: [
+          for (final pillar in pillars)
+            Expanded(
+              child: Column(children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: pillar.$1 ? c.primary.withValues(alpha: 0.15) : c.border.withValues(alpha: 0.4),
+                    border: Border.all(color: pillar.$1 ? c.primary : AppColors.borderLight, width: 2),
+                  ),
+                  child: Center(
+                    child: pillar.$1
+                        ? const Icon(Icons.check, size: 20, color: AppColors.primary)
+                        : Text(pillar.$2, style: const TextStyle(fontSize: 16)),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  pillar.$3,
+                  style: t.bodySmall.copyWith(fontSize: 10, color: pillar.$1 ? c.primary : c.textMuted),
+                ),
+              ]),
+            ),
+        ]),
+      ]),
     );
   }
 }

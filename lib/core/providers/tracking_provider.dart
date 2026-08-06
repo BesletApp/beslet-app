@@ -22,6 +22,10 @@ class TrackingData {
   final int todosTotal;
   final List<Map<String, dynamic>> badges;
   final double levelProgress;
+  final bool bibleDone;
+  final bool prayerDone;
+  final bool actionDone;
+  final int pillarsDone;
 
   TrackingData({
     required this.totalXp,
@@ -38,6 +42,10 @@ class TrackingData {
     required this.todosTotal,
     required this.badges,
     required this.levelProgress,
+    required this.bibleDone,
+    required this.prayerDone,
+    required this.actionDone,
+    required this.pillarsDone,
   });
 }
 
@@ -69,11 +77,22 @@ final trackingDataProvider = FutureProvider<TrackingData>((ref) async {
     final allTodosDone = todosTotal > 0 && todosDone >= todosTotal;
     final todoXp = todosDone * XpService.todoComplete + (allTodosDone ? XpService.allTodosBonus : 0);
 
+    final todayReadingRows = await (db.select(db.readingSessions)..where((t) => t.date.equals(today))).get();
+    final bibleDone = todayReadingRows.isNotEmpty && todayReadingRows.first.completed == true;
+
+    final prayerDone = allPrayerLogs.any((l) => l.date == today);
+
+    final fellowshipToday = (await (db.select(db.fellowshipLogs)..where((t) => t.date.equals(today))).get()).isNotEmpty;
+    final familyToday = (await (db.select(db.familyTimeLogs)..where((t) => t.date.equals(today))).get()).isNotEmpty;
+    final actionDone = habitsDone > 0 || skillsMinutes > 0 || todosDone > 0 || fellowshipToday || familyToday;
+    final pillarsDone = [bibleDone, prayerDone, actionDone].where((d) => d).length;
+
     final totalXp = habitsDone * XpService.habitComplete +
         prayerDaysThisWeek * XpService.prayerComplete +
         skillsMinutes * XpService.skillSession +
         reflectionDone * XpService.reflectionComplete +
-        todoXp;
+        todoXp +
+        (bibleDone ? XpService.readingComplete : 0);
 
   final level = XpService.calculateLevel(totalXp);
   final levelName = XpService.getLevelName(level);
@@ -107,6 +126,10 @@ final trackingDataProvider = FutureProvider<TrackingData>((ref) async {
     todosTotal: todosTotal,
     badges: badges,
     levelProgress: levelProgress,
+    bibleDone: bibleDone,
+    prayerDone: prayerDone,
+    actionDone: actionDone,
+    pillarsDone: pillarsDone,
   );
 });
 

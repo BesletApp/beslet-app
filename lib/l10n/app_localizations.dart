@@ -1771,6 +1771,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Weekly XP trend'**
   String get weeklyXpTrend;
+
+  /// No description provided for @todaysFlow.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s flow'**
+  String get todaysFlow;
+
+  /// No description provided for @readToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s reading'**
+  String get readToday;
+
+  /// No description provided for @planOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get planOpen;
+
+  /// No description provided for @readCompletedToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Read today ✓'**
+  String get readCompletedToday;
+
+  /// No description provided for @readNotStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Not started'**
+  String get readNotStarted;
+
+  /// No description provided for @markReadingDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark today\'s reading done'**
+  String get markReadingDone;
+
+  /// No description provided for @readingXpEarned.
+  ///
+  /// In en, this message translates to:
+  /// **'+20 XP — Reading completed!'**
+  String get readingXpEarned;
+
+  /// No description provided for @continueToPrayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue to Prayer'**
+  String get continueToPrayer;
+
+  /// No description provided for @openWord.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the Word'**
+  String get openWord;
+
+  /// No description provided for @beginPrayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Begin Prayer'**
+  String get beginPrayer;
+
+  /// No description provided for @liveItOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Live it out'**
+  String get liveItOut;
+
+  /// No description provided for @beginWithWord.
+  ///
+  /// In en, this message translates to:
+  /// **'Begin with the Word first'**
+  String get beginWithWord;
+
+  /// No description provided for @prayWhatYouRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Pray based on what you read'**
+  String get prayWhatYouRead;
 }
 
 class _AppLocalizationsDelegate

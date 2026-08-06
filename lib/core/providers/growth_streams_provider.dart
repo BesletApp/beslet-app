@@ -38,6 +38,8 @@ class ReadingNotifier extends AsyncNotifier<void> {
       await (db.update(db.readingSessions)..where((t) => t.date.equals(today)))
           .write(ReadingSessionsCompanion(
         minutes: Value(existing.first.minutes + minutes),
+        bookId: Value<String?>(bookId ?? existing.first.bookId),
+        chapter: Value<int?>(chapter ?? existing.first.chapter),
       ));
     } else {
       await db.into(db.readingSessions).insert(ReadingSessionsCompanion.insert(
@@ -52,6 +54,43 @@ class ReadingNotifier extends AsyncNotifier<void> {
     ref.invalidate(todayReadingProvider);
     ref.invalidate(weekLivingProvider);
   }
+
+  /// Records today's Word as a completed step in the spiritual flow — the
+  /// thing the Home card, the Growth pillars, and the reading XP all read.
+  /// Grace-based: it is simply a yes, never a score of how much was read.
+  Future<void> markCompleted({String? bookId, int? chapter}) async {
+    final db = ref.read(databaseProvider);
+    final today = DateTime.now().toIso8601String().substring(0, 10);
+    final now = DateTime.now().toIso8601String();
+    final existing = await (db.select(db.readingSessions)
+      ..where((t) => t.date.equals(today))).get();
+    if (existing.isNotEmpty) {
+      await (db.update(db.readingSessions)..where((t) => t.date.equals(today)))
+          .write(ReadingSessionsCompanion(
+        completed: const Value(true),
+        completedAt: Value(now),
+        bookId: Value<String?>(bookId ?? existing.first.bookId),
+        chapter: Value<int?>(chapter ?? existing.first.chapter),
+      ));
+    } else {
+      await db.into(db.readingSessions).insert(ReadingSessionsCompanion.insert(
+        id: const Uuid().v4(),
+        date: today,
+        minutes: Value<int>(0),
+        bookId: Value<String?>(bookId),
+        chapter: Value<int?>(chapter),
+        completed: const Value(true),
+        completedAt: Value(now),
+        createdAt: now,
+      ));
+    }
+    ref.invalidate(todayReadingProvider);
+    ref.invalidate(weekLivingProvider);
+    ref.invalidate(trackingDataProvider);
+    ref.invalidate(streakStateProvider);
+    ref.invalidate(streakLogsProvider);
+    ref.invalidate(streakWeekDataProvider);
+  }
 }
 
 final readingNotifierProvider =
@@ -59,7 +98,7 @@ final readingNotifierProvider =
 
 /// The day's rhythm: 5 steps — Word, Prayer, Habits, Skills, Fellowship.
 final todayRhythmProvider = Provider<({int done, int total})>((ref) {
-  final read = ref.watch(todayReadingProvider).valueOrNull != null;
+  final read = ref.watch(todayReadingProvider).valueOrNull?.completed == true;
   final prayed = ref.watch(todayPrayerLogProvider).valueOrNull != null;
   final habits = ref.watch(todayCompletionsProvider).valueOrNull?.isNotEmpty == true;
   final skills = (ref.watch(trackingDataProvider).valueOrNull?.skillsMinutes ?? 0) > 0;

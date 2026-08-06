@@ -8159,6 +8159,32 @@ class $ReadingSessionsTable extends ReadingSessions
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _completedMeta = const VerificationMeta(
+    'completed',
+  );
+  @override
+  late final GeneratedColumn<bool> completed = GeneratedColumn<bool>(
+    'completed',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("completed" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _completedAtMeta = const VerificationMeta(
+    'completedAt',
+  );
+  @override
+  late final GeneratedColumn<String> completedAt = GeneratedColumn<String>(
+    'completed_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -8167,6 +8193,8 @@ class $ReadingSessionsTable extends ReadingSessions
     bookId,
     chapter,
     createdAt,
+    completed,
+    completedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -8219,6 +8247,21 @@ class $ReadingSessionsTable extends ReadingSessions
     } else if (isInserting) {
       context.missing(_createdAtMeta);
     }
+    if (data.containsKey('completed')) {
+      context.handle(
+        _completedMeta,
+        completed.isAcceptableOrUnknown(data['completed']!, _completedMeta),
+      );
+    }
+    if (data.containsKey('completed_at')) {
+      context.handle(
+        _completedAtMeta,
+        completedAt.isAcceptableOrUnknown(
+          data['completed_at']!,
+          _completedAtMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -8252,6 +8295,14 @@ class $ReadingSessionsTable extends ReadingSessions
         DriftSqlType.string,
         data['${effectivePrefix}created_at'],
       )!,
+      completed: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}completed'],
+      )!,
+      completedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}completed_at'],
+      ),
     );
   }
 
@@ -8268,6 +8319,8 @@ class ReadingSession extends DataClass implements Insertable<ReadingSession> {
   final String? bookId;
   final int? chapter;
   final String createdAt;
+  final bool completed;
+  final String? completedAt;
   const ReadingSession({
     required this.id,
     required this.date,
@@ -8275,6 +8328,8 @@ class ReadingSession extends DataClass implements Insertable<ReadingSession> {
     this.bookId,
     this.chapter,
     required this.createdAt,
+    required this.completed,
+    this.completedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -8289,6 +8344,10 @@ class ReadingSession extends DataClass implements Insertable<ReadingSession> {
       map['chapter'] = Variable<int>(chapter);
     }
     map['created_at'] = Variable<String>(createdAt);
+    map['completed'] = Variable<bool>(completed);
+    if (!nullToAbsent || completedAt != null) {
+      map['completed_at'] = Variable<String>(completedAt);
+    }
     return map;
   }
 
@@ -8304,6 +8363,10 @@ class ReadingSession extends DataClass implements Insertable<ReadingSession> {
           ? const Value.absent()
           : Value(chapter),
       createdAt: Value(createdAt),
+      completed: Value(completed),
+      completedAt: completedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(completedAt),
     );
   }
 
@@ -8319,6 +8382,8 @@ class ReadingSession extends DataClass implements Insertable<ReadingSession> {
       bookId: serializer.fromJson<String?>(json['bookId']),
       chapter: serializer.fromJson<int?>(json['chapter']),
       createdAt: serializer.fromJson<String>(json['createdAt']),
+      completed: serializer.fromJson<bool>(json['completed']),
+      completedAt: serializer.fromJson<String?>(json['completedAt']),
     );
   }
   @override
@@ -8331,6 +8396,8 @@ class ReadingSession extends DataClass implements Insertable<ReadingSession> {
       'bookId': serializer.toJson<String?>(bookId),
       'chapter': serializer.toJson<int?>(chapter),
       'createdAt': serializer.toJson<String>(createdAt),
+      'completed': serializer.toJson<bool>(completed),
+      'completedAt': serializer.toJson<String?>(completedAt),
     };
   }
 
@@ -8341,6 +8408,8 @@ class ReadingSession extends DataClass implements Insertable<ReadingSession> {
     Value<String?> bookId = const Value.absent(),
     Value<int?> chapter = const Value.absent(),
     String? createdAt,
+    bool? completed,
+    Value<String?> completedAt = const Value.absent(),
   }) => ReadingSession(
     id: id ?? this.id,
     date: date ?? this.date,
@@ -8348,6 +8417,8 @@ class ReadingSession extends DataClass implements Insertable<ReadingSession> {
     bookId: bookId.present ? bookId.value : this.bookId,
     chapter: chapter.present ? chapter.value : this.chapter,
     createdAt: createdAt ?? this.createdAt,
+    completed: completed ?? this.completed,
+    completedAt: completedAt.present ? completedAt.value : this.completedAt,
   );
   ReadingSession copyWithCompanion(ReadingSessionsCompanion data) {
     return ReadingSession(
@@ -8357,6 +8428,10 @@ class ReadingSession extends DataClass implements Insertable<ReadingSession> {
       bookId: data.bookId.present ? data.bookId.value : this.bookId,
       chapter: data.chapter.present ? data.chapter.value : this.chapter,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      completed: data.completed.present ? data.completed.value : this.completed,
+      completedAt: data.completedAt.present
+          ? data.completedAt.value
+          : this.completedAt,
     );
   }
 
@@ -8368,14 +8443,24 @@ class ReadingSession extends DataClass implements Insertable<ReadingSession> {
           ..write('minutes: $minutes, ')
           ..write('bookId: $bookId, ')
           ..write('chapter: $chapter, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('completed: $completed, ')
+          ..write('completedAt: $completedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, date, minutes, bookId, chapter, createdAt);
+  int get hashCode => Object.hash(
+    id,
+    date,
+    minutes,
+    bookId,
+    chapter,
+    createdAt,
+    completed,
+    completedAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -8385,7 +8470,9 @@ class ReadingSession extends DataClass implements Insertable<ReadingSession> {
           other.minutes == this.minutes &&
           other.bookId == this.bookId &&
           other.chapter == this.chapter &&
-          other.createdAt == this.createdAt);
+          other.createdAt == this.createdAt &&
+          other.completed == this.completed &&
+          other.completedAt == this.completedAt);
 }
 
 class ReadingSessionsCompanion extends UpdateCompanion<ReadingSession> {
@@ -8395,6 +8482,8 @@ class ReadingSessionsCompanion extends UpdateCompanion<ReadingSession> {
   final Value<String?> bookId;
   final Value<int?> chapter;
   final Value<String> createdAt;
+  final Value<bool> completed;
+  final Value<String?> completedAt;
   final Value<int> rowid;
   const ReadingSessionsCompanion({
     this.id = const Value.absent(),
@@ -8403,6 +8492,8 @@ class ReadingSessionsCompanion extends UpdateCompanion<ReadingSession> {
     this.bookId = const Value.absent(),
     this.chapter = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.completed = const Value.absent(),
+    this.completedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ReadingSessionsCompanion.insert({
@@ -8412,6 +8503,8 @@ class ReadingSessionsCompanion extends UpdateCompanion<ReadingSession> {
     this.bookId = const Value.absent(),
     this.chapter = const Value.absent(),
     required String createdAt,
+    this.completed = const Value.absent(),
+    this.completedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        date = Value(date),
@@ -8423,6 +8516,8 @@ class ReadingSessionsCompanion extends UpdateCompanion<ReadingSession> {
     Expression<String>? bookId,
     Expression<int>? chapter,
     Expression<String>? createdAt,
+    Expression<bool>? completed,
+    Expression<String>? completedAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -8432,6 +8527,8 @@ class ReadingSessionsCompanion extends UpdateCompanion<ReadingSession> {
       if (bookId != null) 'book_id': bookId,
       if (chapter != null) 'chapter': chapter,
       if (createdAt != null) 'created_at': createdAt,
+      if (completed != null) 'completed': completed,
+      if (completedAt != null) 'completed_at': completedAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -8443,6 +8540,8 @@ class ReadingSessionsCompanion extends UpdateCompanion<ReadingSession> {
     Value<String?>? bookId,
     Value<int?>? chapter,
     Value<String>? createdAt,
+    Value<bool>? completed,
+    Value<String?>? completedAt,
     Value<int>? rowid,
   }) {
     return ReadingSessionsCompanion(
@@ -8452,6 +8551,8 @@ class ReadingSessionsCompanion extends UpdateCompanion<ReadingSession> {
       bookId: bookId ?? this.bookId,
       chapter: chapter ?? this.chapter,
       createdAt: createdAt ?? this.createdAt,
+      completed: completed ?? this.completed,
+      completedAt: completedAt ?? this.completedAt,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -8477,6 +8578,12 @@ class ReadingSessionsCompanion extends UpdateCompanion<ReadingSession> {
     if (createdAt.present) {
       map['created_at'] = Variable<String>(createdAt.value);
     }
+    if (completed.present) {
+      map['completed'] = Variable<bool>(completed.value);
+    }
+    if (completedAt.present) {
+      map['completed_at'] = Variable<String>(completedAt.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -8492,6 +8599,8 @@ class ReadingSessionsCompanion extends UpdateCompanion<ReadingSession> {
           ..write('bookId: $bookId, ')
           ..write('chapter: $chapter, ')
           ..write('createdAt: $createdAt, ')
+          ..write('completed: $completed, ')
+          ..write('completedAt: $completedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -14042,6 +14151,8 @@ typedef $$ReadingSessionsTableCreateCompanionBuilder =
       Value<String?> bookId,
       Value<int?> chapter,
       required String createdAt,
+      Value<bool> completed,
+      Value<String?> completedAt,
       Value<int> rowid,
     });
 typedef $$ReadingSessionsTableUpdateCompanionBuilder =
@@ -14052,6 +14163,8 @@ typedef $$ReadingSessionsTableUpdateCompanionBuilder =
       Value<String?> bookId,
       Value<int?> chapter,
       Value<String> createdAt,
+      Value<bool> completed,
+      Value<String?> completedAt,
       Value<int> rowid,
     });
 
@@ -14091,6 +14204,16 @@ class $$ReadingSessionsTableFilterComposer
 
   ColumnFilters<String> get createdAt => $composableBuilder(
     column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get completed => $composableBuilder(
+    column: $table.completed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get completedAt => $composableBuilder(
+    column: $table.completedAt,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -14133,6 +14256,16 @@ class $$ReadingSessionsTableOrderingComposer
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<bool> get completed => $composableBuilder(
+    column: $table.completed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$ReadingSessionsTableAnnotationComposer
@@ -14161,6 +14294,14 @@ class $$ReadingSessionsTableAnnotationComposer
 
   GeneratedColumn<String> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<bool> get completed =>
+      $composableBuilder(column: $table.completed, builder: (column) => column);
+
+  GeneratedColumn<String> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => column,
+  );
 }
 
 class $$ReadingSessionsTableTableManager
@@ -14206,6 +14347,8 @@ class $$ReadingSessionsTableTableManager
                 Value<String?> bookId = const Value.absent(),
                 Value<int?> chapter = const Value.absent(),
                 Value<String> createdAt = const Value.absent(),
+                Value<bool> completed = const Value.absent(),
+                Value<String?> completedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ReadingSessionsCompanion(
                 id: id,
@@ -14214,6 +14357,8 @@ class $$ReadingSessionsTableTableManager
                 bookId: bookId,
                 chapter: chapter,
                 createdAt: createdAt,
+                completed: completed,
+                completedAt: completedAt,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -14224,6 +14369,8 @@ class $$ReadingSessionsTableTableManager
                 Value<String?> bookId = const Value.absent(),
                 Value<int?> chapter = const Value.absent(),
                 required String createdAt,
+                Value<bool> completed = const Value.absent(),
+                Value<String?> completedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ReadingSessionsCompanion.insert(
                 id: id,
@@ -14232,6 +14379,8 @@ class $$ReadingSessionsTableTableManager
                 bookId: bookId,
                 chapter: chapter,
                 createdAt: createdAt,
+                completed: completed,
+                completedAt: completedAt,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

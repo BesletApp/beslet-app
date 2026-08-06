@@ -32,7 +32,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
   @visibleForTesting
   AppDatabase.forTesting(super.executor);
-  @override int get schemaVersion => 21;
+  @override int get schemaVersion => 22;
 
   @override
   MigrationStrategy get migration {
@@ -99,6 +99,10 @@ class AppDatabase extends _$AppDatabase {
         }
         if (from < 21) {
           await m.createTable(vineDay);
+        }
+        if (from < 22) {
+          await m.addColumn(readingSessions, readingSessions.completed);
+          await m.addColumn(readingSessions, readingSessions.completedAt);
         }
       },
     );

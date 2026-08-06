@@ -917,4 +917,43 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get weeklyXpTrend => 'ሳምንታዊ የነጥብ አዝማሚያ';
+
+  @override
+  String get todaysFlow => 'የዛሬ ፍሰት';
+
+  @override
+  String get readToday => 'የዛሬ ንባብ';
+
+  @override
+  String get planOpen => 'ክፈት';
+
+  @override
+  String get readCompletedToday => 'ዛሬ አንብበሃል ✓';
+
+  @override
+  String get readNotStarted => 'አልተጠናቀቀም';
+
+  @override
+  String get markReadingDone => 'የዛሬውን ንባብ ምልክት አድርግ';
+
+  @override
+  String get readingXpEarned => '+20 ነጥብ — ንባብ ተጠናቋል!';
+
+  @override
+  String get continueToPrayer => 'ወደ ጸሎት ቀጥል';
+
+  @override
+  String get openWord => 'ቃሉን ክፈት';
+
+  @override
+  String get beginPrayer => 'ጸልይ';
+
+  @override
+  String get liveItOut => 'በተግባር ኑር';
+
+  @override
+  String get beginWithWord => 'በመጀመሪያ በቃሉ ጀምር';
+
+  @override
+  String get prayWhatYouRead => 'ያነበብከውን መሠረት አድርገህ ጸልይ';
 }

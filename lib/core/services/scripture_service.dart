@@ -186,6 +186,23 @@ class ScriptureService {
 
   static Scripture getDailyScripture() => threadVerseFor(DateTime.now());
 
+  /// The chapter-of-the-day for the NT plan: a gentle sequential walk through
+  /// the New Testament, one chapter per day. Pure math, offline, serverless.
+  static ({String bookId, int chapter, BibleBook book})? ntPlanFor(DateTime day) {
+    final epoch = DateTime(2025, 6, 1);
+    final idx = day.difference(epoch).inDays;
+    if (idx < 0) return null;
+    final totalChapters = ntBooks.fold<int>(0, (sum, b) => sum + b.chapters);
+    var cursor = idx % totalChapters;
+    for (final book in ntBooks) {
+      if (cursor < book.chapters) {
+        return (bookId: book.id, chapter: cursor + 1, book: book);
+      }
+      cursor -= book.chapters;
+    }
+    return null;
+  }
+
   /// The Day's Thread: one fixed single verse per calendar day, cycling the
   /// canon-verified list as a finite repeating loop. Pure math, offline,
   /// serverless, untrackable.

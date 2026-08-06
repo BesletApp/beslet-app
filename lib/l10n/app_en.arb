@@ -278,5 +278,18 @@
   "daysConsistent": "{count} days consistent",
   "freezeChips": "{count, plural, =1{❄️ 1 freeze} other{❄️ # freezes}}",
   "badges": "Badges",
-  "weeklyXpTrend": "Weekly XP trend"
+  "weeklyXpTrend": "Weekly XP trend",
+  "todaysFlow": "Today's flow",
+  "readToday": "Today's reading",
+  "planOpen": "Open",
+  "readCompletedToday": "Read today ✓",
+  "readNotStarted": "Not started",
+  "markReadingDone": "Mark today's reading done",
+  "readingXpEarned": "+20 XP — Reading completed!",
+  "continueToPrayer": "Continue to Prayer",
+  "openWord": "Open the Word",
+  "beginPrayer": "Begin Prayer",
+  "liveItOut": "Live it out",
+  "beginWithWord": "Begin with the Word first",
+  "prayWhatYouRead": "Pray based on what you read"
 }

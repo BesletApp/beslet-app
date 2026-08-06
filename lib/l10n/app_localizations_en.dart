@@ -926,4 +926,43 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get weeklyXpTrend => 'Weekly XP trend';
+
+  @override
+  String get todaysFlow => 'Today\'s flow';
+
+  @override
+  String get readToday => 'Today\'s reading';
+
+  @override
+  String get planOpen => 'Open';
+
+  @override
+  String get readCompletedToday => 'Read today ✓';
+
+  @override
+  String get readNotStarted => 'Not started';
+
+  @override
+  String get markReadingDone => 'Mark today\'s reading done';
+
+  @override
+  String get readingXpEarned => '+20 XP — Reading completed!';
+
+  @override
+  String get continueToPrayer => 'Continue to Prayer';
+
+  @override
+  String get openWord => 'Open the Word';
+
+  @override
+  String get beginPrayer => 'Begin Prayer';
+
+  @override
+  String get liveItOut => 'Live it out';
+
+  @override
+  String get beginWithWord => 'Begin with the Word first';
+
+  @override
+  String get prayWhatYouRead => 'Pray based on what you read';
 }

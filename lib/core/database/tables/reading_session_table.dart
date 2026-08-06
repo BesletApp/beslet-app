@@ -9,6 +9,8 @@ class ReadingSessions extends Table {
   TextColumn get bookId => text().nullable()();
   IntColumn get chapter => integer().nullable()();
   TextColumn get createdAt => text()();
+  BoolColumn get completed => boolean().withDefault(const Constant(false))();
+  TextColumn get completedAt => text().nullable()();
   @override
   Set<Column> get primaryKey => {id};
 }

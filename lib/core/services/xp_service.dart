@@ -5,6 +5,7 @@ class XpService {
   static const int reflectionComplete = 15;
   static const int todoComplete = 5;
   static const int allTodosBonus = 10;
+  static const int readingComplete = 20;
 
   static int calculateLevel(int xp) {
     if (xp < 100) return 0;

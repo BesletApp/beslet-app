@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/audio_bible_service.dart';
 import 'download_provider.dart';
+import 'growth_streams_provider.dart';
 
 class AudioPlayerState {
   final AudioState state;
@@ -43,6 +44,15 @@ class AudioPlayerNotifier extends Notifier<AudioPlayerState> {
     };
     _service.onCompleted = () {
       _updateState();
+      final ch = _service.currentChapter;
+      if (ch != null) {
+        try {
+          ref.read(readingNotifierProvider.notifier).markCompleted(
+                bookId: ch.bookId,
+                chapter: ch.chapter,
+              );
+        } catch (_) {}
+      }
     };
     ref.onDispose(() => _service.dispose());
     return const AudioPlayerState();

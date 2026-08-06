@@ -12,6 +12,7 @@ import '../../core/providers/scripture_provider.dart';
 import '../../core/providers/reading_preferences_provider.dart';
 import '../../core/providers/growth_streams_provider.dart';
 import '../../core/services/scene_event_bus.dart';
+import '../../l10n/app_localizations.dart';
 import '../growth/widgets/mini_vine.dart';
 import 'widgets/audio_player_bar.dart';
 import 'widgets/verse_list_view.dart';
@@ -48,6 +49,9 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
     if (widget.initialBookId != null && widget.initialChapter != null) {
       _pickedBookId = widget.initialBookId;
       _pickedChapter = widget.initialChapter;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _onChapterOpened();
+      });
     }
     _restoreOpenPage();
     _loadHighlightsState();
@@ -107,6 +111,163 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
     return null;
   }
 
+  /// The chapter-of-the-day chip with a jump button — the "current reading"
+  /// the Home card promises. The plan is gentle: the user may read anything.
+  Widget _buildPlanBar(AppLocalizations l) {
+    final plan = ref.watch(todayBiblePlanProvider);
+    final parsed = _resolveParsed();
+    final onPlan = parsed != null && parsed.bookId == plan.bookId && parsed.chapter == plan.chapter;
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+      ),
+      child: Row(children: [
+        const Icon(Icons.wb_sunny_outlined, size: 16, color: AppColors.primary),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            '${l.readToday}: ${_isAm ? plan.labelAm : plan.labelEn}',
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.w600,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        if (!onPlan)
+          TextButton(
+            onPressed: () {
+              setState(() {
+                _pickedBookId = plan.bookId;
+                _pickedChapter = plan.chapter;
+              });
+              _saveOpenPage();
+              _onChapterOpened();
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.primary,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              minimumSize: const Size(0, 28),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: Text(l.planOpen, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+          ),
+      ]),
+    );
+  }
+
+  /// The completion banner: "Read today ✓ / Not started" plus the explicit
+  /// "Mark today's reading done" button and the onward Prayer CTA.
+  Widget _buildCompletionBar(AppLocalizations l) {
+    final c = AppColors.of(context);
+    final todayReading = ref.watch(todayReadingProvider).valueOrNull;
+    final done = todayReading?.completed == true;
+    final parsed = _resolveParsed();
+    if (done) {
+      return Container(
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.success.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.success.withValues(alpha: 0.4)),
+        ),
+        child: Column(children: [
+          Row(children: [
+            const Icon(Icons.check_circle, color: AppColors.success, size: 18),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                l.readCompletedToday,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.success,
+                ),
+              ),
+            ),
+          ]),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            height: 44,
+            child: ElevatedButton.icon(
+              onPressed: () => context.go('/prayer'),
+              icon: const Icon(Icons.favorite, size: 16, color: Color(0xFF07090E)),
+              label: Text(
+                l.continueToPrayer,
+                style: AppTextStyles.labelLarge.copyWith(color: const Color(0xFF07090E), fontSize: 13),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ),
+        ]),
+      );
+    }
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: c.cardElevated.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: c.border.withValues(alpha: 0.25)),
+      ),
+      child: Column(children: [
+        Row(children: [
+          Icon(Icons.menu_book_outlined, size: 16, color: c.textMuted),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              l.readNotStarted,
+              style: AppTextStyles.bodySmall.copyWith(color: c.textMuted),
+            ),
+          ),
+        ]),
+        const SizedBox(height: 10),
+        SizedBox(
+          width: double.infinity,
+          height: 44,
+          child: FilledButton.icon(
+            onPressed: parsed != null ? _markReadingDone : null,
+            icon: const Icon(Icons.check, size: 16),
+            label: Text(
+              l.markReadingDone,
+              style: AppTextStyles.labelLarge.copyWith(fontSize: 13),
+            ),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+        ),
+      ]),
+    );
+  }
+
+  Future<void> _markReadingDone() async {
+    final parsed = _resolveParsed();
+    await ref.read(readingNotifierProvider.notifier).markCompleted(
+      bookId: parsed?.bookId,
+      chapter: parsed?.chapter,
+    );
+    ref.read(sceneEventBusProvider).emit(SceneEventType.fruitPop);
+    if (!mounted) return;
+    final l = AppLocalizations.of(context)!;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(l.readingXpEarned),
+      backgroundColor: AppColors.success,
+      behavior: SnackBarBehavior.floating,
+      duration: const Duration(seconds: 2),
+    ));
+  }
+
   Map<int, String> _highlightedVerseColors() {
     final parsed = _resolveParsed();
     if (parsed == null) return {};
@@ -142,6 +303,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
   @override
   Widget build(BuildContext context) {
     final isOnline = ref.watch(connectivityProvider).valueOrNull ?? true;
+    final l = AppLocalizations.of(context)!;
 
     if (!isOnline) {
       return _buildOfflineView();
@@ -226,6 +388,8 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
             bookId: parsed?.bookId,
             chapterNum: parsed?.chapter,
           ),
+          _buildPlanBar(l),
+          _buildCompletionBar(l),
           Expanded(
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),

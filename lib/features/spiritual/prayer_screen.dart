@@ -7,6 +7,8 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/database/app_database.dart';
 import '../../core/providers/prayer_provider.dart';
+import '../../core/providers/daily_flow_provider.dart';
+import '../../core/providers/scripture_provider.dart';
 import '../../core/services/prayer_reminder_service.dart';
 import '../../core/services/prayer_alarm_sound_service.dart';
 import '../../core/services/scene_event_bus.dart';
@@ -303,6 +305,8 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
             eventSource: ref.read(sceneEventBusProvider),
           ),
           const SizedBox(height: 20),
+          _buildGuidedPrompts(l),
+          const SizedBox(height: 20),
           _buildPrayerCard(todayLog, l),
           const SizedBox(height: 20),
           _buildWeekDots(weekDays, l),
@@ -311,6 +315,70 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
           const SizedBox(height: 32),
         ]),
       ),
+    );
+  }
+
+  /// "Pray based on what you read" — gentle prompts anchored to the day's
+  /// reading. If the Word hasn't been finished yet, a soft nudge, never a gate.
+  Widget _buildGuidedPrompts(AppLocalizations l) {
+    final isAm = Localizations.localeOf(context).languageCode == 'am';
+    final c = AppColors.of(context);
+    final plan = ref.watch(todayBiblePlanProvider);
+    final bibleDone = ref.watch(dailyFlowProvider).bibleDone;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: c.card,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: c.border),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          const Icon(Icons.auto_stories, size: 16, color: AppColors.primary),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              '${l.prayWhatYouRead} — ${isAm ? plan.labelAm : plan.labelEn}',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: c.textSecondary,
+                fontWeight: FontWeight.w600,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ]),
+        if (!bibleDone) ...[
+          const SizedBox(height: 8),
+          Text(
+            '✨ ${l.beginWithWord}',
+            style: AppTextStyles.bodySmall.copyWith(fontSize: 11, color: AppColors.primary, fontStyle: FontStyle.italic),
+          ),
+        ],
+        const SizedBox(height: 12),
+        Wrap(spacing: 8, runSpacing: 8, children: [
+          _promptChip(isAm ? 'አመሰግናለሁ' : 'Thank', isAm ? 'ስለተነበበው አመስግን' : 'Thank God for what you read'),
+          _promptChip(isAm ? 'ጠይቅ' : 'Ask', isAm ? 'እንድትኖር ጠይቅ' : 'Ask Him to help you live it'),
+          _promptChip(isAm ? 'አርፍ' : 'Rest', isAm ? 'በእርሱ ፊት ዕረፍ' : 'Rest in His presence'),
+        ]),
+      ]),
+    );
+  }
+
+  Widget _promptChip(String title, String subtitle) {
+    final c = AppColors.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(title, style: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w700, color: AppColors.primary)),
+        Text(subtitle, style: AppTextStyles.bodySmall.copyWith(fontSize: 10, color: c.textMuted)),
+      ]),
     );
   }
 

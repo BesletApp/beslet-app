@@ -18,9 +18,10 @@ import '../../core/database/app_database.dart';
 import '../../core/providers/user_provider.dart';
 import '../../core/providers/tracking_provider.dart';
 import '../../core/providers/prayer_provider.dart';
+import '../../core/providers/daily_flow_provider.dart';
+import '../../core/providers/scripture_provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../core/providers/fellowship_provider.dart';
-import '../../core/providers/todo_provider.dart';
 import '../../core/providers/streak_provider.dart';
 import '../../core/providers/soul_log_provider.dart';
 import '../../core/services/scene_event_bus.dart';
@@ -31,13 +32,23 @@ import '../../shared/widgets/enkutatash_overlay.dart';
 import '../../core/widgets/zone_layout.dart';
 
 
-class _StepData {
-  final String icon;
+class _FlowStep {
+  final String emoji;
   final String title;
   final String subtitle;
-  final String ctaLabel;
-  final String route;
-  const _StepData({required this.icon, required this.title, required this.subtitle, required this.ctaLabel, required this.route});
+  final bool done;
+  final bool current;
+  final bool locked;
+  final VoidCallback onTap;
+  const _FlowStep({
+    required this.emoji,
+    required this.title,
+    required this.subtitle,
+    required this.done,
+    required this.current,
+    required this.locked,
+    required this.onTap,
+  });
 }
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -268,7 +279,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
       ref.refresh(trackingDataProvider.future),
       ref.refresh(todayPrayerLogProvider.future),
       ref.refresh(todayFellowshipProvider.future),
-      ref.refresh(todayTodoStatsProvider.future),
     ]);
   }
 
@@ -276,9 +286,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
   Widget build(BuildContext context) {
     final userAsync = ref.watch(userProvider);
     final trackingAsync = ref.watch(trackingDataProvider);
-    final todayPrayer = ref.watch(todayPrayerLogProvider);
     final todayFellowship = ref.watch(todayFellowshipProvider);
-    final todayTodoStats = ref.watch(todayTodoStatsProvider);
+    final flow = ref.watch(dailyFlowProvider);
+    final biblePlan = ref.watch(todayBiblePlanProvider);
     final tone = ref.watch(toneServiceProvider);
     final engine = ref.watch(personalizationEngineProvider);
 
@@ -292,14 +302,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
       error: (e, _) => Scaffold(body: ErrorCard(message: 'Could not load your data', onRetry: _onRefresh)),
       data: (user) {
         final tracking = trackingAsync.valueOrNull;
-        final prayed = todayPrayer.valueOrNull != null;
         final skillsMin = tracking?.skillsMinutes ?? 0;
         final inSummer = SummerService.isInSummer;
         final daysElapsed = SummerService.daysElapsed;
         final daysRemaining = SummerService.daysRemaining;
         final totalDays = SummerService.totalSummerDays;
         final connectedToday = todayFellowship.valueOrNull != null;
-        final todoStats = todayTodoStats.valueOrNull ?? TodoStats(total: 0, completed: 0);
         final streak = tracking?.streak ?? 0;
 
         if (!_widgetUpdated) {
@@ -309,12 +317,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
           });
         }
 
-        final tasksDone = todoStats.total > 0 && todoStats.completed >= todoStats.total;
-        final step1done = prayed;
-        final step2done = prayed && tasksDone;
-        final currentStep = step1done ? (step2done ? 2 : 1) : 0;
-
-        final allComplete = prayed && skillsMin > 0 && connectedToday && todoStats.total > 0 && todoStats.completed >= todoStats.total;
+        final allComplete = flow.done >= flow.total;
 
         if (allComplete && !_celebrated) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -364,8 +367,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
                 child: ZoneLayout(
                   orientation: _buildStaggered(0, _buildGreetingBlock(profile, user, inSummer, daysElapsed, totalDays, daysRemaining, l, tone, streak, streakState?.isAtRisk ?? false, todaySoulLog?.mood)),
                   primary: _buildStaggered(1, _buildPrimaryStepCard(
-                    profile, currentStep, prayed, todoStats,
+                    profile, flow,
                     streakState?.isSabbathToday ?? false, allComplete, user.name, tone, l,
+                    biblePlan,
                   )),
                   support: _buildStaggered(2, _buildRhythmSurface(
                     profile, skillsMin, connectedToday, todaySoulLog, l,
@@ -570,8 +574,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
   }
 
   Widget _buildPrimaryStepCard(
-    ExperienceProfile profile, int currentStep, bool prayed, TodoStats todoStats,
-    bool isSabbath, bool allComplete, String userName, ToneService tone, AppLocalizations l,
+    ExperienceProfile profile, DailyFlow flow, bool isSabbath,
+    bool allComplete, String userName, ToneService tone, AppLocalizations l,
+    TodayReadingPlan plan,
   ) {
     if (isSabbath) {
       return _buildSabbathContent(profile, l);
@@ -579,95 +584,203 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
     if (allComplete) {
       return _buildCelebrationCard(profile, userName, tone, l);
     }
-    if (currentStep >= 2) {
-      return _buildRhythmCompleteCard(profile, l);
-    }
-    final stepData = _nextStepData(currentStep, todoStats, l);
-    return _buildStepCard(profile, stepData);
+    return _buildFlowCard(profile, flow, plan, l);
   }
 
-  _StepData _nextStepData(int currentStep, TodoStats todoStats, AppLocalizations l) {
-    switch (currentStep) {
-      case 0:
-        return _StepData(
-          icon: '🙏',
-          title: _isAm ? 'ጸሎት' : 'Prayer',
-          subtitle: _isAm ? 'ልብህን አፍስስ' : 'Pour out your heart',
-          ctaLabel: _isAm ? 'ጸልይ' : 'Begin Prayer',
-          route: '/prayer',
-        );
-      default:
-        return _StepData(
-          icon: '✅',
-          title: _isAm ? 'የዛሬ ተግባራት' : "Today's Tasks",
-          subtitle: _isAm
-              ? (todoStats.total == 0 ? 'እቅድ አውጣ' : 'በታዛዥነት ሂድ')
-              : (todoStats.total == 0 ? 'Set your intention' : 'Walk in obedience'),
-          ctaLabel: _isAm
-              ? (todoStats.total == 0 ? 'እቅድ ፍጠር' : 'አድርግ')
-              : (todoStats.total == 0 ? 'Shape your day' : 'Do'),
-          route: '/daily-todo',
-        );
-    }
-  }
-
-  Widget _buildStepCard(ExperienceProfile profile, _StepData step) {
+  Widget _buildFlowCard(ExperienceProfile profile, DailyFlow flow, TodayReadingPlan plan, AppLocalizations l) {
     final c = AppColors.of(context);
+    final acc = profile.colors.accent;
+    final complete = profile.colors.stepComplete;
+    final steps = <_FlowStep>[
+      _FlowStep(
+        emoji: '📖',
+        title: _isAm ? 'መጽሐፍ ቅዱስ' : 'Bible',
+        subtitle: '${_isAm ? 'የዛሬ ንባብ' : "Today's reading"}: ${_isAm ? plan.labelAm : plan.labelEn}',
+        done: flow.bibleDone,
+        current: flow.currentStep == 0,
+        locked: flow.currentStep > 0,
+        onTap: () => _openFlowStep(true, '/bible?book=${plan.bookId}&chapter=${plan.chapter}'),
+      ),
+      _FlowStep(
+        emoji: '🙏',
+        title: _isAm ? 'ጸሎት' : 'Prayer',
+        subtitle: _isAm ? 'ያነበብከውን መሠረት አድርገህ ጸልይ' : 'Pray based on what you read',
+        done: flow.prayerDone,
+        current: flow.currentStep == 1,
+        locked: flow.currentStep > 1 || !flow.bibleDone,
+        onTap: () => _openFlowStep(flow.bibleDone, '/prayer', hint: l.beginWithWord),
+      ),
+      _FlowStep(
+        emoji: '🌱',
+        title: _isAm ? 'ተግባር' : 'Act',
+        subtitle: _isAm ? 'ተግባራት · ልምዶች · ክህሎት · ማህበር · ቤተሰብ' : 'Tasks · Habits · Skills · Fellowship · Family',
+        done: flow.actionDone,
+        current: flow.currentStep == 2,
+        locked: flow.currentStep > 2 || !(flow.bibleDone && flow.prayerDone),
+        onTap: () => _openFlowStep(
+          flow.bibleDone && flow.prayerDone,
+          '/daily-todo',
+          hint: _isAm ? 'በመጀመሪያ ቃሉ እና ጸሎት' : 'Begin with the Word and Prayer first',
+        ),
+      ),
+    ];
+
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(_h(AppSpacing.lg)),
       decoration: BoxDecoration(
         color: c.cardElevated,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: profile.colors.accent.withValues(alpha: 0.3), width: 1),
+        border: Border.all(color: acc.withValues(alpha: 0.3), width: 1),
         boxShadow: [
-          BoxShadow(
-            color: profile.colors.accent.withValues(alpha: 0.08),
-            blurRadius: 20,
-            spreadRadius: 2,
-          ),
+          BoxShadow(color: acc.withValues(alpha: 0.08), blurRadius: 20, spreadRadius: 2),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(step.icon, style: const TextStyle(fontSize: 24)),
-          SizedBox(height: _h(AppSpacing.md)),
-          Text(
-            step.title,
-            style: AppTextStyles.of(context).displaySmall.copyWith(
-              fontWeight: profile.visualWeight,
-              color: c.textPrimary,
+          Row(children: [
+            Expanded(
+              child: Text(
+                l.todaysFlow,
+                style: AppTextStyles.of(context).displaySmall.copyWith(
+                  fontWeight: profile.visualWeight,
+                  color: c.textPrimary,
+                ),
+              ),
             ),
-          ),
-          SizedBox(height: _h(AppSpacing.sm)),
-          Text(
-            step.subtitle,
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: c.textSecondary,
-              fontStyle: FontStyle.italic,
-              height: 1.4,
-            ),
-          ),
-          SizedBox(height: _h(AppSpacing.lg)),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () => context.go(step.route),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: profile.colors.accent,
-                foregroundColor: c.isDark ? const Color(0xFF07090E) : Colors.white,
-                padding: EdgeInsets.symmetric(vertical: _h(AppSpacing.sm + 4)),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                elevation: 0,
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: complete.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: complete.withValues(alpha: 0.3)),
               ),
               child: Text(
-                step.ctaLabel,
-                style: AppTextStyles.labelLarge.copyWith(fontWeight: FontWeight.w600, fontSize: 16),
+                '${flow.done}/${flow.total}',
+                style: AppTextStyles.bodySmall.copyWith(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: complete,
+                ),
               ),
             ),
+          ]),
+          SizedBox(height: _h(AppSpacing.sm)),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: flow.total == 0 ? 0 : flow.done / flow.total,
+              minHeight: 6,
+              backgroundColor: c.border.withValues(alpha: 0.3),
+              valueColor: AlwaysStoppedAnimation(complete),
+            ),
           ),
+          SizedBox(height: _h(AppSpacing.md)),
+          for (final s in steps) ...[
+            _buildFlowRow(profile, s, complete),
+            SizedBox(height: _h(AppSpacing.sm)),
+          ],
+          if (flow.currentStep < flow.total)
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => steps[flow.currentStep].onTap(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: acc,
+                  foregroundColor: c.isDark ? const Color(0xFF07090E) : Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: _h(AppSpacing.sm + 4)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 0,
+                ),
+                child: Text(
+                  _currentStepCta(flow, l),
+                  style: AppTextStyles.labelLarge.copyWith(fontWeight: FontWeight.w600, fontSize: 16),
+                ),
+              ),
+            ),
         ],
+      ),
+    );
+  }
+
+  String _currentStepCta(DailyFlow flow, AppLocalizations l) {
+    switch (flow.currentStep) {
+      case 0:
+        return l.openWord;
+      case 1:
+        return l.beginPrayer;
+      default:
+        return l.liveItOut;
+    }
+  }
+
+  /// Soft lock on Home: locked steps are dimmed and tapping offers a gentle
+  /// nudge. The routes themselves stay reachable elsewhere — grace, not gates.
+  void _openFlowStep(bool allowed, String route, {String? hint}) {
+    if (allowed) {
+      context.go(route);
+      return;
+    }
+    final l = AppLocalizations.of(context)!;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(hint ?? l.beginWithWord),
+      behavior: SnackBarBehavior.floating,
+      duration: const Duration(seconds: 2),
+    ));
+  }
+
+  Widget _buildFlowRow(ExperienceProfile profile, _FlowStep s, Color completeColor) {
+    final c = AppColors.of(context);
+    final Widget trailing;
+    if (s.done) {
+      trailing = Icon(Icons.check_circle, size: 18, color: completeColor);
+    } else if (s.current) {
+      trailing = Icon(Icons.arrow_forward, size: 18, color: profile.colors.accent);
+    } else {
+      trailing = Icon(Icons.lock_outline, size: 16, color: c.textMuted.withValues(alpha: 0.6));
+    }
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: s.onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(_h(AppSpacing.sm + 2)),
+          decoration: BoxDecoration(
+            color: s.current ? profile.colors.accent.withValues(alpha: 0.08) : c.cardElevated.withValues(alpha: 0.4),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: s.current ? profile.colors.accent.withValues(alpha: 0.45) : c.border.withValues(alpha: 0.25)),
+          ),
+          child: Row(children: [
+            Text(s.emoji, style: const TextStyle(fontSize: 18)),
+            SizedBox(width: _h(AppSpacing.sm)),
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(
+                  s.title,
+                  style: AppTextStyles.of(context).bodyMedium.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: s.done ? completeColor : c.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  s.done ? _isAm ? 'ዛሬ ተጠናቋል' : 'Done today' : s.subtitle,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    fontSize: 11,
+                    color: s.done
+                        ? completeColor.withValues(alpha: 0.8)
+                        : (s.current ? c.textSecondary : c.textMuted),
+                  ),
+                ),
+              ]),
+            ),
+            SizedBox(width: _h(AppSpacing.xs)),
+            trailing,
+          ]),
+        ),
       ),
     );
   }
@@ -705,35 +818,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
           _isAm ? 'እግዚአብሔር ዛሬ እንድታርፍ ይጋብዝሃል።' : 'God invites you to rest today.',
           style: AppTextStyles.bodySmall.copyWith(color: Colors.white60),
           textAlign: TextAlign.center,
-        ),
-      ]),
-    );
-  }
-
-  Widget _buildRhythmCompleteCard(ExperienceProfile profile, AppLocalizations l) {
-    final c = AppColors.of(context);
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(_h(AppSpacing.lg)),
-      decoration: BoxDecoration(
-        color: c.cardElevated,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: profile.colors.stepComplete.withValues(alpha: 0.3)),
-      ),
-      child: Column(children: [
-        const Text('✅', style: TextStyle(fontSize: 24)),
-        SizedBox(height: _h(AppSpacing.sm)),
-        Text(
-          _isAm ? 'የዛሬ ሥርዐት ተፈጸመ' : "Today's rhythm complete",
-          style: AppTextStyles.of(context).displaySmall.copyWith(
-            color: profile.colors.stepComplete,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        SizedBox(height: _h(AppSpacing.xs)),
-        Text(
-          _isAm ? 'ተጨማሪ ከታች አለ።' : 'More below.',
-          style: AppTextStyles.bodySmall.copyWith(color: c.textMuted),
         ),
       ]),
     );
