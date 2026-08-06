@@ -24,15 +24,16 @@ import 'tables/journal_table.dart';
 import 'tables/growth_journey_table.dart';
 import 'tables/reading_session_table.dart';
 import 'tables/vine_day_table.dart';
+import 'tables/verse_challenge_table.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Users, Habits, Completions, PrayerLogs, Skills, SkillSessions, Reflections, Challenges, ChallengeParticipants, FellowshipLogs, FamilyTimeLogs, Goals, TodoItems, DailyReflections, StreakLog, StreakFrozen, SoulLog, AudioCache, JournalEntry, GrowthJourney, ReadingSessions, VineDay])
+@DriftDatabase(tables: [Users, Habits, Completions, PrayerLogs, Skills, SkillSessions, Reflections, Challenges, ChallengeParticipants, FellowshipLogs, FamilyTimeLogs, Goals, TodoItems, DailyReflections, StreakLog, StreakFrozen, SoulLog, AudioCache, JournalEntry, GrowthJourney, ReadingSessions, VineDay, VerseChallenges])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
   @visibleForTesting
   AppDatabase.forTesting(super.executor);
-  @override int get schemaVersion => 22;
+  @override int get schemaVersion => 23;
 
   @override
   MigrationStrategy get migration {
@@ -103,6 +104,9 @@ class AppDatabase extends _$AppDatabase {
         if (from < 22) {
           await m.addColumn(readingSessions, readingSessions.completed);
           await m.addColumn(readingSessions, readingSessions.completedAt);
+        }
+        if (from < 23) {
+          await m.createTable(verseChallenges);
         }
       },
     );

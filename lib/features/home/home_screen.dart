@@ -11,7 +11,6 @@ import '../../core/theme/app_durations.dart';
 import '../../core/personalization/tone_service.dart';
 import '../../core/personalization/personalization_providers.dart';
 import '../../core/emotional/experience_profile.dart';
-import '../../core/services/scripture_service.dart';
 import '../../core/services/summer_service.dart';
 import '../../core/services/widget_service.dart';
 import '../../core/database/app_database.dart';
@@ -30,6 +29,7 @@ import '../../services/update_checker.dart';
 import '../../shared/widgets/error_card.dart';
 import '../../shared/widgets/enkutatash_overlay.dart';
 import '../../core/widgets/zone_layout.dart';
+import '../word_challenge/daily_word_challenge_card.dart';
 
 
 class _FlowStep {
@@ -374,7 +374,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
                   support: _buildStaggered(2, _buildRhythmSurface(
                     profile, skillsMin, connectedToday, todaySoulLog, l,
                   )),
-                  anchor: _buildStaggered(3, _buildVerseCard(profile)),
+                  anchor: _buildStaggered(3, const DailyWordChallengeCard()),
                 ),
               ),
             ),
@@ -942,132 +942,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
           ]),
         ),
       ),
-    );
-  }
-
-  Widget _buildVerseCard(ExperienceProfile profile) {
-    final scripture = ScriptureService.threadVerseFor(DateTime.now());
-    final light = WidgetService.lightStateFor(DateTime.now());
-    final lightLabel = switch (light) {
-      LampLight.dawn => _isAm ? 'ጠዋት' : 'Dawn',
-      LampLight.noon => _isAm ? 'ቀትር' : 'Noon',
-      LampLight.dusk => _isAm ? 'ምሽት' : 'Dusk',
-      LampLight.night => _isAm ? 'ሌሊት' : 'Night',
-    };
-    final lightGlyph = switch (light) {
-      LampLight.dawn => '🌅',
-      LampLight.noon => '☀️',
-      LampLight.dusk => '🌇',
-      LampLight.night => '🌙',
-    };
-    final lightTint = switch (light) {
-      LampLight.dawn => const Color(0x14C8A96E),
-      LampLight.noon => const Color(0x149FD0F0),
-      LampLight.dusk => const Color(0x14E8965C),
-      LampLight.night => const Color(0x148F8FD0),
-    };
-    final c = AppColors.of(context);
-    final l = AppLocalizations.of(context)!;
-    return Column(
-      children: [
-        Divider(height: 1, thickness: 0.5, color: c.border.withValues(alpha: 0.15)),
-        SizedBox(height: _h(AppSpacing.md)),
-        Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () => context.go('/threshold'),
-            borderRadius: BorderRadius.circular(8),
-            child: Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(_h(AppSpacing.cardPadding)),
-              decoration: BoxDecoration(
-                color: lightTint,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: c.border.withValues(alpha: 0.15)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(lightGlyph, style: const TextStyle(fontSize: 13)),
-                      SizedBox(width: _h(AppSpacing.xs)),
-                      Text(
-                        '$lightLabel · ${_isAm ? 'የዕለቱ ክር' : "Today's Thread"}',
-                        style: AppTextStyles.bodySmall.copyWith(fontSize: 11, color: c.textMuted),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: _h(AppSpacing.sm)),
-                  Text(
-                    '"${scripture.text}"',
-                    style: AppTextStyles.of(context).displaySmall.copyWith(
-                      fontFamily: 'CormorantGaramond',
-                      fontStyle: FontStyle.italic,
-                      height: 1.6,
-                      fontSize: 20,
-                      color: c.textSecondary.withValues(alpha: 0.85),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: _h(AppSpacing.sm)),
-                  Text(
-                    scripture.reference,
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: c.primary.withValues(alpha: 0.7),
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.5,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  if (scripture.textAm != null) ...[
-                    SizedBox(height: _h(AppSpacing.sm)),
-                    Text(
-                      scripture.textAm!,
-                      style: AppTextStyles.amharicBody.copyWith(
-                        fontSize: 13,
-                        height: 1.5,
-                        fontWeight: FontWeight.w500,
-                        color: c.textSecondary.withValues(alpha: 0.9),
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                  SizedBox(height: _h(AppSpacing.md)),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Material(color: Colors.transparent, child: InkWell(
-                        onTap: () => context.go('/bible'),
-                        borderRadius: BorderRadius.circular(4),
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: _h(AppSpacing.sm), vertical: _h(AppSpacing.xs)),
-                          child: Text(l.listen, style: AppTextStyles.bodySmall.copyWith(fontSize: 12, color: c.textMuted)),
-                        ),
-                      )),
-                      SizedBox(width: _h(AppSpacing.xs)),
-                      Text('·', style: TextStyle(color: c.border)),
-                      SizedBox(width: _h(AppSpacing.xs)),
-                      Material(color: Colors.transparent, child: InkWell(
-                        onTap: () => context.go('/threshold'),
-                        borderRadius: BorderRadius.circular(4),
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: _h(AppSpacing.sm), vertical: _h(AppSpacing.xs)),
-                          child: Text(
-                            _isAm ? 'ደፍ እወጣ' : 'Enter the Threshold',
-                            style: AppTextStyles.bodySmall.copyWith(fontSize: 12, color: c.textMuted),
-                          ),
-                        ),
-                      )),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
     );
   }
 

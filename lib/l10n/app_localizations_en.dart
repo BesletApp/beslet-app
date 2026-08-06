@@ -965,4 +965,126 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get prayWhatYouRead => 'Pray based on what you read';
+
+  @override
+  String get wordChallenge => 'Today\'s Word';
+
+  @override
+  String get startTodaysWord => 'Start Today\'s Word';
+
+  @override
+  String get seeAndHear => 'See & Hear';
+
+  @override
+  String get buildTheVerse => 'Build the Verse';
+
+  @override
+  String get prayTheVerse => 'Pray the Verse';
+
+  @override
+  String get turnVerseIntoPrayer => 'Turn this verse into a prayer';
+
+  @override
+  String get hearTheVerse => 'Hear the verse';
+
+  @override
+  String get wordIsRooting => 'The Word is taking root in you 🌱';
+
+  @override
+  String get review => 'Review';
+
+  @override
+  String reviewDue(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Review · # verses',
+      one: 'Review · 1 verse',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get memoryGarden => 'Memory Garden';
+
+  @override
+  String get masteryNew => 'New';
+
+  @override
+  String get masteryGrowing => 'Growing';
+
+  @override
+  String get masteryRooted => 'Rooted';
+
+  @override
+  String get continueWord => 'Continue';
+
+  @override
+  String get prayerTemplateThank => 'Thank You, Lord, for…';
+
+  @override
+  String get prayerTemplateAsk => 'Help me to live…';
+
+  @override
+  String get prayerTemplateRest => 'I rest in You…';
+
+  @override
+  String get makeItTodayAct => 'Make it today\'s act';
+
+  @override
+  String get actAdded => 'Added to today\'s tasks ✓';
+
+  @override
+  String get challengeComplete => 'Today\'s word is taking root';
+
+  @override
+  String get backHome => 'Back to Home';
+
+  @override
+  String get memoryGardenEmpty =>
+      'No rooted verses yet — begin with today\'s Word';
+
+  @override
+  String get tapToListen => 'Tap to listen';
+
+  @override
+  String get enterThreshold => 'Enter the Threshold';
+
+  @override
+  String get todaysThread => 'Today\'s Thread';
+
+  @override
+  String get shareVerseToday => 'Share this verse with one person today';
+
+  @override
+  String get restInWord => 'Take a quiet minute to rest in this Word';
+
+  @override
+  String liveOutTheme(Object word) {
+    return 'Live out $word today';
+  }
+
+  @override
+  String get buildPrompt => 'Rebuild the verse below';
+
+  @override
+  String get checkAnswer => 'Check';
+
+  @override
+  String get reviewDone => 'Beautifully reviewed — it stays rooted';
+
+  @override
+  String get somethingWentWrong => 'Something went wrong';
+
+  @override
+  String get prayerTemplateHint => 'Write your own prayer…';
+
+  @override
+  String get savePrayer => 'Save this prayer';
+
+  @override
+  String get savedPrayer => 'Prayer saved ✓';
+
+  @override
+  String get actPrayBack => 'Pray this verse back aloud';
 }

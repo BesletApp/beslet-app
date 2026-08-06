@@ -22,6 +22,8 @@ import '../../features/tasks/daily_todo_screen.dart';
 import '../../features/tasks/goals_screen.dart';
 import '../../features/profile/profile_screen.dart';
 import '../../features/settings/settings_screen.dart';
+import '../../features/word_challenge/word_challenge_screen.dart';
+import '../../features/word_challenge/memory_garden_screen.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -57,6 +59,14 @@ class AppRouter {
         branches: [
           StatefulShellBranch(routes: [
             GoRoute(path: '/home', pageBuilder: (context, state) => _buildPage(state, const HomeScreen())),
+            GoRoute(path: '/word-challenge', pageBuilder: (context, state) {
+              final extra = state.extra as Map<String, dynamic>?;
+              return _buildPage(
+                state,
+                WordChallengeScreen(reviewId: extra?['reviewId'] as String?),
+              );
+            }),
+            GoRoute(path: '/memory-garden', pageBuilder: (context, state) => _buildPage(state, const MemoryGardenScreen())),
             GoRoute(path: '/habits', pageBuilder: (context, state) => _buildPage(state, const HabitsScreen())),
             GoRoute(path: '/prayer', pageBuilder: (context, state) => _buildPage(state, const PrayerScreen())),
             GoRoute(path: '/skills', pageBuilder: (context, state) => _buildPage(state, const SkillsScreen())),

@@ -956,4 +956,125 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get prayWhatYouRead => 'ያነበብከውን መሠረት አድርገህ ጸልይ';
+
+  @override
+  String get wordChallenge => 'የዛሬ ቃል';
+
+  @override
+  String get startTodaysWord => 'የዛሬውን ቃል ጀምር';
+
+  @override
+  String get seeAndHear => 'እይ እና ስማ';
+
+  @override
+  String get buildTheVerse => 'ቃሉን ገንባ';
+
+  @override
+  String get prayTheVerse => 'ቃሉን ጸልይ';
+
+  @override
+  String get turnVerseIntoPrayer => 'ይህን ቃል ወደ ጸሎት ቀይር';
+
+  @override
+  String get hearTheVerse => 'ቃሉን ስማ';
+
+  @override
+  String get wordIsRooting => 'ቃሉ በውስጥህ ሥር እየሰደደ ነው 🌱';
+
+  @override
+  String get review => 'መገምገም';
+
+  @override
+  String reviewDue(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'ግምገማ · # ጥቅሶች',
+      one: 'ግምገማ · 1 ጥቅስ',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get memoryGarden => 'የቃል አትክልት';
+
+  @override
+  String get masteryNew => 'አዲስ';
+
+  @override
+  String get masteryGrowing => 'ማደግ';
+
+  @override
+  String get masteryRooted => 'ሥር የሰደደ';
+
+  @override
+  String get continueWord => 'ቀጥል';
+
+  @override
+  String get prayerTemplateThank => 'ጌታ ሆይ ስለ … አመሰግንሃለሁ';
+
+  @override
+  String get prayerTemplateAsk => 'እንድኖር እርዳኝ …';
+
+  @override
+  String get prayerTemplateRest => 'በአንተ ውስጥ ዕረፋለሁ …';
+
+  @override
+  String get makeItTodayAct => 'የዛሬ ተግባር አድርገው';
+
+  @override
+  String get actAdded => 'ወደ የዛሬ ተግባራት ተጨምሯል ✓';
+
+  @override
+  String get challengeComplete => 'የዛሬው ቃል ሥር እየሰደደ ነው';
+
+  @override
+  String get backHome => 'ወደ መነሻ ተመለስ';
+
+  @override
+  String get memoryGardenEmpty => 'ገና ሥር የሰደዱ ቃላት የሉም — ከዛሬ ቃል ጀምር';
+
+  @override
+  String get tapToListen => 'ለማዳመጥ ይንኩ';
+
+  @override
+  String get enterThreshold => 'ደፍ እወጣ';
+
+  @override
+  String get todaysThread => 'የዕለቱ ክር';
+
+  @override
+  String get shareVerseToday => 'ይህን ቃል ዛሬ ለአንድ ሰው አጋራ';
+
+  @override
+  String get restInWord => 'በዚህ ቃል ውስጥ ጸጥ ያለ ደቂቃ ዕረፍ';
+
+  @override
+  String liveOutTheme(Object word) {
+    return 'ዛሬ $wordን በተግባር አውጣ';
+  }
+
+  @override
+  String get buildPrompt => 'ከታች ያለውን ቃል እንደገና ገንባ';
+
+  @override
+  String get checkAnswer => 'ፈትሽ';
+
+  @override
+  String get reviewDone => 'በጥሩ ሁኔታ ተመልሶ ታየ — ሥር የሰደደ ሆኖ ይቆያል';
+
+  @override
+  String get somethingWentWrong => 'የሆነ ስህተት ተከስቷል';
+
+  @override
+  String get prayerTemplateHint => 'የራስህን ጸሎት ጻፍ…';
+
+  @override
+  String get savePrayer => 'ይህን ጸሎት አስቀምጥ';
+
+  @override
+  String get savedPrayer => 'ጸሎቱ ተቀምጧል ✓';
+
+  @override
+  String get actPrayBack => 'ይህን ቃል በድምፅ ጸልይ';
 }

@@ -1849,6 +1849,228 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Pray based on what you read'**
   String get prayWhatYouRead;
+
+  /// No description provided for @wordChallenge.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s Word'**
+  String get wordChallenge;
+
+  /// No description provided for @startTodaysWord.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Today\'s Word'**
+  String get startTodaysWord;
+
+  /// No description provided for @seeAndHear.
+  ///
+  /// In en, this message translates to:
+  /// **'See & Hear'**
+  String get seeAndHear;
+
+  /// No description provided for @buildTheVerse.
+  ///
+  /// In en, this message translates to:
+  /// **'Build the Verse'**
+  String get buildTheVerse;
+
+  /// No description provided for @prayTheVerse.
+  ///
+  /// In en, this message translates to:
+  /// **'Pray the Verse'**
+  String get prayTheVerse;
+
+  /// No description provided for @turnVerseIntoPrayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn this verse into a prayer'**
+  String get turnVerseIntoPrayer;
+
+  /// No description provided for @hearTheVerse.
+  ///
+  /// In en, this message translates to:
+  /// **'Hear the verse'**
+  String get hearTheVerse;
+
+  /// No description provided for @wordIsRooting.
+  ///
+  /// In en, this message translates to:
+  /// **'The Word is taking root in you 🌱'**
+  String get wordIsRooting;
+
+  /// No description provided for @review.
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get review;
+
+  /// No description provided for @reviewDue.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Review · 1 verse} other{Review · # verses}}'**
+  String reviewDue(num count);
+
+  /// No description provided for @memoryGarden.
+  ///
+  /// In en, this message translates to:
+  /// **'Memory Garden'**
+  String get memoryGarden;
+
+  /// No description provided for @masteryNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get masteryNew;
+
+  /// No description provided for @masteryGrowing.
+  ///
+  /// In en, this message translates to:
+  /// **'Growing'**
+  String get masteryGrowing;
+
+  /// No description provided for @masteryRooted.
+  ///
+  /// In en, this message translates to:
+  /// **'Rooted'**
+  String get masteryRooted;
+
+  /// No description provided for @continueWord.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get continueWord;
+
+  /// No description provided for @prayerTemplateThank.
+  ///
+  /// In en, this message translates to:
+  /// **'Thank You, Lord, for…'**
+  String get prayerTemplateThank;
+
+  /// No description provided for @prayerTemplateAsk.
+  ///
+  /// In en, this message translates to:
+  /// **'Help me to live…'**
+  String get prayerTemplateAsk;
+
+  /// No description provided for @prayerTemplateRest.
+  ///
+  /// In en, this message translates to:
+  /// **'I rest in You…'**
+  String get prayerTemplateRest;
+
+  /// No description provided for @makeItTodayAct.
+  ///
+  /// In en, this message translates to:
+  /// **'Make it today\'s act'**
+  String get makeItTodayAct;
+
+  /// No description provided for @actAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to today\'s tasks ✓'**
+  String get actAdded;
+
+  /// No description provided for @challengeComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s word is taking root'**
+  String get challengeComplete;
+
+  /// No description provided for @backHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Home'**
+  String get backHome;
+
+  /// No description provided for @memoryGardenEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No rooted verses yet — begin with today\'s Word'**
+  String get memoryGardenEmpty;
+
+  /// No description provided for @tapToListen.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to listen'**
+  String get tapToListen;
+
+  /// No description provided for @enterThreshold.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the Threshold'**
+  String get enterThreshold;
+
+  /// No description provided for @todaysThread.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s Thread'**
+  String get todaysThread;
+
+  /// No description provided for @shareVerseToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Share this verse with one person today'**
+  String get shareVerseToday;
+
+  /// No description provided for @restInWord.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a quiet minute to rest in this Word'**
+  String get restInWord;
+
+  /// No description provided for @liveOutTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Live out {word} today'**
+  String liveOutTheme(Object word);
+
+  /// No description provided for @buildPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Rebuild the verse below'**
+  String get buildPrompt;
+
+  /// No description provided for @checkAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Check'**
+  String get checkAnswer;
+
+  /// No description provided for @reviewDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Beautifully reviewed — it stays rooted'**
+  String get reviewDone;
+
+  /// No description provided for @somethingWentWrong.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong'**
+  String get somethingWentWrong;
+
+  /// No description provided for @prayerTemplateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Write your own prayer…'**
+  String get prayerTemplateHint;
+
+  /// No description provided for @savePrayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Save this prayer'**
+  String get savePrayer;
+
+  /// No description provided for @savedPrayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Prayer saved ✓'**
+  String get savedPrayer;
+
+  /// No description provided for @actPrayBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Pray this verse back aloud'**
+  String get actPrayBack;
 }
 
 class _AppLocalizationsDelegate

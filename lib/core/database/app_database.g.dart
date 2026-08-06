@@ -9054,6 +9054,743 @@ class VineDayCompanion extends UpdateCompanion<VineDayData> {
   }
 }
 
+class $VerseChallengesTable extends VerseChallenges
+    with TableInfo<$VerseChallengesTable, VerseChallenge> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $VerseChallengesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _referenceMeta = const VerificationMeta(
+    'reference',
+  );
+  @override
+  late final GeneratedColumn<String> reference = GeneratedColumn<String>(
+    'reference',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _textEnMeta = const VerificationMeta('textEn');
+  @override
+  late final GeneratedColumn<String> textEn = GeneratedColumn<String>(
+    'text_en',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _textAmMeta = const VerificationMeta('textAm');
+  @override
+  late final GeneratedColumn<String> textAm = GeneratedColumn<String>(
+    'text_am',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _masteryLevelMeta = const VerificationMeta(
+    'masteryLevel',
+  );
+  @override
+  late final GeneratedColumn<int> masteryLevel = GeneratedColumn<int>(
+    'mastery_level',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _completionsMeta = const VerificationMeta(
+    'completions',
+  );
+  @override
+  late final GeneratedColumn<int> completions = GeneratedColumn<int>(
+    'completions',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _lastCompletedDateMeta = const VerificationMeta(
+    'lastCompletedDate',
+  );
+  @override
+  late final GeneratedColumn<String> lastCompletedDate =
+      GeneratedColumn<String>(
+        'last_completed_date',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _userPrayerMeta = const VerificationMeta(
+    'userPrayer',
+  );
+  @override
+  late final GeneratedColumn<String> userPrayer = GeneratedColumn<String>(
+    'user_prayer',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _nextReviewDateMeta = const VerificationMeta(
+    'nextReviewDate',
+  );
+  @override
+  late final GeneratedColumn<String> nextReviewDate = GeneratedColumn<String>(
+    'next_review_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _reviewCountMeta = const VerificationMeta(
+    'reviewCount',
+  );
+  @override
+  late final GeneratedColumn<int> reviewCount = GeneratedColumn<int>(
+    'review_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _chosenActMeta = const VerificationMeta(
+    'chosenAct',
+  );
+  @override
+  late final GeneratedColumn<String> chosenAct = GeneratedColumn<String>(
+    'chosen_act',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _actDoneMeta = const VerificationMeta(
+    'actDone',
+  );
+  @override
+  late final GeneratedColumn<bool> actDone = GeneratedColumn<bool>(
+    'act_done',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("act_done" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    reference,
+    textEn,
+    textAm,
+    masteryLevel,
+    completions,
+    lastCompletedDate,
+    userPrayer,
+    nextReviewDate,
+    reviewCount,
+    chosenAct,
+    actDone,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'verse_challenges';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<VerseChallenge> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('reference')) {
+      context.handle(
+        _referenceMeta,
+        reference.isAcceptableOrUnknown(data['reference']!, _referenceMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_referenceMeta);
+    }
+    if (data.containsKey('text_en')) {
+      context.handle(
+        _textEnMeta,
+        textEn.isAcceptableOrUnknown(data['text_en']!, _textEnMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_textEnMeta);
+    }
+    if (data.containsKey('text_am')) {
+      context.handle(
+        _textAmMeta,
+        textAm.isAcceptableOrUnknown(data['text_am']!, _textAmMeta),
+      );
+    }
+    if (data.containsKey('mastery_level')) {
+      context.handle(
+        _masteryLevelMeta,
+        masteryLevel.isAcceptableOrUnknown(
+          data['mastery_level']!,
+          _masteryLevelMeta,
+        ),
+      );
+    }
+    if (data.containsKey('completions')) {
+      context.handle(
+        _completionsMeta,
+        completions.isAcceptableOrUnknown(
+          data['completions']!,
+          _completionsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('last_completed_date')) {
+      context.handle(
+        _lastCompletedDateMeta,
+        lastCompletedDate.isAcceptableOrUnknown(
+          data['last_completed_date']!,
+          _lastCompletedDateMeta,
+        ),
+      );
+    }
+    if (data.containsKey('user_prayer')) {
+      context.handle(
+        _userPrayerMeta,
+        userPrayer.isAcceptableOrUnknown(data['user_prayer']!, _userPrayerMeta),
+      );
+    }
+    if (data.containsKey('next_review_date')) {
+      context.handle(
+        _nextReviewDateMeta,
+        nextReviewDate.isAcceptableOrUnknown(
+          data['next_review_date']!,
+          _nextReviewDateMeta,
+        ),
+      );
+    }
+    if (data.containsKey('review_count')) {
+      context.handle(
+        _reviewCountMeta,
+        reviewCount.isAcceptableOrUnknown(
+          data['review_count']!,
+          _reviewCountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('chosen_act')) {
+      context.handle(
+        _chosenActMeta,
+        chosenAct.isAcceptableOrUnknown(data['chosen_act']!, _chosenActMeta),
+      );
+    }
+    if (data.containsKey('act_done')) {
+      context.handle(
+        _actDoneMeta,
+        actDone.isAcceptableOrUnknown(data['act_done']!, _actDoneMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  VerseChallenge map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return VerseChallenge(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      reference: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reference'],
+      )!,
+      textEn: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}text_en'],
+      )!,
+      textAm: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}text_am'],
+      ),
+      masteryLevel: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}mastery_level'],
+      )!,
+      completions: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}completions'],
+      )!,
+      lastCompletedDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}last_completed_date'],
+      ),
+      userPrayer: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_prayer'],
+      ),
+      nextReviewDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}next_review_date'],
+      ),
+      reviewCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}review_count'],
+      )!,
+      chosenAct: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}chosen_act'],
+      ),
+      actDone: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}act_done'],
+      )!,
+    );
+  }
+
+  @override
+  $VerseChallengesTable createAlias(String alias) {
+    return $VerseChallengesTable(attachedDatabase, alias);
+  }
+}
+
+class VerseChallenge extends DataClass implements Insertable<VerseChallenge> {
+  /// Stable id derived from the reference, e.g. `galatians_5_22_23`.
+  final String id;
+  final String reference;
+  final String textEn;
+  final String? textAm;
+  final int masteryLevel;
+  final int completions;
+  final String? lastCompletedDate;
+  final String? userPrayer;
+
+  /// The next day this verse should be gently revisited (YYYY-MM-DD).
+  final String? nextReviewDate;
+  final int reviewCount;
+  final String? chosenAct;
+  final bool actDone;
+  const VerseChallenge({
+    required this.id,
+    required this.reference,
+    required this.textEn,
+    this.textAm,
+    required this.masteryLevel,
+    required this.completions,
+    this.lastCompletedDate,
+    this.userPrayer,
+    this.nextReviewDate,
+    required this.reviewCount,
+    this.chosenAct,
+    required this.actDone,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['reference'] = Variable<String>(reference);
+    map['text_en'] = Variable<String>(textEn);
+    if (!nullToAbsent || textAm != null) {
+      map['text_am'] = Variable<String>(textAm);
+    }
+    map['mastery_level'] = Variable<int>(masteryLevel);
+    map['completions'] = Variable<int>(completions);
+    if (!nullToAbsent || lastCompletedDate != null) {
+      map['last_completed_date'] = Variable<String>(lastCompletedDate);
+    }
+    if (!nullToAbsent || userPrayer != null) {
+      map['user_prayer'] = Variable<String>(userPrayer);
+    }
+    if (!nullToAbsent || nextReviewDate != null) {
+      map['next_review_date'] = Variable<String>(nextReviewDate);
+    }
+    map['review_count'] = Variable<int>(reviewCount);
+    if (!nullToAbsent || chosenAct != null) {
+      map['chosen_act'] = Variable<String>(chosenAct);
+    }
+    map['act_done'] = Variable<bool>(actDone);
+    return map;
+  }
+
+  VerseChallengesCompanion toCompanion(bool nullToAbsent) {
+    return VerseChallengesCompanion(
+      id: Value(id),
+      reference: Value(reference),
+      textEn: Value(textEn),
+      textAm: textAm == null && nullToAbsent
+          ? const Value.absent()
+          : Value(textAm),
+      masteryLevel: Value(masteryLevel),
+      completions: Value(completions),
+      lastCompletedDate: lastCompletedDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastCompletedDate),
+      userPrayer: userPrayer == null && nullToAbsent
+          ? const Value.absent()
+          : Value(userPrayer),
+      nextReviewDate: nextReviewDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(nextReviewDate),
+      reviewCount: Value(reviewCount),
+      chosenAct: chosenAct == null && nullToAbsent
+          ? const Value.absent()
+          : Value(chosenAct),
+      actDone: Value(actDone),
+    );
+  }
+
+  factory VerseChallenge.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return VerseChallenge(
+      id: serializer.fromJson<String>(json['id']),
+      reference: serializer.fromJson<String>(json['reference']),
+      textEn: serializer.fromJson<String>(json['textEn']),
+      textAm: serializer.fromJson<String?>(json['textAm']),
+      masteryLevel: serializer.fromJson<int>(json['masteryLevel']),
+      completions: serializer.fromJson<int>(json['completions']),
+      lastCompletedDate: serializer.fromJson<String?>(
+        json['lastCompletedDate'],
+      ),
+      userPrayer: serializer.fromJson<String?>(json['userPrayer']),
+      nextReviewDate: serializer.fromJson<String?>(json['nextReviewDate']),
+      reviewCount: serializer.fromJson<int>(json['reviewCount']),
+      chosenAct: serializer.fromJson<String?>(json['chosenAct']),
+      actDone: serializer.fromJson<bool>(json['actDone']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'reference': serializer.toJson<String>(reference),
+      'textEn': serializer.toJson<String>(textEn),
+      'textAm': serializer.toJson<String?>(textAm),
+      'masteryLevel': serializer.toJson<int>(masteryLevel),
+      'completions': serializer.toJson<int>(completions),
+      'lastCompletedDate': serializer.toJson<String?>(lastCompletedDate),
+      'userPrayer': serializer.toJson<String?>(userPrayer),
+      'nextReviewDate': serializer.toJson<String?>(nextReviewDate),
+      'reviewCount': serializer.toJson<int>(reviewCount),
+      'chosenAct': serializer.toJson<String?>(chosenAct),
+      'actDone': serializer.toJson<bool>(actDone),
+    };
+  }
+
+  VerseChallenge copyWith({
+    String? id,
+    String? reference,
+    String? textEn,
+    Value<String?> textAm = const Value.absent(),
+    int? masteryLevel,
+    int? completions,
+    Value<String?> lastCompletedDate = const Value.absent(),
+    Value<String?> userPrayer = const Value.absent(),
+    Value<String?> nextReviewDate = const Value.absent(),
+    int? reviewCount,
+    Value<String?> chosenAct = const Value.absent(),
+    bool? actDone,
+  }) => VerseChallenge(
+    id: id ?? this.id,
+    reference: reference ?? this.reference,
+    textEn: textEn ?? this.textEn,
+    textAm: textAm.present ? textAm.value : this.textAm,
+    masteryLevel: masteryLevel ?? this.masteryLevel,
+    completions: completions ?? this.completions,
+    lastCompletedDate: lastCompletedDate.present
+        ? lastCompletedDate.value
+        : this.lastCompletedDate,
+    userPrayer: userPrayer.present ? userPrayer.value : this.userPrayer,
+    nextReviewDate: nextReviewDate.present
+        ? nextReviewDate.value
+        : this.nextReviewDate,
+    reviewCount: reviewCount ?? this.reviewCount,
+    chosenAct: chosenAct.present ? chosenAct.value : this.chosenAct,
+    actDone: actDone ?? this.actDone,
+  );
+  VerseChallenge copyWithCompanion(VerseChallengesCompanion data) {
+    return VerseChallenge(
+      id: data.id.present ? data.id.value : this.id,
+      reference: data.reference.present ? data.reference.value : this.reference,
+      textEn: data.textEn.present ? data.textEn.value : this.textEn,
+      textAm: data.textAm.present ? data.textAm.value : this.textAm,
+      masteryLevel: data.masteryLevel.present
+          ? data.masteryLevel.value
+          : this.masteryLevel,
+      completions: data.completions.present
+          ? data.completions.value
+          : this.completions,
+      lastCompletedDate: data.lastCompletedDate.present
+          ? data.lastCompletedDate.value
+          : this.lastCompletedDate,
+      userPrayer: data.userPrayer.present
+          ? data.userPrayer.value
+          : this.userPrayer,
+      nextReviewDate: data.nextReviewDate.present
+          ? data.nextReviewDate.value
+          : this.nextReviewDate,
+      reviewCount: data.reviewCount.present
+          ? data.reviewCount.value
+          : this.reviewCount,
+      chosenAct: data.chosenAct.present ? data.chosenAct.value : this.chosenAct,
+      actDone: data.actDone.present ? data.actDone.value : this.actDone,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('VerseChallenge(')
+          ..write('id: $id, ')
+          ..write('reference: $reference, ')
+          ..write('textEn: $textEn, ')
+          ..write('textAm: $textAm, ')
+          ..write('masteryLevel: $masteryLevel, ')
+          ..write('completions: $completions, ')
+          ..write('lastCompletedDate: $lastCompletedDate, ')
+          ..write('userPrayer: $userPrayer, ')
+          ..write('nextReviewDate: $nextReviewDate, ')
+          ..write('reviewCount: $reviewCount, ')
+          ..write('chosenAct: $chosenAct, ')
+          ..write('actDone: $actDone')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    reference,
+    textEn,
+    textAm,
+    masteryLevel,
+    completions,
+    lastCompletedDate,
+    userPrayer,
+    nextReviewDate,
+    reviewCount,
+    chosenAct,
+    actDone,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is VerseChallenge &&
+          other.id == this.id &&
+          other.reference == this.reference &&
+          other.textEn == this.textEn &&
+          other.textAm == this.textAm &&
+          other.masteryLevel == this.masteryLevel &&
+          other.completions == this.completions &&
+          other.lastCompletedDate == this.lastCompletedDate &&
+          other.userPrayer == this.userPrayer &&
+          other.nextReviewDate == this.nextReviewDate &&
+          other.reviewCount == this.reviewCount &&
+          other.chosenAct == this.chosenAct &&
+          other.actDone == this.actDone);
+}
+
+class VerseChallengesCompanion extends UpdateCompanion<VerseChallenge> {
+  final Value<String> id;
+  final Value<String> reference;
+  final Value<String> textEn;
+  final Value<String?> textAm;
+  final Value<int> masteryLevel;
+  final Value<int> completions;
+  final Value<String?> lastCompletedDate;
+  final Value<String?> userPrayer;
+  final Value<String?> nextReviewDate;
+  final Value<int> reviewCount;
+  final Value<String?> chosenAct;
+  final Value<bool> actDone;
+  final Value<int> rowid;
+  const VerseChallengesCompanion({
+    this.id = const Value.absent(),
+    this.reference = const Value.absent(),
+    this.textEn = const Value.absent(),
+    this.textAm = const Value.absent(),
+    this.masteryLevel = const Value.absent(),
+    this.completions = const Value.absent(),
+    this.lastCompletedDate = const Value.absent(),
+    this.userPrayer = const Value.absent(),
+    this.nextReviewDate = const Value.absent(),
+    this.reviewCount = const Value.absent(),
+    this.chosenAct = const Value.absent(),
+    this.actDone = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  VerseChallengesCompanion.insert({
+    required String id,
+    required String reference,
+    required String textEn,
+    this.textAm = const Value.absent(),
+    this.masteryLevel = const Value.absent(),
+    this.completions = const Value.absent(),
+    this.lastCompletedDate = const Value.absent(),
+    this.userPrayer = const Value.absent(),
+    this.nextReviewDate = const Value.absent(),
+    this.reviewCount = const Value.absent(),
+    this.chosenAct = const Value.absent(),
+    this.actDone = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       reference = Value(reference),
+       textEn = Value(textEn);
+  static Insertable<VerseChallenge> custom({
+    Expression<String>? id,
+    Expression<String>? reference,
+    Expression<String>? textEn,
+    Expression<String>? textAm,
+    Expression<int>? masteryLevel,
+    Expression<int>? completions,
+    Expression<String>? lastCompletedDate,
+    Expression<String>? userPrayer,
+    Expression<String>? nextReviewDate,
+    Expression<int>? reviewCount,
+    Expression<String>? chosenAct,
+    Expression<bool>? actDone,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (reference != null) 'reference': reference,
+      if (textEn != null) 'text_en': textEn,
+      if (textAm != null) 'text_am': textAm,
+      if (masteryLevel != null) 'mastery_level': masteryLevel,
+      if (completions != null) 'completions': completions,
+      if (lastCompletedDate != null) 'last_completed_date': lastCompletedDate,
+      if (userPrayer != null) 'user_prayer': userPrayer,
+      if (nextReviewDate != null) 'next_review_date': nextReviewDate,
+      if (reviewCount != null) 'review_count': reviewCount,
+      if (chosenAct != null) 'chosen_act': chosenAct,
+      if (actDone != null) 'act_done': actDone,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  VerseChallengesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? reference,
+    Value<String>? textEn,
+    Value<String?>? textAm,
+    Value<int>? masteryLevel,
+    Value<int>? completions,
+    Value<String?>? lastCompletedDate,
+    Value<String?>? userPrayer,
+    Value<String?>? nextReviewDate,
+    Value<int>? reviewCount,
+    Value<String?>? chosenAct,
+    Value<bool>? actDone,
+    Value<int>? rowid,
+  }) {
+    return VerseChallengesCompanion(
+      id: id ?? this.id,
+      reference: reference ?? this.reference,
+      textEn: textEn ?? this.textEn,
+      textAm: textAm ?? this.textAm,
+      masteryLevel: masteryLevel ?? this.masteryLevel,
+      completions: completions ?? this.completions,
+      lastCompletedDate: lastCompletedDate ?? this.lastCompletedDate,
+      userPrayer: userPrayer ?? this.userPrayer,
+      nextReviewDate: nextReviewDate ?? this.nextReviewDate,
+      reviewCount: reviewCount ?? this.reviewCount,
+      chosenAct: chosenAct ?? this.chosenAct,
+      actDone: actDone ?? this.actDone,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (reference.present) {
+      map['reference'] = Variable<String>(reference.value);
+    }
+    if (textEn.present) {
+      map['text_en'] = Variable<String>(textEn.value);
+    }
+    if (textAm.present) {
+      map['text_am'] = Variable<String>(textAm.value);
+    }
+    if (masteryLevel.present) {
+      map['mastery_level'] = Variable<int>(masteryLevel.value);
+    }
+    if (completions.present) {
+      map['completions'] = Variable<int>(completions.value);
+    }
+    if (lastCompletedDate.present) {
+      map['last_completed_date'] = Variable<String>(lastCompletedDate.value);
+    }
+    if (userPrayer.present) {
+      map['user_prayer'] = Variable<String>(userPrayer.value);
+    }
+    if (nextReviewDate.present) {
+      map['next_review_date'] = Variable<String>(nextReviewDate.value);
+    }
+    if (reviewCount.present) {
+      map['review_count'] = Variable<int>(reviewCount.value);
+    }
+    if (chosenAct.present) {
+      map['chosen_act'] = Variable<String>(chosenAct.value);
+    }
+    if (actDone.present) {
+      map['act_done'] = Variable<bool>(actDone.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('VerseChallengesCompanion(')
+          ..write('id: $id, ')
+          ..write('reference: $reference, ')
+          ..write('textEn: $textEn, ')
+          ..write('textAm: $textAm, ')
+          ..write('masteryLevel: $masteryLevel, ')
+          ..write('completions: $completions, ')
+          ..write('lastCompletedDate: $lastCompletedDate, ')
+          ..write('userPrayer: $userPrayer, ')
+          ..write('nextReviewDate: $nextReviewDate, ')
+          ..write('reviewCount: $reviewCount, ')
+          ..write('chosenAct: $chosenAct, ')
+          ..write('actDone: $actDone, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -9084,6 +9821,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     this,
   );
   late final $VineDayTable vineDay = $VineDayTable(this);
+  late final $VerseChallengesTable verseChallenges = $VerseChallengesTable(
+    this,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -9111,6 +9851,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     growthJourney,
     readingSessions,
     vineDay,
+    verseChallenges,
   ];
 }
 
@@ -14630,6 +15371,357 @@ typedef $$VineDayTableProcessedTableManager =
       VineDayData,
       PrefetchHooks Function()
     >;
+typedef $$VerseChallengesTableCreateCompanionBuilder =
+    VerseChallengesCompanion Function({
+      required String id,
+      required String reference,
+      required String textEn,
+      Value<String?> textAm,
+      Value<int> masteryLevel,
+      Value<int> completions,
+      Value<String?> lastCompletedDate,
+      Value<String?> userPrayer,
+      Value<String?> nextReviewDate,
+      Value<int> reviewCount,
+      Value<String?> chosenAct,
+      Value<bool> actDone,
+      Value<int> rowid,
+    });
+typedef $$VerseChallengesTableUpdateCompanionBuilder =
+    VerseChallengesCompanion Function({
+      Value<String> id,
+      Value<String> reference,
+      Value<String> textEn,
+      Value<String?> textAm,
+      Value<int> masteryLevel,
+      Value<int> completions,
+      Value<String?> lastCompletedDate,
+      Value<String?> userPrayer,
+      Value<String?> nextReviewDate,
+      Value<int> reviewCount,
+      Value<String?> chosenAct,
+      Value<bool> actDone,
+      Value<int> rowid,
+    });
+
+class $$VerseChallengesTableFilterComposer
+    extends Composer<_$AppDatabase, $VerseChallengesTable> {
+  $$VerseChallengesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get reference => $composableBuilder(
+    column: $table.reference,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get textEn => $composableBuilder(
+    column: $table.textEn,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get textAm => $composableBuilder(
+    column: $table.textAm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get masteryLevel => $composableBuilder(
+    column: $table.masteryLevel,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get completions => $composableBuilder(
+    column: $table.completions,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get lastCompletedDate => $composableBuilder(
+    column: $table.lastCompletedDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userPrayer => $composableBuilder(
+    column: $table.userPrayer,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nextReviewDate => $composableBuilder(
+    column: $table.nextReviewDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get reviewCount => $composableBuilder(
+    column: $table.reviewCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get chosenAct => $composableBuilder(
+    column: $table.chosenAct,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get actDone => $composableBuilder(
+    column: $table.actDone,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$VerseChallengesTableOrderingComposer
+    extends Composer<_$AppDatabase, $VerseChallengesTable> {
+  $$VerseChallengesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get reference => $composableBuilder(
+    column: $table.reference,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get textEn => $composableBuilder(
+    column: $table.textEn,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get textAm => $composableBuilder(
+    column: $table.textAm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get masteryLevel => $composableBuilder(
+    column: $table.masteryLevel,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get completions => $composableBuilder(
+    column: $table.completions,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get lastCompletedDate => $composableBuilder(
+    column: $table.lastCompletedDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userPrayer => $composableBuilder(
+    column: $table.userPrayer,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nextReviewDate => $composableBuilder(
+    column: $table.nextReviewDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get reviewCount => $composableBuilder(
+    column: $table.reviewCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get chosenAct => $composableBuilder(
+    column: $table.chosenAct,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get actDone => $composableBuilder(
+    column: $table.actDone,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$VerseChallengesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $VerseChallengesTable> {
+  $$VerseChallengesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get reference =>
+      $composableBuilder(column: $table.reference, builder: (column) => column);
+
+  GeneratedColumn<String> get textEn =>
+      $composableBuilder(column: $table.textEn, builder: (column) => column);
+
+  GeneratedColumn<String> get textAm =>
+      $composableBuilder(column: $table.textAm, builder: (column) => column);
+
+  GeneratedColumn<int> get masteryLevel => $composableBuilder(
+    column: $table.masteryLevel,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get completions => $composableBuilder(
+    column: $table.completions,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get lastCompletedDate => $composableBuilder(
+    column: $table.lastCompletedDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get userPrayer => $composableBuilder(
+    column: $table.userPrayer,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get nextReviewDate => $composableBuilder(
+    column: $table.nextReviewDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get reviewCount => $composableBuilder(
+    column: $table.reviewCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get chosenAct =>
+      $composableBuilder(column: $table.chosenAct, builder: (column) => column);
+
+  GeneratedColumn<bool> get actDone =>
+      $composableBuilder(column: $table.actDone, builder: (column) => column);
+}
+
+class $$VerseChallengesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $VerseChallengesTable,
+          VerseChallenge,
+          $$VerseChallengesTableFilterComposer,
+          $$VerseChallengesTableOrderingComposer,
+          $$VerseChallengesTableAnnotationComposer,
+          $$VerseChallengesTableCreateCompanionBuilder,
+          $$VerseChallengesTableUpdateCompanionBuilder,
+          (
+            VerseChallenge,
+            BaseReferences<
+              _$AppDatabase,
+              $VerseChallengesTable,
+              VerseChallenge
+            >,
+          ),
+          VerseChallenge,
+          PrefetchHooks Function()
+        > {
+  $$VerseChallengesTableTableManager(
+    _$AppDatabase db,
+    $VerseChallengesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$VerseChallengesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$VerseChallengesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$VerseChallengesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> reference = const Value.absent(),
+                Value<String> textEn = const Value.absent(),
+                Value<String?> textAm = const Value.absent(),
+                Value<int> masteryLevel = const Value.absent(),
+                Value<int> completions = const Value.absent(),
+                Value<String?> lastCompletedDate = const Value.absent(),
+                Value<String?> userPrayer = const Value.absent(),
+                Value<String?> nextReviewDate = const Value.absent(),
+                Value<int> reviewCount = const Value.absent(),
+                Value<String?> chosenAct = const Value.absent(),
+                Value<bool> actDone = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => VerseChallengesCompanion(
+                id: id,
+                reference: reference,
+                textEn: textEn,
+                textAm: textAm,
+                masteryLevel: masteryLevel,
+                completions: completions,
+                lastCompletedDate: lastCompletedDate,
+                userPrayer: userPrayer,
+                nextReviewDate: nextReviewDate,
+                reviewCount: reviewCount,
+                chosenAct: chosenAct,
+                actDone: actDone,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String reference,
+                required String textEn,
+                Value<String?> textAm = const Value.absent(),
+                Value<int> masteryLevel = const Value.absent(),
+                Value<int> completions = const Value.absent(),
+                Value<String?> lastCompletedDate = const Value.absent(),
+                Value<String?> userPrayer = const Value.absent(),
+                Value<String?> nextReviewDate = const Value.absent(),
+                Value<int> reviewCount = const Value.absent(),
+                Value<String?> chosenAct = const Value.absent(),
+                Value<bool> actDone = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => VerseChallengesCompanion.insert(
+                id: id,
+                reference: reference,
+                textEn: textEn,
+                textAm: textAm,
+                masteryLevel: masteryLevel,
+                completions: completions,
+                lastCompletedDate: lastCompletedDate,
+                userPrayer: userPrayer,
+                nextReviewDate: nextReviewDate,
+                reviewCount: reviewCount,
+                chosenAct: chosenAct,
+                actDone: actDone,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$VerseChallengesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $VerseChallengesTable,
+      VerseChallenge,
+      $$VerseChallengesTableFilterComposer,
+      $$VerseChallengesTableOrderingComposer,
+      $$VerseChallengesTableAnnotationComposer,
+      $$VerseChallengesTableCreateCompanionBuilder,
+      $$VerseChallengesTableUpdateCompanionBuilder,
+      (
+        VerseChallenge,
+        BaseReferences<_$AppDatabase, $VerseChallengesTable, VerseChallenge>,
+      ),
+      VerseChallenge,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -14678,4 +15770,6 @@ class $AppDatabaseManager {
       $$ReadingSessionsTableTableManager(_db, _db.readingSessions);
   $$VineDayTableTableManager get vineDay =>
       $$VineDayTableTableManager(_db, _db.vineDay);
+  $$VerseChallengesTableTableManager get verseChallenges =>
+      $$VerseChallengesTableTableManager(_db, _db.verseChallenges);
 }
