@@ -2071,6 +2071,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Pray this verse back aloud'**
   String get actPrayBack;
+
+  /// No description provided for @tapToPractice.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to practice'**
+  String get tapToPractice;
+
+  /// No description provided for @wellDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Well done 🌱'**
+  String get wellDone;
+
+  /// No description provided for @hiddenInYourHeart.
+  ///
+  /// In en, this message translates to:
+  /// **'Hiding the Word in your heart'**
+  String get hiddenInYourHeart;
+
+  /// No description provided for @phraseOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Phrase {current} of {total}'**
+  String phraseOf(Object current, Object total);
+
+  /// No description provided for @iHaveRead.
+  ///
+  /// In en, this message translates to:
+  /// **'I have read'**
+  String get iHaveRead;
+
+  /// No description provided for @whatDidYouUnderstand.
+  ///
+  /// In en, this message translates to:
+  /// **'What did you understand?'**
+  String get whatDidYouUnderstand;
 }
 
 class _AppLocalizationsDelegate

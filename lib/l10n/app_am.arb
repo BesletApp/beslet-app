@@ -328,5 +328,12 @@
   "prayerTemplateHint": "የራስህን ጸሎት ጻፍ…",
   "savePrayer": "ይህን ጸሎት አስቀምጥ",
   "savedPrayer": "ጸሎቱ ተቀምጧል ✓",
-  "actPrayBack": "ይህን ቃል በድምፅ ጸልይ"
+  "actPrayBack": "ይህን ቃል በድምፅ ጸልይ",
+  "tapToPractice": "ለመለማመድ ንካ",
+  "wellDone": "ጥሩ ሥራ 🌱",
+  "hiddenInYourHeart": "ቃሉን በልብህ መደበቅ",
+  "close": "ዝጋ",
+  "phraseOf": "ክፍል {current} ከ {total}",
+  "iHaveRead": "አንብቤያለሁ",
+  "whatDidYouUnderstand": "ምን ተረዳህ?"
 }

@@ -5,7 +5,7 @@ import 'package:beslet_app/core/providers/prayer_provider.dart';
 import 'package:beslet_app/core/providers/todo_provider.dart';
 import 'package:beslet_app/core/providers/word_challenge_provider.dart';
 import 'package:beslet_app/core/services/scripture_service.dart';
-import 'package:beslet_app/features/word_challenge/word_challenge_screen.dart';
+import 'package:beslet_app/features/word_challenge/verse_builder_loop.dart';
 import 'package:beslet_app/l10n/app_localizations.dart';
 import 'package:drift/drift.dart' hide Column, isNull, isNotNull;
 import 'package:drift/native.dart';
@@ -20,15 +20,6 @@ bool _canOpenSqlite() {
     return true;
   } catch (_) {
     return false;
-  }
-}
-
-/// A fake audio notifier that always fails to speak — the screen must simply
-/// keep working, exactly as it would on a device with no TTS engine.
-class _ThrowingAudioNotifier extends AudioPlayerNotifier {
-  @override
-  Future<void> speakVerse(String text, {required bool isAmharic}) async {
-    throw Exception('no tts engine');
   }
 }
 
@@ -75,7 +66,7 @@ void main() {
       expect(data.masteryLevel, 0);
     });
 
-    test('completing the build climbs mastery 0→1→2 and clamps at rooted', () async {
+    test('first build of the day climbs mastery 0→1; later passes are silent', () async {
       if (!available) return markTestSkipped('no sqlite3');
       final c = container();
       final notifier = c.read(wordChallengeNotifierProvider.notifier);
@@ -86,15 +77,36 @@ void main() {
       expect(data.mastery, VerseMastery.growing);
       expect(data.completions, 1);
 
+      // Same day: the loop re-runs freely, but the DB is untouched.
+      await notifier.completeBuild();
       await notifier.completeBuild();
       data = await c.read(todayWordChallengeProvider.future);
-      expect(data.masteryLevel, 2);
-      expect(data.isRooted, isTrue);
+      expect(data.masteryLevel, 1, reason: 'a same-day loop must not grind mastery');
+      expect(data.completions, 1, reason: 'a same-day loop must not double the count');
+    });
+
+    test('mastery climbs to rooted on a later day', () async {
+      if (!available) return markTestSkipped('no sqlite3');
+      final c = container();
+      final notifier = c.read(wordChallengeNotifierProvider.notifier);
+      final data = await c.read(todayWordChallengeProvider.future);
+
+      await db!.into(db!.verseChallenges).insert(
+        VerseChallengesCompanion.insert(
+          id: data.id,
+          reference: data.reference,
+          textEn: data.textEn,
+          textAm: Value<String?>(data.textAm),
+          masteryLevel: const Value(1),
+          completions: const Value(1),
+          lastCompletedDate: const Value('2000-01-01'),
+        ),
+      );
 
       await notifier.completeBuild();
-      data = await c.read(todayWordChallengeProvider.future);
-      expect(data.masteryLevel, 2);
-      expect(data.completions, 3);
+      final after = await c.read(todayWordChallengeProvider.future);
+      expect(after.masteryLevel, 2);
+      expect(after.isRooted, isTrue);
     });
 
     test('completeBuild marks today\'s Word step exactly once (XP on the yes)', () async {
@@ -196,46 +208,77 @@ void main() {
     });
   });
 
-  group('word challenge screen', () {
-    testWidgets('renders and survives a failing TTS engine', (tester) async {
+  group('word challenge loop', () {
+    testWidgets('see → build → celebrate → reshuffle, with no audio and no buttons', (tester) async {
       if (!_canOpenSqlite()) {
         return markTestSkipped('sqlite3 native library unavailable on this host');
       }
       final db = AppDatabase.forTesting(NativeDatabase.memory());
       addTearDown(db.close);
 
+      var spoke = false;
+      final audio = _TrackingAudioNotifier(() => spoke = true);
+
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             databaseProvider.overrideWithValue(db),
-            audioPlayerProvider.overrideWith(() => _ThrowingAudioNotifier()),
+            audioPlayerProvider.overrideWith(() => audio),
           ],
           child: const MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            home: WordChallengeScreen(),
+            home: Scaffold(
+              body: VersePracticeLoop(
+                verse: VerseChallengeData(
+                  id: 'test_verse',
+                  reference: 'Ps 119:11',
+                  textEn: 'I have hidden your word in my heart',
+                  textAm: null,
+                  masteryLevel: 0,
+                ),
+              ),
+            ),
           ),
         ),
       );
 
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 200));
+      final l = AppLocalizations.of(tester.element(find.byType(VersePracticeLoop)))!;
 
-      expect(find.byType(WordChallengeScreen), findsOneWidget);
+      // see phase shows the verse quietly, then auto-advances (no Continue).
+      await tester.pump(const Duration(milliseconds: 1700));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.byType(ActionChip), findsWidgets);
 
-      final hear = find.text('Hear the verse');
-      if (hear.evaluate().isNotEmpty) {
-        await tester.tap(hear);
-        await tester.pump();
+      // Build the verse by tapping the correct tail words in order.
+      for (final word in ['in', 'my', 'heart']) {
+        final chip = find.widgetWithText(ActionChip, word);
+        expect(chip, findsOneWidget, reason: 'chip for "$word" should be tappable');
+        await tester.tap(chip);
+        await tester.pump(const Duration(milliseconds: 60));
       }
 
-      final continueBtn = find.text('Continue');
-      if (continueBtn.evaluate().isNotEmpty) {
-        await tester.tap(continueBtn);
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 100));
-      }
-      expect(find.byType(WordChallengeScreen), findsOneWidget);
+      // "Well done 🌱" flashes, then the loop reshuffles on its own.
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.text(l.wellDone), findsOneWidget);
+
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump(const Duration(seconds: 2));
+      expect(find.byType(ActionChip), findsWidgets,
+          reason: 'the loop must reshuffle into a fresh build, not stop');
+      expect(spoke, isFalse, reason: 'the loop must never touch TTS');
     });
   });
+}
+
+/// A fake audio notifier that records every attempt to speak and fails fast —
+/// proving the practice loop is silent.
+class _TrackingAudioNotifier extends AudioPlayerNotifier {
+  final void Function() onSpeak;
+  _TrackingAudioNotifier(this.onSpeak);
+
+  @override
+  Future<void> speakVerse(String text, {required bool isAmharic}) async {
+    onSpeak();
+  }
 }

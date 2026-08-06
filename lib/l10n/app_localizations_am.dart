@@ -1077,4 +1077,24 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get actPrayBack => 'ይህን ቃል በድምፅ ጸልይ';
+
+  @override
+  String get tapToPractice => 'ለመለማመድ ንካ';
+
+  @override
+  String get wellDone => 'ጥሩ ሥራ 🌱';
+
+  @override
+  String get hiddenInYourHeart => 'ቃሉን በልብህ መደበቅ';
+
+  @override
+  String phraseOf(Object current, Object total) {
+    return 'ክፍል $current ከ $total';
+  }
+
+  @override
+  String get iHaveRead => 'አንብቤያለሁ';
+
+  @override
+  String get whatDidYouUnderstand => 'ምን ተረዳህ?';
 }

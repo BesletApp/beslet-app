@@ -145,6 +145,12 @@ class WordChallengeNotifier extends AsyncNotifier<void> {
     final existing = await (db.select(db.verseChallenges)
           ..where((t) => t.id.equals(id)))
         .get();
+    if (existing.isNotEmpty && existing.first.lastCompletedDate == today) {
+      // The build was already recorded today. Within the practice loop the
+      // user repeats freely — later passes are pure meditation, never a
+      // double XP or a mastery grind.
+      return;
+    }
     final prevMastery = existing.isEmpty ? 0 : existing.first.masteryLevel;
     final nextMastery = (prevMastery + 1).clamp(0, 2);
     final intervalIndex =

@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/services/scripture_service.dart';
 import '../../core/providers/audio_player_provider.dart';
@@ -11,6 +14,7 @@ import '../../core/providers/download_provider.dart';
 import '../../core/providers/scripture_provider.dart';
 import '../../core/providers/reading_preferences_provider.dart';
 import '../../core/providers/growth_streams_provider.dart';
+import '../../core/providers/journal_provider.dart';
 import '../../core/services/scene_event_bus.dart';
 import '../../l10n/app_localizations.dart';
 import '../growth/widgets/mini_vine.dart';
@@ -19,6 +23,8 @@ import 'widgets/verse_list_view.dart';
 import 'widgets/chapter_picker.dart';
 import 'widgets/download_sheet.dart';
 import 'widgets/verse_action_sheet.dart';
+import 'widgets/reflection_input_field.dart';
+import 'widgets/bottom_confirmation_button.dart';
 
 class BibleScreen extends ConsumerStatefulWidget {
   final String? initialBookId;
@@ -34,6 +40,12 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
   String? _pickedBookId;
   int? _pickedChapter;
   BibleBook? _offlineBook;
+
+  final ScrollController _scrollCtrl = ScrollController();
+  final TextEditingController _reflectionCtrl = TextEditingController();
+  bool _footerRevealed = false;
+  bool _confirming = false;
+  Timer? _dwellTimer;
 
   String get _effectiveLang {
     final locale = Localizations.localeOf(context).languageCode;
@@ -55,6 +67,15 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
     }
     _restoreOpenPage();
     _loadHighlightsState();
+    _scrollCtrl.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _dwellTimer?.cancel();
+    _scrollCtrl.dispose();
+    _reflectionCtrl.dispose();
+    super.dispose();
   }
 
   @override
@@ -67,6 +88,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
           _pickedBookId = widget.initialBookId;
           _pickedChapter = widget.initialChapter;
         });
+        _resetFooter();
       }
     }
   }
@@ -104,6 +126,47 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
     ref.read(sceneEventBusProvider).emit(SceneEventType.leafLight);
   }
 
+  /// The reader must reach the end of the chapter before the "I have read"
+  /// button appears — a quick tap at the top can never finish the reading.
+  void _onScroll() {
+    if (_footerRevealed || !_scrollCtrl.hasClients) return;
+    final pos = _scrollCtrl.position;
+    if (pos.maxScrollExtent > 0 &&
+        pos.pixels >= pos.maxScrollExtent - 200) {
+      setState(() => _footerRevealed = true);
+    }
+  }
+
+  /// A very short chapter fits on one screen (no scroll extent). After a quiet
+  /// dwell the footer appears anyway — the button is never there at open.
+  void _armDwell() {
+    _dwellTimer?.cancel();
+    _dwellTimer = Timer(const Duration(seconds: 10), () {
+      if (mounted) {
+        setState(() => _footerRevealed = true);
+      }
+    });
+  }
+
+  void _resetFooter() {
+    _dwellTimer?.cancel();
+    _footerRevealed = false;
+  }
+
+  /// Once a chapter is laid out, if it fits on a single screen (no scroll
+  /// extent) the reader can't "reach the end" by scrolling — so a short dwell
+  /// quietly brings the confirmation into view. Long chapters never get this:
+  /// the button waits for a real scroll to the bottom.
+  void _scheduleShortChapterCheck() {
+    if (_footerRevealed || _dwellTimer != null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _footerRevealed) return;
+      if (_scrollCtrl.hasClients && _scrollCtrl.position.maxScrollExtent <= 0) {
+        _armDwell();
+      }
+    });
+  }
+
   ({String bookId, int chapter})? _resolveParsed() {
     if (_pickedBookId != null && _pickedChapter != null) {
       return (bookId: _pickedBookId!, chapter: _pickedChapter!);
@@ -111,154 +174,92 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
     return null;
   }
 
-  /// The chapter-of-the-day chip with a jump button — the "current reading"
-  /// the Home card promises. The plan is gentle: the user may read anything.
-  Widget _buildPlanBar(AppLocalizations l) {
-    final plan = ref.watch(todayBiblePlanProvider);
-    final parsed = _resolveParsed();
-    final onPlan = parsed != null && parsed.bookId == plan.bookId && parsed.chapter == plan.chapter;
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
-      ),
-      child: Row(children: [
-        const Icon(Icons.wb_sunny_outlined, size: 16, color: AppColors.primary),
+  /// The quiet "done" state that lives at the bottom of the chapter — the
+  /// reader reaches it only after actually reading. It carries the onward
+  /// Prayer CTA so the flow continues without leaving the reader behind.
+  Widget _buildDoneFooter(AppLocalizations l) {
+    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+        const Icon(Icons.check_circle, color: AppColors.success, size: 18),
         const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            '${l.readToday}: ${_isAm ? plan.labelAm : plan.labelEn}',
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.primary,
-              fontWeight: FontWeight.w600,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+        Text(
+          l.readCompletedToday,
+          style: AppTextStyles.bodyMedium.copyWith(
+            fontWeight: FontWeight.w700,
+            color: AppColors.success,
           ),
         ),
-        if (!onPlan)
-          TextButton(
-            onPressed: () {
-              setState(() {
-                _pickedBookId = plan.bookId;
-                _pickedChapter = plan.chapter;
-              });
-              _saveOpenPage();
-              _onChapterOpened();
-            },
-            style: TextButton.styleFrom(
-              foregroundColor: AppColors.primary,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              minimumSize: const Size(0, 28),
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
-            child: Text(l.planOpen, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
-          ),
       ]),
-    );
+      const SizedBox(height: 12),
+      SizedBox(
+        width: double.infinity,
+        height: 44,
+        child: ElevatedButton.icon(
+          onPressed: () => context.go('/prayer'),
+          icon: const Icon(Icons.favorite, size: 16, color: Color(0xFF07090E)),
+          label: Text(
+            l.continueToPrayer,
+            style: AppTextStyles.labelLarge.copyWith(color: const Color(0xFF07090E), fontSize: 13),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        ),
+      ),
+    ]);
   }
 
-  /// The completion banner: "Read today ✓ / Not started" plus the explicit
-  /// "Mark today's reading done" button and the onward Prayer CTA.
-  Widget _buildCompletionBar(AppLocalizations l) {
+  /// The bottom-of-screen footer: the reflection (optional) and the single
+  /// "I have read" confirmation. It is hidden until the reader scrolls near
+  /// the end of the chapter, so skipping is impossible.
+  Widget _buildFooter(AppLocalizations l) {
     final c = AppColors.of(context);
     final todayReading = ref.watch(todayReadingProvider).valueOrNull;
     final done = todayReading?.completed == true;
-    final parsed = _resolveParsed();
-    if (done) {
-      return Container(
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-        padding: const EdgeInsets.all(12),
+
+    if (!_footerRevealed) return const SizedBox.shrink();
+
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeOutCubic,
+      alignment: Alignment.topCenter,
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+        padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: AppColors.success.withValues(alpha: 0.12),
+          color: c.cardElevated.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.success.withValues(alpha: 0.4)),
+          border: Border.all(color: c.border.withValues(alpha: 0.25)),
         ),
-        child: Column(children: [
-          Row(children: [
-            const Icon(Icons.check_circle, color: AppColors.success, size: 18),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                l.readCompletedToday,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.success,
+        child: done
+            ? _buildDoneFooter(l)
+            : Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                ReflectionInputField(controller: _reflectionCtrl),
+                const SizedBox(height: AppSpacing.md),
+                BottomConfirmationButton(
+                  busy: _confirming,
+                  onPressed: _markReadingDone,
                 ),
-              ),
-            ),
-          ]),
-          const SizedBox(height: 10),
-          SizedBox(
-            width: double.infinity,
-            height: 44,
-            child: ElevatedButton.icon(
-              onPressed: () => context.go('/prayer'),
-              icon: const Icon(Icons.favorite, size: 16, color: Color(0xFF07090E)),
-              label: Text(
-                l.continueToPrayer,
-                style: AppTextStyles.labelLarge.copyWith(color: const Color(0xFF07090E), fontSize: 13),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-            ),
-          ),
-        ]),
-      );
-    }
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: c.cardElevated.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: c.border.withValues(alpha: 0.25)),
+              ]),
       ),
-      child: Column(children: [
-        Row(children: [
-          Icon(Icons.menu_book_outlined, size: 16, color: c.textMuted),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              l.readNotStarted,
-              style: AppTextStyles.bodySmall.copyWith(color: c.textMuted),
-            ),
-          ),
-        ]),
-        const SizedBox(height: 10),
-        SizedBox(
-          width: double.infinity,
-          height: 44,
-          child: FilledButton.icon(
-            onPressed: parsed != null ? _markReadingDone : null,
-            icon: const Icon(Icons.check, size: 16),
-            label: Text(
-              l.markReadingDone,
-              style: AppTextStyles.labelLarge.copyWith(fontSize: 13),
-            ),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-          ),
-        ),
-      ]),
     );
   }
 
   Future<void> _markReadingDone() async {
     final parsed = _resolveParsed();
+    setState(() => _confirming = true);
+    if (_reflectionCtrl.text.trim().isNotEmpty) {
+      await ref.read(journalNotifierProvider.notifier).saveEntry(_reflectionCtrl.text.trim());
+    }
     await ref.read(readingNotifierProvider.notifier).markCompleted(
       bookId: parsed?.bookId,
       chapter: parsed?.chapter,
     );
     ref.read(sceneEventBusProvider).emit(SceneEventType.fruitPop);
     if (!mounted) return;
+    setState(() => _confirming = false);
     final l = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(l.readingXpEarned),
@@ -388,8 +389,6 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
             bookId: parsed?.bookId,
             chapterNum: parsed?.chapter,
           ),
-          _buildPlanBar(l),
-          _buildCompletionBar(l),
           Expanded(
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
@@ -407,15 +406,19 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
                             style: TextStyle(color: c.textSecondary),
                           ),
                         ),
-                        data: (chapter) => VerseListView(
-                          chapter: chapter,
-                          currentVerseIndex: audioChapterLoaded
-                              ? playerState.currentVerse
-                              : null,
-                          isAm: _isAm,
-                          onVerseTap: _showVerseSheet,
-                          highlightedVerseColors: highlightedVerseColors,
-                        ),
+                        data: (chapter) {
+                          _scheduleShortChapterCheck();
+                          return VerseListView(
+                            chapter: chapter,
+                            currentVerseIndex: audioChapterLoaded
+                                ? playerState.currentVerse
+                                : null,
+                            isAm: _isAm,
+                            onVerseTap: _showVerseSheet,
+                            highlightedVerseColors: highlightedVerseColors,
+                            controller: _scrollCtrl,
+                          );
+                        },
                       )
                     : VerseListView(
                         chapter: null,
@@ -424,6 +427,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
               ),
             ),
           ),
+          _buildFooter(l),
         ],
       ),
     );
@@ -586,6 +590,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
                 _pickedBookId = bookId;
                 _pickedChapter = chapter;
               });
+              _resetFooter();
               _saveOpenPage();
               _onChapterOpened();
             },
@@ -609,6 +614,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
             _pickedBookId = bookId;
             _pickedChapter = chapter;
           });
+          _resetFooter();
           _saveOpenPage();
           _onChapterOpened();
         },
@@ -785,6 +791,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
                     _pickedChapter = ch;
                     _offlineBook = null;
                   });
+                  _resetFooter();
                   _saveOpenPage();
                   _onChapterOpened();
                 },

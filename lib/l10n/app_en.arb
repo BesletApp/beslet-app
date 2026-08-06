@@ -328,5 +328,12 @@
   "prayerTemplateHint": "Write your own prayer…",
   "savePrayer": "Save this prayer",
   "savedPrayer": "Prayer saved ✓",
-  "actPrayBack": "Pray this verse back aloud"
+  "actPrayBack": "Pray this verse back aloud",
+  "tapToPractice": "Tap to practice",
+  "wellDone": "Well done 🌱",
+  "hiddenInYourHeart": "Hiding the Word in your heart",
+  "close": "Close",
+  "phraseOf": "Phrase {current} of {total}",
+  "iHaveRead": "I have read",
+  "whatDidYouUnderstand": "What did you understand?"
 }

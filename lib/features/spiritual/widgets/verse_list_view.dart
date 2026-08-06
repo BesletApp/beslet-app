@@ -12,6 +12,7 @@ class VerseListView extends ConsumerWidget {
   final bool isAm;
   final void Function(ScriptureVerse verse, int verseIndex)? onVerseTap;
   final Map<int, String> highlightedVerseColors;
+  final ScrollController? controller;
 
   const VerseListView({
     super.key,
@@ -20,6 +21,7 @@ class VerseListView extends ConsumerWidget {
     this.isAm = false,
     this.onVerseTap,
     this.highlightedVerseColors = const {},
+    this.controller,
   });
 
   @override
@@ -50,6 +52,7 @@ class VerseListView extends ConsumerWidget {
     final current = currentVerseIndex;
 
     return ListView.builder(
+      controller: controller,
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
       itemCount: verses.length,
       itemBuilder: (context, index) {

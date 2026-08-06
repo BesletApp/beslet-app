@@ -1087,4 +1087,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get actPrayBack => 'Pray this verse back aloud';
+
+  @override
+  String get tapToPractice => 'Tap to practice';
+
+  @override
+  String get wellDone => 'Well done 🌱';
+
+  @override
+  String get hiddenInYourHeart => 'Hiding the Word in your heart';
+
+  @override
+  String phraseOf(Object current, Object total) {
+    return 'Phrase $current of $total';
+  }
+
+  @override
+  String get iHaveRead => 'I have read';
+
+  @override
+  String get whatDidYouUnderstand => 'What did you understand?';
 }

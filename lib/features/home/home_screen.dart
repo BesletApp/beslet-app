@@ -29,7 +29,7 @@ import '../../services/update_checker.dart';
 import '../../shared/widgets/error_card.dart';
 import '../../shared/widgets/enkutatash_overlay.dart';
 import '../../core/widgets/zone_layout.dart';
-import '../word_challenge/daily_word_challenge_card.dart';
+import '../word_challenge/verse_builder_loop.dart';
 
 
 class _FlowStep {
@@ -374,7 +374,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
                   support: _buildStaggered(2, _buildRhythmSurface(
                     profile, skillsMin, connectedToday, todaySoulLog, l,
                   )),
-                  anchor: _buildStaggered(3, const DailyWordChallengeCard()),
+                  anchor: _buildStaggered(3, const VerseBuilderCard()),
                 ),
               ),
             ),

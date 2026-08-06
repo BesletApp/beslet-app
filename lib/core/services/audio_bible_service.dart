@@ -31,6 +31,10 @@ class AudioBibleService {
   bool _initialized = false;
   String? _initLanguage;
   bool _isAmharic = false;
+  /// Amharic is only ever spoken with a real Amharic voice. When the device
+  /// has none, fidel text is never thrown at an English voice — it is simply
+  /// left silent.
+  bool _amharicSupported = true;
   int _currentVerseIndex = 0;
   List<String> _currentVerses = [];
   List<String> _currentVerseNumbers = [];
@@ -97,7 +101,12 @@ class AudioBibleService {
     _isAmharic = language == 'am-ET';
     try {
       await _tts.setLanguage(language);
+      _amharicSupported = true;
     } catch (_) {
+      if (_isAmharic) {
+        _amharicSupported = false;
+        return;
+      }
       await _tts.setLanguage('en-US');
     }
     await _tts.setSpeechRate(_isAmharic ? 0.5 : 0.52);
@@ -106,6 +115,10 @@ class AudioBibleService {
     try {
       final voices = await _tts.getVoices;
       final chosen = voices != null ? selectTtsVoice(voices, language) : null;
+      if (_isAmharic && chosen == null) {
+        _amharicSupported = false;
+        return;
+      }
       if (chosen != null) {
         final ok = await _tts.setVoice({
           'name': chosen['name'],
@@ -277,6 +290,11 @@ class AudioBibleService {
   }
 
   Future<void> _speakText(String text) async {
+    if (_isAmharic && !_amharicSupported) {
+      _state = AudioState.stopped;
+      onStateChanged?.call();
+      return;
+    }
     if (_isAmharic) {
       await _tts.speak(text);
     } else {
@@ -292,6 +310,9 @@ class AudioBibleService {
   /// stopping any in-progress chapter playback.
   Future<void> speakVerse(String text, {required bool isAmharic}) async {
     await _init(language: isAmharic ? 'am-ET' : 'en-US');
+    if (isAmharic && !_amharicSupported) {
+      return; // never read fidel with an English voice
+    }
     await _tts.stop();
     await _audioPlayer.stop();
     _sourceType = AudioSourceType.tts;
