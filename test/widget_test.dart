@@ -24,6 +24,7 @@ void main() {
               biblePlan: 'nt',
               createdAt: DateTime.now().toIso8601String(),
               sabbathDay: -1,
+              avatarColor: 'gold',
             ),
           ),
           isOnboardedProvider.overrideWith((ref) async => false),

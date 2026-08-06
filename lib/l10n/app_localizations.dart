@@ -776,6 +776,36 @@ abstract class AppLocalizations {
   /// **'About this app'**
   String get aboutApp;
 
+  /// No description provided for @settingsVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice'**
+  String get settingsVoice;
+
+  /// No description provided for @settingsVoiceSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How Beslet speaks to you'**
+  String get settingsVoiceSubtitle;
+
+  /// No description provided for @voiceQuiet.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiet'**
+  String get voiceQuiet;
+
+  /// No description provided for @voiceWarm.
+  ///
+  /// In en, this message translates to:
+  /// **'Warm'**
+  String get voiceWarm;
+
+  /// No description provided for @voiceStill.
+  ///
+  /// In en, this message translates to:
+  /// **'Still'**
+  String get voiceStill;
+
   /// No description provided for @daysShownUp.
   ///
   /// In en, this message translates to:
@@ -2107,6 +2137,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'What did you understand?'**
   String get whatDidYouUnderstand;
+
+  /// No description provided for @profileLampTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The Word I carry'**
+  String get profileLampTitle;
+
+  /// No description provided for @profileLampEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'A lamp that keeps one Word in your pocket. It stays out of your way, and it tracks nothing.'**
+  String get profileLampEmpty;
+
+  /// No description provided for @profileLampChoose.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a word'**
+  String get profileLampChoose;
+
+  /// No description provided for @profileLampChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get profileLampChange;
+
+  /// No description provided for @profileLampListen.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen'**
+  String get profileLampListen;
+
+  /// No description provided for @profileLampRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Let go of this word'**
+  String get profileLampRemove;
+
+  /// No description provided for @profileSeasonIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'The season we are in'**
+  String get profileSeasonIntro;
+
+  /// No description provided for @profileRoomTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A quiet home'**
+  String get profileRoomTitle;
+
+  /// No description provided for @profileAvatarColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Avatar color'**
+  String get profileAvatarColor;
 }
 
 class _AppLocalizationsDelegate

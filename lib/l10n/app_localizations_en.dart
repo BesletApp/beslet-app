@@ -368,6 +368,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aboutApp => 'About this app';
 
   @override
+  String get settingsVoice => 'Voice';
+
+  @override
+  String get settingsVoiceSubtitle => 'How Beslet speaks to you';
+
+  @override
+  String get voiceQuiet => 'Quiet';
+
+  @override
+  String get voiceWarm => 'Warm';
+
+  @override
+  String get voiceStill => 'Still';
+
+  @override
   String get daysShownUp => 'days shown up';
 
   @override
@@ -1107,4 +1122,32 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get whatDidYouUnderstand => 'What did you understand?';
+
+  @override
+  String get profileLampTitle => 'The Word I carry';
+
+  @override
+  String get profileLampEmpty =>
+      'A lamp that keeps one Word in your pocket. It stays out of your way, and it tracks nothing.';
+
+  @override
+  String get profileLampChoose => 'Choose a word';
+
+  @override
+  String get profileLampChange => 'Change';
+
+  @override
+  String get profileLampListen => 'Listen';
+
+  @override
+  String get profileLampRemove => 'Let go of this word';
+
+  @override
+  String get profileSeasonIntro => 'The season we are in';
+
+  @override
+  String get profileRoomTitle => 'A quiet home';
+
+  @override
+  String get profileAvatarColor => 'Avatar color';
 }

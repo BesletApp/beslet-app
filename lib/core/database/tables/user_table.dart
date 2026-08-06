@@ -9,5 +9,8 @@ class Users extends Table {
   TextColumn get biblePlan => text().withDefault(const Constant('nt'))();
   TextColumn get createdAt => text()();
   IntColumn get sabbathDay => integer().withDefault(const Constant(-1))();
+  TextColumn get keptWord => text().nullable()();
+  TextColumn get keptWordRef => text().nullable()();
+  TextColumn get avatarColor => text().withDefault(const Constant('gold'))();
   @override Set<Column> get primaryKey => {id};
 }

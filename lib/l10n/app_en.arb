@@ -113,6 +113,11 @@
   "appearance": "Appearance",
   "reminders": "Reminders",
   "aboutApp": "About this app",
+  "settingsVoice": "Voice",
+  "settingsVoiceSubtitle": "How Beslet speaks to you",
+  "voiceQuiet": "Quiet",
+  "voiceWarm": "Warm",
+  "voiceStill": "Still",
   "daysShownUp": "days shown up",
   "ofTotal": "of {total}",
   "daysRead": "days read",
@@ -335,5 +340,14 @@
   "close": "Close",
   "phraseOf": "Phrase {current} of {total}",
   "iHaveRead": "I have read",
-  "whatDidYouUnderstand": "What did you understand?"
+  "whatDidYouUnderstand": "What did you understand?",
+  "profileLampTitle": "The Word I carry",
+  "profileLampEmpty": "A lamp that keeps one Word in your pocket. It stays out of your way, and it tracks nothing.",
+  "profileLampChoose": "Choose a word",
+  "profileLampChange": "Change",
+  "profileLampListen": "Listen",
+  "profileLampRemove": "Let go of this word",
+  "profileSeasonIntro": "The season we are in",
+  "profileRoomTitle": "A quiet home",
+  "profileAvatarColor": "Avatar color"
 }

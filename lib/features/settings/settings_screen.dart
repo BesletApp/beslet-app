@@ -30,6 +30,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final _scroll = ScrollController();
   final _appearanceKey = GlobalKey();
   final _languageKey = GlobalKey();
+  final _voiceKey = GlobalKey();
   final _remindersKey = GlobalKey();
   final _aboutKey = GlobalKey();
   String _reminderTime = '20:00';
@@ -37,12 +38,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   String _visitsFrequency = 'gentle';
   String _visitsWindow = 'evening';
   bool _chimeEnabled = false;
+  String _voice = 'warm';
 
   @override
   void initState() {
     super.initState();
     _loadReminderTime();
     _loadVisits();
+    _loadVoice();
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSection());
   }
 
@@ -60,6 +63,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       _visitsWindow = prefs.getString('vineyardVisitsWindow') ?? 'evening';
       _chimeEnabled = prefs.getBool('vineChimeEnabled') ?? false;
     });
+  }
+
+  Future<void> _loadVoice() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    setState(() => _voice = prefs.getString('voice') ?? 'warm');
+  }
+
+  Future<void> _setVoice(String value) async {
+    setState(() => _voice = value);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('voice', value);
   }
 
   String _visitsModeLabel(bool isAm) {
@@ -156,10 +171,36 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
+  Widget _voiceChip(String value, String label) {
+    final selected = _voice == value;
+    return GestureDetector(
+      onTap: () => _setVoice(value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.primary.withValues(alpha: 0.14) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: selected ? AppColors.primary : AppColors.of(context).border),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: selected ? AppColors.primary : AppColors.of(context).textSecondary,
+          ),
+        ),
+      ),
+    );
+  }
+
   void _scrollToSection() {
     final key = switch (widget.section) {
       'appearance' => _appearanceKey,
       'language' => _languageKey,
+      'voice' => _voiceKey,
       'reminders' => _remindersKey,
       'about' => _aboutKey,
       _ => null,
@@ -223,6 +264,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 loading: () => const SizedBox(height: 48, child: Center(child: CircularProgressIndicator())),
                 error: (e, _) => Text('$e'),
               ),
+            ),
+            SizedBox(height: AppSpacing.md),
+            Text(key: _voiceKey, l.settingsVoice, style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
+            SizedBox(height: AppSpacing.sm),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: c.border)),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(l.settingsVoiceSubtitle, style: AppTextStyles.bodySmall.copyWith(color: c.textSecondary)),
+                const SizedBox(height: AppSpacing.sm),
+                Wrap(spacing: AppSpacing.sm, runSpacing: AppSpacing.sm, children: [
+                  _voiceChip('quiet', l.voiceQuiet),
+                  _voiceChip('warm', l.voiceWarm),
+                  _voiceChip('still', l.voiceStill),
+                ]),
+              ]),
             ),
           ]),
           support: Column(children: [

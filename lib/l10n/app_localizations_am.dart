@@ -366,6 +366,21 @@ class AppLocalizationsAm extends AppLocalizations {
   String get aboutApp => 'ስለ መተግበሪያ';
 
   @override
+  String get settingsVoice => 'ድምፅ';
+
+  @override
+  String get settingsVoiceSubtitle => 'ብስለት እንዴት እንደሚያነጋግርህ';
+
+  @override
+  String get voiceQuiet => 'ጸጥታ';
+
+  @override
+  String get voiceWarm => 'ሞቅ ያለ';
+
+  @override
+  String get voiceStill => 'ረጋ ያለ';
+
+  @override
   String get daysShownUp => 'ቀናት ታይተሃል';
 
   @override
@@ -1097,4 +1112,32 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get whatDidYouUnderstand => 'ምን ተረዳህ?';
+
+  @override
+  String get profileLampTitle => 'የምይዘው ቃል';
+
+  @override
+  String get profileLampEmpty =>
+      'አንድ ቃል በኪስህ የሚያስቀምጥ መብራት። በመንገድህ አይገባም፤ ምንም አይከታተልም።';
+
+  @override
+  String get profileLampChoose => 'ቃል ምረጥ';
+
+  @override
+  String get profileLampChange => 'ቀይር';
+
+  @override
+  String get profileLampListen => 'አዳምጥ';
+
+  @override
+  String get profileLampRemove => 'ይህን ቃል ልቀቅ';
+
+  @override
+  String get profileSeasonIntro => 'ያለንበት ወቅት';
+
+  @override
+  String get profileRoomTitle => 'የተረጋጋ ቤት';
+
+  @override
+  String get profileAvatarColor => 'የአዶ ቀለም';
 }

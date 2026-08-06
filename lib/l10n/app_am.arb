@@ -113,6 +113,11 @@
   "appearance": "መልክ",
   "reminders": "ማሳሰቢያ",
   "aboutApp": "ስለ መተግበሪያ",
+  "settingsVoice": "ድምፅ",
+  "settingsVoiceSubtitle": "ብስለት እንዴት እንደሚያነጋግርህ",
+  "voiceQuiet": "ጸጥታ",
+  "voiceWarm": "ሞቅ ያለ",
+  "voiceStill": "ረጋ ያለ",
   "daysShownUp": "ቀናት ታይተሃል",
   "ofTotal": "ከ{total}",
   "daysRead": "ቀናት ተነቧል",
@@ -335,5 +340,14 @@
   "close": "ዝጋ",
   "phraseOf": "ክፍል {current} ከ {total}",
   "iHaveRead": "አንብቤያለሁ",
-  "whatDidYouUnderstand": "ምን ተረዳህ?"
+  "whatDidYouUnderstand": "ምን ተረዳህ?",
+  "profileLampTitle": "የምይዘው ቃል",
+  "profileLampEmpty": "አንድ ቃል በኪስህ የሚያስቀምጥ መብራት። በመንገድህ አይገባም፤ ምንም አይከታተልም።",
+  "profileLampChoose": "ቃል ምረጥ",
+  "profileLampChange": "ቀይር",
+  "profileLampListen": "አዳምጥ",
+  "profileLampRemove": "ይህን ቃል ልቀቅ",
+  "profileSeasonIntro": "ያለንበት ወቅት",
+  "profileRoomTitle": "የተረጋጋ ቤት",
+  "profileAvatarColor": "የአዶ ቀለም"
 }

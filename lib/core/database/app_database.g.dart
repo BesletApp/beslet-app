@@ -98,6 +98,40 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     requiredDuringInsert: false,
     defaultValue: const Constant(-1),
   );
+  static const VerificationMeta _keptWordMeta = const VerificationMeta(
+    'keptWord',
+  );
+  @override
+  late final GeneratedColumn<String> keptWord = GeneratedColumn<String>(
+    'kept_word',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _keptWordRefMeta = const VerificationMeta(
+    'keptWordRef',
+  );
+  @override
+  late final GeneratedColumn<String> keptWordRef = GeneratedColumn<String>(
+    'kept_word_ref',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _avatarColorMeta = const VerificationMeta(
+    'avatarColor',
+  );
+  @override
+  late final GeneratedColumn<String> avatarColor = GeneratedColumn<String>(
+    'avatar_color',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('gold'),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -108,6 +142,9 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     biblePlan,
     createdAt,
     sabbathDay,
+    keptWord,
+    keptWordRef,
+    avatarColor,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -168,6 +205,30 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
         sabbathDay.isAcceptableOrUnknown(data['sabbath_day']!, _sabbathDayMeta),
       );
     }
+    if (data.containsKey('kept_word')) {
+      context.handle(
+        _keptWordMeta,
+        keptWord.isAcceptableOrUnknown(data['kept_word']!, _keptWordMeta),
+      );
+    }
+    if (data.containsKey('kept_word_ref')) {
+      context.handle(
+        _keptWordRefMeta,
+        keptWordRef.isAcceptableOrUnknown(
+          data['kept_word_ref']!,
+          _keptWordRefMeta,
+        ),
+      );
+    }
+    if (data.containsKey('avatar_color')) {
+      context.handle(
+        _avatarColorMeta,
+        avatarColor.isAcceptableOrUnknown(
+          data['avatar_color']!,
+          _avatarColorMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -209,6 +270,18 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
         DriftSqlType.int,
         data['${effectivePrefix}sabbath_day'],
       )!,
+      keptWord: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}kept_word'],
+      ),
+      keptWordRef: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}kept_word_ref'],
+      ),
+      avatarColor: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}avatar_color'],
+      )!,
     );
   }
 
@@ -227,6 +300,9 @@ class User extends DataClass implements Insertable<User> {
   final String biblePlan;
   final String createdAt;
   final int sabbathDay;
+  final String? keptWord;
+  final String? keptWordRef;
+  final String avatarColor;
   const User({
     required this.id,
     required this.name,
@@ -236,6 +312,9 @@ class User extends DataClass implements Insertable<User> {
     required this.biblePlan,
     required this.createdAt,
     required this.sabbathDay,
+    this.keptWord,
+    this.keptWordRef,
+    required this.avatarColor,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -248,6 +327,13 @@ class User extends DataClass implements Insertable<User> {
     map['bible_plan'] = Variable<String>(biblePlan);
     map['created_at'] = Variable<String>(createdAt);
     map['sabbath_day'] = Variable<int>(sabbathDay);
+    if (!nullToAbsent || keptWord != null) {
+      map['kept_word'] = Variable<String>(keptWord);
+    }
+    if (!nullToAbsent || keptWordRef != null) {
+      map['kept_word_ref'] = Variable<String>(keptWordRef);
+    }
+    map['avatar_color'] = Variable<String>(avatarColor);
     return map;
   }
 
@@ -261,6 +347,13 @@ class User extends DataClass implements Insertable<User> {
       biblePlan: Value(biblePlan),
       createdAt: Value(createdAt),
       sabbathDay: Value(sabbathDay),
+      keptWord: keptWord == null && nullToAbsent
+          ? const Value.absent()
+          : Value(keptWord),
+      keptWordRef: keptWordRef == null && nullToAbsent
+          ? const Value.absent()
+          : Value(keptWordRef),
+      avatarColor: Value(avatarColor),
     );
   }
 
@@ -278,6 +371,9 @@ class User extends DataClass implements Insertable<User> {
       biblePlan: serializer.fromJson<String>(json['biblePlan']),
       createdAt: serializer.fromJson<String>(json['createdAt']),
       sabbathDay: serializer.fromJson<int>(json['sabbathDay']),
+      keptWord: serializer.fromJson<String?>(json['keptWord']),
+      keptWordRef: serializer.fromJson<String?>(json['keptWordRef']),
+      avatarColor: serializer.fromJson<String>(json['avatarColor']),
     );
   }
   @override
@@ -292,6 +388,9 @@ class User extends DataClass implements Insertable<User> {
       'biblePlan': serializer.toJson<String>(biblePlan),
       'createdAt': serializer.toJson<String>(createdAt),
       'sabbathDay': serializer.toJson<int>(sabbathDay),
+      'keptWord': serializer.toJson<String?>(keptWord),
+      'keptWordRef': serializer.toJson<String?>(keptWordRef),
+      'avatarColor': serializer.toJson<String>(avatarColor),
     };
   }
 
@@ -304,6 +403,9 @@ class User extends DataClass implements Insertable<User> {
     String? biblePlan,
     String? createdAt,
     int? sabbathDay,
+    Value<String?> keptWord = const Value.absent(),
+    Value<String?> keptWordRef = const Value.absent(),
+    String? avatarColor,
   }) => User(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -313,6 +415,9 @@ class User extends DataClass implements Insertable<User> {
     biblePlan: biblePlan ?? this.biblePlan,
     createdAt: createdAt ?? this.createdAt,
     sabbathDay: sabbathDay ?? this.sabbathDay,
+    keptWord: keptWord.present ? keptWord.value : this.keptWord,
+    keptWordRef: keptWordRef.present ? keptWordRef.value : this.keptWordRef,
+    avatarColor: avatarColor ?? this.avatarColor,
   );
   User copyWithCompanion(UsersCompanion data) {
     return User(
@@ -326,6 +431,13 @@ class User extends DataClass implements Insertable<User> {
       sabbathDay: data.sabbathDay.present
           ? data.sabbathDay.value
           : this.sabbathDay,
+      keptWord: data.keptWord.present ? data.keptWord.value : this.keptWord,
+      keptWordRef: data.keptWordRef.present
+          ? data.keptWordRef.value
+          : this.keptWordRef,
+      avatarColor: data.avatarColor.present
+          ? data.avatarColor.value
+          : this.avatarColor,
     );
   }
 
@@ -339,7 +451,10 @@ class User extends DataClass implements Insertable<User> {
           ..write('lang: $lang, ')
           ..write('biblePlan: $biblePlan, ')
           ..write('createdAt: $createdAt, ')
-          ..write('sabbathDay: $sabbathDay')
+          ..write('sabbathDay: $sabbathDay, ')
+          ..write('keptWord: $keptWord, ')
+          ..write('keptWordRef: $keptWordRef, ')
+          ..write('avatarColor: $avatarColor')
           ..write(')'))
         .toString();
   }
@@ -354,6 +469,9 @@ class User extends DataClass implements Insertable<User> {
     biblePlan,
     createdAt,
     sabbathDay,
+    keptWord,
+    keptWordRef,
+    avatarColor,
   );
   @override
   bool operator ==(Object other) =>
@@ -366,7 +484,10 @@ class User extends DataClass implements Insertable<User> {
           other.lang == this.lang &&
           other.biblePlan == this.biblePlan &&
           other.createdAt == this.createdAt &&
-          other.sabbathDay == this.sabbathDay);
+          other.sabbathDay == this.sabbathDay &&
+          other.keptWord == this.keptWord &&
+          other.keptWordRef == this.keptWordRef &&
+          other.avatarColor == this.avatarColor);
 }
 
 class UsersCompanion extends UpdateCompanion<User> {
@@ -378,6 +499,9 @@ class UsersCompanion extends UpdateCompanion<User> {
   final Value<String> biblePlan;
   final Value<String> createdAt;
   final Value<int> sabbathDay;
+  final Value<String?> keptWord;
+  final Value<String?> keptWordRef;
+  final Value<String> avatarColor;
   const UsersCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
@@ -387,6 +511,9 @@ class UsersCompanion extends UpdateCompanion<User> {
     this.biblePlan = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.sabbathDay = const Value.absent(),
+    this.keptWord = const Value.absent(),
+    this.keptWordRef = const Value.absent(),
+    this.avatarColor = const Value.absent(),
   });
   UsersCompanion.insert({
     this.id = const Value.absent(),
@@ -397,6 +524,9 @@ class UsersCompanion extends UpdateCompanion<User> {
     this.biblePlan = const Value.absent(),
     required String createdAt,
     this.sabbathDay = const Value.absent(),
+    this.keptWord = const Value.absent(),
+    this.keptWordRef = const Value.absent(),
+    this.avatarColor = const Value.absent(),
   }) : createdAt = Value(createdAt);
   static Insertable<User> custom({
     Expression<int>? id,
@@ -407,6 +537,9 @@ class UsersCompanion extends UpdateCompanion<User> {
     Expression<String>? biblePlan,
     Expression<String>? createdAt,
     Expression<int>? sabbathDay,
+    Expression<String>? keptWord,
+    Expression<String>? keptWordRef,
+    Expression<String>? avatarColor,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -417,6 +550,9 @@ class UsersCompanion extends UpdateCompanion<User> {
       if (biblePlan != null) 'bible_plan': biblePlan,
       if (createdAt != null) 'created_at': createdAt,
       if (sabbathDay != null) 'sabbath_day': sabbathDay,
+      if (keptWord != null) 'kept_word': keptWord,
+      if (keptWordRef != null) 'kept_word_ref': keptWordRef,
+      if (avatarColor != null) 'avatar_color': avatarColor,
     });
   }
 
@@ -429,6 +565,9 @@ class UsersCompanion extends UpdateCompanion<User> {
     Value<String>? biblePlan,
     Value<String>? createdAt,
     Value<int>? sabbathDay,
+    Value<String?>? keptWord,
+    Value<String?>? keptWordRef,
+    Value<String>? avatarColor,
   }) {
     return UsersCompanion(
       id: id ?? this.id,
@@ -439,6 +578,9 @@ class UsersCompanion extends UpdateCompanion<User> {
       biblePlan: biblePlan ?? this.biblePlan,
       createdAt: createdAt ?? this.createdAt,
       sabbathDay: sabbathDay ?? this.sabbathDay,
+      keptWord: keptWord ?? this.keptWord,
+      keptWordRef: keptWordRef ?? this.keptWordRef,
+      avatarColor: avatarColor ?? this.avatarColor,
     );
   }
 
@@ -469,6 +611,15 @@ class UsersCompanion extends UpdateCompanion<User> {
     if (sabbathDay.present) {
       map['sabbath_day'] = Variable<int>(sabbathDay.value);
     }
+    if (keptWord.present) {
+      map['kept_word'] = Variable<String>(keptWord.value);
+    }
+    if (keptWordRef.present) {
+      map['kept_word_ref'] = Variable<String>(keptWordRef.value);
+    }
+    if (avatarColor.present) {
+      map['avatar_color'] = Variable<String>(avatarColor.value);
+    }
     return map;
   }
 
@@ -482,7 +633,10 @@ class UsersCompanion extends UpdateCompanion<User> {
           ..write('lang: $lang, ')
           ..write('biblePlan: $biblePlan, ')
           ..write('createdAt: $createdAt, ')
-          ..write('sabbathDay: $sabbathDay')
+          ..write('sabbathDay: $sabbathDay, ')
+          ..write('keptWord: $keptWord, ')
+          ..write('keptWordRef: $keptWordRef, ')
+          ..write('avatarColor: $avatarColor')
           ..write(')'))
         .toString();
   }
@@ -9865,6 +10019,9 @@ typedef $$UsersTableCreateCompanionBuilder =
       Value<String> biblePlan,
       required String createdAt,
       Value<int> sabbathDay,
+      Value<String?> keptWord,
+      Value<String?> keptWordRef,
+      Value<String> avatarColor,
     });
 typedef $$UsersTableUpdateCompanionBuilder =
     UsersCompanion Function({
@@ -9876,6 +10033,9 @@ typedef $$UsersTableUpdateCompanionBuilder =
       Value<String> biblePlan,
       Value<String> createdAt,
       Value<int> sabbathDay,
+      Value<String?> keptWord,
+      Value<String?> keptWordRef,
+      Value<String> avatarColor,
     });
 
 class $$UsersTableFilterComposer extends Composer<_$AppDatabase, $UsersTable> {
@@ -9923,6 +10083,21 @@ class $$UsersTableFilterComposer extends Composer<_$AppDatabase, $UsersTable> {
 
   ColumnFilters<int> get sabbathDay => $composableBuilder(
     column: $table.sabbathDay,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get keptWord => $composableBuilder(
+    column: $table.keptWord,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get keptWordRef => $composableBuilder(
+    column: $table.keptWordRef,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get avatarColor => $composableBuilder(
+    column: $table.avatarColor,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -9975,6 +10150,21 @@ class $$UsersTableOrderingComposer
     column: $table.sabbathDay,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get keptWord => $composableBuilder(
+    column: $table.keptWord,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get keptWordRef => $composableBuilder(
+    column: $table.keptWordRef,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get avatarColor => $composableBuilder(
+    column: $table.avatarColor,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$UsersTableAnnotationComposer
@@ -10009,6 +10199,19 @@ class $$UsersTableAnnotationComposer
 
   GeneratedColumn<int> get sabbathDay => $composableBuilder(
     column: $table.sabbathDay,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get keptWord =>
+      $composableBuilder(column: $table.keptWord, builder: (column) => column);
+
+  GeneratedColumn<String> get keptWordRef => $composableBuilder(
+    column: $table.keptWordRef,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get avatarColor => $composableBuilder(
+    column: $table.avatarColor,
     builder: (column) => column,
   );
 }
@@ -10049,6 +10252,9 @@ class $$UsersTableTableManager
                 Value<String> biblePlan = const Value.absent(),
                 Value<String> createdAt = const Value.absent(),
                 Value<int> sabbathDay = const Value.absent(),
+                Value<String?> keptWord = const Value.absent(),
+                Value<String?> keptWordRef = const Value.absent(),
+                Value<String> avatarColor = const Value.absent(),
               }) => UsersCompanion(
                 id: id,
                 name: name,
@@ -10058,6 +10264,9 @@ class $$UsersTableTableManager
                 biblePlan: biblePlan,
                 createdAt: createdAt,
                 sabbathDay: sabbathDay,
+                keptWord: keptWord,
+                keptWordRef: keptWordRef,
+                avatarColor: avatarColor,
               ),
           createCompanionCallback:
               ({
@@ -10069,6 +10278,9 @@ class $$UsersTableTableManager
                 Value<String> biblePlan = const Value.absent(),
                 required String createdAt,
                 Value<int> sabbathDay = const Value.absent(),
+                Value<String?> keptWord = const Value.absent(),
+                Value<String?> keptWordRef = const Value.absent(),
+                Value<String> avatarColor = const Value.absent(),
               }) => UsersCompanion.insert(
                 id: id,
                 name: name,
@@ -10078,6 +10290,9 @@ class $$UsersTableTableManager
                 biblePlan: biblePlan,
                 createdAt: createdAt,
                 sabbathDay: sabbathDay,
+                keptWord: keptWord,
+                keptWordRef: keptWordRef,
+                avatarColor: avatarColor,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

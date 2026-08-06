@@ -6,6 +6,15 @@ class ToneService {
 
   ToneService(this._engine);
 
+  /// Maps the chosen voice to a tone index:
+  /// 'quiet' → 0 (soft, minimal), 'warm' → 1 (friendly), 'still' → 2 (calm, reflective)
+  int get _tone {
+    final v = _engine.voice;
+    if (v == 'quiet') return 0;
+    if (v == 'still') return 2;
+    return 1;
+  }
+
   String greeting(AppLocalizations l, int hour) {
     final warmth = _engine.wasAwayForDays ? 2 : (_engine.isFirstSessionToday ? 1 : 0);
     final base = hour < 12
@@ -16,15 +25,15 @@ class ToneService {
 
     if (_engine.appOpenCount == 1) return base;
 
-    final cycle = _engine.appOpenCount % 3;
-    if (warmth >= 2 && cycle == 0) return '$base, friend';
-    if (warmth >= 2 && cycle == 1) return '$base — welcome back';
-    if (warmth >= 1 && cycle == 0) return '$base — good to see you';
+    final tone = _tone;
+    if (warmth >= 2 && tone == 1) return '$base, friend';
+    if (warmth >= 2 && tone == 0) return '$base — welcome back';
+    if (warmth >= 1 && tone == 0) return '$base — good to see you';
     return base;
   }
 
   String reflectionPrompt(AppLocalizations l, int index) {
-    final cycle = _engine.appOpenCount % 3;
+    final tone = _tone;
     final prompts = [
       [
         'What helped you grow this week?',
@@ -44,38 +53,36 @@ class ToneService {
     ];
     if (index < 0 || index >= prompts.length) return '';
     final variants = prompts[index];
-    return variants[cycle % variants.length];
+    return variants[tone % variants.length];
   }
 
   String completionMessage(AppLocalizations l, String name) {
-    final cycle = _engine.appOpenCount % 3;
+    final tone = _tone;
     final displayName = name.isNotEmpty ? name : 'you';
     final messages = [
       'Beautiful, $displayName.',
       'Well done, $displayName.',
       'You showed up. That is enough, $displayName.',
     ];
-    return messages[cycle];
+    return messages[tone];
   }
 
   String emptyState(String area) {
-    final cycle = _engine.appOpenCount % 3;
+    final tone = _tone;
     final messages = {
       'tasks': ['Space awaits.', 'A quiet day. What matters?', 'Rest. Then begin.'],
       'tasks_alt': ['No tasks yet — breathe.', 'Stillness is okay.', 'The day is yours.'],
       'reflection': ['Pause and breathe.', 'Stillness speaks.', 'Rest here a moment.'],
     };
     final opts = messages[area] ?? ['Nothing here yet.', 'All is quiet.', 'Peace for now.'];
-    return opts[cycle % opts.length];
+    return opts[tone % opts.length];
   }
 
   String saveAction() {
-    final cycle = _engine.appOpenCount % 2;
-    return cycle == 0 ? 'Keep this moment' : 'Hold this gently';
+    return _tone % 2 == 0 ? 'Keep this moment' : 'Hold this gently';
   }
 
   String planAction() {
-    final cycle = _engine.appOpenCount % 2;
-    return cycle == 0 ? 'Shape your day' : 'Set your intention';
+    return _tone % 2 == 0 ? 'Shape your day' : 'Set your intention';
   }
 }

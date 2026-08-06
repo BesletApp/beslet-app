@@ -33,7 +33,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
   @visibleForTesting
   AppDatabase.forTesting(super.executor);
-  @override int get schemaVersion => 23;
+  @override int get schemaVersion => 24;
 
   @override
   MigrationStrategy get migration {
@@ -107,6 +107,11 @@ class AppDatabase extends _$AppDatabase {
         }
         if (from < 23) {
           await m.createTable(verseChallenges);
+        }
+        if (from < 24) {
+          await m.addColumn(users, users.keptWord);
+          await m.addColumn(users, users.keptWordRef);
+          await m.addColumn(users, users.avatarColor);
         }
       },
     );
