@@ -252,18 +252,6 @@ class AppLocalizationsAm extends AppLocalizations {
   }
 
   @override
-  String get timeFormat => 'የሰዓት አቆጣጠር';
-
-  @override
-  String get followPhone => 'የስልክዎን ይከተል';
-
-  @override
-  String get format12h => '12 ሰዓት';
-
-  @override
-  String get format24h => '24 ሰዓት';
-
-  @override
   String get morningAbbr => 'ጠዋት';
 
   @override

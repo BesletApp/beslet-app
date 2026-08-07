@@ -92,14 +92,6 @@ void main() {
       expect(prefs.getString('prayer_reminder_last_update'), isNull);
     });
 
-    test('time format preference defaults to the phone and persists', () async {
-      expect(await PrayerReminderService.getTimeFormatPref(), 'phone');
-      await PrayerReminderService.setTimeFormatPref('12h');
-      expect(await PrayerReminderService.getTimeFormatPref(), '12h');
-      await PrayerReminderService.setTimeFormatPref('24h');
-      expect(await PrayerReminderService.getTimeFormatPref(), '24h');
-    });
-
     test('nextPrayerOccurrence picks the next enabled clock moment', () {
       final times = [
         PrayerTime(id: 1, hour: 6, minute: 0),

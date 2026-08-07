@@ -256,18 +256,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get timeFormat => 'Time format';
-
-  @override
-  String get followPhone => 'Follow phone';
-
-  @override
-  String get format12h => '12-hour';
-
-  @override
-  String get format24h => '24-hour';
-
-  @override
   String get morningAbbr => 'AM';
 
   @override

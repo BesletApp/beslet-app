@@ -32,7 +32,6 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
   bool _alarmActive = false;
   Timer? _alarmCheckTimer;
   Timer? _countdownTimer;
-  String _timeFormatPref = 'phone';
   final _topicsController = TextEditingController();
   Timer? _topicsSaveTimer;
   bool _topicsSaved = false;
@@ -81,13 +80,11 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
     final times = await PrayerReminderService.getPrayerTimes();
     final soundName = await PrayerAlarmSoundService.getSoundDisplayName();
     final custom = await PrayerAlarmSoundService.hasCustomSound();
-    final formatPref = await PrayerReminderService.getTimeFormatPref();
     if (mounted) {
       setState(() {
         _prayerTimes = times;
         _soundName = soundName;
         _usingCustomSound = custom;
-        _timeFormatPref = formatPref;
       });
     }
   }
@@ -203,14 +200,7 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
 
   Future<void> _addPrayerTime() async {
     final l = AppLocalizations.of(context)!;
-    final time = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-      builder: (ctx, child) => MediaQuery(
-        data: MediaQuery.of(ctx).copyWith(alwaysUse24HourFormat: _use24h()),
-        child: child!,
-      ),
-    );
+    final time = await showTimePicker(context: context, initialTime: TimeOfDay.now());
     if (time == null || !mounted) return;
     final permission = await PrayerReminderService.ensurePermissions();
     if (permission != PrayerAlarmPermissionStatus.granted) {
@@ -709,32 +699,9 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
             ),
           ),
         ),
-        const SizedBox(height: 16),
-        Text(l.timeFormat,
-            style: AppTextStyles.bodySmall.copyWith(color: c.textMuted)),
-        const SizedBox(height: 6),
-        Wrap(spacing: 8, runSpacing: 4, children: [
-          _formatChip('phone', l.followPhone),
-          _formatChip('12h', l.format12h),
-          _formatChip('24h', l.format24h),
-        ]),
         const SizedBox(height: 20),
         _buildSoundRow(l),
       ]),
-    );
-  }
-
-  Widget _formatChip(String value, String label) {
-    return ChoiceChip(
-      label: Text(label, style: AppTextStyles.bodySmall.copyWith(fontSize: 12)),
-      selected: _timeFormatPref == value,
-      selectedColor: AppColors.primary.withValues(alpha: 0.2),
-      onSelected: (_) => _setTimeFormatPref(value),
-      side: BorderSide(
-        color: _timeFormatPref == value
-            ? AppColors.primary
-            : AppColors.of(context).border,
-      ),
     );
   }
 
@@ -744,31 +711,12 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
     return '$m:$s';
   }
 
-  bool _use24h() {
-    switch (_timeFormatPref) {
-      case '12h':
-        return false;
-      case '24h':
-        return true;
-      default:
-        return MediaQuery.of(context).alwaysUse24HourFormat;
-    }
-  }
-
   String _formatPrayerTime(int hour, int minute) {
     final l = AppLocalizations.of(context)!;
     final hh = minute.toString().padLeft(2, '0');
-    if (_use24h()) {
-      return '${hour.toString().padLeft(2, '0')}:$hh';
-    }
     final period = hour >= 12 ? l.eveningAbbr : l.morningAbbr;
     final h12 = hour % 12 == 0 ? 12 : hour % 12;
     return '$h12:$hh $period';
-  }
-
-  Future<void> _setTimeFormatPref(String value) async {
-    await PrayerReminderService.setTimeFormatPref(value);
-    if (mounted) setState(() => _timeFormatPref = value);
   }
 
   String? _remainingUntilNow(DateTime when) {

@@ -566,30 +566,6 @@ abstract class AppLocalizations {
   /// **'{minutes}m'**
   String minutesOnly(Object minutes);
 
-  /// No description provided for @timeFormat.
-  ///
-  /// In en, this message translates to:
-  /// **'Time format'**
-  String get timeFormat;
-
-  /// No description provided for @followPhone.
-  ///
-  /// In en, this message translates to:
-  /// **'Follow phone'**
-  String get followPhone;
-
-  /// No description provided for @format12h.
-  ///
-  /// In en, this message translates to:
-  /// **'12-hour'**
-  String get format12h;
-
-  /// No description provided for @format24h.
-  ///
-  /// In en, this message translates to:
-  /// **'24-hour'**
-  String get format24h;
-
   /// No description provided for @morningAbbr.
   ///
   /// In en, this message translates to:
