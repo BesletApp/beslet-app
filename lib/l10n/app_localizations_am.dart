@@ -200,31 +200,25 @@ class AppLocalizationsAm extends AppLocalizations {
   String get change => 'ለውጥ';
 
   @override
-  String get roomsOfPrayer => 'የጸሎት ክፍሎች';
+  String get waysToPray => 'የጸሎት መንገዶች';
 
   @override
-  String get newRoom => 'አዲስ ክፍል';
+  String get modeThanks => 'ምስጋና';
 
   @override
-  String get roomNamePlaceholder => 'የክፍሉን ስም ጻፍ…';
+  String get modeAsk => 'ለምን';
 
   @override
-  String get roomKind => 'የጸሎት አይነት';
+  String get modeRest => 'እረፍ';
 
   @override
-  String get groupPersonal => 'የግል';
+  String get prayerTopics => 'የጸሎት ጉዳዮች';
 
   @override
-  String get groupIntercession => 'ምልጃ';
+  String get topicsPlaceholder => 'ለእግዚአብሔር ማቅረብ የሚፈልጉትን ይጻፉ…';
 
   @override
-  String get groupStruggle => 'ትግል';
-
-  @override
-  String get groupFamily => 'ቤተሰብ';
-
-  @override
-  String get enterRoom => 'ግባ';
+  String get topicsSaved => 'ተቀምጧል';
 
   @override
   String get beginPresence => 'ጀምር';
@@ -246,21 +240,6 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get hideTime => 'ጊዜ ደብቅ';
-
-  @override
-  String get renameRoom => 'ስም ቀይር';
-
-  @override
-  String get moveRoomAction => 'ወደ ሌላ አይነት ውሰድ';
-
-  @override
-  String get letGoRoom => 'ፍታ';
-
-  @override
-  String get roomCreated => 'ክፍል ተፈጥሯል';
-
-  @override
-  String get roomRemoved => 'ክፍል ተለቋል';
 
   @override
   String get prayerRestLogged => 'እዚህ አረፍክ። ይህ ጠቃሚ ነው።';

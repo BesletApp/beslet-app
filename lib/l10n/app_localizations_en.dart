@@ -202,31 +202,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get change => 'Change';
 
   @override
-  String get roomsOfPrayer => 'Rooms of Prayer';
+  String get waysToPray => 'Ways to pray';
 
   @override
-  String get newRoom => 'New room';
+  String get modeThanks => 'Thanks';
 
   @override
-  String get roomNamePlaceholder => 'Name this room…';
+  String get modeAsk => 'Ask';
 
   @override
-  String get roomKind => 'Kind of prayer';
+  String get modeRest => 'Rest';
 
   @override
-  String get groupPersonal => 'Personal';
+  String get prayerTopics => 'Prayer topics';
 
   @override
-  String get groupIntercession => 'Intercession';
+  String get topicsPlaceholder => 'Write what you want to bring before God…';
 
   @override
-  String get groupStruggle => 'Struggle';
-
-  @override
-  String get groupFamily => 'Family';
-
-  @override
-  String get enterRoom => 'Enter';
+  String get topicsSaved => 'Saved';
 
   @override
   String get beginPresence => 'Begin';
@@ -248,21 +242,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hideTime => 'Hide time';
-
-  @override
-  String get renameRoom => 'Rename';
-
-  @override
-  String get moveRoomAction => 'Move to another kind';
-
-  @override
-  String get letGoRoom => 'Let go';
-
-  @override
-  String get roomCreated => 'Room created';
-
-  @override
-  String get roomRemoved => 'Room released';
 
   @override
   String get prayerRestLogged => 'You rested here. That matters.';

@@ -476,59 +476,47 @@ abstract class AppLocalizations {
   /// **'Change'**
   String get change;
 
-  /// No description provided for @roomsOfPrayer.
+  /// No description provided for @waysToPray.
   ///
   /// In en, this message translates to:
-  /// **'Rooms of Prayer'**
-  String get roomsOfPrayer;
+  /// **'Ways to pray'**
+  String get waysToPray;
 
-  /// No description provided for @newRoom.
+  /// No description provided for @modeThanks.
   ///
   /// In en, this message translates to:
-  /// **'New room'**
-  String get newRoom;
+  /// **'Thanks'**
+  String get modeThanks;
 
-  /// No description provided for @roomNamePlaceholder.
+  /// No description provided for @modeAsk.
   ///
   /// In en, this message translates to:
-  /// **'Name this room…'**
-  String get roomNamePlaceholder;
+  /// **'Ask'**
+  String get modeAsk;
 
-  /// No description provided for @roomKind.
+  /// No description provided for @modeRest.
   ///
   /// In en, this message translates to:
-  /// **'Kind of prayer'**
-  String get roomKind;
+  /// **'Rest'**
+  String get modeRest;
 
-  /// No description provided for @groupPersonal.
+  /// No description provided for @prayerTopics.
   ///
   /// In en, this message translates to:
-  /// **'Personal'**
-  String get groupPersonal;
+  /// **'Prayer topics'**
+  String get prayerTopics;
 
-  /// No description provided for @groupIntercession.
+  /// No description provided for @topicsPlaceholder.
   ///
   /// In en, this message translates to:
-  /// **'Intercession'**
-  String get groupIntercession;
+  /// **'Write what you want to bring before God…'**
+  String get topicsPlaceholder;
 
-  /// No description provided for @groupStruggle.
+  /// No description provided for @topicsSaved.
   ///
   /// In en, this message translates to:
-  /// **'Struggle'**
-  String get groupStruggle;
-
-  /// No description provided for @groupFamily.
-  ///
-  /// In en, this message translates to:
-  /// **'Family'**
-  String get groupFamily;
-
-  /// No description provided for @enterRoom.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter'**
-  String get enterRoom;
+  /// **'Saved'**
+  String get topicsSaved;
 
   /// No description provided for @beginPresence.
   ///
@@ -571,36 +559,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hide time'**
   String get hideTime;
-
-  /// No description provided for @renameRoom.
-  ///
-  /// In en, this message translates to:
-  /// **'Rename'**
-  String get renameRoom;
-
-  /// No description provided for @moveRoomAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Move to another kind'**
-  String get moveRoomAction;
-
-  /// No description provided for @letGoRoom.
-  ///
-  /// In en, this message translates to:
-  /// **'Let go'**
-  String get letGoRoom;
-
-  /// No description provided for @roomCreated.
-  ///
-  /// In en, this message translates to:
-  /// **'Room created'**
-  String get roomCreated;
-
-  /// No description provided for @roomRemoved.
-  ///
-  /// In en, this message translates to:
-  /// **'Room released'**
-  String get roomRemoved;
 
   /// No description provided for @prayerRestLogged.
   ///

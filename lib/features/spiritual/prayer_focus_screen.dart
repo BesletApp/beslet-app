@@ -2,21 +2,22 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
-import '../../core/database/app_database.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/providers/prayer_provider.dart';
-import '../../core/providers/prayer_rooms_provider.dart';
+import '../../core/services/prayer_topics_service.dart';
 import '../../core/services/scene_event_bus.dart';
 import '../../l10n/app_localizations.dart';
+import 'prayer_modes.dart';
 
 /// The inner room (Matthew 6:6). A full-screen threshold where the user turns
-/// from the day into a single named presence before God. No numbers, no
-/// chrome, no timers — just the room, a still mark, and the simple verbs of
-/// prayer: Begin, Step away, Return, Rest.
+/// from the day into a single posture of prayer — give thanks, ask, or rest.
+/// Today's scripture and the topics written on the Prayer page are carried in
+/// so nothing is forgotten. No numbers, no chrome, no timers — just the mark
+/// and the simple verbs of prayer: Begin, Step away, Return, Rest.
 class PrayerFocusScreen extends ConsumerStatefulWidget {
-  final PrayerRoom room;
-  const PrayerFocusScreen({super.key, required this.room});
+  final PrayerMode mode;
+  const PrayerFocusScreen({super.key, required this.mode});
 
   @override
   ConsumerState<PrayerFocusScreen> createState() => _PrayerFocusScreenState();
@@ -29,11 +30,18 @@ class _PrayerFocusScreenState extends ConsumerState<PrayerFocusScreen>
   bool _isRunning = false;
   bool _showTime = false;
   Timer? _timer;
+  String _topics = '';
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _loadTopics();
+  }
+
+  Future<void> _loadTopics() async {
+    final text = await PrayerTopicsService.getTopics();
+    if (mounted) setState(() => _topics = text);
   }
 
   @override
@@ -88,7 +96,6 @@ class _PrayerFocusScreenState extends ConsumerState<PrayerFocusScreen>
     });
     _keepAwake();
     _tick();
-    ref.read(prayerRoomNotifierProvider.notifier).touchRoom(widget.room.id);
   }
 
   void _pausePresence() {
@@ -138,6 +145,8 @@ class _PrayerFocusScreenState extends ConsumerState<PrayerFocusScreen>
     final l = AppLocalizations.of(context)!;
     final c = AppColors.of(context);
     final isAm = Localizations.localeOf(context).languageCode == 'am';
+    final verse = verseForMode(widget.mode, DateTime.now());
+    final verseText = isAm ? (verse.textAm ?? verse.text) : verse.text;
     return Scaffold(
       backgroundColor: c.background,
       body: SafeArea(
@@ -168,7 +177,7 @@ class _PrayerFocusScreenState extends ConsumerState<PrayerFocusScreen>
                   _presenceMark(c),
                   const SizedBox(height: 28),
                   Text(
-                    widget.room.name,
+                    modeLabel(l, widget.mode),
                     textAlign: TextAlign.center,
                     style: AppTextStyles.of(context)
                         .displayMedium
@@ -182,6 +191,22 @@ class _PrayerFocusScreenState extends ConsumerState<PrayerFocusScreen>
                         .bodySmall
                         .copyWith(color: c.textMuted, fontStyle: FontStyle.italic),
                   ),
+                  const SizedBox(height: 18),
+                  Text(
+                    verseText,
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.of(context)
+                        .bodyMedium
+                        .copyWith(color: c.textSecondary, fontStyle: FontStyle.italic),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    verse.reference,
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.of(context)
+                        .bodySmall
+                        .copyWith(color: c.textMuted),
+                  ),
                   if (_showTime) ...[
                     const SizedBox(height: 16),
                     Text(
@@ -191,7 +216,29 @@ class _PrayerFocusScreenState extends ConsumerState<PrayerFocusScreen>
                           .copyWith(color: c.textSecondary),
                     ),
                   ],
-                  const SizedBox(height: 32),
+                  if (_topics.isNotEmpty) ...[
+                    const SizedBox(height: 20),
+                    Flexible(
+                      child: SingleChildScrollView(
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: c.surface,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: c.border),
+                          ),
+                          child: Text(
+                            _topics,
+                            style: AppTextStyles.of(context)
+                                .bodySmall
+                                .copyWith(color: c.textSecondary),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 28),
                   _buildControls(l, c),
                 ],
               ),

@@ -1,11 +1,13 @@
 import 'package:beslet_app/core/database/app_database.dart';
 import 'package:beslet_app/core/providers/database_provider.dart';
 import 'package:beslet_app/features/spiritual/prayer_focus_screen.dart';
+import 'package:beslet_app/features/spiritual/prayer_modes.dart';
 import 'package:beslet_app/l10n/app_localizations.dart';
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqlite3/sqlite3.dart' as sqlite3;
 
 bool _canOpenSqlite() {
@@ -17,48 +19,70 @@ bool _canOpenSqlite() {
   }
 }
 
-const _room = PrayerRoom(
-  id: 'room-1',
-  name: 'Quiet',
-  group: 'personal',
-  sortOrder: 0,
-  createdAt: '2026-01-01T00:00:00',
-  lastEnteredAt: null,
-);
-
-Future<void> _pumpFocus(WidgetTester tester, AppDatabase db) async {
+Future<void> _pumpFocus(WidgetTester tester, AppDatabase db, PrayerMode mode) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [databaseProvider.overrideWithValue(db)],
-      child: const MaterialApp(
+      child: MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: PrayerFocusScreen(room: _room),
+        home: PrayerFocusScreen(mode: mode),
       ),
     ),
   );
-  // Fixed pump only: the breathing mark animates forever, so pumpAndSettle
-  // would never settle.
   await tester.pump(const Duration(milliseconds: 400));
 }
 
 void main() {
-  testWidgets('inner room: presence mode begins, steps away, returns, rests',
+  group('prayer modes', () {
+    test('the three postures are thanks, ask, rest', () {
+      expect(prayerModes.map((m) => m.id), ['thanks', 'ask', 'rest']);
+    });
+
+    test('the daily verse rotates through each mode', () {
+      final mode = prayerModes.first;
+      final day0 = verseForMode(mode, DateTime(2025, 1, 1));
+      final day1 = verseForMode(mode, DateTime(2025, 1, 2));
+      expect(day0.reference, isNot(day1.reference));
+      expect(mode.verses.map((v) => v.reference).toSet().length, mode.verses.length,
+          reason: 'every verse in a mode is distinct');
+    });
+
+    test('every mode verse carries English and Amharic text', () {
+      for (final mode in prayerModes) {
+        for (final v in mode.verses) {
+          expect(v.text, isNotEmpty, reason: '${v.reference} English text');
+          expect(v.textAm, isNotEmpty, reason: '${v.reference} Amharic text');
+        }
+      }
+    });
+  });
+
+  testWidgets('inner room: mode name, today\'s verse and topics are carried in',
       (tester) async {
     if (!_canOpenSqlite()) {
       return markTestSkipped('sqlite3 native library unavailable on this host');
     }
+    SharedPreferences.setMockInitialValues({
+      'prayer_topics': 'For my family\nFor my work',
+    });
     final db = AppDatabase.forTesting(NativeDatabase.memory());
     addTearDown(db.close);
 
-    await _pumpFocus(tester, db);
+    final mode = prayerModes.first; // Thanks
+    await _pumpFocus(tester, db, mode);
 
     final l = AppLocalizations.of(
         tester.element(find.byType(PrayerFocusScreen)))!;
+    final verse = verseForMode(mode, DateTime.now());
 
-    // Idle: the room holds a still, un-numbered presence.
-    expect(find.text(_room.name), findsOneWidget);
+    // Idle: a still, un-numbered presence.
+    expect(find.text(l.modeThanks), findsOneWidget);
     expect(find.text(l.justBeStill), findsOneWidget);
+    expect(find.text(verse.text), findsOneWidget);
+    expect(find.text(verse.reference), findsOneWidget);
+    expect(find.text('For my family\nFor my work'), findsOneWidget,
+        reason: 'the topics written on the Prayer page are remembered here');
     expect(find.widgetWithText(ElevatedButton, l.beginPresence), findsOneWidget);
 
     // Begin starts presence.
