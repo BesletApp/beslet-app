@@ -67,6 +67,8 @@ class MainActivity : FlutterActivity() {
                             putExtra(AlarmService.EXTRA_SOUND_URI, soundUri)
                             putExtra(AlarmService.EXTRA_TITLE, title)
                             putExtra(AlarmService.EXTRA_BODY, body)
+                            putExtra("requestCode", requestCode)
+                            putExtra("timestamp", timestamp)
                         }
                         val pendingIntent = PendingIntent.getBroadcast(
                             this, requestCode, intent,

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/services.dart';
@@ -10,18 +11,45 @@ import 'prayer_verse_service.dart';
 
 enum PrayerAlarmPermissionStatus { granted, notificationsDenied, exactAlarmDenied }
 
+/// A single daily prayer appointment the user chose. `enabled` is quiet: a
+/// time can rest without being forgotten. An appointment, never a metric.
+class PrayerTime {
+  final int id;
+  final int hour;
+  final int minute;
+  final bool enabled;
+  const PrayerTime({
+    required this.id,
+    required this.hour,
+    required this.minute,
+    this.enabled = true,
+  });
+
+  PrayerTime copyWith({bool? enabled}) => PrayerTime(
+        id: id, hour: hour, minute: minute, enabled: enabled ?? this.enabled);
+
+  Map<String, Object> toJson() =>
+      {'id': id, 'hour': hour, 'minute': minute, 'enabled': enabled};
+
+  factory PrayerTime.fromJson(Map<String, Object?> json) => PrayerTime(
+        id: (json['id'] as num).toInt(),
+        hour: (json['hour'] as num).toInt(),
+        minute: (json['minute'] as num).toInt(),
+        enabled: json['enabled'] == null ? true : json['enabled'] as bool,
+      );
+}
+
 class PrayerReminderService {
-  static const _hourKey = 'prayer_reminder_hour';
-  static const _minuteKey = 'prayer_reminder_minute';
+  static const _timesKey = 'prayer_times';
   static const _lastUpdateKey = 'prayer_reminder_last_update';
-  static const _notificationId = 100;
-  static const _testNotificationId = 101;
-  static const _playbackRequestCode = 1000;
+  static const _notificationIdBase = 100;
+  static const _playbackRequestBase = 1000;
   static const _alarmActiveKey = 'prayer_alarm_active';
   static const _channel = MethodChannel('beslet_app/notifications');
 
   static final MethodChannel _soundChannel = MethodChannel('beslet_app/sounds');
 
+  // ── Alarm-active state (the red "Stop alarm" button) ──────
   static Future<bool> isAlarmActive() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool(_alarmActiveKey) ?? false;
@@ -32,6 +60,12 @@ class PrayerReminderService {
     await prefs.setBool(_alarmActiveKey, active);
   }
 
+  static Future<void> stopAlarmNow() async {
+    try { await _soundChannel.invokeMethod('stopAlarmNow'); } catch (_) {}
+    await _setAlarmActive(false);
+  }
+
+  // ── Permissions ───────────────────────────────────────────
   static Future<PrayerAlarmPermissionStatus> ensurePermissions() async {
     final android = NotificationService.plugin
         .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
@@ -54,24 +88,85 @@ class PrayerReminderService {
     try { await _channel.invokeMethod('openExactAlarmSettings'); } catch (_) {}
   }
 
-  static Future<void> schedulePrayerReminder(int hour, int minute) async {
-    await NotificationService.init();
-    final permission = await ensurePermissions();
-    if (permission != PrayerAlarmPermissionStatus.granted) {
-      throw PrayerReminderException(_permissionMessage(permission));
+  // ── Prayer times (a rhythm of daily appointments) ─────────
+  static Future<List<PrayerTime>> getPrayerTimes() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_timesKey);
+    if (raw == null || raw.isEmpty) return [];
+    try {
+      final list = jsonDecode(raw) as List<dynamic>;
+      return list
+          .map((e) => PrayerTime.fromJson((e as Map).cast<String, Object?>()))
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  static Future<void> _savePrayerTimes(List<PrayerTime> times) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_timesKey, jsonEncode(times.map((t) => t.toJson()).toList()));
+  }
+
+  static Future<void> addPrayerTime(int hour, int minute) async {
+    final times = await getPrayerTimes();
+    final nextId =
+        times.isEmpty ? 1 : times.map((t) => t.id).reduce((a, b) => a > b ? a : b) + 1;
+    times.add(PrayerTime(id: nextId, hour: hour, minute: minute));
+    await _savePrayerTimes(times);
+    await syncSchedules();
+  }
+
+  static Future<void> setPrayerTimeEnabled(int id, bool enabled) async {
+    final times = await getPrayerTimes();
+    await _savePrayerTimes(
+        times.map((t) => t.id == id ? t.copyWith(enabled: enabled) : t).toList());
+    await syncSchedules();
+  }
+
+  static Future<void> removePrayerTime(int id) async {
+    final times = await getPrayerTimes();
+    final removed = times.where((t) => t.id == id).toList();
+    await _savePrayerTimes(times.where((t) => t.id != id).toList());
+    for (final r in removed) {
+      try { await NotificationService.plugin.cancel(_notificationIdBase + r.id); } catch (_) {}
+      try { await _cancelPlaybackAlarm(_playbackRequestBase + r.id); } catch (_) {}
+    }
+    await syncSchedules();
+  }
+
+  static Future<void> clearAllPrayerTimes() async {
+    await _savePrayerTimes([]);
+    await syncSchedules();
+  }
+
+  // ── Scheduling: cancel everything, then arm every enabled time ──
+  static Future<void> syncSchedules() async {
+    if (!Platform.isAndroid) return;
+    try { await NotificationService.init(); } catch (_) {}
+    final times = await getPrayerTimes();
+
+    for (final t in times) {
+      try { await NotificationService.plugin.cancel(_notificationIdBase + t.id); } catch (_) {}
+      try { await _cancelPlaybackAlarm(_playbackRequestBase + t.id); } catch (_) {}
+    }
+    for (final t in times.where((t) => t.enabled)) {
+      await _scheduleOne(t);
+    }
+  }
+
+  static Future<void> _scheduleOne(PrayerTime t) async {
+    AndroidNotificationSound sound;
+    try {
+      sound = await PrayerAlarmSoundService.resolveAndroidSound();
+      await PrayerAlarmSoundService.ensureChannel(sound);
+    } catch (_) {
+      return;
     }
 
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_hourKey, hour);
-    await prefs.setInt(_minuteKey, minute);
-
-    final sound = await PrayerAlarmSoundService.resolveAndroidSound();
-    await PrayerAlarmSoundService.ensureChannel(sound);
-    await NotificationService.plugin.cancel(_notificationId);
-    await _cancelPlaybackAlarm();
-
     final now = tz.TZDateTime.now(tz.local);
-    var scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+    var scheduledDate =
+        tz.TZDateTime(tz.local, now.year, now.month, now.day, t.hour, t.minute);
     if (scheduledDate.isBefore(now)) scheduledDate = scheduledDate.add(const Duration(days: 1));
 
     final dayIndex = DateTime.now().difference(DateTime(2025, 1, 1)).inDays;
@@ -80,101 +175,48 @@ class PrayerReminderService {
     final body = '${verse.textAm} — ${verse.reference}';
     final channelId = PrayerAlarmSoundService.channelIdFor(sound);
 
-    await NotificationService.plugin.zonedSchedule(
-      _notificationId,
-      title,
-      body,
-      scheduledDate,
-      NotificationDetails(
-        android: AndroidNotificationDetails(
-          channelId, 'Prayer Reminder',
-          importance: Importance.max,
-          priority: Priority.max,
-          icon: '@mipmap/ic_launcher',
-          playSound: false,
-          enableVibration: false,
-          silent: true,
-          category: AndroidNotificationCategory.alarm,
-          visibility: NotificationVisibility.public,
-          fullScreenIntent: true,
-          actions: [
-            AndroidNotificationAction('dismiss_alarm', '🔕 Stop Alarm',
-              cancelNotification: true,
-              showsUserInterface: false,
-            ),
-          ],
-        ),
-        iOS: const DarwinNotificationDetails(
-          presentAlert: true, presentBadge: true, presentSound: true,
-          interruptionLevel: InterruptionLevel.timeSensitive,
-        ),
-      ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      matchDateTimeComponents: DateTimeComponents.time,
-      payload: '/prayer',
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-    );
-
-    await _schedulePlaybackAlarm(scheduledDate, sound, title, body);
-  }
-
-  static Future<void> testAlarmNow({Duration delay = const Duration(seconds: 3)}) async {
-    await NotificationService.init();
-    final permission = await ensurePermissions();
-    if (permission != PrayerAlarmPermissionStatus.granted) {
-      throw PrayerReminderException(_permissionMessage(permission));
-    }
-    final sound = await PrayerAlarmSoundService.resolveAndroidSound();
-    await PrayerAlarmSoundService.ensureChannel(sound);
-    final channelId = PrayerAlarmSoundService.channelIdFor(sound);
-
-    final soundUri = sound is UriAndroidNotificationSound ? sound.sound : null;
-    final title = 'Prayer alarm test 🔔';
-    final body = 'If you hear this, your prayer reminder is working!';
-    final fireAt = DateTime.now().add(delay);
-
-    // Schedule the native alarm to play for 5 minutes
     try {
-      await _soundChannel.invokeMethod('schedulePlaybackAlarm', {
-        'timestamp': fireAt.millisecondsSinceEpoch,
-        'soundUri': soundUri,
-        'title': title,
-        'body': body,
-        'requestCode': _testNotificationId,
-      });
-      await _setAlarmActive(true);
+      await NotificationService.plugin.zonedSchedule(
+        _notificationIdBase + t.id,
+        title,
+        body,
+        scheduledDate,
+        NotificationDetails(
+          android: AndroidNotificationDetails(
+            channelId, 'Prayer Reminder',
+            importance: Importance.max,
+            priority: Priority.max,
+            icon: '@mipmap/ic_launcher',
+            playSound: false,
+            enableVibration: false,
+            silent: true,
+            category: AndroidNotificationCategory.alarm,
+            visibility: NotificationVisibility.public,
+            fullScreenIntent: true,
+            actions: [
+              AndroidNotificationAction('dismiss_alarm', '🔕 Stop Alarm',
+                cancelNotification: true,
+                showsUserInterface: false,
+              ),
+            ],
+          ),
+          iOS: const DarwinNotificationDetails(
+            presentAlert: true, presentBadge: true, presentSound: true,
+            interruptionLevel: InterruptionLevel.timeSensitive,
+          ),
+        ),
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        matchDateTimeComponents: DateTimeComponents.time,
+        payload: '/prayer',
+        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+      );
     } catch (_) {}
 
-    await Future<void>.delayed(delay + const Duration(seconds: 1));
-
-    await NotificationService.plugin.show(
-      _testNotificationId,
-      title,
-      body,
-      NotificationDetails(
-        android: AndroidNotificationDetails(
-          channelId, 'Prayer Reminder',
-          importance: Importance.max, priority: Priority.max,
-          icon: '@mipmap/ic_launcher',
-          playSound: false, enableVibration: false, silent: true,
-          category: AndroidNotificationCategory.alarm,
-          actions: [
-            AndroidNotificationAction('dismiss_alarm', '🔕 Stop Alarm',
-              cancelNotification: true,
-              showsUserInterface: false,
-            ),
-          ],
-        ),
-        iOS: const DarwinNotificationDetails(
-          presentAlert: true, presentBadge: true, presentSound: true,
-          interruptionLevel: InterruptionLevel.timeSensitive,
-        ),
-      ),
-    );
+    await _schedulePlaybackAlarm(scheduledDate, sound, title, body, t.id);
   }
 
   static Future<void> _schedulePlaybackAlarm(
-      tz.TZDateTime scheduledDate, AndroidNotificationSound sound, String title, String body) async {
+      tz.TZDateTime scheduledDate, AndroidNotificationSound sound, String title, String body, int id) async {
     final soundUri = sound is UriAndroidNotificationSound ? sound.sound : null;
     try {
       await _soundChannel.invokeMethod('schedulePlaybackAlarm', {
@@ -182,73 +224,32 @@ class PrayerReminderService {
         'soundUri': soundUri,
         'title': title,
         'body': body,
-        'requestCode': _notificationId + _playbackRequestCode,
+        'requestCode': _playbackRequestBase + id,
       });
     } catch (_) {}
   }
 
-  static Future<void> _cancelPlaybackAlarm() async {
+  static Future<void> _cancelPlaybackAlarm(int requestCode) async {
     try {
       await _soundChannel.invokeMethod('cancelPlaybackAlarm', {
-        'requestCode': _notificationId + _playbackRequestCode,
+        'requestCode': requestCode,
       });
     } catch (_) {}
   }
 
-  static Future<void> stopAlarmNow() async {
-    try { await _soundChannel.invokeMethod('stopAlarmNow'); } catch (_) {}
-    await _setAlarmActive(false);
-  }
-
-  static Future<void> cancelPrayerReminder() async {
-    await NotificationService.plugin.cancel(_notificationId);
-    await NotificationService.plugin.cancel(_testNotificationId);
-    await _cancelPlaybackAlarm();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_hourKey);
-    await prefs.remove(_minuteKey);
-    await prefs.remove(_lastUpdateKey);
-  }
-
+  // ── Housekeeping ──────────────────────────────────────────
   static Future<void> rescheduleAfterSoundChange() async {
-    final time = await getReminderTime();
-    if (time == null) return;
-    await schedulePrayerReminder(time.hour, time.minute);
+    await syncSchedules();
   }
 
+  /// Refreshes the day's verse on each scheduled time, at most once a day.
   static Future<void> updatePrayerNotificationContent() async {
-    final time = await getReminderTime();
-    if (time == null) return;
+    final times = await getPrayerTimes();
+    if (times.every((t) => !t.enabled)) return;
     final prefs = await SharedPreferences.getInstance();
     final today = DateTime.now().toIso8601String().substring(0, 10);
     if (prefs.getString(_lastUpdateKey) == today) return;
-    await schedulePrayerReminder(time.hour, time.minute);
+    await syncSchedules();
     await prefs.setString(_lastUpdateKey, today);
   }
-
-  static Future<({int hour, int minute})?> getReminderTime() async {
-    final prefs = await SharedPreferences.getInstance();
-    final hour = prefs.getInt(_hourKey);
-    final minute = prefs.getInt(_minuteKey);
-    if (hour == null || minute == null) return null;
-    return (hour: hour, minute: minute);
-  }
-
-  static String _permissionMessage(PrayerAlarmPermissionStatus status) {
-    switch (status) {
-      case PrayerAlarmPermissionStatus.notificationsDenied:
-        return 'Notifications are disabled. Enable them in Settings to hear the prayer alarm.';
-      case PrayerAlarmPermissionStatus.exactAlarmDenied:
-        return 'Exact alarms are disabled. Enable "Alarms & reminders" for Beslet in Settings.';
-      case PrayerAlarmPermissionStatus.granted:
-        return '';
-    }
-  }
-}
-
-class PrayerReminderException implements Exception {
-  final String message;
-  PrayerReminderException(this.message);
-  @override
-  String toString() => message;
 }

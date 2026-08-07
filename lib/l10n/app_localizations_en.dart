@@ -169,21 +169,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notePlaceholder => 'Note (optional)';
 
   @override
-  String get prayerReminder => 'Prayer Reminder';
+  String get prayerTimes => 'Prayer times';
 
   @override
-  String get setReminder => 'Set Reminder';
+  String get prayWithoutCeasing =>
+      'Pray without ceasing — 1 Thessalonians 5:17';
 
   @override
-  String get removeReminder => 'Remove Reminder';
+  String get addPrayerTime => 'Add prayer time';
 
   @override
-  String dailyAt(Object time) {
-    return 'Daily at $time';
+  String get noPrayerTimes => 'No prayer times set yet';
+
+  @override
+  String get prayerTimesHint => 'Long-press a time to let it go';
+
+  @override
+  String get timeAdded => 'Prayer time added 🙏';
+
+  @override
+  String get timeRemoved => 'Prayer time removed';
+
+  @override
+  String get letGoTime => 'Let this time go?';
+
+  @override
+  String removePrayerTimeConfirm(Object time) {
+    return 'Remove $time from your prayer times?';
   }
-
-  @override
-  String get notSet => 'Not set';
 
   @override
   String get change => 'Change';
@@ -253,18 +266,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get prayerRestLogged => 'You rested here. That matters.';
-
-  @override
-  String get noTimer => 'No timer';
-
-  @override
-  String get prayerTimeLabel => 'Time';
-
-  @override
-  String get timeComplete => 'Time is complete';
-
-  @override
-  String get continueStill => 'Continue';
 
   @override
   String get noSkillsYet => 'No skills yet';

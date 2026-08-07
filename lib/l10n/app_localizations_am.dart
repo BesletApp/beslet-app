@@ -168,21 +168,33 @@ class AppLocalizationsAm extends AppLocalizations {
   String get notePlaceholder => 'ማስታወሻ (አማራጭ)';
 
   @override
-  String get prayerReminder => 'የጸሎት አስታዋሽ';
+  String get prayerTimes => 'የጸሎት ሰዓቶች';
 
   @override
-  String get setReminder => 'አስታዋሽ አዘጋጅ';
+  String get prayWithoutCeasing => 'ያለማቋረጥ ጸልዩ — 1 ተሰሎንቄ 5:17';
 
   @override
-  String get removeReminder => 'አስታዋሹን አስወግድ';
+  String get addPrayerTime => 'የጸሎት ሰዓት ያክሉ';
 
   @override
-  String dailyAt(Object time) {
-    return 'በየቀኑ $time';
+  String get noPrayerTimes => 'እስካሁን የጸሎት ሰዓት አልተቀመጠም';
+
+  @override
+  String get prayerTimesHint => 'ሰዓትን ለማስወገድ ረጅም ተጭነው ይያዙ';
+
+  @override
+  String get timeAdded => 'የጸሎት ሰዓት ተጨምሯል 🙏';
+
+  @override
+  String get timeRemoved => 'የጸሎት ሰዓት ተወግዷል';
+
+  @override
+  String get letGoTime => 'ይህን ሰዓት ይፍቱ?';
+
+  @override
+  String removePrayerTimeConfirm(Object time) {
+    return '$timeን ከጸሎት ሰዓቶችዎ ያስወግድ?';
   }
-
-  @override
-  String get notSet => 'አልተዘጋጀም';
 
   @override
   String get change => 'ለውጥ';
@@ -252,18 +264,6 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get prayerRestLogged => 'እዚህ አረፍክ። ይህ ጠቃሚ ነው።';
-
-  @override
-  String get noTimer => 'ሰዓት ቆጣሪ የለም';
-
-  @override
-  String get prayerTimeLabel => 'ጊዜ';
-
-  @override
-  String get timeComplete => 'ጊዜው ተጠናቋል';
-
-  @override
-  String get continueStill => 'ቀጥል';
 
   @override
   String get noSkillsYet => 'ምንም ክህሎቶች የሉም';

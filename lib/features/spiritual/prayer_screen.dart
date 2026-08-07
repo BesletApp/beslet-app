@@ -29,7 +29,7 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
   bool _isRunning = false;
   bool _timerExpanded = false;
   final _noteController = TextEditingController();
-  ({int hour, int minute})? _reminderTime;
+  List<PrayerTime> _prayerTimes = [];
   String? _soundName;
   bool _usingCustomSound = false;
   bool _alarmActive = false;
@@ -64,12 +64,12 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
   }
 
   Future<void> _loadReminder() async {
-    final time = await PrayerReminderService.getReminderTime();
+    final times = await PrayerReminderService.getPrayerTimes();
     final soundName = await PrayerAlarmSoundService.getSoundDisplayName();
     final custom = await PrayerAlarmSoundService.hasCustomSound();
     if (mounted) {
       setState(() {
-        _reminderTime = time;
+        _prayerTimes = times;
         _soundName = soundName;
         _usingCustomSound = custom;
       });
@@ -171,7 +171,8 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
     );
   }
 
-  Future<void> _setReminder() async {
+  Future<void> _addPrayerTime() async {
+    final l = AppLocalizations.of(context)!;
     final time = await showTimePicker(context: context, initialTime: TimeOfDay.now());
     if (time == null || !mounted) return;
     final permission = await PrayerReminderService.ensurePermissions();
@@ -180,20 +181,44 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
       return;
     }
     try {
-      await PrayerReminderService.schedulePrayerReminder(time.hour, time.minute);
-      _showSnack('Prayer reminder set! 🙏');
-    } on PrayerReminderException catch (e) {
-      _showSnack(e.message, isError: true);
+      await PrayerReminderService.addPrayerTime(time.hour, time.minute);
+      if (mounted) _showSnack(l.timeAdded);
     } catch (e) {
-      _showSnack('Failed: $e', isError: true);
+      if (mounted) _showSnack('Failed: $e', isError: true);
     }
     await _loadReminder();
+  }
+
+  Future<void> _togglePrayerTime(PrayerTime t, bool enabled) async {
+    await PrayerReminderService.setPrayerTimeEnabled(t.id, enabled);
+    await _loadReminder();
+  }
+
+  Future<void> _confirmRemovePrayerTime(PrayerTime t) async {
+    final l = AppLocalizations.of(context)!;
+    final timeLabel = TimeOfDay(hour: t.hour, minute: t.minute).format(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l.letGoTime),
+        content: Text(l.removePrayerTimeConfirm(timeLabel)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l.cancel)),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l.delete)),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      await PrayerReminderService.removePrayerTime(t.id);
+      _showSnack(l.timeRemoved);
+      await _loadReminder();
+    }
   }
 
   Future<void> _pickAlarmSound() async {
     try {
       await PrayerAlarmSoundService.pickAndSaveFromPhone();
-      if (_reminderTime != null) await PrayerReminderService.rescheduleAfterSoundChange();
+      await PrayerReminderService.rescheduleAfterSoundChange();
       _showSnack('Alarm tone updated 🎵');
     } on PrayerAlarmSoundException catch (e) {
       _showSnack(e.message, isError: true);
@@ -205,23 +230,9 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
 
   Future<void> _useDefaultSound() async {
     await PrayerAlarmSoundService.useDefaultTone();
-    if (_reminderTime != null) await PrayerReminderService.rescheduleAfterSoundChange();
+    await PrayerReminderService.rescheduleAfterSoundChange();
     _showSnack('Using default alarm tone');
     await _loadReminder();
-  }
-
-  Future<void> _testAlarm() async {
-    final permission = await PrayerReminderService.ensurePermissions();
-    if (permission != PrayerAlarmPermissionStatus.granted) {
-      await _handlePermissionDenied(permission);
-      return;
-    }
-    try {
-      await PrayerReminderService.testAlarmNow();
-      _showSnack('Test alarm in 3 seconds — turn volume up!');
-    } on PrayerReminderException catch (e) {
-      _showSnack(e.message, isError: true);
-    }
   }
 
   Widget _buildSoundRow(AppLocalizations l) {
@@ -274,16 +285,6 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
                 backgroundColor: AppColors.error,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-            ),
-          )
-        else
-          SizedBox(
-            width: double.infinity, height: 40,
-            child: OutlinedButton.icon(
-              onPressed: _testAlarm,
-              icon: const Icon(Icons.notifications_active_outlined, size: 16, color: AppColors.primary),
-              label: Text(isAm ? 'አሁን ሙከራ አድርግ' : 'Test alarm now', style: AppTextStyles.bodySmall.copyWith(color: AppColors.primary)),
-              style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.primary.withValues(alpha: 0.4))),
             ),
           ),
       ],
@@ -868,70 +869,63 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
   }
 
   Widget _buildReminderSection(AppLocalizations l) {
-    final reminderTime = _reminderTime;
+    final c = AppColors.of(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.of(context).card,
+        color: c.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.of(context).border),
+        border: Border.all(color: c.border),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
           const Icon(Icons.alarm, size: 16, color: AppColors.primary),
           const SizedBox(width: 8),
-          Text(AppLocalizations.of(context)!.prayerReminder, style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
+          Text(l.prayerTimes, style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
         ]),
+        const SizedBox(height: 4),
+        Text(l.prayWithoutCeasing,
+            style: AppTextStyles.bodySmall.copyWith(color: c.textMuted)),
         const SizedBox(height: 12),
-        if (reminderTime != null) ...[
-          Text(AppLocalizations.of(context)!.dailyAt(TimeOfDay(hour: reminderTime.hour, minute: reminderTime.minute).format(context)),
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.of(context).textSecondary)),
-          const SizedBox(height: 8),
-          Row(children: [
-            Expanded(
-              child: SizedBox(
-                height: 40,
-                child: OutlinedButton.icon(
-                  onPressed: _setReminder,
-                  icon: const Icon(Icons.edit, size: 16),
-                  label: Text(AppLocalizations.of(context)!.change, style: AppTextStyles.bodySmall.copyWith(color: AppColors.primary)),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.primary,
-                    side: BorderSide(color: AppColors.of(context).border),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                ),
+        if (_prayerTimes.isEmpty)
+          Text(l.noPrayerTimes,
+              style: AppTextStyles.bodyMedium.copyWith(color: c.textMuted)),
+        ..._prayerTimes.map((t) {
+          final timeLabel = TimeOfDay(hour: t.hour, minute: t.minute).format(context);
+          return Opacity(
+            opacity: t.enabled ? 1.0 : 0.55,
+            child: ListTile(
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              leading: const Icon(Icons.schedule, size: 18, color: AppColors.primary),
+              title: Text(timeLabel,
+                  style: AppTextStyles.bodyMedium.copyWith(color: c.textSecondary)),
+              trailing: Switch(
+                value: t.enabled,
+                onChanged: (v) => _togglePrayerTime(t, v),
               ),
+              onLongPress: () => _confirmRemovePrayerTime(t),
             ),
-            const SizedBox(width: 8),
-            SizedBox(
-              height: 40,
-              child: TextButton.icon(
-                onPressed: () async {
-                  await PrayerReminderService.cancelPrayerReminder();
-                  await _loadReminder();
-                },
-                icon: const Icon(Icons.delete_outline, size: 16, color: AppColors.error),
-                label: Text(AppLocalizations.of(context)!.removeReminder, style: AppTextStyles.bodySmall.copyWith(color: AppColors.error)),
-              ),
-            ),
-          ]),
-        ] else ...[
-          Text(AppLocalizations.of(context)!.notSet, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.of(context).textMuted)),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity, height: 44,
-            child: ElevatedButton.icon(
-              onPressed: _setReminder,
-              icon: const Icon(Icons.alarm_add, size: 18, color: Colors.white),
-              label: Text(AppLocalizations.of(context)!.setReminder, style: AppTextStyles.labelLarge.copyWith(color: Color(0xFF07090E), fontSize: 13)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
+          );
+        }),
+        const SizedBox(height: 8),
+        if (_prayerTimes.isNotEmpty)
+          Text(l.prayerTimesHint,
+              style: AppTextStyles.bodySmall.copyWith(color: c.textMuted)),
+        const SizedBox(height: 8),
+        SizedBox(
+          width: double.infinity, height: 44,
+          child: ElevatedButton.icon(
+            onPressed: _addPrayerTime,
+            icon: const Icon(Icons.alarm_add, size: 18, color: Colors.white),
+            label: Text(l.addPrayerTime,
+                style: AppTextStyles.labelLarge.copyWith(color: const Color(0xFF07090E), fontSize: 13)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),
-        ],
+        ),
         const SizedBox(height: 20),
         _buildSoundRow(l),
       ]),

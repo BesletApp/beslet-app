@@ -416,35 +416,59 @@ abstract class AppLocalizations {
   /// **'Note (optional)'**
   String get notePlaceholder;
 
-  /// No description provided for @prayerReminder.
+  /// No description provided for @prayerTimes.
   ///
   /// In en, this message translates to:
-  /// **'Prayer Reminder'**
-  String get prayerReminder;
+  /// **'Prayer times'**
+  String get prayerTimes;
 
-  /// No description provided for @setReminder.
+  /// No description provided for @prayWithoutCeasing.
   ///
   /// In en, this message translates to:
-  /// **'Set Reminder'**
-  String get setReminder;
+  /// **'Pray without ceasing — 1 Thessalonians 5:17'**
+  String get prayWithoutCeasing;
 
-  /// No description provided for @removeReminder.
+  /// No description provided for @addPrayerTime.
   ///
   /// In en, this message translates to:
-  /// **'Remove Reminder'**
-  String get removeReminder;
+  /// **'Add prayer time'**
+  String get addPrayerTime;
 
-  /// No description provided for @dailyAt.
+  /// No description provided for @noPrayerTimes.
   ///
   /// In en, this message translates to:
-  /// **'Daily at {time}'**
-  String dailyAt(Object time);
+  /// **'No prayer times set yet'**
+  String get noPrayerTimes;
 
-  /// No description provided for @notSet.
+  /// No description provided for @prayerTimesHint.
   ///
   /// In en, this message translates to:
-  /// **'Not set'**
-  String get notSet;
+  /// **'Long-press a time to let it go'**
+  String get prayerTimesHint;
+
+  /// No description provided for @timeAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Prayer time added 🙏'**
+  String get timeAdded;
+
+  /// No description provided for @timeRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Prayer time removed'**
+  String get timeRemoved;
+
+  /// No description provided for @letGoTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Let this time go?'**
+  String get letGoTime;
+
+  /// No description provided for @removePrayerTimeConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {time} from your prayer times?'**
+  String removePrayerTimeConfirm(Object time);
 
   /// No description provided for @change.
   ///
@@ -583,30 +607,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You rested here. That matters.'**
   String get prayerRestLogged;
-
-  /// No description provided for @noTimer.
-  ///
-  /// In en, this message translates to:
-  /// **'No timer'**
-  String get noTimer;
-
-  /// No description provided for @prayerTimeLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Time'**
-  String get prayerTimeLabel;
-
-  /// No description provided for @timeComplete.
-  ///
-  /// In en, this message translates to:
-  /// **'Time is complete'**
-  String get timeComplete;
-
-  /// No description provided for @continueStill.
-  ///
-  /// In en, this message translates to:
-  /// **'Continue'**
-  String get continueStill;
 
   /// No description provided for @noSkillsYet.
   ///
