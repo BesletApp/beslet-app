@@ -188,6 +188,72 @@ class AppLocalizationsAm extends AppLocalizations {
   String get change => 'ለውጥ';
 
   @override
+  String get roomsOfPrayer => 'የጸሎት ክፍሎች';
+
+  @override
+  String get newRoom => 'አዲስ ክፍል';
+
+  @override
+  String get roomNamePlaceholder => 'የክፍሉን ስም ጻፍ…';
+
+  @override
+  String get roomKind => 'የጸሎት አይነት';
+
+  @override
+  String get groupPersonal => 'የግል';
+
+  @override
+  String get groupIntercession => 'ምልጃ';
+
+  @override
+  String get groupStruggle => 'ትግል';
+
+  @override
+  String get groupFamily => 'ቤተሰብ';
+
+  @override
+  String get enterRoom => 'ግባ';
+
+  @override
+  String get beginPresence => 'ጀምር';
+
+  @override
+  String get stepAway => 'ለትንፍሳሳ ተለይ';
+
+  @override
+  String get returnHere => 'ተመለስ';
+
+  @override
+  String get restNow => 'እረፍ';
+
+  @override
+  String get justBeStill => 'ጸጥ ብለህ እወቅ';
+
+  @override
+  String get revealTime => 'ያለፈውን ጊዜ አሳይ';
+
+  @override
+  String get hideTime => 'ጊዜ ደብቅ';
+
+  @override
+  String get renameRoom => 'ስም ቀይር';
+
+  @override
+  String get moveRoomAction => 'ወደ ሌላ አይነት ውሰድ';
+
+  @override
+  String get letGoRoom => 'ፍታ';
+
+  @override
+  String get roomCreated => 'ክፍል ተፈጥሯል';
+
+  @override
+  String get roomRemoved => 'ክፍል ተለቋል';
+
+  @override
+  String get prayerRestLogged => 'እዚህ አረፍክ። ይህ ጠቃሚ ነው።';
+
+  @override
   String get noSkillsYet => 'ምንም ክህሎቶች የሉም';
 
   @override

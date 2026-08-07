@@ -452,6 +452,138 @@ abstract class AppLocalizations {
   /// **'Change'**
   String get change;
 
+  /// No description provided for @roomsOfPrayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Rooms of Prayer'**
+  String get roomsOfPrayer;
+
+  /// No description provided for @newRoom.
+  ///
+  /// In en, this message translates to:
+  /// **'New room'**
+  String get newRoom;
+
+  /// No description provided for @roomNamePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Name this room…'**
+  String get roomNamePlaceholder;
+
+  /// No description provided for @roomKind.
+  ///
+  /// In en, this message translates to:
+  /// **'Kind of prayer'**
+  String get roomKind;
+
+  /// No description provided for @groupPersonal.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal'**
+  String get groupPersonal;
+
+  /// No description provided for @groupIntercession.
+  ///
+  /// In en, this message translates to:
+  /// **'Intercession'**
+  String get groupIntercession;
+
+  /// No description provided for @groupStruggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Struggle'**
+  String get groupStruggle;
+
+  /// No description provided for @groupFamily.
+  ///
+  /// In en, this message translates to:
+  /// **'Family'**
+  String get groupFamily;
+
+  /// No description provided for @enterRoom.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter'**
+  String get enterRoom;
+
+  /// No description provided for @beginPresence.
+  ///
+  /// In en, this message translates to:
+  /// **'Begin'**
+  String get beginPresence;
+
+  /// No description provided for @stepAway.
+  ///
+  /// In en, this message translates to:
+  /// **'Step away'**
+  String get stepAway;
+
+  /// No description provided for @returnHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Return'**
+  String get returnHere;
+
+  /// No description provided for @restNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest'**
+  String get restNow;
+
+  /// No description provided for @justBeStill.
+  ///
+  /// In en, this message translates to:
+  /// **'Be still and know'**
+  String get justBeStill;
+
+  /// No description provided for @revealTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Reveal felt time'**
+  String get revealTime;
+
+  /// No description provided for @hideTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide time'**
+  String get hideTime;
+
+  /// No description provided for @renameRoom.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get renameRoom;
+
+  /// No description provided for @moveRoomAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to another kind'**
+  String get moveRoomAction;
+
+  /// No description provided for @letGoRoom.
+  ///
+  /// In en, this message translates to:
+  /// **'Let go'**
+  String get letGoRoom;
+
+  /// No description provided for @roomCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Room created'**
+  String get roomCreated;
+
+  /// No description provided for @roomRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Room released'**
+  String get roomRemoved;
+
+  /// No description provided for @prayerRestLogged.
+  ///
+  /// In en, this message translates to:
+  /// **'You rested here. That matters.'**
+  String get prayerRestLogged;
+
   /// No description provided for @noSkillsYet.
   ///
   /// In en, this message translates to:

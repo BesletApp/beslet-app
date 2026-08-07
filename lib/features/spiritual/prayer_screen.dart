@@ -7,12 +7,15 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/database/app_database.dart';
 import '../../core/providers/prayer_provider.dart';
+import '../../core/providers/prayer_rooms_provider.dart';
 import '../../core/providers/daily_flow_provider.dart';
 import '../../core/providers/scripture_provider.dart';
 import '../../core/services/prayer_reminder_service.dart';
 import '../../core/services/prayer_alarm_sound_service.dart';
 import '../../core/services/scene_event_bus.dart';
 import '../growth/widgets/mini_vine.dart';
+import '../spiritual/widgets/prayer_room_tile.dart';
+import 'prayer_focus_screen.dart';
 import '../../l10n/app_localizations.dart';
 
 class PrayerScreen extends ConsumerStatefulWidget {
@@ -305,7 +308,7 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
             eventSource: ref.read(sceneEventBusProvider),
           ),
           const SizedBox(height: 20),
-          _buildGuidedPrompts(l),
+          _buildRoomsSection(l),
           const SizedBox(height: 20),
           _buildPrayerCard(todayLog, l),
           const SizedBox(height: 20),
@@ -318,16 +321,17 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
     );
   }
 
-  /// "Pray based on what you read" — gentle prompts anchored to the day's
-  /// reading. If the Word hasn't been finished yet, a soft nudge, never a gate.
-  Widget _buildGuidedPrompts(AppLocalizations l) {
+  /// The threshold: named rooms of prayer, each a place to turn into His
+  /// presence. The day's reading stays anchored above them — prayer is the
+  /// Word become a conversation (never a gate).
+  Widget _buildRoomsSection(AppLocalizations l) {
     final isAm = Localizations.localeOf(context).languageCode == 'am';
     final c = AppColors.of(context);
     final plan = ref.watch(todayBiblePlanProvider);
     final bibleDone = ref.watch(dailyFlowProvider).bibleDone;
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       decoration: BoxDecoration(
         color: c.card,
         borderRadius: BorderRadius.circular(16),
@@ -335,51 +339,314 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          const Icon(Icons.auto_stories, size: 16, color: AppColors.primary),
+          const Icon(Icons.door_front_door_outlined, size: 16, color: AppColors.primary),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(
-              '${l.prayWhatYouRead} — ${isAm ? plan.labelAm : plan.labelEn}',
-              style: AppTextStyles.bodySmall.copyWith(
+            child: Text(l.roomsOfPrayer, style: AppTextStyles.of(context).labelLarge.copyWith(color: AppColors.primary)),
+          ),
+          IconButton(
+            onPressed: _showAddRoomSheet,
+            icon: const Icon(Icons.add, size: 20, color: AppColors.primary),
+            tooltip: l.newRoom,
+            visualDensity: VisualDensity.compact,
+            padding: EdgeInsets.zero,
+          ),
+        ]),
+        Text(
+          '${l.prayWhatYouRead} — ${isAm ? plan.labelAm : plan.labelEn}',
+          style: AppTextStyles.of(context).bodySmall.copyWith(
                 color: c.textSecondary,
                 fontWeight: FontWeight.w600,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ]),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
         if (!bibleDone) ...[
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           Text(
             '✨ ${l.beginWithWord}',
-            style: AppTextStyles.bodySmall.copyWith(fontSize: 11, color: AppColors.primary, fontStyle: FontStyle.italic),
+            style: AppTextStyles.of(context).bodySmall.copyWith(
+                  fontSize: 11, color: AppColors.primary, fontStyle: FontStyle.italic),
           ),
         ],
         const SizedBox(height: 12),
-        Wrap(spacing: 8, runSpacing: 8, children: [
-          _promptChip(isAm ? 'አመሰግናለሁ' : 'Thank', isAm ? 'ስለተነበበው አመስግን' : 'Thank God for what you read'),
-          _promptChip(isAm ? 'ጠይቅ' : 'Ask', isAm ? 'እንድትኖር ጠይቅ' : 'Ask Him to help you live it'),
-          _promptChip(isAm ? 'አርፍ' : 'Rest', isAm ? 'በእርሱ ፊት ዕረፍ' : 'Rest in His presence'),
-        ]),
+        _roomsList(l),
       ]),
     );
   }
 
-  Widget _promptChip(String title, String subtitle) {
-    final c = AppColors.of(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
-      ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(title, style: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w700, color: AppColors.primary)),
-        Text(subtitle, style: AppTextStyles.bodySmall.copyWith(fontSize: 10, color: c.textMuted)),
+  Widget _roomsList(AppLocalizations l) {
+    final rooms = ref.watch(prayerRoomsProvider);
+    return rooms.when(
+      data: (list) => Column(children: [
+        for (final room in list)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: PrayerRoomTile(
+              room: room,
+              onTap: () => _enterRoom(room),
+              onLongPress: () => _showRoomActionsSheet(room),
+            ),
+          ),
       ]),
+      loading: () => const Padding(
+        padding: EdgeInsets.symmetric(vertical: 16),
+        child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+      ),
+      error: (_, __) => const SizedBox(),
     );
+  }
+
+  void _enterRoom(PrayerRoom room) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => PrayerFocusScreen(room: room)),
+    );
+  }
+
+  Future<void> _showAddRoomSheet() async {
+    final l = AppLocalizations.of(context)!;
+    final c = AppColors.of(context);
+    final nameController = TextEditingController();
+    var selectedGroup = PrayerRoomGroup.personal;
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: c.card,
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(
+          left: 20, right: 20, top: 20,
+          bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+        ),
+        child: StatefulBuilder(
+          builder: (ctx, setSheetState) => Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(l.newRoom, style: AppTextStyles.of(context).labelLarge.copyWith(color: AppColors.primary)),
+              const SizedBox(height: 12),
+              TextField(
+                controller: nameController,
+                autofocus: true,
+                style: AppTextStyles.of(context).bodyMedium,
+                decoration: InputDecoration(
+                  hintText: l.roomNamePlaceholder,
+                  hintStyle: AppTextStyles.of(context).bodySmall,
+                  filled: true,
+                  fillColor: c.surface,
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                ),
+                onSubmitted: (_) => _createRoom(ctx, nameController, selectedGroup),
+              ),
+              const SizedBox(height: 16),
+              Text(l.roomKind, style: AppTextStyles.of(context).bodySmall.copyWith(color: c.textMuted)),
+              const SizedBox(height: 8),
+              Wrap(spacing: 8, runSpacing: 8, children: [
+                for (final g in PrayerRoomGroup.all)
+                  ChoiceChip(
+                    label: Text(prayerRoomGroupLabel(l, g), style: AppTextStyles.of(context).bodySmall),
+                    selected: selectedGroup == g,
+                    onSelected: (_) => setSheetState(() => selectedGroup = g),
+                    selectedColor: AppColors.primary.withValues(alpha: 0.2),
+                    backgroundColor: c.surface,
+                    side: BorderSide(
+                        color: selectedGroup == g ? AppColors.primary : c.border),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  ),
+              ]),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity, height: 48,
+                child: ElevatedButton.icon(
+                  onPressed: () => _createRoom(ctx, nameController, selectedGroup),
+                  icon: const Icon(Icons.add, color: Color(0xFF07090E)),
+                  label: Text(l.newRoom,
+                      style: AppTextStyles.of(context).labelLarge.copyWith(color: Color(0xFF07090E))),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    nameController.dispose();
+  }
+
+  Future<void> _createRoom(
+      BuildContext sheetCtx, TextEditingController ctrl, String group) async {
+    final name = ctrl.text.trim();
+    if (name.isEmpty) return;
+    await ref.read(prayerRoomNotifierProvider.notifier).addRoom(name, group);
+    if (!sheetCtx.mounted) return;
+    Navigator.of(sheetCtx).pop();
+    if (!mounted) return;
+    _showSnack(AppLocalizations.of(context)!.roomCreated);
+  }
+
+  Future<void> _showRoomActionsSheet(PrayerRoom room) async {
+    final l = AppLocalizations.of(context)!;
+    final c = AppColors.of(context);
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: c.card,
+      builder: (ctx) => SafeArea(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          ListTile(
+            title: Text(room.name,
+                style: AppTextStyles.of(context).displaySmall.copyWith(fontSize: 18)),
+            subtitle: Text(prayerRoomGroupLabel(l, room.group),
+                style: AppTextStyles.of(context).bodySmall),
+          ),
+          const Divider(height: 1),
+          ListTile(
+            leading: const Icon(Icons.edit_outlined, color: AppColors.primary),
+            title: Text(l.renameRoom, style: AppTextStyles.of(context).bodyMedium),
+            onTap: () {
+              Navigator.pop(ctx);
+              _renameRoom(room);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.drive_file_move_outline, color: AppColors.primary),
+            title: Text(l.moveRoomAction, style: AppTextStyles.of(context).bodyMedium),
+            onTap: () {
+              Navigator.pop(ctx);
+              _moveRoom(room);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.back_hand_outlined, color: AppColors.error),
+            title: Text(l.letGoRoom,
+                style: AppTextStyles.of(context).bodyMedium.copyWith(color: AppColors.error)),
+            onTap: () {
+              Navigator.pop(ctx);
+              _letGoRoom(room);
+            },
+          ),
+        ]),
+      ),
+    );
+  }
+
+  Future<void> _renameRoom(PrayerRoom room) async {
+    final l = AppLocalizations.of(context)!;
+    final c = AppColors.of(context);
+    final controller = TextEditingController(text: room.name);
+    final saved = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: c.card,
+        title: Text(l.renameRoom, style: AppTextStyles.of(context).labelLarge),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          style: AppTextStyles.of(context).bodyMedium,
+          decoration: InputDecoration(
+            hintText: l.roomNamePlaceholder,
+            hintStyle: AppTextStyles.of(context).bodySmall,
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l.cancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l.save, style: const TextStyle(color: AppColors.primary)),
+          ),
+        ],
+      ),
+    );
+    final name = controller.text.trim();
+    controller.dispose();
+    if (saved == true && name.isNotEmpty) {
+      await ref.read(prayerRoomNotifierProvider.notifier).renameRoom(room.id, name);
+    }
+  }
+
+  Future<void> _moveRoom(PrayerRoom room) async {
+    final l = AppLocalizations.of(context)!;
+    final c = AppColors.of(context);
+    var selectedGroup = room.group;
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: c.card,
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: StatefulBuilder(
+            builder: (ctx, setSheetState) => Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l.moveRoomAction,
+                    style: AppTextStyles.of(context).labelLarge.copyWith(color: AppColors.primary)),
+                const SizedBox(height: 12),
+                Wrap(spacing: 8, runSpacing: 8, children: [
+                  for (final g in PrayerRoomGroup.all)
+                    ChoiceChip(
+                      label: Text(prayerRoomGroupLabel(l, g),
+                          style: AppTextStyles.of(context).bodySmall),
+                      selected: selectedGroup == g,
+                      onSelected: (_) => setSheetState(() => selectedGroup = g),
+                      selectedColor: AppColors.primary.withValues(alpha: 0.2),
+                      backgroundColor: c.surface,
+                      side: BorderSide(
+                          color: selectedGroup == g ? AppColors.primary : c.border),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    ),
+                ]),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity, height: 48,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      await ref.read(prayerRoomNotifierProvider.notifier)
+                          .moveRoom(room.id, selectedGroup);
+                      if (!ctx.mounted) return;
+                      Navigator.pop(ctx);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: Text(l.save,
+                        style: AppTextStyles.of(context).labelLarge.copyWith(color: Color(0xFF07090E))),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _letGoRoom(PrayerRoom room) async {
+    final l = AppLocalizations.of(context)!;
+    final c = AppColors.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: c.card,
+        title: Text(l.letGoRoom, style: AppTextStyles.of(context).labelLarge),
+        content: Text(l.roomRemoved, style: AppTextStyles.of(context).bodyMedium),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l.cancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l.letGoRoom, style: const TextStyle(color: AppColors.error)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      await ref.read(prayerRoomNotifierProvider.notifier).deleteRoom(room.id);
+      if (mounted) _showSnack(l.roomRemoved);
+    }
   }
 
   Widget _buildPrayerCard(AsyncValue<PrayerLog?> todayLog, AppLocalizations l) {

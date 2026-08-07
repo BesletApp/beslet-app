@@ -189,6 +189,72 @@ class AppLocalizationsEn extends AppLocalizations {
   String get change => 'Change';
 
   @override
+  String get roomsOfPrayer => 'Rooms of Prayer';
+
+  @override
+  String get newRoom => 'New room';
+
+  @override
+  String get roomNamePlaceholder => 'Name this room…';
+
+  @override
+  String get roomKind => 'Kind of prayer';
+
+  @override
+  String get groupPersonal => 'Personal';
+
+  @override
+  String get groupIntercession => 'Intercession';
+
+  @override
+  String get groupStruggle => 'Struggle';
+
+  @override
+  String get groupFamily => 'Family';
+
+  @override
+  String get enterRoom => 'Enter';
+
+  @override
+  String get beginPresence => 'Begin';
+
+  @override
+  String get stepAway => 'Step away';
+
+  @override
+  String get returnHere => 'Return';
+
+  @override
+  String get restNow => 'Rest';
+
+  @override
+  String get justBeStill => 'Be still and know';
+
+  @override
+  String get revealTime => 'Reveal felt time';
+
+  @override
+  String get hideTime => 'Hide time';
+
+  @override
+  String get renameRoom => 'Rename';
+
+  @override
+  String get moveRoomAction => 'Move to another kind';
+
+  @override
+  String get letGoRoom => 'Let go';
+
+  @override
+  String get roomCreated => 'Room created';
+
+  @override
+  String get roomRemoved => 'Room released';
+
+  @override
+  String get prayerRestLogged => 'You rested here. That matters.';
+
+  @override
   String get noSkillsYet => 'No skills yet';
 
   @override

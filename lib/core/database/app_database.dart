@@ -8,6 +8,7 @@ import 'tables/user_table.dart';
 import 'tables/habit_table.dart';
 import 'tables/completion_table.dart';
 import 'tables/prayer_table.dart';
+import 'tables/prayer_room_table.dart';
 import 'tables/skill_table.dart';
 import 'tables/reflection_table.dart';
 import 'tables/challenge_table.dart';
@@ -28,12 +29,12 @@ import 'tables/verse_challenge_table.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Users, Habits, Completions, PrayerLogs, Skills, SkillSessions, Reflections, Challenges, ChallengeParticipants, FellowshipLogs, FamilyTimeLogs, Goals, TodoItems, DailyReflections, StreakLog, StreakFrozen, SoulLog, AudioCache, JournalEntry, GrowthJourney, ReadingSessions, VineDay, VerseChallenges])
+@DriftDatabase(tables: [Users, Habits, Completions, PrayerLogs, Skills, SkillSessions, Reflections, Challenges, ChallengeParticipants, FellowshipLogs, FamilyTimeLogs, Goals, TodoItems, DailyReflections, StreakLog, StreakFrozen, SoulLog, AudioCache, JournalEntry, GrowthJourney, ReadingSessions, VineDay, VerseChallenges, PrayerRooms])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
   @visibleForTesting
   AppDatabase.forTesting(super.executor);
-  @override int get schemaVersion => 24;
+  @override int get schemaVersion => 25;
 
   @override
   MigrationStrategy get migration {
@@ -112,6 +113,9 @@ class AppDatabase extends _$AppDatabase {
           await m.addColumn(users, users.keptWord);
           await m.addColumn(users, users.keptWordRef);
           await m.addColumn(users, users.avatarColor);
+        }
+        if (from < 25) {
+          await m.createTable(prayerRooms);
         }
       },
     );
