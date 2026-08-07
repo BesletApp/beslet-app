@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 import 'app.dart';
@@ -17,7 +18,8 @@ import 'core/providers/database_provider.dart';
 import 'core/providers/user_provider.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   tzdata.initializeTimeZones();
   tz.setLocalLocation(tz.getLocation('Africa/Addis_Ababa'));
   try { await NotificationService.init(); } catch (_) {}
@@ -69,4 +71,5 @@ void main() async {
       child: const BesletApp(),
     ),
   );
+  FlutterNativeSplash.remove();
 }

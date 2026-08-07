@@ -29,6 +29,7 @@ import '../../services/update_checker.dart';
 import '../../shared/widgets/error_card.dart';
 import '../../shared/widgets/enkutatash_overlay.dart';
 import '../../core/widgets/zone_layout.dart';
+import '../../core/widgets/brand_mark.dart';
 import '../word_challenge/verse_builder_loop.dart';
 
 
@@ -429,6 +430,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
               child: Text(SummerService.outsideMessage,
                   style: AppTextStyles.bodySmall.copyWith(color: AppColors.of(context).primary, fontSize: 11)),
             ),
+          const Spacer(),
+          BrandMark(size: 30, color: AppColors.of(context).primary),
         ]),
         SizedBox(height: _h(AppSpacing.md)),
         Row(
