@@ -8,6 +8,7 @@ import '../../core/theme/app_text_styles.dart';
 import '../../core/providers/database_provider.dart';
 import '../../core/providers/user_provider.dart';
 import '../../core/services/prayer_reminder_service.dart';
+import '../../core/widgets/brand_mark.dart';
 import '../../l10n/app_localizations.dart';
 
 class _PrayerSlot {
@@ -207,13 +208,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SizedBox(
-            width: 100, height: 100,
-            child: CustomPaint(
-              painter: _SeedlingPainter(),
-              child: const SizedBox(),
-            ),
-          ),
+          const BrandMark(size: 100),
           const SizedBox(height: 24),
           Text(h, style: AppTextStyles.displayMedium, textAlign: TextAlign.center),
           const SizedBox(height: 12),
@@ -513,13 +508,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SizedBox(
-            width: 120, height: 120,
-            child: CustomPaint(
-              painter: _SeedlingPainter(),
-              child: const SizedBox(),
-            ),
-          ),
+          const BrandMark(size: 120),
           const SizedBox(height: 32),
           Text(l.readyToGrow, style: AppTextStyles.displayMedium),
           const SizedBox(height: 12),
@@ -532,50 +521,4 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       ),
     );
   }
-}
-
-class _SeedlingPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = AppColors.primary
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.5
-      ..strokeCap = StrokeCap.round;
-
-    final cx = size.width / 2;
-    final cy = size.height / 2;
-
-    final stem = Path();
-    stem.moveTo(cx, cy + 24);
-    stem.cubicTo(cx - 2, cy + 8, cx + 3, cy - 2, cx, cy - 16);
-    canvas.drawPath(stem, paint);
-
-    paint.style = PaintingStyle.fill;
-    final leftLeaf = Path();
-    leftLeaf.moveTo(cx, cy - 8);
-    leftLeaf.quadraticBezierTo(cx - 14, cy - 10, cx - 16, cy - 22);
-    leftLeaf.quadraticBezierTo(cx - 8, cy - 20, cx, cy - 12);
-    leftLeaf.close();
-    canvas.drawPath(leftLeaf, paint..color = AppColors.primary.withValues(alpha: 0.35));
-
-    final rightLeaf = Path();
-    rightLeaf.moveTo(cx, cy - 6);
-    rightLeaf.quadraticBezierTo(cx + 14, cy - 12, cx + 18, cy - 24);
-    rightLeaf.quadraticBezierTo(cx + 10, cy - 20, cx, cy - 10);
-    rightLeaf.close();
-    canvas.drawPath(rightLeaf, paint..color = AppColors.primary.withValues(alpha: 0.5));
-
-    paint.style = PaintingStyle.stroke;
-    paint.strokeWidth = 2;
-    canvas.drawLine(Offset(cx - 18, cy + 24), Offset(cx + 18, cy + 24), paint..color = AppColors.primary.withValues(alpha: 0.4));
-
-    paint.style = PaintingStyle.fill;
-    canvas.drawCircle(Offset(cx - 8, cy + 28), 1.5, paint..color = AppColors.primary.withValues(alpha: 0.25));
-    canvas.drawCircle(Offset(cx + 6, cy + 29), 1, paint..color = AppColors.primary.withValues(alpha: 0.25));
-    canvas.drawCircle(Offset(cx, cy + 27), 1.2, paint..color = AppColors.primary.withValues(alpha: 0.25));
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
