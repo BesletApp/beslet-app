@@ -7,7 +7,24 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/providers/database_provider.dart';
 import '../../core/providers/user_provider.dart';
+import '../../core/services/prayer_reminder_service.dart';
 import '../../l10n/app_localizations.dart';
+
+class _PrayerSlot {
+  final String id;
+  final String labelEn;
+  final String labelAm;
+  final int hour;
+  final int minute;
+  const _PrayerSlot(this.id, this.labelEn, this.labelAm, this.hour, this.minute);
+}
+
+const List<_PrayerSlot> _prayerSlots = [
+  _PrayerSlot('dawn', 'Dawn · 6:00', 'ንጋት · 6:00', 6, 0),
+  _PrayerSlot('noon', 'Noon · 12:00', 'እኩለ ቀን · 12:00', 12, 0),
+  _PrayerSlot('dusk', 'Dusk · 18:00', 'ምሽት · 18:00', 18, 0),
+  _PrayerSlot('evening', 'Evening · 21:00', 'ማታ · 21:00', 21, 0),
+];
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -21,8 +38,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   int _page = 0;
   String _biblePlan = 'nt';
   bool _isAm = false;
+  final Set<String> _selectedSlots = {};
+  final List<({int hour, int minute})> _customTimes = [];
 
-  static const _pages = 4;
+  static const _pages = 5;
 
   @override
   void dispose() {
@@ -50,6 +69,18 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         lang: Value(_isAm ? 'am' : 'en'),
         onboarded: Value(true),
       ));
+    }
+    if (!mounted) return;
+    for (final id in _selectedSlots) {
+      final slot = _prayerSlots.firstWhere((s) => s.id == id);
+      try {
+        await PrayerReminderService.addPrayerTime(slot.hour, slot.minute);
+      } catch (_) {}
+    }
+    for (final t in _customTimes) {
+      try {
+        await PrayerReminderService.addPrayerTime(t.hour, t.minute);
+      } catch (_) {}
     }
     if (!mounted) return;
     ref.invalidate(userProvider);
@@ -96,6 +127,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   _buildWelcomePage(l, c),
                   _buildHowItWorksPage(l, c),
                   _buildSetupPage(l, c),
+                  _buildPrayerRhythmPage(l, c),
                   _buildCtaPage(l, c),
                 ],
               ),
@@ -120,8 +152,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             if (_page == 1)
               _buildBottomButton(l, 'Next', () => _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut)),
             if (_page == 2)
-              _buildBottomButton(l, 'Done', () => _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut)),
+              _buildBottomButton(l, 'Next', () => _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut)),
             if (_page == 3)
+              _buildBottomButton(l, 'Done', () => _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut)),
+            if (_page == 4)
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
                 child: SizedBox(
@@ -366,6 +400,111 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildPrayerRhythmPage(AppLocalizations l, ThemePalette c) {
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(_isAm ? 'የጸሎት ሪትምህ' : 'Your prayer rhythm',
+              style: AppTextStyles.displaySmall),
+          const SizedBox(height: 8),
+          Text(
+            _isAm
+                ? 'በምን መደበኛ ሰዓት መጸለይ ይፈልጋሉ? ከተመከሩት የቀን ሰዓቶች ይምረጡ፣ ወይም የራስዎን ያዘጋጁ።'
+                : 'At what regular time would you like to pray? Pick from the recommended hours of the day, or set your own.',
+            style: AppTextStyles.bodyMedium.copyWith(color: c.textSecondary, height: 1.5, fontSize: 13),
+          ),
+          const SizedBox(height: 20),
+          ..._prayerSlots.map((s) => _slotOption(s, c)),
+          if (_customTimes.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text(_isAm ? 'የራስዎ ሰዓቶች' : 'Your custom times',
+                style: TextStyle(fontFamily: 'Inter', fontSize: 13, fontWeight: FontWeight.w700, color: c.textSecondary)),
+            const SizedBox(height: 8),
+            ..._customTimes.asMap().entries.map((e) => _customTimeRow(e.key, e.value, c)),
+          ],
+          const SizedBox(height: 16),
+          OutlinedButton.icon(
+            onPressed: _pickCustomTime,
+            icon: const Icon(Icons.schedule, size: 16, color: AppColors.primary),
+            label: Text(_isAm ? 'የራስህን ሰዓት ምረጥ' : 'Set a custom time',
+                style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppColors.primary)),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.primary,
+              side: BorderSide(color: c.border),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _slotOption(_PrayerSlot slot, ThemePalette c) {
+    final selected = _selectedSlots.contains(slot.id);
+    return GestureDetector(
+      onTap: () => setState(() {
+        if (selected) {
+          _selectedSlots.remove(slot.id);
+        } else {
+          _selectedSlots.add(slot.id);
+        }
+      }),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.primary.withValues(alpha: 0.1) : c.card,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+              color: selected ? AppColors.primary : c.border,
+              width: selected ? 1.5 : 1),
+        ),
+        child: Row(
+          children: [
+            Icon(selected ? Icons.check_circle : Icons.add_circle_outline,
+                size: 18,
+                color: selected ? AppColors.primary : c.textMuted),
+            const SizedBox(width: 10),
+            Text(_isAm ? slot.labelAm : slot.labelEn,
+                style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 13,
+                    color: selected ? c.textPrimary : c.textSecondary)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _customTimeRow(int index, ({int hour, int minute}) t, ThemePalette c) {
+    final hh = t.minute.toString().padLeft(2, '0');
+    final label = '${t.hour.toString().padLeft(2, '0')}:$hh';
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          const Icon(Icons.schedule, size: 16, color: AppColors.primary),
+          const SizedBox(width: 8),
+          Text(label,
+              style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: c.textSecondary)),
+          const Spacer(),
+          GestureDetector(
+            onTap: () => setState(() => _customTimes.removeAt(index)),
+            child: Icon(Icons.close, size: 16, color: c.textMuted),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _pickCustomTime() async {
+    final time = await showTimePicker(context: context, initialTime: TimeOfDay.now());
+    if (time == null || !mounted) return;
+    setState(() => _customTimes.add((hour: time.hour, minute: time.minute)));
   }
 
   Widget _buildCtaPage(AppLocalizations l, ThemePalette c) {

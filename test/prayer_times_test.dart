@@ -91,5 +91,50 @@ void main() {
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getString('prayer_reminder_last_update'), isNull);
     });
+
+    test('time format preference defaults to the phone and persists', () async {
+      expect(await PrayerReminderService.getTimeFormatPref(), 'phone');
+      await PrayerReminderService.setTimeFormatPref('12h');
+      expect(await PrayerReminderService.getTimeFormatPref(), '12h');
+      await PrayerReminderService.setTimeFormatPref('24h');
+      expect(await PrayerReminderService.getTimeFormatPref(), '24h');
+    });
+
+    test('nextPrayerOccurrence picks the next enabled clock moment', () {
+      final times = [
+        PrayerTime(id: 1, hour: 6, minute: 0),
+        PrayerTime(id: 2, hour: 18, minute: 0),
+      ];
+      final now = DateTime(2026, 8, 7, 10, 0);
+      final next = PrayerReminderService.nextPrayerOccurrence(times, now)!;
+      expect(next.time.hour, 18);
+      expect(next.when, DateTime(2026, 8, 7, 18, 0));
+    });
+
+    test('nextPrayerOccurrence wraps to tomorrow when today has passed', () {
+      final times = [
+        PrayerTime(id: 1, hour: 6, minute: 0),
+        PrayerTime(id: 2, hour: 18, minute: 0),
+      ];
+      final after = DateTime(2026, 8, 7, 19, 0);
+      final next = PrayerReminderService.nextPrayerOccurrence(times, after)!;
+      expect(next.time.hour, 6);
+      expect(next.when, DateTime(2026, 8, 8, 6, 0));
+    });
+
+    test('nextPrayerOccurrence ignores resting times and empty lists', () {
+      final times = [
+        PrayerTime(id: 1, hour: 6, minute: 0, enabled: false),
+        PrayerTime(id: 2, hour: 18, minute: 0, enabled: true),
+      ];
+      final now = DateTime(2026, 8, 7, 5, 0);
+      final next = PrayerReminderService.nextPrayerOccurrence(times, now)!;
+      expect(next.time.hour, 18);
+      expect(PrayerReminderService.nextPrayerOccurrence([], now), isNull);
+      expect(
+          PrayerReminderService.nextPrayerOccurrence(
+              [PrayerTime(id: 1, hour: 6, minute: 0, enabled: false)], now),
+          isNull);
+    });
   });
 }

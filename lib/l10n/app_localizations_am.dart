@@ -212,6 +212,64 @@ class AppLocalizationsAm extends AppLocalizations {
   String get modeRest => 'እረፍ';
 
   @override
+  String get modeRepent => 'ንስሐ';
+
+  @override
+  String get modeGuideRepent => 'የምታውቀውን ኃጢአት ንገር — ይቅር ማለት ታማኝ ነው።';
+
+  @override
+  String get modeGuideThanks => 'በሁሉ ነገር አመስግን — ይህ ፈቃዱ ነው።';
+
+  @override
+  String get modeGuideAsk => 'ልመናህን በምስጋና ለእግዚአብሔር አቅርብ።';
+
+  @override
+  String get modeGuideRest => 'ጸጥ በል — ብቻህ አይደለህም።';
+
+  @override
+  String get prayerWords => 'ኢየሱስ የሰጠውን ቃል ጸልይ';
+
+  @override
+  String get lordsPrayer =>
+      'አባት ሆይ፣ በሰማያት ያለህ፣ ስምህ ይቀደስ፣ መንግሥትህ ይምጣ፣ ፈቃድህ በሰማይ እንደ ሆነ በምድርም ይሁን። የዛሬ እንጀራችንን ስጠን። ኃጢአተኞችን ይቅር እንደ ባልን፣ ኃጢአታችንን ይቅር በለን። ወደ ፈተናም አታግባን፣ ከክፉም አድነን። አሜን።';
+
+  @override
+  String get lordHaveMercy => 'እግዚአብሔር ማረን።';
+
+  @override
+  String nextAlarmRings(Object remaining, Object time) {
+    return 'ቀጣይ፡ $time · በ$remaining ውስጥ';
+  }
+
+  @override
+  String hoursAndMinutes(Object hours, Object minutes) {
+    return '$hoursሰ $minutesደቂቃ';
+  }
+
+  @override
+  String minutesOnly(Object minutes) {
+    return '$minutes ደቂቃ';
+  }
+
+  @override
+  String get timeFormat => 'የሰዓት አቆጣጠር';
+
+  @override
+  String get followPhone => 'የስልክዎን ይከተል';
+
+  @override
+  String get format12h => '12 ሰዓት';
+
+  @override
+  String get format24h => '24 ሰዓት';
+
+  @override
+  String get morningAbbr => 'ጠዋት';
+
+  @override
+  String get eveningAbbr => 'ማታ';
+
+  @override
   String get prayerTopics => 'የጸሎት ጉዳዮች';
 
   @override

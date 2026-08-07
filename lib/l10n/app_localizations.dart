@@ -500,6 +500,108 @@ abstract class AppLocalizations {
   /// **'Rest'**
   String get modeRest;
 
+  /// No description provided for @modeRepent.
+  ///
+  /// In en, this message translates to:
+  /// **'Repent'**
+  String get modeRepent;
+
+  /// No description provided for @modeGuideRepent.
+  ///
+  /// In en, this message translates to:
+  /// **'Confess what you know — He is faithful to forgive.'**
+  String get modeGuideRepent;
+
+  /// No description provided for @modeGuideThanks.
+  ///
+  /// In en, this message translates to:
+  /// **'Give thanks in everything — it is His will for you.'**
+  String get modeGuideThanks;
+
+  /// No description provided for @modeGuideAsk.
+  ///
+  /// In en, this message translates to:
+  /// **'Present your requests to God with thanksgiving.'**
+  String get modeGuideAsk;
+
+  /// No description provided for @modeGuideRest.
+  ///
+  /// In en, this message translates to:
+  /// **'Be still — you are not alone.'**
+  String get modeGuideRest;
+
+  /// No description provided for @prayerWords.
+  ///
+  /// In en, this message translates to:
+  /// **'Pray the words Jesus gave'**
+  String get prayerWords;
+
+  /// No description provided for @lordsPrayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Our Father in heaven, hallowed be your name. Your kingdom come, your will be done, on earth as it is in heaven. Give us today our daily bread. And forgive us our debts, as we also have forgiven our debtors. And lead us not into temptation, but deliver us from the evil one. Amen.'**
+  String get lordsPrayer;
+
+  /// No description provided for @lordHaveMercy.
+  ///
+  /// In en, this message translates to:
+  /// **'Lord, have mercy.'**
+  String get lordHaveMercy;
+
+  /// No description provided for @nextAlarmRings.
+  ///
+  /// In en, this message translates to:
+  /// **'Next: {time} · in {remaining}'**
+  String nextAlarmRings(Object remaining, Object time);
+
+  /// No description provided for @hoursAndMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours}h {minutes}m'**
+  String hoursAndMinutes(Object hours, Object minutes);
+
+  /// No description provided for @minutesOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes}m'**
+  String minutesOnly(Object minutes);
+
+  /// No description provided for @timeFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Time format'**
+  String get timeFormat;
+
+  /// No description provided for @followPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow phone'**
+  String get followPhone;
+
+  /// No description provided for @format12h.
+  ///
+  /// In en, this message translates to:
+  /// **'12-hour'**
+  String get format12h;
+
+  /// No description provided for @format24h.
+  ///
+  /// In en, this message translates to:
+  /// **'24-hour'**
+  String get format24h;
+
+  /// No description provided for @morningAbbr.
+  ///
+  /// In en, this message translates to:
+  /// **'AM'**
+  String get morningAbbr;
+
+  /// No description provided for @eveningAbbr.
+  ///
+  /// In en, this message translates to:
+  /// **'PM'**
+  String get eveningAbbr;
+
   /// No description provided for @prayerTopics.
   ///
   /// In en, this message translates to:

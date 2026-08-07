@@ -7,15 +7,12 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/database/app_database.dart';
 import '../../core/providers/prayer_provider.dart';
-import '../../core/providers/daily_flow_provider.dart';
-import '../../core/providers/scripture_provider.dart';
 import '../../core/services/prayer_reminder_service.dart';
 import '../../core/services/prayer_alarm_sound_service.dart';
 import '../../core/services/prayer_topics_service.dart';
 import '../../core/services/scene_event_bus.dart';
 import '../growth/widgets/mini_vine.dart';
-import 'prayer_focus_screen.dart';
-import 'prayer_modes.dart';
+import 'widgets/prayer_guide_card.dart';
 import '../../l10n/app_localizations.dart';
 
 class PrayerScreen extends ConsumerStatefulWidget {
@@ -34,6 +31,8 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
   bool _usingCustomSound = false;
   bool _alarmActive = false;
   Timer? _alarmCheckTimer;
+  Timer? _countdownTimer;
+  String _timeFormatPref = 'phone';
   final _topicsController = TextEditingController();
   Timer? _topicsSaveTimer;
   bool _topicsSaved = false;
@@ -44,16 +43,25 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
     _loadReminder();
     _loadTopics();
     _startAlarmCheck();
+    _startCountdown();
   }
   @override void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _timer?.cancel();
     _alarmCheckTimer?.cancel();
+    _countdownTimer?.cancel();
     _topicsSaveTimer?.cancel();
     WakelockPlus.disable();
     _noteController.dispose();
     _topicsController.dispose();
     super.dispose();
+  }
+
+  void _startCountdown() {
+    _countdownTimer?.cancel();
+    _countdownTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (mounted) setState(() {});
+    });
   }
 
   void _startAlarmCheck() {
@@ -73,11 +81,13 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
     final times = await PrayerReminderService.getPrayerTimes();
     final soundName = await PrayerAlarmSoundService.getSoundDisplayName();
     final custom = await PrayerAlarmSoundService.hasCustomSound();
+    final formatPref = await PrayerReminderService.getTimeFormatPref();
     if (mounted) {
       setState(() {
         _prayerTimes = times;
         _soundName = soundName;
         _usingCustomSound = custom;
+        _timeFormatPref = formatPref;
       });
     }
   }
@@ -193,7 +203,14 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
 
   Future<void> _addPrayerTime() async {
     final l = AppLocalizations.of(context)!;
-    final time = await showTimePicker(context: context, initialTime: TimeOfDay.now());
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+      builder: (ctx, child) => MediaQuery(
+        data: MediaQuery.of(ctx).copyWith(alwaysUse24HourFormat: _use24h()),
+        child: child!,
+      ),
+    );
     if (time == null || !mounted) return;
     final permission = await PrayerReminderService.ensurePermissions();
     if (permission != PrayerAlarmPermissionStatus.granted) {
@@ -216,7 +233,7 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
 
   Future<void> _confirmRemovePrayerTime(PrayerTime t) async {
     final l = AppLocalizations.of(context)!;
-    final timeLabel = TimeOfDay(hour: t.hour, minute: t.minute).format(context);
+    final timeLabel = _formatPrayerTime(t.hour, t.minute);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -329,7 +346,7 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
             eventSource: ref.read(sceneEventBusProvider),
           ),
           const SizedBox(height: 20),
-          _buildModesCard(l),
+          const PrayerGuideCard(),
           const SizedBox(height: 20),
           _buildTopicsCard(l),
           const SizedBox(height: 20),
@@ -341,68 +358,6 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
           const SizedBox(height: 32),
         ]),
       ),
-    );
-  }
-
-  /// The Word becomes a conversation. Three quiet postures — give thanks, ask,
-  /// rest — each one carrying today's scripture, so prayer is guided by what
-  /// God has said. Never a gate, always an invitation.
-  Widget _buildModesCard(AppLocalizations l) {
-    final isAm = Localizations.localeOf(context).languageCode == 'am';
-    final c = AppColors.of(context);
-    final plan = ref.watch(todayBiblePlanProvider);
-    final bibleDone = ref.watch(dailyFlowProvider).bibleDone;
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-      decoration: BoxDecoration(
-        color: c.card,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: c.border),
-      ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          const Icon(Icons.menu_book_outlined, size: 16, color: AppColors.primary),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(l.waysToPray, style: AppTextStyles.of(context).labelLarge.copyWith(color: AppColors.primary)),
-          ),
-        ]),
-        Text(
-          '${l.prayWhatYouRead} — ${isAm ? plan.labelAm : plan.labelEn}',
-          style: AppTextStyles.of(context).bodySmall.copyWith(
-                color: c.textSecondary,
-                fontWeight: FontWeight.w600,
-              ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        if (!bibleDone) ...[
-          const SizedBox(height: 4),
-          Text(
-            '✨ ${l.beginWithWord}',
-            style: AppTextStyles.of(context).bodySmall.copyWith(
-                  fontSize: 11, color: AppColors.primary, fontStyle: FontStyle.italic),
-          ),
-        ],
-        const SizedBox(height: 8),
-        for (final mode in prayerModes)
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            dense: true,
-            leading: Icon(mode.icon, size: 20, color: AppColors.primary),
-            title: Text(modeLabel(l, mode),
-                style: AppTextStyles.of(context).bodyMedium.copyWith(color: c.textSecondary)),
-            trailing: const Icon(Icons.chevron_right, size: 18, color: AppColors.primary),
-            onTap: () => _enterMode(mode),
-          ),
-      ]),
-    );
-  }
-
-  void _enterMode(PrayerMode mode) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => PrayerFocusScreen(mode: mode)),
     );
   }
 
@@ -691,8 +646,35 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
         if (_prayerTimes.isEmpty)
           Text(l.noPrayerTimes,
               style: AppTextStyles.bodyMedium.copyWith(color: c.textMuted)),
+        ...() {
+          final next =
+              PrayerReminderService.nextPrayerOccurrence(_prayerTimes, DateTime.now());
+          if (next == null) return const <Widget>[];
+          final remaining = _remainingUntilNow(next.when);
+          if (remaining == null) return const <Widget>[];
+          return <Widget>[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+              ),
+              child: Text(
+                l.nextAlarmRings(
+                  remaining,
+                  _formatPrayerTime(next.time.hour, next.time.minute),
+                ),
+                style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.primary, fontWeight: FontWeight.w600),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ];
+        }(),
         ..._prayerTimes.map((t) {
-          final timeLabel = TimeOfDay(hour: t.hour, minute: t.minute).format(context);
+          final timeLabel = _formatPrayerTime(t.hour, t.minute);
           return Opacity(
             opacity: t.enabled ? 1.0 : 0.55,
             child: ListTile(
@@ -727,9 +709,32 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
             ),
           ),
         ),
+        const SizedBox(height: 16),
+        Text(l.timeFormat,
+            style: AppTextStyles.bodySmall.copyWith(color: c.textMuted)),
+        const SizedBox(height: 6),
+        Wrap(spacing: 8, runSpacing: 4, children: [
+          _formatChip('phone', l.followPhone),
+          _formatChip('12h', l.format12h),
+          _formatChip('24h', l.format24h),
+        ]),
         const SizedBox(height: 20),
         _buildSoundRow(l),
       ]),
+    );
+  }
+
+  Widget _formatChip(String value, String label) {
+    return ChoiceChip(
+      label: Text(label, style: AppTextStyles.bodySmall.copyWith(fontSize: 12)),
+      selected: _timeFormatPref == value,
+      selectedColor: AppColors.primary.withValues(alpha: 0.2),
+      onSelected: (_) => _setTimeFormatPref(value),
+      side: BorderSide(
+        color: _timeFormatPref == value
+            ? AppColors.primary
+            : AppColors.of(context).border,
+      ),
     );
   }
 
@@ -737,5 +742,44 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
     final m = (secs ~/ 60).toString().padLeft(2, '0');
     final s = (secs % 60).toString().padLeft(2, '0');
     return '$m:$s';
+  }
+
+  bool _use24h() {
+    switch (_timeFormatPref) {
+      case '12h':
+        return false;
+      case '24h':
+        return true;
+      default:
+        return MediaQuery.of(context).alwaysUse24HourFormat;
+    }
+  }
+
+  String _formatPrayerTime(int hour, int minute) {
+    final l = AppLocalizations.of(context)!;
+    final hh = minute.toString().padLeft(2, '0');
+    if (_use24h()) {
+      return '${hour.toString().padLeft(2, '0')}:$hh';
+    }
+    final period = hour >= 12 ? l.eveningAbbr : l.morningAbbr;
+    final h12 = hour % 12 == 0 ? 12 : hour % 12;
+    return '$h12:$hh $period';
+  }
+
+  Future<void> _setTimeFormatPref(String value) async {
+    await PrayerReminderService.setTimeFormatPref(value);
+    if (mounted) setState(() => _timeFormatPref = value);
+  }
+
+  String? _remainingUntilNow(DateTime when) {
+    final diff = when.difference(DateTime.now());
+    if (diff.isNegative) return null;
+    final l = AppLocalizations.of(context)!;
+    final hours = diff.inHours;
+    final minutes = diff.inMinutes % 60;
+    if (hours > 0) {
+      return l.hoursAndMinutes(hours, minutes);
+    }
+    return l.minutesOnly(diff.inMinutes);
   }
 }

@@ -42,6 +42,7 @@ class PrayerTime {
 class PrayerReminderService {
   static const _timesKey = 'prayer_times';
   static const _lastUpdateKey = 'prayer_reminder_last_update';
+  static const _timeFormatKey = 'prayer_time_format';
   static const _notificationIdBase = 100;
   static const _playbackRequestBase = 1000;
   static const _alarmActiveKey = 'prayer_alarm_active';
@@ -138,6 +139,38 @@ class PrayerReminderService {
   static Future<void> clearAllPrayerTimes() async {
     await _savePrayerTimes([]);
     await syncSchedules();
+  }
+
+  // ── Clock format: follow the phone, or the user's own 12h/24h choice ──
+  static Future<String> getTimeFormatPref() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_timeFormatKey) ?? 'phone';
+  }
+
+  static Future<void> setTimeFormatPref(String value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_timeFormatKey, value);
+  }
+
+  /// The next enabled prayer time as an actual clock moment. Wraps to
+  /// tomorrow when every enabled time has already passed today.
+  static ({PrayerTime time, DateTime when})? nextPrayerOccurrence(
+      List<PrayerTime> times, DateTime now) {
+    final enabled = times.where((t) => t.enabled).toList();
+    if (enabled.isEmpty) return null;
+    PrayerTime? bestTime;
+    DateTime? best;
+    for (final t in enabled) {
+      var candidate = DateTime(now.year, now.month, now.day, t.hour, t.minute);
+      if (!candidate.isAfter(now)) {
+        candidate = candidate.add(const Duration(days: 1));
+      }
+      if (best == null || candidate.isBefore(best)) {
+        best = candidate;
+        bestTime = t;
+      }
+    }
+    return (time: bestTime!, when: best!);
   }
 
   // ── Scheduling: cancel everything, then arm every enabled time ──

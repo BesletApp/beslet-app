@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import '../../core/services/scripture_service.dart';
 import '../../l10n/app_localizations.dart';
 
-/// A quiet posture of prayer. Not rooms to manage — just the three ways the
-/// Word invites us to turn to God: give thanks, ask, and rest.
+/// A quiet posture of prayer. Not rooms to manage — just the four ways the
+/// Word invites us to turn to God: repent, give thanks, ask, and rest.
 class PrayerMode {
   final String id;
   final IconData icon;
@@ -14,6 +14,29 @@ class PrayerMode {
     required this.verses,
   });
 }
+
+const List<Scripture> _repentVerses = [
+  Scripture(
+    reference: 'Psalm 51:10',
+    text: 'Create in me a pure heart, O God, and renew a steadfast spirit within me.',
+    textAm: 'አምላክ ሆይ፣ ንጹሕ ልብ ፍጠርልኝ፤ በውስጤም የጸና መንፈስ አድስ።',
+  ),
+  Scripture(
+    reference: '1 John 1:9',
+    text: 'If we confess our sins, he is faithful and just and will forgive us our sins and purify us from all unrighteousness.',
+    textAm: 'ኃጢአታችንን ብንናዘዝ፣ እርሱ ታማኝና ጻድቅ ነውና ኃጢአታችንን ይቅር ይለናል፤ ከኀጢአትም ሁሉ ያነጻናል።',
+  ),
+  Scripture(
+    reference: 'Psalm 32:5',
+    text: 'Then I acknowledged my sin to you and did not cover up my iniquity. And you forgave the guilt of my sin.',
+    textAm: 'ኃጢአቴን ለአንተ አውቄ ነበር፤ በደሌንም አልደበቅሁም። የኃጢአቴን በደል ይቅር አልከኝ።',
+  ),
+  Scripture(
+    reference: 'Isaiah 1:18',
+    text: 'Come now, let us settle the matter. Though your sins are like scarlet, they shall be as white as snow.',
+    textAm: 'ኑ፣ ተሻሻሉ ይላል እግዚአብሔር። ኃጢአታችሁ እንደ ቀይ ቀለም ቢሆንም፣ እንደ በረዶ ነጭ ትሆናለች።',
+  ),
+];
 
 const List<Scripture> _thanksVerses = [
   Scripture(
@@ -84,8 +107,10 @@ const List<Scripture> _restVerses = [
   ),
 ];
 
-/// The three postures of prayer. Their order is the rhythm of the Psalms.
+/// The four postures of prayer. Their order is the rhythm of the Word:
+/// confess first, give thanks as you enter, present your requests, then rest.
 const List<PrayerMode> prayerModes = [
+  PrayerMode(id: 'repent', icon: Icons.cleaning_services_outlined, verses: _repentVerses),
   PrayerMode(id: 'thanks', icon: Icons.volunteer_activism_outlined, verses: _thanksVerses),
   PrayerMode(id: 'ask', icon: Icons.record_voice_over_outlined, verses: _askVerses),
   PrayerMode(id: 'rest', icon: Icons.self_improvement_outlined, verses: _restVerses),
@@ -100,12 +125,30 @@ Scripture verseForMode(PrayerMode mode, DateTime date) {
 /// The mode's name in the user's language.
 String modeLabel(AppLocalizations l, PrayerMode mode) {
   switch (mode.id) {
+    case 'repent':
+      return l.modeRepent;
     case 'thanks':
       return l.modeThanks;
     case 'ask':
       return l.modeAsk;
     case 'rest':
       return l.modeRest;
+    default:
+      return mode.id;
+  }
+}
+
+/// One quiet line guiding each posture — a gentle description, not a script.
+String modeGuide(AppLocalizations l, PrayerMode mode) {
+  switch (mode.id) {
+    case 'repent':
+      return l.modeGuideRepent;
+    case 'thanks':
+      return l.modeGuideThanks;
+    case 'ask':
+      return l.modeGuideAsk;
+    case 'rest':
+      return l.modeGuideRest;
     default:
       return mode.id;
   }

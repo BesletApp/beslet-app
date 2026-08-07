@@ -214,6 +214,66 @@ class AppLocalizationsEn extends AppLocalizations {
   String get modeRest => 'Rest';
 
   @override
+  String get modeRepent => 'Repent';
+
+  @override
+  String get modeGuideRepent =>
+      'Confess what you know — He is faithful to forgive.';
+
+  @override
+  String get modeGuideThanks =>
+      'Give thanks in everything — it is His will for you.';
+
+  @override
+  String get modeGuideAsk => 'Present your requests to God with thanksgiving.';
+
+  @override
+  String get modeGuideRest => 'Be still — you are not alone.';
+
+  @override
+  String get prayerWords => 'Pray the words Jesus gave';
+
+  @override
+  String get lordsPrayer =>
+      'Our Father in heaven, hallowed be your name. Your kingdom come, your will be done, on earth as it is in heaven. Give us today our daily bread. And forgive us our debts, as we also have forgiven our debtors. And lead us not into temptation, but deliver us from the evil one. Amen.';
+
+  @override
+  String get lordHaveMercy => 'Lord, have mercy.';
+
+  @override
+  String nextAlarmRings(Object remaining, Object time) {
+    return 'Next: $time · in $remaining';
+  }
+
+  @override
+  String hoursAndMinutes(Object hours, Object minutes) {
+    return '${hours}h ${minutes}m';
+  }
+
+  @override
+  String minutesOnly(Object minutes) {
+    return '${minutes}m';
+  }
+
+  @override
+  String get timeFormat => 'Time format';
+
+  @override
+  String get followPhone => 'Follow phone';
+
+  @override
+  String get format12h => '12-hour';
+
+  @override
+  String get format24h => '24-hour';
+
+  @override
+  String get morningAbbr => 'AM';
+
+  @override
+  String get eveningAbbr => 'PM';
+
+  @override
   String get prayerTopics => 'Prayer topics';
 
   @override
