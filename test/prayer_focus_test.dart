@@ -26,6 +26,22 @@ const _room = PrayerRoom(
   lastEnteredAt: null,
 );
 
+Future<void> _pumpFocus(WidgetTester tester, AppDatabase db) async {
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [databaseProvider.overrideWithValue(db)],
+      child: const MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: PrayerFocusScreen(room: _room),
+      ),
+    ),
+  );
+  // Fixed pump only: the breathing mark animates forever, so pumpAndSettle
+  // would never settle.
+  await tester.pump(const Duration(milliseconds: 400));
+}
+
 void main() {
   testWidgets('inner room: presence mode begins, steps away, returns, rests',
       (tester) async {
@@ -35,17 +51,7 @@ void main() {
     final db = AppDatabase.forTesting(NativeDatabase.memory());
     addTearDown(db.close);
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [databaseProvider.overrideWithValue(db)],
-        child: const MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: PrayerFocusScreen(room: _room),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await _pumpFocus(tester, db);
 
     final l = AppLocalizations.of(
         tester.element(find.byType(PrayerFocusScreen)))!;
@@ -82,5 +88,42 @@ void main() {
         .get();
     expect(todays, isNotEmpty, reason: 'resting logs a gentle record');
     expect(todays.first.minutes, greaterThan(0));
+  });
+
+  testWidgets('gentle time softly calls the presence to a close, then Continue',
+      (tester) async {
+    if (!_canOpenSqlite()) {
+      return markTestSkipped('sqlite3 native library unavailable on this host');
+    }
+    final db = AppDatabase.forTesting(NativeDatabase.memory());
+    addTearDown(db.close);
+
+    await _pumpFocus(tester, db);
+
+    final l = AppLocalizations.of(
+        tester.element(find.byType(PrayerFocusScreen)))!;
+
+    // Pick a 5-minute gentle time, then Begin.
+    await tester.tap(find.widgetWithText(ChoiceChip, '5'));
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.tap(find.widgetWithText(ElevatedButton, l.beginPresence));
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(find.widgetWithText(ElevatedButton, l.stepAway), findsOneWidget);
+
+    // Let the gentle time run out.
+    await tester.pump(const Duration(minutes: 5, seconds: 1));
+    await tester.pump(const Duration(milliseconds: 100));
+
+    // The arrival card offers a quiet choice: Continue or Rest.
+    expect(find.text(l.timeComplete), findsOneWidget);
+    expect(find.widgetWithText(ElevatedButton, l.continueStill), findsOneWidget);
+    expect(find.widgetWithText(OutlinedButton, l.restNow), findsOneWidget);
+
+    // Continue flows back into open presence — no further gentle time.
+    await tester.tap(find.widgetWithText(ElevatedButton, l.continueStill));
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(find.widgetWithText(ElevatedButton, l.stepAway), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsNothing,
+        reason: 'after Continue the ring is gone and presence is open');
   });
 }

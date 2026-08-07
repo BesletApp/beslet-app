@@ -255,6 +255,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get prayerRestLogged => 'You rested here. That matters.';
 
   @override
+  String get noTimer => 'No timer';
+
+  @override
+  String get prayerTimeLabel => 'Time';
+
+  @override
+  String get timeComplete => 'Time is complete';
+
+  @override
+  String get continueStill => 'Continue';
+
+  @override
   String get noSkillsYet => 'No skills yet';
 
   @override

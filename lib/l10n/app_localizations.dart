@@ -584,6 +584,30 @@ abstract class AppLocalizations {
   /// **'You rested here. That matters.'**
   String get prayerRestLogged;
 
+  /// No description provided for @noTimer.
+  ///
+  /// In en, this message translates to:
+  /// **'No timer'**
+  String get noTimer;
+
+  /// No description provided for @prayerTimeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get prayerTimeLabel;
+
+  /// No description provided for @timeComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Time is complete'**
+  String get timeComplete;
+
+  /// No description provided for @continueStill.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get continueStill;
+
   /// No description provided for @noSkillsYet.
   ///
   /// In en, this message translates to:

@@ -12,8 +12,9 @@ import '../../l10n/app_localizations.dart';
 
 /// The inner room (Matthew 6:6). A full-screen threshold where the user turns
 /// from the day into a single named presence before God. No numbers, no
-/// chrome — just the room, a still mark, and the quiet verbs of prayer:
-/// Begin, Step away, Return, Rest.
+/// chrome — just the room, a quietly breathing mark, and the simple verbs of
+/// prayer: Begin, Step away, Return, Rest. An optional gentle time softly
+/// calls the presence to a close; the room always lets you Continue or Rest.
 class PrayerFocusScreen extends ConsumerStatefulWidget {
   final PrayerRoom room;
   const PrayerFocusScreen({super.key, required this.room});
@@ -22,23 +23,40 @@ class PrayerFocusScreen extends ConsumerStatefulWidget {
   ConsumerState<PrayerFocusScreen> createState() => _PrayerFocusScreenState();
 }
 
+/// Gentle-time choices, in minutes. Picking none means open presence.
+const List<int> _presets = [5, 10, 15, 20, 30];
+
 class _PrayerFocusScreenState extends ConsumerState<PrayerFocusScreen>
-    with WidgetsBindingObserver {
+    with WidgetsBindingObserver, SingleTickerProviderStateMixin {
   DateTime? _runningSince;
   Duration _elapsed = Duration.zero;
   bool _isRunning = false;
   bool _showTime = false;
   Timer? _timer;
 
+  // Optional gentle time. null = open presence.
+  int? _gentleMinutes;
+  int? _totalSeconds;
+  int? _remainingSeconds;
+  bool _arrival = false;
+
+  late final AnimationController _breath;
+  late final Animation<double> _breathScale;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _breath = AnimationController(vsync: this, duration: const Duration(seconds: 4))
+      ..repeat(reverse: true);
+    _breathScale = Tween(begin: 0.96, end: 1.04)
+        .animate(CurvedAnimation(parent: _breath, curve: Curves.easeInOut));
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _breath.dispose();
     _timer?.cancel();
     _sleep();
     super.dispose();
@@ -56,6 +74,13 @@ class _PrayerFocusScreenState extends ConsumerState<PrayerFocusScreen>
   int get _feltSeconds => _runningSince != null
       ? _elapsed.inSeconds + DateTime.now().difference(_runningSince!).inSeconds
       : _elapsed.inSeconds;
+
+  double? get _countdownFraction {
+    final total = _totalSeconds;
+    final remaining = _remainingSeconds;
+    if (total == null || remaining == null || total == 0) return null;
+    return (remaining / total).clamp(0.0, 1.0);
+  }
 
   Future<void> _keepAwake() async {
     try {
@@ -76,19 +101,57 @@ class _PrayerFocusScreenState extends ConsumerState<PrayerFocusScreen>
   void _tick() {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) setState(() {});
+      if (!mounted) return;
+      if (_remainingSeconds != null) {
+        final next = _remainingSeconds! - 1;
+        if (next <= 0) {
+          _arrive();
+          return;
+        }
+        setState(() => _remainingSeconds = next);
+      } else {
+        setState(() {});
+      }
     });
   }
 
   void _begin() {
+    final minutes = _gentleMinutes;
     setState(() {
       _isRunning = true;
       _runningSince = DateTime.now();
       _elapsed = Duration.zero;
+      _arrival = false;
+      _totalSeconds = minutes == null ? null : minutes * 60;
+      _remainingSeconds = minutes == null ? null : minutes * 60;
     });
     _keepAwake();
     _tick();
     ref.read(prayerRoomNotifierProvider.notifier).touchRoom(widget.room.id);
+  }
+
+  void _arrive() {
+    _timer?.cancel();
+    _sleep();
+    setState(() {
+      _arrival = true;
+      _isRunning = false;
+      _runningSince = null;
+      _remainingSeconds = 0;
+    });
+  }
+
+  void _continueAfterArrival() {
+    setState(() {
+      _arrival = false;
+      _gentleMinutes = null;
+      _totalSeconds = null;
+      _remainingSeconds = null;
+      _isRunning = true;
+      _runningSince = DateTime.now();
+    });
+    _keepAwake();
+    _tick();
   }
 
   void _pausePresence() {
@@ -203,7 +266,7 @@ class _PrayerFocusScreenState extends ConsumerState<PrayerFocusScreen>
   }
 
   Widget _presenceMark(ThemePalette c) {
-    return Container(
+    final mark = Container(
       width: 120, height: 120,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
@@ -219,27 +282,130 @@ class _PrayerFocusScreenState extends ConsumerState<PrayerFocusScreen>
           ),
         ],
       ),
-      child: Center(child: Text(_isRunning ? '🕊️' : '🕯️', style: const TextStyle(fontSize: 40))),
+      child: Center(
+          child: Text(_isRunning ? '🕊️' : '🕯️', style: const TextStyle(fontSize: 40))),
+    );
+    final breathing = ScaleTransition(scale: _breathScale, child: mark);
+    final fraction = _countdownFraction;
+    if (fraction == null) return breathing;
+    return SizedBox(
+      width: 136, height: 136,
+      child: Stack(alignment: Alignment.center, children: [
+        SizedBox(
+          width: 136, height: 136,
+          child: CircularProgressIndicator(
+            value: fraction,
+            strokeWidth: 3,
+            strokeCap: StrokeCap.round,
+            color: AppColors.primary,
+            backgroundColor: c.border,
+          ),
+        ),
+        breathing,
+      ]),
     );
   }
 
   Widget _buildControls(AppLocalizations l, ThemePalette c) {
-    final idle = !_isRunning && _runningSince == null;
-    if (idle) {
-      return SizedBox(
-        width: double.infinity, height: 56,
-        child: ElevatedButton.icon(
-          onPressed: _begin,
-          icon: const Icon(Icons.play_arrow, color: Color(0xFF07090E)),
-          label: Text(l.beginPresence,
-              style: AppTextStyles.of(context).labelLarge.copyWith(color: Color(0xFF07090E), fontSize: 15)),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          ),
+    if (_arrival) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: c.card,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: c.border),
         ),
+        child: Column(children: [
+          Text(l.timeComplete, style: AppTextStyles.of(context).displaySmall),
+          const SizedBox(height: 16),
+          Row(children: [
+            Expanded(
+              child: SizedBox(
+                height: 52,
+                child: ElevatedButton.icon(
+                  onPressed: _continueAfterArrival,
+                  icon: const Icon(Icons.play_arrow, color: Color(0xFF07090E)),
+                  label: Text(l.continueStill,
+                      style: AppTextStyles.of(context).labelLarge.copyWith(color: Color(0xFF07090E), fontSize: 14)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: SizedBox(
+                height: 52,
+                child: OutlinedButton.icon(
+                  onPressed: _rest,
+                  icon: const Icon(Icons.stop),
+                  label: Text(l.restNow,
+                      style: AppTextStyles.of(context).labelLarge.copyWith(fontSize: 14)),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: c.textSecondary,
+                    side: BorderSide(color: c.border),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                ),
+              ),
+            ),
+          ]),
+        ]),
       );
     }
+
+    final idle = !_isRunning && _runningSince == null;
+    if (idle) {
+      return Column(children: [
+        Text(l.prayerTimeLabel,
+            style: AppTextStyles.of(context).labelSmall.copyWith(color: c.textMuted)),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8, runSpacing: 8, alignment: WrapAlignment.center,
+          children: [
+            ChoiceChip(
+              label: Text(l.noTimer, style: AppTextStyles.of(context).bodySmall),
+              selected: _gentleMinutes == null,
+              onSelected: (_) => setState(() => _gentleMinutes = null),
+              selectedColor: AppColors.primary.withValues(alpha: 0.2),
+              backgroundColor: c.surface,
+              side: BorderSide(
+                  color: _gentleMinutes == null ? AppColors.primary : c.border),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            ),
+            for (final m in _presets)
+              ChoiceChip(
+                label: Text('$m', style: AppTextStyles.of(context).bodySmall),
+                selected: _gentleMinutes == m,
+                onSelected: (_) => setState(() => _gentleMinutes = m),
+                selectedColor: AppColors.primary.withValues(alpha: 0.2),
+                backgroundColor: c.surface,
+                side: BorderSide(
+                    color: _gentleMinutes == m ? AppColors.primary : c.border),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity, height: 56,
+          child: ElevatedButton.icon(
+            onPressed: _begin,
+            icon: const Icon(Icons.play_arrow, color: Color(0xFF07090E)),
+            label: Text(l.beginPresence,
+                style: AppTextStyles.of(context).labelLarge.copyWith(color: Color(0xFF07090E), fontSize: 15)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+          ),
+        ),
+      ]);
+    }
+
     final primaryAction = _isRunning ? _pausePresence : _returnHere;
     final primaryLabel = _isRunning ? l.stepAway : l.returnHere;
     return Row(children: [

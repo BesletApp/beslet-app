@@ -254,6 +254,18 @@ class AppLocalizationsAm extends AppLocalizations {
   String get prayerRestLogged => 'እዚህ አረፍክ። ይህ ጠቃሚ ነው።';
 
   @override
+  String get noTimer => 'ሰዓት ቆጣሪ የለም';
+
+  @override
+  String get prayerTimeLabel => 'ጊዜ';
+
+  @override
+  String get timeComplete => 'ጊዜው ተጠናቋል';
+
+  @override
+  String get continueStill => 'ቀጥል';
+
+  @override
   String get noSkillsYet => 'ምንም ክህሎቶች የሉም';
 
   @override
