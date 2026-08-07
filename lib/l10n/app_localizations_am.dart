@@ -970,6 +970,24 @@ class AppLocalizationsAm extends AppLocalizations {
   String get beginWithWord => 'በመጀመሪያ በቃሉ ጀምር';
 
   @override
+  String get dayStaysOpen => 'ቀኑ ክፍት ሆኖ ይቀጥላል';
+
+  @override
+  String toneDoneQuiet(Object name) {
+    return 'ቀኑ የአንተ ነው፣ $name። መጓዝህን ቀጥል።';
+  }
+
+  @override
+  String toneDoneWarm(Object name) {
+    return 'ጥሩ ጅምር፣ $name። በውስጡ መጓዝህን ቀጥል።';
+  }
+
+  @override
+  String toneDoneStill(Object name) {
+    return 'እዚህ ነህ፣ $name። መጓዝህን ቀጥል።';
+  }
+
+  @override
   String get prayWhatYouRead => 'ያነበብከውን መሠረት አድርገህ ጸልይ';
 
   @override

@@ -103,7 +103,7 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
                   : ListView(
                       padding: EdgeInsets.zero,
                       children: [
-                        ...todos.map((t) => _buildTodoTile(t, allDone && isEvening)),
+                        ...todos.map((t) => _buildTodoTile(t)),
                         const SizedBox(height: 12),
                       ],
                     ),
@@ -242,7 +242,7 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
     );
   }
 
-  Widget _buildTodoTile(TodoItem todo, bool isReadOnly) {
+  Widget _buildTodoTile(TodoItem todo) {
     final isDone = todo.isCompleted;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -263,7 +263,7 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
           child: const Icon(Icons.delete_outline, color: Colors.white),
         ),
         child: GestureDetector(
-          onLongPress: isReadOnly ? null : () => _showTaskActions(todo),
+          onLongPress: () => _showTaskActions(todo),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             decoration: BoxDecoration(
@@ -273,7 +273,7 @@ class _DailyTodoScreenState extends ConsumerState<DailyTodoScreen> {
             ),
             child: ListTile(
               leading: GestureDetector(
-                onTap: isReadOnly ? null : () => _toggle(todo.id, todo.title, !isDone),
+                onTap: () => _toggle(todo.id, todo.title, !isDone),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   width: 28, height: 28,

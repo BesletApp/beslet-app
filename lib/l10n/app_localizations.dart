@@ -1874,6 +1874,30 @@ abstract class AppLocalizations {
   /// **'Begin with the Word first'**
   String get beginWithWord;
 
+  /// No description provided for @dayStaysOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'The day stays open'**
+  String get dayStaysOpen;
+
+  /// No description provided for @toneDoneQuiet.
+  ///
+  /// In en, this message translates to:
+  /// **'The day is yours, {name}. Keep walking.'**
+  String toneDoneQuiet(Object name);
+
+  /// No description provided for @toneDoneWarm.
+  ///
+  /// In en, this message translates to:
+  /// **'Great start, {name}. Keep walking in it.'**
+  String toneDoneWarm(Object name);
+
+  /// No description provided for @toneDoneStill.
+  ///
+  /// In en, this message translates to:
+  /// **'You are here, {name}. Keep walking.'**
+  String toneDoneStill(Object name);
+
   /// No description provided for @prayWhatYouRead.
   ///
   /// In en, this message translates to:

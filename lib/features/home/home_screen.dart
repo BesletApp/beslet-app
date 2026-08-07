@@ -582,7 +582,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
       return _buildSabbathContent(profile, l);
     }
     if (allComplete) {
-      return _buildCelebrationCard(profile, userName, tone, l);
+      // The day is never "finished" — celebration is a soft banner above the
+      // still-open flow, never a replacement for it.
+      return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        _buildSoftDoneBanner(profile, userName, tone, l),
+        SizedBox(height: _h(AppSpacing.zoneGap)),
+        _buildFlowCard(profile, flow, plan, l),
+      ]);
     }
     return _buildFlowCard(profile, flow, plan, l);
   }
@@ -823,28 +829,41 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
     );
   }
 
-  Widget _buildCelebrationCard(ExperienceProfile profile, String userName, ToneService tone, AppLocalizations l) {
+  Widget _buildSoftDoneBanner(ExperienceProfile profile, String userName, ToneService tone, AppLocalizations l) {
     final c = AppColors.of(context);
     final msg = tone.completionMessage(l, userName);
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(_h(AppSpacing.lg)),
+      padding: EdgeInsets.all(_h(AppSpacing.md)),
       decoration: BoxDecoration(
-        color: c.cardElevated,
+        color: profile.colors.stepComplete.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: profile.colors.stepComplete.withValues(alpha: 0.3)),
+        border: Border.all(color: profile.colors.stepComplete.withValues(alpha: 0.35)),
       ),
-      child: Column(children: [
-        Text('🎉', style: const TextStyle(fontSize: 24)),
-        SizedBox(height: _h(AppSpacing.sm)),
-        Text(
-          msg,
-          style: AppTextStyles.of(context).displaySmall.copyWith(
-            color: profile.colors.stepComplete,
-            fontWeight: FontWeight.w600,
-            height: 1.3,
-          ),
-          textAlign: TextAlign.center,
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const Text('🎉', style: TextStyle(fontSize: 18)),
+        SizedBox(width: _h(AppSpacing.sm)),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(
+              l.dayStaysOpen,
+              style: AppTextStyles.of(context).bodySmall.copyWith(
+                color: profile.colors.stepComplete,
+                fontWeight: FontWeight.w700,
+                fontSize: 11,
+                letterSpacing: 0.4,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              msg,
+              style: AppTextStyles.of(context).bodyMedium.copyWith(
+                color: c.textPrimary,
+                fontWeight: FontWeight.w600,
+                height: 1.35,
+              ),
+            ),
+          ]),
         ),
       ]),
     );

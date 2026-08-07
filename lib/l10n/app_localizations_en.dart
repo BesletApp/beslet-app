@@ -979,6 +979,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get beginWithWord => 'Begin with the Word first';
 
   @override
+  String get dayStaysOpen => 'The day stays open';
+
+  @override
+  String toneDoneQuiet(Object name) {
+    return 'The day is yours, $name. Keep walking.';
+  }
+
+  @override
+  String toneDoneWarm(Object name) {
+    return 'Great start, $name. Keep walking in it.';
+  }
+
+  @override
+  String toneDoneStill(Object name) {
+    return 'You are here, $name. Keep walking.';
+  }
+
+  @override
   String get prayWhatYouRead => 'Pray based on what you read';
 
   @override

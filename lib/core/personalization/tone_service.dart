@@ -57,14 +57,12 @@ class ToneService {
   }
 
   String completionMessage(AppLocalizations l, String name) {
-    final tone = _tone;
     final displayName = name.isNotEmpty ? name : 'you';
-    final messages = [
-      'Beautiful, $displayName.',
-      'Well done, $displayName.',
-      'You showed up. That is enough, $displayName.',
-    ];
-    return messages[tone];
+    return switch (_tone) {
+      0 => l.toneDoneQuiet(displayName),
+      2 => l.toneDoneStill(displayName),
+      _ => l.toneDoneWarm(displayName),
+    };
   }
 
   String emptyState(String area) {
