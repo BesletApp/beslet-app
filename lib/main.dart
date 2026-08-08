@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,8 +19,7 @@ import 'core/providers/database_provider.dart';
 import 'core/providers/user_provider.dart';
 
 void main() async {
-  final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
-  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  WidgetsFlutterBinding.ensureInitialized();
 
   tzdata.initializeTimeZones();
   tz.setLocalLocation(tz.getLocation('Africa/Addis_Ababa'));
@@ -50,15 +50,18 @@ void main() async {
     ),
   );
 
-  // The native icon is dismissed the moment Flutter draws its first frame.
+  // The splash is removed immediately (no deferred first frame) and again a
+  // moment later as a fallback, so a stuck renderer or channel can never trap
+  // the app on the native launch image.
+  FlutterNativeSplash.remove();
+  unawaited(Future<void>.delayed(const Duration(seconds: 2), FlutterNativeSplash.remove));
+
   // Everything plugin-bound then warms up in the background, each step
   // time-boxed so a hung platform channel can never trap the app again.
-  WidgetsBinding.instance.addPostFrameCallback((_) => _warmStart(container));
+  unawaited(_warmStart(container));
 }
 
 Future<void> _warmStart(ProviderContainer container) async {
-  FlutterNativeSplash.remove();
-
   await _attempt(() => NotificationService.init());
   NotificationService.navigateTo = (route) => AppRouter.router.go(route);
   await _attempt(() async {
@@ -92,7 +95,7 @@ Future<void> _warmStart(ProviderContainer container) async {
 }
 
 /// Runs a startup step with a hard time box so a slow or hung platform call
-/// can never block the app or the splash from dismissing.
+/// can never block the app from rendering.
 Future<void> _attempt(
   Future<void> Function() step, {
   Duration timeout = const Duration(seconds: 3),
