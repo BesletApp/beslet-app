@@ -21,10 +21,10 @@ class _PrayerSlot {
 }
 
 const List<_PrayerSlot> _prayerSlots = [
-  _PrayerSlot('dawn', 'Dawn · 6:00', 'ንጋት · 6:00', 6, 0),
-  _PrayerSlot('noon', 'Noon · 12:00', 'እኩለ ቀን · 12:00', 12, 0),
-  _PrayerSlot('dusk', 'Dusk · 18:00', 'ምሽት · 18:00', 18, 0),
-  _PrayerSlot('evening', 'Evening · 21:00', 'ማታ · 21:00', 21, 0),
+  _PrayerSlot('dawn', 'Morning · 6:00', 'ጥዋት · 6:00', 6, 0),
+  _PrayerSlot('noon', 'Midday · 12:00', 'እኩለ ቀን · 12:00', 12, 0),
+  _PrayerSlot('dusk', 'Evening · 18:00', 'ምሽት · 18:00', 18, 0),
+  _PrayerSlot('evening', 'Before sleep · 21:00', 'ከመተኛቱ በፊት · 21:00', 21, 0),
 ];
 
 class OnboardingScreen extends ConsumerStatefulWidget {
@@ -39,10 +39,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   int _page = 0;
   String _biblePlan = 'nt';
   bool _isAm = false;
+  String? _gender;
+  String? _spiritualIntent;
   final Set<String> _selectedSlots = {};
   final List<({int hour, int minute})> _customTimes = [];
 
-  static const _pages = 5;
+  /// Dynamic page count: gender page only appears for Amharic users.
+  int get _pages => _isAm ? 7 : 6;
 
   @override
   void dispose() {
@@ -60,6 +63,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         name: _nameController.text.isEmpty ? 'Friend' : _nameController.text,
         biblePlan: _biblePlan,
         lang: _isAm ? 'am' : 'en',
+        gender: Value(_gender),
+        spiritualIntent: Value(_spiritualIntent),
         onboarded: true,
       ));
     } else {
@@ -68,6 +73,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         name: Value(_nameController.text.isEmpty ? 'Friend' : _nameController.text),
         biblePlan: Value(_biblePlan),
         lang: Value(_isAm ? 'am' : 'en'),
+        gender: Value(_gender),
+        spiritualIntent: Value(_spiritualIntent),
         onboarded: Value(true),
       ));
     }
@@ -129,6 +136,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   _buildHowItWorksPage(l, c),
                   _buildSetupPage(l, c),
                   _buildPrayerRhythmPage(l, c),
+                  if (_isAm) _buildGenderPage(l, c),
+                  _buildIntentPage(l, c),
                   _buildCtaPage(l, c),
                 ],
               ),
@@ -150,13 +159,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               ),
             if (_page == 0)
               _buildBottomButton(l, 'Start', () => _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut)),
-            if (_page == 1)
+            if (_page == 1 || _page == 2 || _page == 3)
               _buildBottomButton(l, 'Next', () => _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut)),
-            if (_page == 2)
+            if (_page == 4 && _isAm)
+              _buildBottomButton(l, 'Next', () => _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut), enabled: _gender != null),
+            if (_page == 4 && !_isAm)
               _buildBottomButton(l, 'Next', () => _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut)),
-            if (_page == 3)
-              _buildBottomButton(l, 'Done', () => _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut)),
-            if (_page == 4)
+            if (_page == 5 && _isAm)
+              _buildBottomButton(l, 'Next', () => _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut)),
+            if (_page == _pages - 1)
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
                 child: SizedBox(
@@ -169,7 +180,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     ),
-                    child: Text(_isAm ? 'ክረምትህን ጀምር' : 'Start your summer', style: TextStyle(fontFamily: 'Inter', fontSize: 15, fontWeight: FontWeight.w700)),
+                    child: Text(_isAm ? 'ዕለታዊ አብሮነትህን ጀምር' : 'Begin your daily walk', style: TextStyle(fontFamily: 'Inter', fontSize: 15, fontWeight: FontWeight.w700)),
                   ),
                 ),
               ),
@@ -179,13 +190,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  Widget _buildBottomButton(AppLocalizations l, String label, VoidCallback onTap) {
+  Widget _buildBottomButton(AppLocalizations l, String label, VoidCallback onTap, {bool enabled = true}) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
       child: SizedBox(
         width: double.infinity,
         child: ElevatedButton(
-          onPressed: onTap,
+          onPressed: enabled ? onTap : null,
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primary,
             foregroundColor: const Color(0xFF0A0A0A),
@@ -201,8 +212,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget _buildWelcomePage(AppLocalizations l, ThemePalette c) {
     final h = _isAm ? 'እንኳን ወደ ብስለት በደህና መጡ!' : 'Welcome to ብስለት';
     final subtitle = _isAm
-        ? 'በዚህ ክረምት በአራት ምሰሶች እድገትህን ገንባ፦ መንፈሳዊ፣ ክህሎቶች፣ ህብረት፣ ቤተሰብ'
-        : 'Grow intentionally this summer through 4 pillars: Spiritual, Skills, Fellowship, Family';
+        ? 'ይህ በእግዚአብሔር ዕለታዊ አብሮነት ነው — ቃል፣ ጸሎት እና የተሞላ ህይወት'
+        : 'A daily companion for your walk with God — Word, prayer, and a purposeful life.';
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -502,6 +513,125 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     setState(() => _customTimes.add((hour: time.hour, minute: time.minute)));
   }
 
+  Widget _buildGenderPage(AppLocalizations l, ThemePalette c) {
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(_isAm ? 'ለግል ብጁ ንግግር' : 'Personal tone',
+              style: AppTextStyles.displaySmall),
+          const SizedBox(height: 8),
+          Text(
+            _isAm
+                ? 'አማርኛ በሚጠቀሙበት መንገድ ለመናገር የፆታ ምርጫህ ይረዳናል።'
+                : 'Knowing this helps the app speak to you in your language, the way Amharic addresses you naturally.',
+            style: AppTextStyles.bodyMedium.copyWith(color: c.textSecondary, height: 1.5, fontSize: 13),
+          ),
+          const SizedBox(height: 24),
+          _genderOption('male', _isAm ? 'ወንድ' : 'Male', c),
+          const SizedBox(height: 10),
+          _genderOption('female', _isAm ? 'ሴት' : 'Female', c),
+        ],
+      ),
+    );
+  }
+
+  Widget _genderOption(String id, String label, ThemePalette c) {
+    final selected = _gender == id;
+    return GestureDetector(
+      onTap: () => setState(() => _gender = id),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.primary.withValues(alpha: 0.1) : c.card,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+              color: selected ? AppColors.primary : c.border,
+              width: selected ? 1.5 : 1),
+        ),
+        child: Row(
+          children: [
+            Icon(selected ? Icons.radio_button_checked : Icons.radio_button_off,
+                size: 18,
+                color: selected ? AppColors.primary : c.textMuted),
+            const SizedBox(width: 10),
+            Text(label,
+                style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 13,
+                    color: selected ? c.textPrimary : c.textSecondary)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIntentPage(AppLocalizations l, ThemePalette c) {
+    final options = [
+      ('grow_in_prayer', '🙏', _isAm ? 'በጸሎት ማደግ' : 'Grow in prayer'),
+      ('consistent_bible', '📖', _isAm ? 'በቃሉ ተከታታይ' : 'Be consistent in the Word'),
+      ('disciplined_daily', '🌱', _isAm ? 'በየቀኑ ተግሣጽ' : 'Live each day with purpose'),
+    ];
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(_isAm ? 'ዛሬ ምን ትፈልጋለህ?' : 'What do you want to grow in?',
+              style: AppTextStyles.displaySmall),
+          const SizedBox(height: 8),
+          Text(
+            _isAm
+                ? 'አንድ ትኩረት ምረጥ — ቀስ በቀስ የእለት ተእለት መሪ ይሆናል።'
+                : 'Choose one focus — it gently shapes your daily rhythm. You can always change it later.',
+            style: AppTextStyles.bodyMedium.copyWith(color: c.textSecondary, height: 1.5, fontSize: 13),
+          ),
+          const SizedBox(height: 24),
+          ...options.map((o) => _intentOption(o.$1, o.$2, o.$3, c)),
+        ],
+      ),
+    );
+  }
+
+  Widget _intentOption(String id, String emoji, String label, ThemePalette c) {
+    final selected = _spiritualIntent == id;
+    return GestureDetector(
+      onTap: () => setState(() => _spiritualIntent = id),
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.primary.withValues(alpha: 0.1) : c.card,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+              color: selected ? AppColors.primary : c.border,
+              width: selected ? 1.5 : 1),
+        ),
+        child: Row(
+          children: [
+            Text(emoji, style: const TextStyle(fontSize: 18)),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(label,
+                  style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 13,
+                      color: selected ? c.textPrimary : c.textSecondary)),
+            ),
+            Icon(selected ? Icons.radio_button_checked : Icons.radio_button_off,
+                size: 18,
+                color: selected ? AppColors.primary : c.textMuted),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildCtaPage(AppLocalizations l, ThemePalette c) {
     return Padding(
       padding: const EdgeInsets.all(24),
@@ -515,6 +645,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           Text(
             _isAm ? 'የብስለት ጉዞህ ዛሬ ይጀምራል።' : 'Your journey of maturity begins today.',
             style: AppTextStyles.bodyLarge.copyWith(color: c.textSecondary),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            _isAm ? 'በየቀኑ ቃሉን፣ ጸሎትን እና ዓላማህን ይዘህ ትሄዳለህ።' : 'Each day you will walk with the Word, prayer, and purpose.',
+            style: AppTextStyles.bodySmall.copyWith(color: c.textSecondary.withValues(alpha: 0.7)),
             textAlign: TextAlign.center,
           ),
         ],

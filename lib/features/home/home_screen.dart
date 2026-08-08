@@ -19,6 +19,7 @@ import '../../core/providers/tracking_provider.dart';
 import '../../core/providers/prayer_provider.dart';
 import '../../core/providers/daily_flow_provider.dart';
 import '../../core/providers/scripture_provider.dart';
+import '../../core/providers/word_challenge_provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../core/providers/fellowship_provider.dart';
 import '../../core/providers/streak_provider.dart';
@@ -27,7 +28,6 @@ import '../../core/services/scene_event_bus.dart';
 import '../../core/emotional/mood_content.dart';
 import '../../services/update_checker.dart';
 import '../../shared/widgets/error_card.dart';
-import '../../shared/widgets/enkutatash_overlay.dart';
 import '../../core/widgets/zone_layout.dart';
 import '../../core/widgets/brand_mark.dart';
 import '../word_challenge/verse_builder_loop.dart';
@@ -77,7 +77,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
     _pulseCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500));
     _checkForUpdates();
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkCommunityPrompt());
-    WidgetsBinding.instance.addPostFrameCallback((_) => _checkEnkutatash());
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkLampInvitation());
     WidgetsBinding.instance.addPostFrameCallback((_) => _startStaggerOnce());
   }
@@ -148,23 +147,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
       Uri.parse('https://t.me/besletcommunity'),
       mode: LaunchMode.externalApplication,
     );
-  }
-
-  Future<void> _checkEnkutatash() async {
-    final now = DateTime.now();
-    if (now.month != 9 || now.day != 11) return;
-    if (now.year != 2026) return;
-    final prefs = await SharedPreferences.getInstance();
-    final shown = prefs.getBool('enkutatashShown') ?? false;
-    if (!shown && mounted) {
-      await prefs.setBool('enkutatashShown', true);
-      if (!mounted) return;
-      final nav = Navigator.of(context);
-      nav.push(MaterialPageRoute(
-        fullscreenDialog: true,
-        builder: (_) => EnkutatashOverlay(onDismiss: () => nav.pop()),
-      ));
-    }
   }
 
   Future<void> _checkLampInvitation() async {
@@ -290,6 +272,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
     final todayFellowship = ref.watch(todayFellowshipProvider);
     final flow = ref.watch(dailyFlowProvider);
     final biblePlan = ref.watch(todayBiblePlanProvider);
+    final todayWord = ref.watch(todayWordChallengeProvider).valueOrNull;
     final tone = ref.watch(toneServiceProvider);
     final engine = ref.watch(personalizationEngineProvider);
 
@@ -304,10 +287,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
       data: (user) {
         final tracking = trackingAsync.valueOrNull;
         final skillsMin = tracking?.skillsMinutes ?? 0;
-        final inSummer = SummerService.isInSummer;
-        final daysElapsed = SummerService.daysElapsed;
-        final daysRemaining = SummerService.daysRemaining;
-        final totalDays = SummerService.totalSummerDays;
         final connectedToday = todayFellowship.valueOrNull != null;
         final streak = tracking?.streak ?? 0;
 
@@ -366,11 +345,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 child: ZoneLayout(
-                  orientation: _buildStaggered(0, _buildGreetingBlock(profile, user, inSummer, daysElapsed, totalDays, daysRemaining, l, tone, streak, streakState?.isAtRisk ?? false, todaySoulLog?.mood)),
+                  orientation: _buildStaggered(0, _buildGreetingBlock(profile, user, l, tone, streak, streakState?.isAtRisk ?? false, todaySoulLog?.mood)),
                   primary: _buildStaggered(1, _buildPrimaryStepCard(
                     profile, flow,
                     streakState?.isSabbathToday ?? false, allComplete, user.name, tone, l,
-                    biblePlan,
+                    biblePlan, todayWord,
                   )),
                   support: _buildStaggered(2, _buildRhythmSurface(
                     profile, skillsMin, connectedToday, todaySoulLog, l,
@@ -398,42 +377,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
     );
   }
 
-  Widget _buildGreetingBlock(ExperienceProfile profile, User user, bool inSummer, int daysElapsed, int totalDays, int daysRemaining, AppLocalizations l, ToneService tone, int streak, bool isAtRisk, int? currentMood) {
+  Widget _buildGreetingBlock(ExperienceProfile profile, User user, AppLocalizations l, ToneService tone, int streak, bool isAtRisk, int? currentMood) {
     final hour = DateTime.now().hour;
-    final greeting = tone.greeting(l, hour);
+    final greeting = tone.greeting(l, hour, gender: user.gender);
     final name = user.name.split(' ').first;
     final c = AppColors.of(context);
+
+    final seasonLine = _isAm
+        ? SummerService.seasonFor(DateTime.now()).am
+        : SummerService.seasonFor(DateTime.now()).en;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(children: [
-          if (inSummer)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
-              decoration: BoxDecoration(
-                color: AppColors.of(context).primary.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.of(context).primary.withValues(alpha: 0.25)),
-              ),
-              child: Text(l.summerDayCount(daysElapsed, daysRemaining, totalDays),
-                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.of(context).primary, fontSize: 11)),
-            )
-          else
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
-              decoration: BoxDecoration(
-                color: AppColors.of(context).primary.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.of(context).primary.withValues(alpha: 0.25)),
-              ),
-              child: Text(SummerService.outsideMessage,
-                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.of(context).primary, fontSize: 11)),
-            ),
           const Spacer(),
           BrandMark(size: 30, color: AppColors.of(context).primary),
         ]),
-        SizedBox(height: _h(AppSpacing.md)),
+        SizedBox(height: _h(AppSpacing.sm)),
+        Text(
+          seasonLine,
+          style: AppTextStyles.bodySmall.copyWith(
+            color: c.textSecondary.withValues(alpha: 0.45),
+            fontSize: 11,
+          ),
+        ),
+        SizedBox(height: _h(AppSpacing.sm)),
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -579,7 +548,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
   Widget _buildPrimaryStepCard(
     ExperienceProfile profile, DailyFlow flow, bool isSabbath,
     bool allComplete, String userName, ToneService tone, AppLocalizations l,
-    TodayReadingPlan plan,
+    TodayReadingPlan plan, VerseChallengeData? todayWord,
   ) {
     if (isSabbath) {
       return _buildSabbathContent(profile, l);
@@ -590,10 +559,187 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
       return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         _buildSoftDoneBanner(profile, userName, tone, l),
         SizedBox(height: _h(AppSpacing.zoneGap)),
-        _buildFlowCard(profile, flow, plan, l),
+        if (todayWord == null)
+          _buildFlowCard(profile, flow, plan, l)
+        else
+          _buildWordRingCard(profile, flow, plan, l, todayWord, compact: true),
       ]);
     }
-    return _buildFlowCard(profile, flow, plan, l);
+    if (todayWord == null) {
+      return _buildFlowCard(profile, flow, plan, l);
+    }
+    return _buildWordRingCard(profile, flow, plan, l, todayWord);
+  }
+
+  Widget _buildWordRingCard(ExperienceProfile profile, DailyFlow flow, TodayReadingPlan plan, AppLocalizations l, VerseChallengeData todayWord, {bool compact = false}) {
+    final c = AppColors.of(context);
+    final acc = profile.colors.accent;
+
+    final verseText = _isAm && todayWord.textAm != null && todayWord.textAm!.isNotEmpty
+        ? todayWord.textAm!
+        : todayWord.textEn;
+
+    final request = todayWord.userPrayer;
+    final act = todayWord.chosenAct;
+
+    final steps = <_FlowStep>[
+      _FlowStep(
+        emoji: '📖',
+        title: _isAm ? 'መጽሐፍ ቅዱስ' : 'Bible',
+        subtitle: '${_isAm ? 'የዛሬ ንባብ' : "Today's reading"}: ${_isAm ? plan.labelAm : plan.labelEn}',
+        done: flow.bibleDone,
+        current: flow.currentStep == 0,
+        locked: flow.currentStep > 0,
+        onTap: () => _openFlowStep(true, '/bible?book=${plan.bookId}&chapter=${plan.chapter}'),
+      ),
+      _FlowStep(
+        emoji: '🙏',
+        title: _isAm ? 'ጸሎት' : 'Prayer',
+        subtitle: _isAm ? 'ያነበብከውን መሠረት አድርገህ ጸልይ' : 'Pray based on what you read',
+        done: flow.prayerDone,
+        current: flow.currentStep == 1,
+        locked: flow.currentStep > 1 || !flow.bibleDone,
+        onTap: () => _openFlowStep(flow.bibleDone, '/prayer', hint: l.beginWithWord),
+      ),
+      _FlowStep(
+        emoji: '🌱',
+        title: _isAm ? 'ተግባር' : 'Act',
+        subtitle: _isAm ? 'ተግባራት · ልምዶች · ክህሎት · ማህበር · ቤተሰብ' : 'Tasks · Habits · Skills · Fellowship · Family',
+        done: flow.actionDone,
+        current: flow.currentStep == 2,
+        locked: flow.currentStep > 2 || !(flow.bibleDone && flow.prayerDone),
+        onTap: () => _openFlowStep(
+          flow.bibleDone && flow.prayerDone,
+          '/daily-todo',
+          hint: _isAm ? 'በመጀመሪያ ቃሉ እና ጸሎት' : 'Begin with the Word and Prayer first',
+        ),
+      ),
+    ];
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(_h(AppSpacing.lg)),
+      decoration: BoxDecoration(
+        color: c.cardElevated,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: acc.withValues(alpha: 0.3), width: 1),
+        boxShadow: [
+          BoxShadow(color: acc.withValues(alpha: 0.08), blurRadius: 20, spreadRadius: 2),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            Expanded(
+              child: Text(
+                _isAm ? 'የዛሬ ቃልህ' : 'Your Word today',
+                style: AppTextStyles.of(context).displaySmall.copyWith(
+                  fontWeight: profile.visualWeight,
+                  color: c.textPrimary,
+                ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: acc.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: acc.withValues(alpha: 0.3)),
+              ),
+              child: Text(
+                todayWord.reference,
+                style: AppTextStyles.bodySmall.copyWith(fontSize: 11, fontWeight: FontWeight.w700, color: acc),
+              ),
+            ),
+          ]),
+          SizedBox(height: _h(AppSpacing.md)),
+          Text(
+            verseText,
+            style: _isAm
+                ? AppTextStyles.amharicBody.copyWith(fontSize: 17, color: c.textPrimary, height: 1.55)
+                : AppTextStyles.bodyLarge.copyWith(fontSize: 17, color: c.textPrimary, height: 1.55),
+          ),
+          if (request != null && request.isNotEmpty) ...[
+            SizedBox(height: _h(AppSpacing.md)),
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(_h(AppSpacing.sm)),
+              decoration: BoxDecoration(
+                color: acc.withValues(alpha: 0.06),
+                borderRadius: BorderRadius.circular(10),
+                border: Border(left: BorderSide(color: acc.withValues(alpha: 0.5), width: 3)),
+              ),
+              child: Text(
+                _isAm ? 'ጸሎትህ፦  $request' : 'You prayed:  $request',
+                style: AppTextStyles.bodySmall.copyWith(color: c.textSecondary, height: 1.45, fontSize: 12),
+              ),
+            ),
+          ],
+          if (act != null && act.isNotEmpty) ...[
+            SizedBox(height: _h(AppSpacing.sm)),
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(_h(AppSpacing.sm)),
+              decoration: BoxDecoration(
+                color: c.primary.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10),
+                border: Border(left: BorderSide(color: c.primary.withValues(alpha: 0.5), width: 3)),
+              ),
+              child: Text(
+                _isAm ? 'ዛሬ ማድረግእት የመረጥከው፦ $act' : "What you chose to live today:  $act",
+                style: AppTextStyles.bodySmall.copyWith(color: c.textSecondary, height: 1.45, fontSize: 12),
+              ),
+            ),
+          ],
+          if (!compact) ...[
+            SizedBox(height: _h(AppSpacing.md)),
+            Divider(height: 1, color: c.border.withValues(alpha: 0.5)),
+            SizedBox(height: _h(AppSpacing.sm)),
+            Row(children: [
+              Expanded(child: Text(l.todaysFlow, style: AppTextStyles.bodySmall.copyWith(fontSize: 12, fontWeight: FontWeight.w700, color: c.textMuted))),
+              Text(
+                '${flow.done}/${flow.total}',
+                style: AppTextStyles.bodySmall.copyWith(fontSize: 12, fontWeight: FontWeight.w700, color: acc),
+              ),
+            ]),
+            SizedBox(height: _h(AppSpacing.xs)),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: flow.total == 0 ? 0 : flow.done / flow.total,
+                minHeight: 4,
+                backgroundColor: c.border.withValues(alpha: 0.3),
+                valueColor: AlwaysStoppedAnimation(acc),
+              ),
+            ),
+          ],
+          SizedBox(height: _h(AppSpacing.sm)),
+          for (final s in steps) ...[
+            _buildFlowRow(profile, s, profile.colors.stepComplete),
+            SizedBox(height: _h(AppSpacing.xs)),
+          ],
+          if (flow.currentStep < flow.total)
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => steps[flow.currentStep].onTap(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: acc,
+                  foregroundColor: c.isDark ? const Color(0xFF07090E) : Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: _h(AppSpacing.sm + 4)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 0,
+                ),
+                child: Text(
+                  _currentStepCta(flow, l),
+                  style: AppTextStyles.labelLarge.copyWith(fontWeight: FontWeight.w600, fontSize: 16),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 
   Widget _buildFlowCard(ExperienceProfile profile, DailyFlow flow, TodayReadingPlan plan, AppLocalizations l) {

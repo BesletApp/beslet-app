@@ -15,13 +15,13 @@ class ToneService {
     return 1;
   }
 
-  String greeting(AppLocalizations l, int hour) {
+  String greeting(AppLocalizations l, int hour, {String? gender}) {
     final warmth = _engine.wasAwayForDays ? 2 : (_engine.isFirstSessionToday ? 1 : 0);
     final base = hour < 12
-        ? l.goodMorning
+        ? _goodMorning(l, gender)
         : hour < 18
-            ? l.goodAfternoon
-            : l.goodEvening;
+            ? _goodAfternoon(l, gender)
+            : _goodEvening(l, gender);
 
     if (_engine.appOpenCount == 1) return base;
 
@@ -30,6 +30,24 @@ class ToneService {
     if (warmth >= 2 && tone == 0) return '$base — welcome back';
     if (warmth >= 1 && tone == 0) return '$base — good to see you';
     return base;
+  }
+
+  String _goodMorning(AppLocalizations l, String? gender) {
+    if (gender == 'male') return l.goodMorningM;
+    if (gender == 'female') return l.goodMorningF;
+    return l.goodMorning;
+  }
+
+  String _goodAfternoon(AppLocalizations l, String? gender) {
+    if (gender == 'male') return l.goodAfternoonM;
+    if (gender == 'female') return l.goodAfternoonF;
+    return l.goodAfternoon;
+  }
+
+  String _goodEvening(AppLocalizations l, String? gender) {
+    if (gender == 'male') return l.goodEveningM;
+    if (gender == 'female') return l.goodEveningF;
+    return l.goodEvening;
   }
 
   String reflectionPrompt(AppLocalizations l, int index) {

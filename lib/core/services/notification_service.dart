@@ -177,9 +177,12 @@ class NotificationService {
   // ── Evening Review ─────────────────────────────────────────
   static Future<void> scheduleEveningReview() async {
     final prefs = await SharedPreferences.getInstance();
-    final already = prefs.getBool('eveningReviewScheduled') ?? false;
-    if (already) return;
-    await prefs.setBool('eveningReviewScheduled', true);
+    // The evening closing is a daily rhythm: re-armed once per calendar day
+    // so the greeting rotates from the pool each evening, never a stale one.
+    final today = DateTime.now().toIso8601String().substring(0, 10);
+    final lastArm = prefs.getString('eveningReviewLastDate');
+    if (lastArm == today) return;
+    await prefs.setString('eveningReviewLastDate', today);
 
     final pool = _isAmharicLang ? _eveningPoolAm : _eveningPoolEn;
     final i = await _nextIndex('eveningMsgIndex', pool.length);
@@ -194,7 +197,7 @@ class NotificationService {
 
   static Future<void> cancelEveningReview() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('eveningReviewScheduled', false);
+    await prefs.remove('eveningReviewLastDate');
     await plugin.cancel(_eveningReviewId);
   }
 

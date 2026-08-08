@@ -69,10 +69,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get goodMorning => 'Good morning';
 
   @override
+  String get goodMorningM => 'Good morning';
+
+  @override
+  String get goodMorningF => 'Good morning';
+
+  @override
   String get goodAfternoon => 'Good afternoon';
 
   @override
+  String get goodAfternoonM => 'Good afternoon';
+
+  @override
+  String get goodAfternoonF => 'Good afternoon';
+
+  @override
   String get goodEvening => 'Good evening';
+
+  @override
+  String get goodEveningM => 'Good evening';
+
+  @override
+  String get goodEveningF => 'Good evening';
 
   @override
   String get darkMode => 'Dark Mode';

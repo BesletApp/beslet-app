@@ -69,10 +69,28 @@ class AppLocalizationsAm extends AppLocalizations {
   String get goodMorning => 'እንደምን አደሩ';
 
   @override
+  String get goodMorningM => 'እንደምን አደርክ';
+
+  @override
+  String get goodMorningF => 'እንደምን አደርሽ';
+
+  @override
   String get goodAfternoon => 'እንደምን ዋሉ';
 
   @override
+  String get goodAfternoonM => 'እንደምን ዋልክ';
+
+  @override
+  String get goodAfternoonF => 'እንደምን ዋልሽ';
+
+  @override
   String get goodEvening => 'እንደምን አመሹ';
+
+  @override
+  String get goodEveningM => 'እንደምን አመሸህ';
+
+  @override
+  String get goodEveningF => 'እንደምን አመሸሽ';
 
   @override
   String get darkMode => 'ጨለማ ሁነታ';

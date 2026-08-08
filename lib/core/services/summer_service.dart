@@ -22,7 +22,7 @@ class SummerService {
   static DateTime get nextSummerStart => DateTime(nextSummerYear, summerStart.month, summerStart.day);
   static double get progress => daysElapsed / totalSummerDays;
   static String get phase { final p = progress; if (p < 0.33) return 'Early Summer — Build Foundations'; if (p < 0.66) return 'Mid Summer — Deepen Roots'; return 'Late Summer — Bear Fruit'; }
-  static String get urgencyMessage { final d = daysRemaining; if (d > 60) return 'Full summer ahead. Start strong!'; if (d > 30) return '$d days left. Keep the momentum!'; if (d > 14) return 'Only $d days remain. Finish well!'; if (d > 7) return 'Two weeks to go. Maximum impact!'; if (d > 0) return 'Final $d days. Make them count!'; return 'Summer completed. How did you grow?'; }
+  static String get urgencyMessage { final d = daysRemaining; if (d > 60) return 'Full season ahead. Begin gently.'; if (d > 30) return '$d days remain. Walk with steadiness.'; if (d > 14) return 'The season ripens, with $d days left.'; if (d > 7) return 'A little under two weeks remain. Carry on.'; if (d > 0) return '$d days left. Today is enough.'; return 'The harvest has come in. Rest in what God did.'; }
   static String get outsideMessage => 'Summer $nextSummerYear begins June 8 (Sene 1). Get ready!';
   static int get daysUntilNextSummer => nextSummerStart.difference(DateTime.now()).inDays;
 

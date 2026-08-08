@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/providers/tracking_provider.dart';
+import '../../core/providers/goal_provider.dart';
 import '../../l10n/app_localizations.dart';
 
 class ReflectionScreen extends ConsumerStatefulWidget {
@@ -113,11 +114,17 @@ class _ReflectionScreenState extends ConsumerState<ReflectionScreen> {
   }
 
   void _save() {
+    final focus = _focusCtrl.text.trim();
     ref.read(reflectionNotifierProvider.notifier).saveReflection(
       grew: _grewCtrl.text.trim().isEmpty ? null : _grewCtrl.text.trim(),
       slipped: _slippedCtrl.text.trim().isEmpty ? null : _slippedCtrl.text.trim(),
-      nextFocus: _focusCtrl.text.trim().isEmpty ? null : _focusCtrl.text.trim(),
+      nextFocus: focus.isEmpty ? null : focus,
     );
+    // The Examen's next week's focus becomes a real, gentle goal — the
+    // purposeful-life layer is seeded from reflection, never from noise.
+    if (focus.isNotEmpty) {
+      ref.read(goalNotifierProvider.notifier).addGoal(focus, 'weekly');
+    }
     setState(() => _saved = true);
     final l = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(

@@ -12,5 +12,7 @@ class Users extends Table {
   TextColumn get keptWord => text().nullable()();
   TextColumn get keptWordRef => text().nullable()();
   TextColumn get avatarColor => text().withDefault(const Constant('gold'))();
+  TextColumn get gender => text().nullable()();
+  TextColumn get spiritualIntent => text().nullable()();
   @override Set<Column> get primaryKey => {id};
 }

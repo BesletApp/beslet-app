@@ -33,7 +33,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
   @visibleForTesting
   AppDatabase.forTesting(super.executor);
-  @override int get schemaVersion => 26;
+  @override int get schemaVersion => 27;
 
   @override
   MigrationStrategy get migration {
@@ -115,6 +115,10 @@ class AppDatabase extends _$AppDatabase {
         }
         if (from < 26) {
           await customStatement('DROP TABLE IF EXISTS prayer_rooms');
+        }
+        if (from < 27) {
+          await m.addColumn(users, users.gender);
+          await m.addColumn(users, users.spiritualIntent);
         }
       },
     );

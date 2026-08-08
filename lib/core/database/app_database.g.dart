@@ -132,6 +132,26 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     requiredDuringInsert: false,
     defaultValue: const Constant('gold'),
   );
+  static const VerificationMeta _genderMeta = const VerificationMeta('gender');
+  @override
+  late final GeneratedColumn<String> gender = GeneratedColumn<String>(
+    'gender',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _spiritualIntentMeta = const VerificationMeta(
+    'spiritualIntent',
+  );
+  @override
+  late final GeneratedColumn<String> spiritualIntent = GeneratedColumn<String>(
+    'spiritual_intent',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -145,6 +165,8 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     keptWord,
     keptWordRef,
     avatarColor,
+    gender,
+    spiritualIntent,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -229,6 +251,21 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
         ),
       );
     }
+    if (data.containsKey('gender')) {
+      context.handle(
+        _genderMeta,
+        gender.isAcceptableOrUnknown(data['gender']!, _genderMeta),
+      );
+    }
+    if (data.containsKey('spiritual_intent')) {
+      context.handle(
+        _spiritualIntentMeta,
+        spiritualIntent.isAcceptableOrUnknown(
+          data['spiritual_intent']!,
+          _spiritualIntentMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -282,6 +319,14 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
         DriftSqlType.string,
         data['${effectivePrefix}avatar_color'],
       )!,
+      gender: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}gender'],
+      ),
+      spiritualIntent: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}spiritual_intent'],
+      ),
     );
   }
 
@@ -303,6 +348,8 @@ class User extends DataClass implements Insertable<User> {
   final String? keptWord;
   final String? keptWordRef;
   final String avatarColor;
+  final String? gender;
+  final String? spiritualIntent;
   const User({
     required this.id,
     required this.name,
@@ -315,6 +362,8 @@ class User extends DataClass implements Insertable<User> {
     this.keptWord,
     this.keptWordRef,
     required this.avatarColor,
+    this.gender,
+    this.spiritualIntent,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -334,6 +383,12 @@ class User extends DataClass implements Insertable<User> {
       map['kept_word_ref'] = Variable<String>(keptWordRef);
     }
     map['avatar_color'] = Variable<String>(avatarColor);
+    if (!nullToAbsent || gender != null) {
+      map['gender'] = Variable<String>(gender);
+    }
+    if (!nullToAbsent || spiritualIntent != null) {
+      map['spiritual_intent'] = Variable<String>(spiritualIntent);
+    }
     return map;
   }
 
@@ -354,6 +409,12 @@ class User extends DataClass implements Insertable<User> {
           ? const Value.absent()
           : Value(keptWordRef),
       avatarColor: Value(avatarColor),
+      gender: gender == null && nullToAbsent
+          ? const Value.absent()
+          : Value(gender),
+      spiritualIntent: spiritualIntent == null && nullToAbsent
+          ? const Value.absent()
+          : Value(spiritualIntent),
     );
   }
 
@@ -374,6 +435,8 @@ class User extends DataClass implements Insertable<User> {
       keptWord: serializer.fromJson<String?>(json['keptWord']),
       keptWordRef: serializer.fromJson<String?>(json['keptWordRef']),
       avatarColor: serializer.fromJson<String>(json['avatarColor']),
+      gender: serializer.fromJson<String?>(json['gender']),
+      spiritualIntent: serializer.fromJson<String?>(json['spiritualIntent']),
     );
   }
   @override
@@ -391,6 +454,8 @@ class User extends DataClass implements Insertable<User> {
       'keptWord': serializer.toJson<String?>(keptWord),
       'keptWordRef': serializer.toJson<String?>(keptWordRef),
       'avatarColor': serializer.toJson<String>(avatarColor),
+      'gender': serializer.toJson<String?>(gender),
+      'spiritualIntent': serializer.toJson<String?>(spiritualIntent),
     };
   }
 
@@ -406,6 +471,8 @@ class User extends DataClass implements Insertable<User> {
     Value<String?> keptWord = const Value.absent(),
     Value<String?> keptWordRef = const Value.absent(),
     String? avatarColor,
+    Value<String?> gender = const Value.absent(),
+    Value<String?> spiritualIntent = const Value.absent(),
   }) => User(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -418,6 +485,10 @@ class User extends DataClass implements Insertable<User> {
     keptWord: keptWord.present ? keptWord.value : this.keptWord,
     keptWordRef: keptWordRef.present ? keptWordRef.value : this.keptWordRef,
     avatarColor: avatarColor ?? this.avatarColor,
+    gender: gender.present ? gender.value : this.gender,
+    spiritualIntent: spiritualIntent.present
+        ? spiritualIntent.value
+        : this.spiritualIntent,
   );
   User copyWithCompanion(UsersCompanion data) {
     return User(
@@ -438,6 +509,10 @@ class User extends DataClass implements Insertable<User> {
       avatarColor: data.avatarColor.present
           ? data.avatarColor.value
           : this.avatarColor,
+      gender: data.gender.present ? data.gender.value : this.gender,
+      spiritualIntent: data.spiritualIntent.present
+          ? data.spiritualIntent.value
+          : this.spiritualIntent,
     );
   }
 
@@ -454,7 +529,9 @@ class User extends DataClass implements Insertable<User> {
           ..write('sabbathDay: $sabbathDay, ')
           ..write('keptWord: $keptWord, ')
           ..write('keptWordRef: $keptWordRef, ')
-          ..write('avatarColor: $avatarColor')
+          ..write('avatarColor: $avatarColor, ')
+          ..write('gender: $gender, ')
+          ..write('spiritualIntent: $spiritualIntent')
           ..write(')'))
         .toString();
   }
@@ -472,6 +549,8 @@ class User extends DataClass implements Insertable<User> {
     keptWord,
     keptWordRef,
     avatarColor,
+    gender,
+    spiritualIntent,
   );
   @override
   bool operator ==(Object other) =>
@@ -487,7 +566,9 @@ class User extends DataClass implements Insertable<User> {
           other.sabbathDay == this.sabbathDay &&
           other.keptWord == this.keptWord &&
           other.keptWordRef == this.keptWordRef &&
-          other.avatarColor == this.avatarColor);
+          other.avatarColor == this.avatarColor &&
+          other.gender == this.gender &&
+          other.spiritualIntent == this.spiritualIntent);
 }
 
 class UsersCompanion extends UpdateCompanion<User> {
@@ -502,6 +583,8 @@ class UsersCompanion extends UpdateCompanion<User> {
   final Value<String?> keptWord;
   final Value<String?> keptWordRef;
   final Value<String> avatarColor;
+  final Value<String?> gender;
+  final Value<String?> spiritualIntent;
   const UsersCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
@@ -514,6 +597,8 @@ class UsersCompanion extends UpdateCompanion<User> {
     this.keptWord = const Value.absent(),
     this.keptWordRef = const Value.absent(),
     this.avatarColor = const Value.absent(),
+    this.gender = const Value.absent(),
+    this.spiritualIntent = const Value.absent(),
   });
   UsersCompanion.insert({
     this.id = const Value.absent(),
@@ -527,6 +612,8 @@ class UsersCompanion extends UpdateCompanion<User> {
     this.keptWord = const Value.absent(),
     this.keptWordRef = const Value.absent(),
     this.avatarColor = const Value.absent(),
+    this.gender = const Value.absent(),
+    this.spiritualIntent = const Value.absent(),
   }) : createdAt = Value(createdAt);
   static Insertable<User> custom({
     Expression<int>? id,
@@ -540,6 +627,8 @@ class UsersCompanion extends UpdateCompanion<User> {
     Expression<String>? keptWord,
     Expression<String>? keptWordRef,
     Expression<String>? avatarColor,
+    Expression<String>? gender,
+    Expression<String>? spiritualIntent,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -553,6 +642,8 @@ class UsersCompanion extends UpdateCompanion<User> {
       if (keptWord != null) 'kept_word': keptWord,
       if (keptWordRef != null) 'kept_word_ref': keptWordRef,
       if (avatarColor != null) 'avatar_color': avatarColor,
+      if (gender != null) 'gender': gender,
+      if (spiritualIntent != null) 'spiritual_intent': spiritualIntent,
     });
   }
 
@@ -568,6 +659,8 @@ class UsersCompanion extends UpdateCompanion<User> {
     Value<String?>? keptWord,
     Value<String?>? keptWordRef,
     Value<String>? avatarColor,
+    Value<String?>? gender,
+    Value<String?>? spiritualIntent,
   }) {
     return UsersCompanion(
       id: id ?? this.id,
@@ -581,6 +674,8 @@ class UsersCompanion extends UpdateCompanion<User> {
       keptWord: keptWord ?? this.keptWord,
       keptWordRef: keptWordRef ?? this.keptWordRef,
       avatarColor: avatarColor ?? this.avatarColor,
+      gender: gender ?? this.gender,
+      spiritualIntent: spiritualIntent ?? this.spiritualIntent,
     );
   }
 
@@ -620,6 +715,12 @@ class UsersCompanion extends UpdateCompanion<User> {
     if (avatarColor.present) {
       map['avatar_color'] = Variable<String>(avatarColor.value);
     }
+    if (gender.present) {
+      map['gender'] = Variable<String>(gender.value);
+    }
+    if (spiritualIntent.present) {
+      map['spiritual_intent'] = Variable<String>(spiritualIntent.value);
+    }
     return map;
   }
 
@@ -636,7 +737,9 @@ class UsersCompanion extends UpdateCompanion<User> {
           ..write('sabbathDay: $sabbathDay, ')
           ..write('keptWord: $keptWord, ')
           ..write('keptWordRef: $keptWordRef, ')
-          ..write('avatarColor: $avatarColor')
+          ..write('avatarColor: $avatarColor, ')
+          ..write('gender: $gender, ')
+          ..write('spiritualIntent: $spiritualIntent')
           ..write(')'))
         .toString();
   }
@@ -10022,6 +10125,8 @@ typedef $$UsersTableCreateCompanionBuilder =
       Value<String?> keptWord,
       Value<String?> keptWordRef,
       Value<String> avatarColor,
+      Value<String?> gender,
+      Value<String?> spiritualIntent,
     });
 typedef $$UsersTableUpdateCompanionBuilder =
     UsersCompanion Function({
@@ -10036,6 +10141,8 @@ typedef $$UsersTableUpdateCompanionBuilder =
       Value<String?> keptWord,
       Value<String?> keptWordRef,
       Value<String> avatarColor,
+      Value<String?> gender,
+      Value<String?> spiritualIntent,
     });
 
 class $$UsersTableFilterComposer extends Composer<_$AppDatabase, $UsersTable> {
@@ -10098,6 +10205,16 @@ class $$UsersTableFilterComposer extends Composer<_$AppDatabase, $UsersTable> {
 
   ColumnFilters<String> get avatarColor => $composableBuilder(
     column: $table.avatarColor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get gender => $composableBuilder(
+    column: $table.gender,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get spiritualIntent => $composableBuilder(
+    column: $table.spiritualIntent,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -10165,6 +10282,16 @@ class $$UsersTableOrderingComposer
     column: $table.avatarColor,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get gender => $composableBuilder(
+    column: $table.gender,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get spiritualIntent => $composableBuilder(
+    column: $table.spiritualIntent,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$UsersTableAnnotationComposer
@@ -10214,6 +10341,14 @@ class $$UsersTableAnnotationComposer
     column: $table.avatarColor,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get gender =>
+      $composableBuilder(column: $table.gender, builder: (column) => column);
+
+  GeneratedColumn<String> get spiritualIntent => $composableBuilder(
+    column: $table.spiritualIntent,
+    builder: (column) => column,
+  );
 }
 
 class $$UsersTableTableManager
@@ -10255,6 +10390,8 @@ class $$UsersTableTableManager
                 Value<String?> keptWord = const Value.absent(),
                 Value<String?> keptWordRef = const Value.absent(),
                 Value<String> avatarColor = const Value.absent(),
+                Value<String?> gender = const Value.absent(),
+                Value<String?> spiritualIntent = const Value.absent(),
               }) => UsersCompanion(
                 id: id,
                 name: name,
@@ -10267,6 +10404,8 @@ class $$UsersTableTableManager
                 keptWord: keptWord,
                 keptWordRef: keptWordRef,
                 avatarColor: avatarColor,
+                gender: gender,
+                spiritualIntent: spiritualIntent,
               ),
           createCompanionCallback:
               ({
@@ -10281,6 +10420,8 @@ class $$UsersTableTableManager
                 Value<String?> keptWord = const Value.absent(),
                 Value<String?> keptWordRef = const Value.absent(),
                 Value<String> avatarColor = const Value.absent(),
+                Value<String?> gender = const Value.absent(),
+                Value<String?> spiritualIntent = const Value.absent(),
               }) => UsersCompanion.insert(
                 id: id,
                 name: name,
@@ -10293,6 +10434,8 @@ class $$UsersTableTableManager
                 keptWord: keptWord,
                 keptWordRef: keptWordRef,
                 avatarColor: avatarColor,
+                gender: gender,
+                spiritualIntent: spiritualIntent,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

@@ -218,17 +218,53 @@ abstract class AppLocalizations {
   /// **'Good morning'**
   String get goodMorning;
 
+  /// No description provided for @goodMorningM.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning'**
+  String get goodMorningM;
+
+  /// No description provided for @goodMorningF.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning'**
+  String get goodMorningF;
+
   /// No description provided for @goodAfternoon.
   ///
   /// In en, this message translates to:
   /// **'Good afternoon'**
   String get goodAfternoon;
 
+  /// No description provided for @goodAfternoonM.
+  ///
+  /// In en, this message translates to:
+  /// **'Good afternoon'**
+  String get goodAfternoonM;
+
+  /// No description provided for @goodAfternoonF.
+  ///
+  /// In en, this message translates to:
+  /// **'Good afternoon'**
+  String get goodAfternoonF;
+
   /// No description provided for @goodEvening.
   ///
   /// In en, this message translates to:
   /// **'Good evening'**
   String get goodEvening;
+
+  /// No description provided for @goodEveningM.
+  ///
+  /// In en, this message translates to:
+  /// **'Good evening'**
+  String get goodEveningM;
+
+  /// No description provided for @goodEveningF.
+  ///
+  /// In en, this message translates to:
+  /// **'Good evening'**
+  String get goodEveningF;
 
   /// No description provided for @darkMode.
   ///
