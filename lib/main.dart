@@ -20,22 +20,9 @@ import 'core/providers/user_provider.dart';
 void main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+
   tzdata.initializeTimeZones();
   tz.setLocalLocation(tz.getLocation('Africa/Addis_Ababa'));
-  try { await NotificationService.init(); } catch (_) {}
-  try { await PrayerAlarmSoundService.ensureChannel(await PrayerAlarmSoundService.resolveAndroidSound()); } catch (_) {}
-  NotificationService.navigateTo = (route) => AppRouter.router.go(route);
-  try { await NotificationService.requestPermissions(); } catch (_) {}
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    final reminderTime = prefs.getString('reminderTime');
-    if (reminderTime != null) {
-      final parts = reminderTime.split(':');
-      final hour = int.tryParse(parts[0]) ?? 20;
-      final minute = parts.length > 1 ? (int.tryParse(parts[1]) ?? 0) : 0;
-      await NotificationService.scheduleDailyReminder(hour, minute);
-    }
-  } catch (_) {}
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
@@ -46,24 +33,15 @@ void main() async {
     systemNavigationBarColor: Color(0xFF0A0A0A),
     systemNavigationBarIconBrightness: Brightness.light,
   ));
-  try { await WidgetService.updateWidgetData(); } catch (_) {}
-  try { await PrayerReminderService.updatePrayerNotificationContent(); } catch (_) {}
 
+  // Only local, fast startup work stays before the first frame: the
+  // personalization engine (SharedPreferences) and the Riverpod container.
   final engine = await PersonalizationEngine.init();
-
   final container = ProviderContainer(
     overrides: [
       personalizationEngineProvider.overrideWithValue(engine),
     ],
   );
-  final db = container.read(databaseProvider);
-  String lang = 'en';
-  try {
-    final user = await container.read(userProvider.future);
-    lang = user.lang;
-  } catch (_) {}
-  VineyardReminderService.configure(db, isAm: lang == 'am');
-  try { await VineyardReminderService.refresh(); } catch (_) {}
 
   runApp(
     UncontrolledProviderScope(
@@ -71,5 +49,55 @@ void main() async {
       child: const BesletApp(),
     ),
   );
+
+  // The native icon is dismissed the moment Flutter draws its first frame.
+  // Everything plugin-bound then warms up in the background, each step
+  // time-boxed so a hung platform channel can never trap the app again.
+  WidgetsBinding.instance.addPostFrameCallback((_) => _warmStart(container));
+}
+
+Future<void> _warmStart(ProviderContainer container) async {
   FlutterNativeSplash.remove();
+
+  await _attempt(() => NotificationService.init());
+  NotificationService.navigateTo = (route) => AppRouter.router.go(route);
+  await _attempt(() async {
+    final sound = await PrayerAlarmSoundService.resolveAndroidSound();
+    await PrayerAlarmSoundService.ensureChannel(sound);
+  });
+  await _attempt(() => NotificationService.requestPermissions());
+
+  try {
+    final prefs = await SharedPreferences.getInstance().timeout(const Duration(seconds: 2));
+    final reminderTime = prefs.getString('reminderTime');
+    if (reminderTime != null) {
+      final parts = reminderTime.split(':');
+      final hour = int.tryParse(parts[0]) ?? 20;
+      final minute = parts.length > 1 ? (int.tryParse(parts[1]) ?? 0) : 0;
+      await _attempt(() => NotificationService.scheduleDailyReminder(hour, minute));
+    }
+  } catch (_) {}
+
+  await _attempt(() => WidgetService.updateWidgetData());
+  await _attempt(() => PrayerReminderService.updatePrayerNotificationContent());
+
+  final db = container.read(databaseProvider);
+  String lang = 'en';
+  try {
+    final user = await container.read(userProvider.future).timeout(const Duration(seconds: 2));
+    lang = user.lang;
+  } catch (_) {}
+  VineyardReminderService.configure(db, isAm: lang == 'am');
+  await _attempt(() => VineyardReminderService.refresh());
+}
+
+/// Runs a startup step with a hard time box so a slow or hung platform call
+/// can never block the app or the splash from dismissing.
+Future<void> _attempt(
+  Future<void> Function() step, {
+  Duration timeout = const Duration(seconds: 3),
+}) async {
+  try {
+    await step().timeout(timeout);
+  } catch (_) {}
 }
