@@ -6,14 +6,8 @@ class ToneService {
 
   ToneService(this._engine);
 
-  /// Maps the chosen voice to a tone index:
-  /// 'quiet' → 0 (soft, minimal), 'warm' → 1 (friendly), 'still' → 2 (calm, reflective)
-  int get _tone {
-    final v = _engine.voice;
-    if (v == 'quiet') return 0;
-    if (v == 'still') return 2;
-    return 1;
-  }
+  /// Beslet speaks with one warm, friendly tone.
+  int get _tone => 1;
 
   String greeting(AppLocalizations l, int hour, {String? gender}) {
     final warmth = _engine.wasAwayForDays ? 2 : (_engine.isFirstSessionToday ? 1 : 0);

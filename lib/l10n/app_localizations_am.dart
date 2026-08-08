@@ -487,21 +487,6 @@ class AppLocalizationsAm extends AppLocalizations {
   String get aboutApp => 'ስለ መተግበሪያ';
 
   @override
-  String get settingsVoice => 'ድምፅ';
-
-  @override
-  String get settingsVoiceSubtitle => 'ብስለት እንዴት እንደሚያነጋግርህ';
-
-  @override
-  String get voiceQuiet => 'ጸጥታ';
-
-  @override
-  String get voiceWarm => 'ሞቅ ያለ';
-
-  @override
-  String get voiceStill => 'ረጋ ያለ';
-
-  @override
   String get daysShownUp => 'ቀናት ታይተሃል';
 
   @override
@@ -568,9 +553,6 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get day => 'ቀን';
-
-  @override
-  String get userSubtitle => 'አርባ ምንጭ ዩኒቨርሲቲ · ኮምፒውተር ሳይንስ';
 
   @override
   String get dailyTasks => 'ዕለታዊ ተግባራት';
@@ -815,12 +797,6 @@ class AppLocalizationsAm extends AppLocalizations {
   String get gardenRevived => 'እንኳን ደህና ተመለስክ/ሽ — ወይኑ መገኘትህን/ሽን ውሃ አድርጎ ጠጣ።';
 
   @override
-  String get vineSound => 'የወይን ድምፅ';
-
-  @override
-  String get vineSoundSubtitle => 'ወይኑ ምላሽ ሲሰጥ የሚሰማ ገር ድምፅ — በነባሪ ጠፍቷል።';
-
-  @override
   String get tryAgain => 'በድጋሚ ሞክር';
 
   @override
@@ -830,22 +806,7 @@ class AppLocalizationsAm extends AppLocalizations {
   String get join => 'ይቀላቀሉ';
 
   @override
-  String get enkutatashTitle => 'እንቁጣጣሽ';
-
-  @override
-  String get enkutatashNewYear => 'የኢትዮጵያ አዲስ ዓመት 2019';
-
-  @override
-  String get enterNewYear => 'አዲስ ዓመት ግባ';
-
-  @override
   String get readyToGrow => 'ለማደግ ዝግጁ ነህ!';
-
-  @override
-  String get madeByAmanuel => 'በአማኑኤል ላሜሳ የተሰራ';
-
-  @override
-  String get versionTag => 'በጋ 2026 · v1.0';
 
   @override
   String get joinTelegram => 'በቴሌግራም የእኛን ማህበረሰብ ይቀላቀሉ';
@@ -1272,11 +1233,127 @@ class AppLocalizationsAm extends AppLocalizations {
   String get profileLampRemove => 'ይህን ቃል ልቀቅ';
 
   @override
-  String get profileSeasonIntro => 'ያለንበት ወቅት';
-
-  @override
   String get profileRoomTitle => 'የተረጋጋ ቤት';
 
   @override
   String get profileAvatarColor => 'የአዶ ቀለም';
+
+  @override
+  String get profileIdentityLine => 'በየቀኑ በጥንቃቄ ለማደግ የሚረዳ ትልቅ ሳይሆን ትንሽ መሣሪያ።';
+
+  @override
+  String get settingsTheme => 'ገጽታ';
+
+  @override
+  String get darkModeToggle => 'ብርሃን/ጨለማ ሁነታ ቀይር';
+
+  @override
+  String get sabbathRest => 'የእረፍት ቀን';
+
+  @override
+  String get chooseRestDay => 'የእረፍት ቀንህን ምረጥ';
+
+  @override
+  String get restDayNotSet => 'አልተመረጠም — የእረፍት ቀን የለም';
+
+  @override
+  String get noneRestDay => 'ምንም (የእረፍት ቀን የለም)';
+
+  @override
+  String get dailyReadingReminder => 'የዕለት ንባብ ማስታወሻ';
+
+  @override
+  String get remindsToReadDaily => 'በየቀኑ እንድታነብ ያስታውሳል';
+
+  @override
+  String reminderSetAt(Object time) {
+    return 'ማስታወሻ በ $time ተቀናብሯል';
+  }
+
+  @override
+  String get commentSuggestions => 'አስተያየት እና ሃሳብ';
+
+  @override
+  String get dayMonday => 'ሰኞ';
+
+  @override
+  String get dayTuesday => 'ማክሰኞ';
+
+  @override
+  String get dayWednesday => 'ረቡዕ';
+
+  @override
+  String get dayThursday => 'ሐሙስ';
+
+  @override
+  String get dayFriday => 'አርብ';
+
+  @override
+  String get daySaturday => 'ቅዳሜ';
+
+  @override
+  String get daySunday => 'እሁድ';
+
+  @override
+  String get dayNotSet => 'አልተመረጠም';
+
+  @override
+  String get sundayInParen => ' (እሁድ)';
+
+  @override
+  String get paletteClassic => 'ክላሲክ ወርቅ';
+
+  @override
+  String get paletteSepia => 'ሞቅ ያለ ሴፒያ';
+
+  @override
+  String get paletteCalmBlue => 'የሰላም ሰማያዊ';
+
+  @override
+  String get paletteForestGreen => 'ደን አረንጓዴ';
+
+  @override
+  String get paletteMidnight => 'እኩለ ሌሊት';
+
+  @override
+  String get aboutBesletTitle => 'ስለ ብስለት';
+
+  @override
+  String get aboutPara1 =>
+      '«ብስለት» የተጀመረው በአርባ ምንጭ ዩኒቨርሲቲ የሚገኙ ጓደኞቼ የክረምት ዕረፍታቸውን በዓላማ እንዲያሳልፉ ለመርዳት ነበር። ዛሬ ግን ሰፋ ላለው የክርስቲያን ማህበረሰብ የሚጠቅም ዕለታዊ ረዳት ሆኖ አድጓል።';
+
+  @override
+  String get aboutPara2 =>
+      'ስልካችን ብዙ ጊዜ ሳናውቀው ጊዜያችንን ይወስድብናል። ብስለት ያንን ጊዜ እንድንመልስና በዋና ዋና ነገሮች—መጽሐፍ ቅዱስ ማንበብ፣ ጸሎት፣ ሥርዓት፣ እድገት፣ ኅብርት፣ ክህሎት እና ቤተሰብ—ላይ ወጥነት እንዲኖረን ይረዳናል። ለዓላማ ኑሮ የሚረጋ ጸጥ ያለ መሣሪያ ነው።';
+
+  @override
+  String get aboutPara3 =>
+      'ይህም የሶፍትዌር እውቀትን ለእግዚአብሔር አገልግሎት ለማዋል የሚደረግ ጥረት ነው። ውሎ አድሮ መተግበሪያውን በGoogle Play Store ላይ ለማተምና ለማህበረሰቡ ተጨማሪ መሣሪያዎችን ለመገንባት ንድፍ እንዘረጋለን።';
+
+  @override
+  String get aboutSupportTitle => 'ድጋፍ';
+
+  @override
+  String get aboutSupportBody =>
+      'ብስለት በረከት ከሆነልህ፣ በፈቃድህ የምታደርገው ድጋፍ የስቶር ክፍያንና የቀጣይ ማሻሻያዎችን ለመሸፈን ይረዳል።';
+
+  @override
+  String get aboutCbeAccount => 'የንግድ ባንክ ሂሳብ';
+
+  @override
+  String get aboutFeedbackTitle => 'አስተያየት';
+
+  @override
+  String get aboutFeedbackBody => 'ሃሳብ አለህ? በቴሌግራም ያነጋግረኝ።';
+
+  @override
+  String get copyAccountNumber => 'ተቀድቷል';
+
+  @override
+  String get accountCopied => 'የሂሳብ ቁጥሩ ተቀድቷል።';
+
+  @override
+  String aboutVersion(Object version) {
+    return 'ስሪት $version';
+  }
 }

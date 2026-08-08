@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/vine_life_provider.dart';
-import 'vine_chime_service.dart';
 
 enum SceneEventType { water, leafLight, branchGrow, fruitPop, bloom, milestone }
 
@@ -44,7 +43,6 @@ class SceneEventBus extends ValueNotifier<SceneEvent?> {
     _prune();
     _history.add(event);
     unawaited(_buzz());
-    unawaited(VineChime.chime());
     final persist = onPersist;
     if (persist != null) {
       unawaited(persist(event));
@@ -88,7 +86,6 @@ class SceneEventBus extends ValueNotifier<SceneEvent?> {
 }
 
 final sceneEventBusProvider = Provider<SceneEventBus>((ref) {
-  unawaited(VineChime.init());
   final bus = SceneEventBus();
   final writer = VineLifeWriter(ref);
   bus.onPersist = writer.recordEvent;

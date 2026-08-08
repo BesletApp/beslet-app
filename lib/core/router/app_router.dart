@@ -21,6 +21,7 @@ import '../../features/fellowship/fellowship_screen.dart';
 import '../../features/tasks/daily_todo_screen.dart';
 import '../../features/tasks/goals_screen.dart';
 import '../../features/profile/profile_screen.dart';
+import '../../features/about/about_screen.dart';
 import '../../features/settings/settings_screen.dart';
 import '../../features/word_challenge/word_challenge_screen.dart';
 import '../../features/word_challenge/memory_garden_screen.dart';
@@ -90,6 +91,7 @@ class AppRouter {
           StatefulShellBranch(routes: [
             GoRoute(path: '/profile', pageBuilder: (context, state) => _buildPage(state, const ProfileScreen())),
             GoRoute(path: '/settings', pageBuilder: (context, state) => _buildPage(state, SettingsScreen(section: state.uri.queryParameters['section']))),
+            GoRoute(path: '/about', pageBuilder: (context, state) => _buildPage(state, const AboutScreen())),
           ]),
         ],
       ),

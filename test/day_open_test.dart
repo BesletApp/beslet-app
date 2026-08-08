@@ -11,31 +11,21 @@ void main() {
   });
 
   group('ToneService.completionMessage (day stays open)', () {
-    testWidgets('never says "that is enough" or "complete" for any voice',
-        (tester) async {
+    testWidgets('never says "that is enough" or "complete"', (tester) async {
       final l = await AppLocalizations.delegate.load(const Locale('en'));
-      for (final voice in ['quiet', 'warm', 'still']) {
-        final engine = await PersonalizationEngine.init();
-        await engine.setVoice(voice);
-        final tone = ToneService(engine);
-        final msg = tone.completionMessage(l, 'Friend');
-        expect(msg.toLowerCase(), isNot(contains('enough')),
-            reason: 'voice=$voice gave: $msg');
-        expect(msg.toLowerCase(), isNot(contains('complete')),
-            reason: 'voice=$voice gave: $msg');
-      }
+      final engine = await PersonalizationEngine.init();
+      final tone = ToneService(engine);
+      final msg = tone.completionMessage(l, 'Friend');
+      expect(msg.toLowerCase(), isNot(contains('enough')), reason: 'gave: $msg');
+      expect(msg.toLowerCase(), isNot(contains('complete')), reason: 'gave: $msg');
     });
 
-    testWidgets('all voices are forward-moving', (tester) async {
+    testWidgets('is forward-moving', (tester) async {
       final l = await AppLocalizations.delegate.load(const Locale('en'));
-      for (final voice in ['quiet', 'warm', 'still']) {
-        final engine = await PersonalizationEngine.init();
-        await engine.setVoice(voice);
-        final tone = ToneService(engine);
-        final msg = tone.completionMessage(l, 'Friend');
-        expect(msg.toLowerCase(), contains('keep walking'),
-            reason: 'voice=$voice gave: $msg');
-      }
+      final engine = await PersonalizationEngine.init();
+      final tone = ToneService(engine);
+      final msg = tone.completionMessage(l, 'Friend');
+      expect(msg.toLowerCase(), contains('keep walking'), reason: 'gave: $msg');
     });
   });
 }

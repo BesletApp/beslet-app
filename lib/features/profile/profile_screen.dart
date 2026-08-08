@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/providers/identity_provider.dart';
-import '../../core/services/summer_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_text_styles.dart';
@@ -181,13 +180,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  // ── ZONE 3: Season — the shared present ──
-  Widget _buildSeason(AppLocalizations l) {
+  // ── ZONE 3: Support — what Beslet is ──
+  Widget _buildIdentity(AppLocalizations l) {
     final c = AppColors.of(context);
     final t = AppTextStyles.of(context);
-    final season = SummerService.seasonFor(DateTime.now());
-    final isAm = l.localeName == 'am';
-    final copy = isAm ? season.am : season.en;
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -196,15 +192,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
       ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          const Icon(Icons.wb_sunny_outlined, size: 16, color: AppColors.primary),
-          const SizedBox(width: 6),
-          Text(l.profileSeasonIntro, style: t.labelLarge.copyWith(color: AppColors.primary)),
-        ]),
-        const SizedBox(height: AppSpacing.sm),
-        Text(copy, style: t.bodyMedium.copyWith(color: c.textPrimary, height: 1.5)),
-      ]),
+      child: Text(l.profileIdentityLine, style: t.bodyMedium.copyWith(color: c.textPrimary, height: 1.5)),
     );
   }
 
@@ -219,13 +207,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       child: Column(children: [
         _tile(Icons.language, l.language, () => context.go('/settings?section=language')),
         Divider(height: 1, color: AppColors.of(context).border),
-        _tile(Icons.record_voice_over_outlined, l.settingsVoice, () => context.go('/settings?section=voice')),
-        Divider(height: 1, color: AppColors.of(context).border),
         _tile(Icons.palette, l.appearance, () => context.go('/settings?section=appearance')),
         Divider(height: 1, color: AppColors.of(context).border),
         _tile(Icons.notifications_outlined, l.reminders, () => context.go('/settings?section=reminders')),
         Divider(height: 1, color: AppColors.of(context).border),
-        _tile(Icons.info_outline, l.aboutApp, () => context.go('/settings?section=about')),
+        _tile(Icons.info_outline, l.aboutApp, () => context.go('/about')),
       ]),
     );
   }
@@ -265,7 +251,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           child: ZoneLayout(
             orientation: _buildThreshold(l, id),
             primary: const LampCard(),
-            support: _buildSeason(l),
+            support: _buildIdentity(l),
             anchor: _buildRoom(l),
           ),
         ),

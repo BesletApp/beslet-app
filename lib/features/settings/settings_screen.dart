@@ -1,7 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
@@ -13,7 +12,6 @@ import '../../core/database/app_database.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/services/vineyard_reminder_service.dart';
 import '../../core/services/vineyard_reminder_content.dart';
-import '../../core/services/vine_chime_service.dart';
 import '../../core/providers/streak_provider.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/widgets/zone_layout.dart';
@@ -30,22 +28,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final _scroll = ScrollController();
   final _appearanceKey = GlobalKey();
   final _languageKey = GlobalKey();
-  final _voiceKey = GlobalKey();
   final _remindersKey = GlobalKey();
-  final _aboutKey = GlobalKey();
   String _reminderTime = '20:00';
   bool _visitsEnabled = false;
   String _visitsFrequency = 'gentle';
   String _visitsWindow = 'evening';
-  bool _chimeEnabled = false;
-  String _voice = 'warm';
 
   @override
   void initState() {
     super.initState();
     _loadReminderTime();
     _loadVisits();
-    _loadVoice();
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSection());
   }
 
@@ -61,28 +54,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       _visitsEnabled = prefs.getBool('vineyardVisitsEnabled') ?? false;
       _visitsFrequency = prefs.getString('vineyardVisitsFrequency') ?? 'gentle';
       _visitsWindow = prefs.getString('vineyardVisitsWindow') ?? 'evening';
-      _chimeEnabled = prefs.getBool('vineChimeEnabled') ?? false;
     });
   }
 
-  Future<void> _loadVoice() async {
-    final prefs = await SharedPreferences.getInstance();
-    if (!mounted) return;
-    setState(() => _voice = prefs.getString('voice') ?? 'warm');
-  }
-
-  Future<void> _setVoice(String value) async {
-    setState(() => _voice = value);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('voice', value);
-  }
-
-  String _visitsModeLabel(bool isAm) {
+  String _visitsModeLabel() {
     final l = AppLocalizations.of(context)!;
     if (!_visitsEnabled) return l.visitsOff;
     final freq = _visitsFrequency == 'attentive' ? l.visitsAttentive : l.visitsGentle;
     final window = _visitsWindow == 'morning' ? l.windowMorning : l.windowEvening;
-    return '$freq Â· $window';
+    return '$freq · $window';
   }
 
   Future<void> _pickVineyardVisits(BuildContext context) async {
@@ -171,38 +151,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  Widget _voiceChip(String value, String label) {
-    final selected = _voice == value;
-    return GestureDetector(
-      onTap: () => _setVoice(value),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: selected ? AppColors.primary.withValues(alpha: 0.14) : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: selected ? AppColors.primary : AppColors.of(context).border),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: selected ? AppColors.primary : AppColors.of(context).textSecondary,
-          ),
-        ),
-      ),
-    );
-  }
-
   void _scrollToSection() {
     final key = switch (widget.section) {
       'appearance' => _appearanceKey,
       'language' => _languageKey,
-      'voice' => _voiceKey,
       'reminders' => _remindersKey,
-      'about' => _aboutKey,
       _ => null,
     };
     if (key?.currentContext != null) {
@@ -220,7 +173,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final themeMode = ref.watch(themeModeProvider);
     final userAsync = ref.watch(userProvider);
     final l = AppLocalizations.of(context)!;
-    final isAm = Localizations.localeOf(context).languageCode == 'am';
     final c = AppColors.of(context);
 
     return Scaffold(
@@ -237,7 +189,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: c.border)),
               child: SwitchListTile(
                 title: Text(l.darkMode, style: AppTextStyles.bodyMedium),
-                subtitle: Text(isAm ? 'á‹¨áŒ¨áˆˆáˆ›/á‹¨á‰¥áˆ­áˆƒáŠ• áˆáŠá‰³áŠ• á‰€á‹­áˆ­' : 'Toggle light/dark theme', style: AppTextStyles.bodySmall),
+                subtitle: Text(l.darkModeToggle, style: AppTextStyles.bodySmall),
                 value: themeMode == ThemeMode.dark,
                 onChanged: (val) => ref.read(themeModeProvider.notifier).toggle(),
                 activeThumbColor: AppColors.primary,
@@ -245,7 +197,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
             ),
             SizedBox(height: AppSpacing.md),
-            Text(isAm ? 'áŒˆáŒ½á‰³' : 'Theme', style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
+            Text(l.settingsTheme, style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
             SizedBox(height: AppSpacing.sm),
             _ThemePalettePicker(),
           ]),
@@ -257,33 +209,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: c.border)),
               child: userAsync.when(
                 data: (user) => Column(children: [
-                  _langTile(context, ref, user, 'en', l.english, 'ðŸ‡¬ðŸ‡§'),
+                  _langTile(context, ref, user, 'en', l.english, '🇺🇸'),
                   const Divider(height: 1),
-                  _langTile(context, ref, user, 'am', l.amharic, 'ðŸ‡ªðŸ‡¹'),
+                  _langTile(context, ref, user, 'am', l.amharic, '🇪🇹'),
                 ]),
                 loading: () => const SizedBox(height: 48, child: Center(child: CircularProgressIndicator())),
                 error: (e, _) => Text('$e'),
               ),
             ),
-            SizedBox(height: AppSpacing.md),
-            Text(key: _voiceKey, l.settingsVoice, style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
-            SizedBox(height: AppSpacing.sm),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: c.border)),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(l.settingsVoiceSubtitle, style: AppTextStyles.bodySmall.copyWith(color: c.textSecondary)),
-                const SizedBox(height: AppSpacing.sm),
-                Wrap(spacing: AppSpacing.sm, runSpacing: AppSpacing.sm, children: [
-                  _voiceChip('quiet', l.voiceQuiet),
-                  _voiceChip('warm', l.voiceWarm),
-                  _voiceChip('still', l.voiceStill),
-                ]),
-              ]),
-            ),
           ]),
           support: Column(children: [
-            Text(isAm ? 'ðŸ•Šï¸ á‹¨áŠ¥áˆ¨áá‰µ á‰€áŠ•' : 'ðŸ•Šï¸ Sabbath Rest', style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
+            Text(l.sabbathRest, style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
             SizedBox(height: AppSpacing.sm),
             Container(
               padding: const EdgeInsets.all(16),
@@ -291,14 +227,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               child: userAsync.when(
                 data: (user) => ListTile(
                   leading: const Icon(Icons.weekend, color: AppColors.primary),
-                  title: Text(isAm ? 'á‹¨áŠ¥áˆ¨áá‰µ á‰€áŠ•áˆ…áŠ• áˆáˆ¨áŒ¥' : 'Choose your rest day', style: AppTextStyles.bodyMedium),
+                  title: Text(l.chooseRestDay, style: AppTextStyles.bodyMedium),
                   subtitle: Text(
                     user.sabbathDay == -1
-                        ? (isAm ? 'áŠ áˆá‰°áˆ˜áˆ¨áŒ áˆá¢ áŠ¥áˆ¨áá‰µ á‹¨áˆŒáˆˆá‰ á‰µ á‰€áŠ•' : 'Not set â€” no rest day')
-                        : (isAm ? _dayName(user.sabbathDay, isAm) : _dayName(user.sabbathDay, isAm)),
+                        ? l.restDayNotSet
+                        : _dayName(user.sabbathDay),
                     style: AppTextStyles.bodySmall.copyWith(color: c.textSecondary)),
                   trailing: Text(
-                    user.sabbathDay == -1 ? (isAm ? '--' : '--') : _dayName(user.sabbathDay, isAm),
+                    user.sabbathDay == -1 ? '--' : _dayName(user.sabbathDay),
                     style: const TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.primary)),
                   contentPadding: EdgeInsets.zero,
                   onTap: () => _pickSabbathDay(context, ref, user),
@@ -317,8 +253,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 children: [
                   ListTile(
                     leading: const Icon(Icons.access_time, color: AppColors.primary),
-                    title: Text(isAm ? 'á‹•áˆˆá‰³á‹Š áˆ›áˆ³áˆ°á‰¢á‹«' : 'Daily reading reminder', style: AppTextStyles.bodyMedium),
-                    subtitle: Text(isAm ? 'á‰ á‹¨á‰€áŠ‘ áˆˆáˆ›áŠ•á‰ á‰¥ á‹«áˆµá‰³á‹áˆµáˆƒáˆ' : 'Reminds you to read daily', style: AppTextStyles.bodySmall),
+                    title: Text(l.dailyReadingReminder, style: AppTextStyles.bodyMedium),
+                    subtitle: Text(l.remindsToReadDaily, style: AppTextStyles.bodySmall),
                     trailing: Text(_reminderTime, style: const TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.primary)),
                     contentPadding: EdgeInsets.zero,
                     onTap: () async {
@@ -333,7 +269,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         if (context.mounted) {
                           setState(() => _reminderTime = formatted);
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content: Text(isAm ? 'áˆ›áˆ³áˆ°á‰¢á‹« á‰°á‰€áŠ“á‰¥áˆ¯áˆ á‰ $formatted' : 'Reminder set at $formatted'),
+                            content: Text(l.reminderSetAt(formatted)),
                             backgroundColor: AppColors.success, behavior: SnackBarBehavior.floating, duration: Duration(seconds: 2),
                           ));
                         }
@@ -344,7 +280,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ListTile(
                     leading: const Icon(Icons.eco, color: AppColors.primary),
                     title: Text(l.vineyardVisits, style: AppTextStyles.bodyMedium),
-                    subtitle: Text(_visitsModeLabel(isAm), style: AppTextStyles.bodySmall.copyWith(color: c.textSecondary)),
+                    subtitle: Text(_visitsModeLabel(), style: AppTextStyles.bodySmall.copyWith(color: c.textSecondary)),
                     trailing: Icon(
                       _visitsEnabled ? Icons.chevron_right : Icons.toggle_off_outlined,
                       color: _visitsEnabled ? AppColors.primary : c.textMuted,
@@ -352,55 +288,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     contentPadding: EdgeInsets.zero,
                     onTap: () => _pickVineyardVisits(context),
                   ),
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    secondary: const Icon(Icons.self_improvement, color: AppColors.primary),
-                    title: Text(l.vineSound, style: AppTextStyles.bodyMedium),
-                    subtitle: Text(l.vineSoundSubtitle,
-                        style: AppTextStyles.bodySmall.copyWith(color: c.textSecondary)),
-                    value: _chimeEnabled,
-                    onChanged: (value) async {
-                      setState(() => _chimeEnabled = value);
-                      await VineChime.setEnabled(value);
-                      if (value) await VineChime.chime();
-                    },
-                  ),
                 ],
               ),
             ),
           ]),
           anchor: Column(children: [
-            Text(key: _aboutKey, l.aboutApp, style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
-            SizedBox(height: AppSpacing.sm),
-            SizedBox(height: AppSpacing.sm),
             Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(color: c.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: c.border)),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('á‰¥áˆµáˆˆá‰µ â€” Beslet', style: const TextStyle(fontFamily: 'CormorantGaramond', fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.primary)),
-                const SizedBox(height: AppSpacing.sm),
-                Text(isAm ? 'á‰ áŠ áˆ­á‰£ áˆáŠ•áŒ­ á‹©áŠ’á‰¨áˆ­áˆ²á‰² á‹áˆµáŒ¥ áˆ‹áˆ‰ áŠ­áˆ­áˆµá‰²á‹«áŠ• á‰°áˆ›áˆªá‹Žá‰½ á‹¨á‰ áŒ‹ á‹¨90 á‰€áŠ• á‹¨áˆ˜áŠ•áˆáˆ³á‹Š áŠ¥á‹µáŒˆá‰µ áˆ˜á‰°áŒá‰ áˆªá‹«á¢' : 'A 90-day summer spiritual growth app for Christian students at Arba Minch University and beyond.', style: TextStyle(fontFamily: 'Inter', fontSize: 12, color: c.textSecondary, height: 1.4)),
-                const SizedBox(height: AppSpacing.sm),
-                Text(l.madeByAmanuel, style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: c.textMuted)),
-                Text(l.versionTag, style: TextStyle(fontFamily: 'Inter', fontSize: 11, color: c.textMuted)),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      launchUrl(Uri.parse('https://t.me/emnverse'), mode: LaunchMode.externalApplication);
-                    },
-                    icon: const Icon(Icons.chat_bubble_outline, size: 16),
-                    label: Text(isAm ? 'áŠ áˆµá‰°á‹«á‹¨á‰µ áŠ¥áŠ“ áŠ áˆµá‰°á‹«á‹¨á‰µ' : 'Comment & Suggestions'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.primary,
-                      side: const BorderSide(color: AppColors.primary),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      textStyle: const TextStyle(fontFamily: 'Inter', fontSize: 13),
-                    ),
-                  ),
-                ),
-              ]),
+              decoration: BoxDecoration(
+                color: AppColors.of(context).card,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: AppColors.of(context).border, width: 0.5),
+              ),
+              child: ListTile(
+                leading: const Icon(Icons.info_outline, color: AppColors.primary, size: 20),
+                title: Text(l.aboutApp, style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: AppColors.of(context).textPrimary)),
+                trailing: Icon(Icons.chevron_right, color: AppColors.of(context).textMuted, size: 18),
+                onTap: () => context.go('/about'),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                dense: true,
+              ),
             ),
           ]),
         ),
@@ -433,33 +339,40 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  String _dayName(int day, bool isAm) {
-    const names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    const amNames = ['áˆ°áŠž', 'áˆ›áŠ­áˆ°áŠž', 'áˆ¨á‰¡á‹•', 'áˆáˆ™áˆµ', 'áŠ áˆ­á‰¥', 'á‰…á‹³áˆœ', 'áŠ¥áˆá‹µ'];
-    if (day < 0 || day > 6) return isAm ? 'áŠ áˆá‰°áˆ˜áˆ¨áŒ áˆ' : 'Not set';
-    return isAm ? amNames[day] : names[day];
+  String _dayName(int day) {
+    final l = AppLocalizations.of(context)!;
+    if (day < 0 || day > 6) return l.dayNotSet;
+    return switch (day) {
+      0 => l.dayMonday,
+      1 => l.dayTuesday,
+      2 => l.dayWednesday,
+      3 => l.dayThursday,
+      4 => l.dayFriday,
+      5 => l.daySaturday,
+      _ => l.daySunday,
+    };
   }
 
   Future<void> _pickSabbathDay(BuildContext context, WidgetRef ref, User user) async {
-    final isAm = Localizations.localeOf(context).languageCode == 'am';
+    final l = AppLocalizations.of(context)!;
     final day = await showDialog<int>(
       context: context,
       builder: (ctx) {
           final cc = AppColors.of(ctx);
           return SimpleDialog(
             backgroundColor: cc.card,
-            title: Text(isAm ? 'á‹¨áŠ¥áˆ¨áá‰µ á‰€áŠ•áˆ…áŠ• áˆáˆ¨áŒ¥' : 'Choose your rest day', style: AppTextStyles.labelLarge),
+            title: Text(l.chooseRestDay, style: AppTextStyles.labelLarge),
             children: List.generate(8, (i) {
               if (i == 7) {
                 return SimpleDialogOption(
                   onPressed: () => Navigator.pop(ctx, -1),
-                  child: Text(isAm ? 'á‹¨áˆˆáˆ (á‹¨áŠ¥áˆ¨áá‰µ á‰€áŠ• á‹¨áˆˆáˆ)' : 'None (no rest day)',
+                  child: Text(l.noneRestDay,
                       style: AppTextStyles.bodyMedium.copyWith(color: cc.textMuted)),
                 );
               }
               return SimpleDialogOption(
                 onPressed: () => Navigator.pop(ctx, i),
-                child: Text('${_dayName(i, isAm)}${i == 6 ? (isAm ? ' (áŠ¥áˆá‹µ)' : ' (Sunday)') : ''}',
+                child: Text('${_dayName(i)}${i == 6 ? l.sundayInParen : ''}',
                     style: AppTextStyles.bodyMedium),
               );
             }),
@@ -475,11 +388,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 }
 
-// â”€â”€â”€ Theme Palette Picker â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Theme Palette Picker ───
 class _ThemePalettePicker extends ConsumerWidget {
   @override Widget build(BuildContext context, WidgetRef ref) {
     final selected = ref.watch(themePaletteProvider);
-    final isAm = Localizations.localeOf(context).languageCode == 'am';
+    final l = AppLocalizations.of(context)!;
     final c = AppColors.of(context);
     return Container(
       padding: const EdgeInsets.all(16),
@@ -490,7 +403,7 @@ class _ThemePalettePicker extends ConsumerWidget {
             _PaletteChip(
               option: opt,
               isSelected: opt == selected,
-              label: isAm ? _paletteNameAm(opt) : _paletteNameEn(opt),
+              label: _paletteName(l, opt),
               onTap: () => ref.read(themePaletteProvider.notifier).select(opt),
             ),
         ]),
@@ -498,20 +411,12 @@ class _ThemePalettePicker extends ConsumerWidget {
     );
   }
 
-  String _paletteNameEn(AppThemeOption opt) => switch (opt) {
-    AppThemeOption.classic => 'Classic Gold',
-    AppThemeOption.sepia => 'Sepia Warm',
-    AppThemeOption.calmBlue => 'Calm Blue',
-    AppThemeOption.forestGreen => 'Forest Green',
-    AppThemeOption.midnight => 'Midnight',
-  };
-
-  String _paletteNameAm(AppThemeOption opt) => switch (opt) {
-    AppThemeOption.classic => 'áŠ­áˆ‹áˆ²áŠ­ á‹ˆáˆ­á‰…',
-    AppThemeOption.sepia => 'áˆ´á’á‹«',
-    AppThemeOption.calmBlue => 'áˆ°áˆ‹áˆ›á‹Š áˆ°áˆ›á‹«á‹Š',
-    AppThemeOption.forestGreen => 'á‹°áŠ• áŠ áˆ¨áŠ•áŒ“á‹´',
-    AppThemeOption.midnight => 'áŠ¥áŠ©áˆˆ áˆŒáˆŠá‰µ',
+  String _paletteName(AppLocalizations l, AppThemeOption opt) => switch (opt) {
+    AppThemeOption.classic => l.paletteClassic,
+    AppThemeOption.sepia => l.paletteSepia,
+    AppThemeOption.calmBlue => l.paletteCalmBlue,
+    AppThemeOption.forestGreen => l.paletteForestGreen,
+    AppThemeOption.midnight => l.paletteMidnight,
   };
 }
 
@@ -567,4 +472,3 @@ class _PaletteChip extends StatelessWidget {
     );
   }
 }
-

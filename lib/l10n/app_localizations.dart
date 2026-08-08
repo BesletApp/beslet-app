@@ -1004,36 +1004,6 @@ abstract class AppLocalizations {
   /// **'About this app'**
   String get aboutApp;
 
-  /// No description provided for @settingsVoice.
-  ///
-  /// In en, this message translates to:
-  /// **'Voice'**
-  String get settingsVoice;
-
-  /// No description provided for @settingsVoiceSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'How Beslet speaks to you'**
-  String get settingsVoiceSubtitle;
-
-  /// No description provided for @voiceQuiet.
-  ///
-  /// In en, this message translates to:
-  /// **'Quiet'**
-  String get voiceQuiet;
-
-  /// No description provided for @voiceWarm.
-  ///
-  /// In en, this message translates to:
-  /// **'Warm'**
-  String get voiceWarm;
-
-  /// No description provided for @voiceStill.
-  ///
-  /// In en, this message translates to:
-  /// **'Still'**
-  String get voiceStill;
-
   /// No description provided for @daysShownUp.
   ///
   /// In en, this message translates to:
@@ -1153,12 +1123,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Day'**
   String get day;
-
-  /// No description provided for @userSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Arba Minch University · Computer Science'**
-  String get userSubtitle;
 
   /// No description provided for @dailyTasks.
   ///
@@ -1622,18 +1586,6 @@ abstract class AppLocalizations {
   /// **'Welcome back — the vine drank deep of your presence.'**
   String get gardenRevived;
 
-  /// No description provided for @vineSound.
-  ///
-  /// In en, this message translates to:
-  /// **'Vine chime'**
-  String get vineSound;
-
-  /// No description provided for @vineSoundSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'A soft tone when the vine responds — off by default.'**
-  String get vineSoundSubtitle;
-
   /// No description provided for @tryAgain.
   ///
   /// In en, this message translates to:
@@ -1652,41 +1604,11 @@ abstract class AppLocalizations {
   /// **'Join'**
   String get join;
 
-  /// No description provided for @enkutatashTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Enkutatash'**
-  String get enkutatashTitle;
-
-  /// No description provided for @enkutatashNewYear.
-  ///
-  /// In en, this message translates to:
-  /// **'Ethiopian New Year 2019'**
-  String get enkutatashNewYear;
-
-  /// No description provided for @enterNewYear.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter the New Year'**
-  String get enterNewYear;
-
   /// No description provided for @readyToGrow.
   ///
   /// In en, this message translates to:
   /// **'Ready to grow!'**
   String get readyToGrow;
-
-  /// No description provided for @madeByAmanuel.
-  ///
-  /// In en, this message translates to:
-  /// **'Made by Amanuel Lamesa'**
-  String get madeByAmanuel;
-
-  /// No description provided for @versionTag.
-  ///
-  /// In en, this message translates to:
-  /// **'Summer 2026 · v1.0'**
-  String get versionTag;
 
   /// No description provided for @joinTelegram.
   ///
@@ -2426,12 +2348,6 @@ abstract class AppLocalizations {
   /// **'Let go of this word'**
   String get profileLampRemove;
 
-  /// No description provided for @profileSeasonIntro.
-  ///
-  /// In en, this message translates to:
-  /// **'The season we are in'**
-  String get profileSeasonIntro;
-
   /// No description provided for @profileRoomTitle.
   ///
   /// In en, this message translates to:
@@ -2443,6 +2359,228 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Avatar color'**
   String get profileAvatarColor;
+
+  /// No description provided for @profileIdentityLine.
+  ///
+  /// In en, this message translates to:
+  /// **'A small tool for growing faithfully, one day at a time.'**
+  String get profileIdentityLine;
+
+  /// No description provided for @settingsTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get settingsTheme;
+
+  /// No description provided for @darkModeToggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Toggle light/dark theme'**
+  String get darkModeToggle;
+
+  /// No description provided for @sabbathRest.
+  ///
+  /// In en, this message translates to:
+  /// **'Sabbath Rest'**
+  String get sabbathRest;
+
+  /// No description provided for @chooseRestDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your rest day'**
+  String get chooseRestDay;
+
+  /// No description provided for @restDayNotSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set — no rest day'**
+  String get restDayNotSet;
+
+  /// No description provided for @noneRestDay.
+  ///
+  /// In en, this message translates to:
+  /// **'None (no rest day)'**
+  String get noneRestDay;
+
+  /// No description provided for @dailyReadingReminder.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily reading reminder'**
+  String get dailyReadingReminder;
+
+  /// No description provided for @remindsToReadDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminds you to read daily'**
+  String get remindsToReadDaily;
+
+  /// No description provided for @reminderSetAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder set at {time}'**
+  String reminderSetAt(Object time);
+
+  /// No description provided for @commentSuggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment & Suggestions'**
+  String get commentSuggestions;
+
+  /// No description provided for @dayMonday.
+  ///
+  /// In en, this message translates to:
+  /// **'Monday'**
+  String get dayMonday;
+
+  /// No description provided for @dayTuesday.
+  ///
+  /// In en, this message translates to:
+  /// **'Tuesday'**
+  String get dayTuesday;
+
+  /// No description provided for @dayWednesday.
+  ///
+  /// In en, this message translates to:
+  /// **'Wednesday'**
+  String get dayWednesday;
+
+  /// No description provided for @dayThursday.
+  ///
+  /// In en, this message translates to:
+  /// **'Thursday'**
+  String get dayThursday;
+
+  /// No description provided for @dayFriday.
+  ///
+  /// In en, this message translates to:
+  /// **'Friday'**
+  String get dayFriday;
+
+  /// No description provided for @daySaturday.
+  ///
+  /// In en, this message translates to:
+  /// **'Saturday'**
+  String get daySaturday;
+
+  /// No description provided for @daySunday.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunday'**
+  String get daySunday;
+
+  /// No description provided for @dayNotSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set'**
+  String get dayNotSet;
+
+  /// No description provided for @sundayInParen.
+  ///
+  /// In en, this message translates to:
+  /// **' (Sunday)'**
+  String get sundayInParen;
+
+  /// No description provided for @paletteClassic.
+  ///
+  /// In en, this message translates to:
+  /// **'Classic Gold'**
+  String get paletteClassic;
+
+  /// No description provided for @paletteSepia.
+  ///
+  /// In en, this message translates to:
+  /// **'Sepia Warm'**
+  String get paletteSepia;
+
+  /// No description provided for @paletteCalmBlue.
+  ///
+  /// In en, this message translates to:
+  /// **'Calm Blue'**
+  String get paletteCalmBlue;
+
+  /// No description provided for @paletteForestGreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Forest Green'**
+  String get paletteForestGreen;
+
+  /// No description provided for @paletteMidnight.
+  ///
+  /// In en, this message translates to:
+  /// **'Midnight'**
+  String get paletteMidnight;
+
+  /// No description provided for @aboutBesletTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'About Beslet'**
+  String get aboutBesletTitle;
+
+  /// No description provided for @aboutPara1.
+  ///
+  /// In en, this message translates to:
+  /// **'Beslet (ብስለት) began as a simple tool for my friends at Arba Minch University to make the most of their summer break. Today, it serves as a daily companion for the wider Christian community.'**
+  String get aboutPara1;
+
+  /// No description provided for @aboutPara2.
+  ///
+  /// In en, this message translates to:
+  /// **'Phones often quietly steal our days. Beslet helps you reclaim that time and build consistency in what matters most—Bible reading, prayer, discipline, growth, fellowship, skills, and family. It’s a quiet tool for intentional living.'**
+  String get aboutPara2;
+
+  /// No description provided for @aboutPara3.
+  ///
+  /// In en, this message translates to:
+  /// **'It is also an effort to serve God through software. The vision is to continuously refine the app, publish it on the Google Play Store, and build future tools for the community.'**
+  String get aboutPara3;
+
+  /// No description provided for @aboutSupportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Support'**
+  String get aboutSupportTitle;
+
+  /// No description provided for @aboutSupportBody.
+  ///
+  /// In en, this message translates to:
+  /// **'If Beslet has blessed you, optional contributions help cover the store listing and future updates.'**
+  String get aboutSupportBody;
+
+  /// No description provided for @aboutCbeAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'CBE Account'**
+  String get aboutCbeAccount;
+
+  /// No description provided for @aboutFeedbackTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback'**
+  String get aboutFeedbackTitle;
+
+  /// No description provided for @aboutFeedbackBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Have suggestions? Reach out on Telegram.'**
+  String get aboutFeedbackBody;
+
+  /// No description provided for @copyAccountNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied'**
+  String get copyAccountNumber;
+
+  /// No description provided for @accountCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Account number copied.'**
+  String get accountCopied;
+
+  /// No description provided for @aboutVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version}'**
+  String aboutVersion(Object version);
 }
 
 class _AppLocalizationsDelegate

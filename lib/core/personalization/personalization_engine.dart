@@ -7,7 +7,6 @@ class PersonalizationEngine {
   int _sessionsToday = 0;
   DateTime? _lastOpenedAt;
   int _streakDays = 0;
-  String _voice = 'warm';
 
   PersonalizationEngine._(this._prefs);
 
@@ -23,7 +22,6 @@ class PersonalizationEngine {
     _appOpenCount = _prefs.getInt('pe_appOpenCount') ?? 0;
     _sessionsToday = _prefs.getInt('pe_sessionsToday') ?? 0;
     _streakDays = _prefs.getInt('pe_streakDays') ?? 0;
-    _voice = _prefs.getString('voice') ?? 'warm';
     final lastStr = _prefs.getString('pe_lastOpenedAt');
     _lastOpenedAt = lastStr != null ? DateTime.tryParse(lastStr) : null;
   }
@@ -64,13 +62,6 @@ class PersonalizationEngine {
   int get sessionsToday => _sessionsToday;
   DateTime? get lastOpenedAt => _lastOpenedAt;
   int get streakDays => _streakDays;
-
-  String get voice => _voice;
-
-  Future<void> setVoice(String voice) async {
-    _voice = voice;
-    await _prefs.setString('voice', voice);
-  }
 
   bool get isFirstSessionToday => _sessionsToday == 1;
   bool get isReturningUser => _appOpenCount > 1;

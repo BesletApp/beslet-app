@@ -492,21 +492,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aboutApp => 'About this app';
 
   @override
-  String get settingsVoice => 'Voice';
-
-  @override
-  String get settingsVoiceSubtitle => 'How Beslet speaks to you';
-
-  @override
-  String get voiceQuiet => 'Quiet';
-
-  @override
-  String get voiceWarm => 'Warm';
-
-  @override
-  String get voiceStill => 'Still';
-
-  @override
   String get daysShownUp => 'days shown up';
 
   @override
@@ -573,9 +558,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get day => 'Day';
-
-  @override
-  String get userSubtitle => 'Arba Minch University · Computer Science';
 
   @override
   String get dailyTasks => 'Daily Tasks';
@@ -824,13 +806,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Welcome back — the vine drank deep of your presence.';
 
   @override
-  String get vineSound => 'Vine chime';
-
-  @override
-  String get vineSoundSubtitle =>
-      'A soft tone when the vine responds — off by default.';
-
-  @override
   String get tryAgain => 'Try Again';
 
   @override
@@ -840,22 +815,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get join => 'Join';
 
   @override
-  String get enkutatashTitle => 'Enkutatash';
-
-  @override
-  String get enkutatashNewYear => 'Ethiopian New Year 2019';
-
-  @override
-  String get enterNewYear => 'Enter the New Year';
-
-  @override
   String get readyToGrow => 'Ready to grow!';
-
-  @override
-  String get madeByAmanuel => 'Made by Amanuel Lamesa';
-
-  @override
-  String get versionTag => 'Summer 2026 · v1.0';
 
   @override
   String get joinTelegram => 'Join our community on Telegram';
@@ -1285,11 +1245,128 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileLampRemove => 'Let go of this word';
 
   @override
-  String get profileSeasonIntro => 'The season we are in';
-
-  @override
   String get profileRoomTitle => 'A quiet home';
 
   @override
   String get profileAvatarColor => 'Avatar color';
+
+  @override
+  String get profileIdentityLine =>
+      'A small tool for growing faithfully, one day at a time.';
+
+  @override
+  String get settingsTheme => 'Theme';
+
+  @override
+  String get darkModeToggle => 'Toggle light/dark theme';
+
+  @override
+  String get sabbathRest => 'Sabbath Rest';
+
+  @override
+  String get chooseRestDay => 'Choose your rest day';
+
+  @override
+  String get restDayNotSet => 'Not set — no rest day';
+
+  @override
+  String get noneRestDay => 'None (no rest day)';
+
+  @override
+  String get dailyReadingReminder => 'Daily reading reminder';
+
+  @override
+  String get remindsToReadDaily => 'Reminds you to read daily';
+
+  @override
+  String reminderSetAt(Object time) {
+    return 'Reminder set at $time';
+  }
+
+  @override
+  String get commentSuggestions => 'Comment & Suggestions';
+
+  @override
+  String get dayMonday => 'Monday';
+
+  @override
+  String get dayTuesday => 'Tuesday';
+
+  @override
+  String get dayWednesday => 'Wednesday';
+
+  @override
+  String get dayThursday => 'Thursday';
+
+  @override
+  String get dayFriday => 'Friday';
+
+  @override
+  String get daySaturday => 'Saturday';
+
+  @override
+  String get daySunday => 'Sunday';
+
+  @override
+  String get dayNotSet => 'Not set';
+
+  @override
+  String get sundayInParen => ' (Sunday)';
+
+  @override
+  String get paletteClassic => 'Classic Gold';
+
+  @override
+  String get paletteSepia => 'Sepia Warm';
+
+  @override
+  String get paletteCalmBlue => 'Calm Blue';
+
+  @override
+  String get paletteForestGreen => 'Forest Green';
+
+  @override
+  String get paletteMidnight => 'Midnight';
+
+  @override
+  String get aboutBesletTitle => 'About Beslet';
+
+  @override
+  String get aboutPara1 =>
+      'Beslet (ብስለት) began as a simple tool for my friends at Arba Minch University to make the most of their summer break. Today, it serves as a daily companion for the wider Christian community.';
+
+  @override
+  String get aboutPara2 =>
+      'Phones often quietly steal our days. Beslet helps you reclaim that time and build consistency in what matters most—Bible reading, prayer, discipline, growth, fellowship, skills, and family. It’s a quiet tool for intentional living.';
+
+  @override
+  String get aboutPara3 =>
+      'It is also an effort to serve God through software. The vision is to continuously refine the app, publish it on the Google Play Store, and build future tools for the community.';
+
+  @override
+  String get aboutSupportTitle => 'Support';
+
+  @override
+  String get aboutSupportBody =>
+      'If Beslet has blessed you, optional contributions help cover the store listing and future updates.';
+
+  @override
+  String get aboutCbeAccount => 'CBE Account';
+
+  @override
+  String get aboutFeedbackTitle => 'Feedback';
+
+  @override
+  String get aboutFeedbackBody => 'Have suggestions? Reach out on Telegram.';
+
+  @override
+  String get copyAccountNumber => 'Copied';
+
+  @override
+  String get accountCopied => 'Account number copied.';
+
+  @override
+  String aboutVersion(Object version) {
+    return 'Version $version';
+  }
 }

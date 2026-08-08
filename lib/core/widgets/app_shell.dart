@@ -5,7 +5,6 @@ import '../../l10n/app_localizations.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_durations.dart';
 import '../personalization/personalization_providers.dart';
-import '../services/vine_chime_service.dart';
 import '../../features/spiritual/widgets/mini_player_bar.dart';
 
 class AppShell extends ConsumerStatefulWidget {
@@ -37,7 +36,6 @@ class _AppShellState extends ConsumerState<AppShell> {
         onDestinationSelected: (index) {
           if (index != currentIndex) {
             widget.navigationShell.goBranch(index);
-            if (index == 3) VineChime.chime();
           }
         },
         backgroundColor: c.card,
