@@ -9,6 +9,7 @@ import '../../../core/services/audio_bible_service.dart';
 import '../../../core/services/scripture_service.dart';
 import '../../../core/providers/audio_player_provider.dart';
 import '../../../core/providers/reading_preferences_provider.dart';
+import '../../../l10n/app_localizations.dart';
 import 'journal_sheet.dart';
 
 class VerseActionSheet extends ConsumerWidget {
@@ -19,6 +20,7 @@ class VerseActionSheet extends ConsumerWidget {
   final String reference;
   final bool isAm;
   final int verseIndex;
+  final VoidCallback? onStudy;
 
   const VerseActionSheet({
     super.key,
@@ -29,6 +31,7 @@ class VerseActionSheet extends ConsumerWidget {
     required this.reference,
     required this.isAm,
     required this.verseIndex,
+    this.onStudy,
   });
 
   void _toggleHighlight(WidgetRef ref, String colorId) {
@@ -150,6 +153,10 @@ class VerseActionSheet extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 20),
+            if (onStudy != null) ...[
+              _studyTile(context),
+              const SizedBox(height: 16),
+            ],
             Row(children: [
               _action(context, ref, Icons.copy, isAm ? 'ቅዳ' : 'Copy',
                   () => _copy(context, ref, withReference: false)),
@@ -221,6 +228,35 @@ class VerseActionSheet extends ConsumerWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _studyTile(BuildContext context) {
+    final c = AppColors.of(context);
+    return InkWell(
+      onTap: onStudy,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: c.primary.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: c.primary.withValues(alpha: 0.35)),
+        ),
+        child: Row(children: [
+          Icon(Icons.menu_book, size: 20, color: c.primary),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              AppLocalizations.of(context)!.study,
+              style: AppTextStyles.labelLarge.copyWith(
+                  color: c.textPrimary, fontSize: 14),
+            ),
+          ),
+          Icon(Icons.chevron_right, size: 20, color: c.textMuted),
+        ]),
       ),
     );
   }

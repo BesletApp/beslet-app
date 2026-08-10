@@ -1405,4 +1405,59 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get chapter => 'ምዕራፍ';
+
+  @override
+  String get study => 'ማጥናት';
+
+  @override
+  String studyVersesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'ማጥናት · $count ጥቅሶች',
+      one: 'ማጥናት · 1 ጥቅስ',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get studySelectHint => 'ሌላ ጥቅስ መታ በማድረግ ምርጫውን አስፋ';
+
+  @override
+  String get studyCancel => 'ሰርዝ';
+
+  @override
+  String get studySectionSummary => 'ማጠቃለያ';
+
+  @override
+  String get studySectionContext => 'ዐውድ';
+
+  @override
+  String get studySectionObservations => 'ምልከታ';
+
+  @override
+  String get studySectionTeachings => 'ትምህርት';
+
+  @override
+  String get studySectionReflection => 'ነጸብራቅ';
+
+  @override
+  String get studySectionCrossReferences => 'ተዛማጅ ጥቅሶች';
+
+  @override
+  String get studyContextBehind => 'ከጽሑፉ በስተጀርባ';
+
+  @override
+  String get studyContextInText => 'በጽሑፉ ውስጥ';
+
+  @override
+  String get studyAuthorityFooter =>
+      'ሥልጣኑ መጽሐፍ ቅዱስና ቤተ ክርስቲያንህ ነው። እነዚህ ማስታወሻዎች የጥናት መርጃ ናቸው፣ ምትክ አይደሉም።';
+
+  @override
+  String get studyLoading => 'የጥናት ማስታወሻዎን በማዘጋጀት ላይ…';
+
+  @override
+  String get studyOfflineNote =>
+      'የዚህ ጥቅስ ሙሉ የጥናት ማስታወሻ አሁን ግንኙነት ይፈልጋል። ጽሑፉ በራሱ ቆሞ ይበቃል — አንብበው፣ ቀና ብለው አስተንትኑት፣ ራሱ ይሥራ።';
 }

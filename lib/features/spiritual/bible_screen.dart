@@ -17,6 +17,7 @@ import '../../core/providers/growth_streams_provider.dart';
 import '../../core/providers/journal_provider.dart';
 import '../../core/services/scene_event_bus.dart';
 import '../../l10n/app_localizations.dart';
+import '../../core/ai/study/study_models.dart';
 import 'widgets/audio_player_bar.dart';
 import 'widgets/verse_list_view.dart';
 import 'widgets/chapter_picker.dart';
@@ -24,6 +25,8 @@ import 'widgets/download_sheet.dart';
 import 'widgets/verse_action_sheet.dart';
 import 'widgets/reflection_input_field.dart';
 import 'widgets/bottom_confirmation_button.dart';
+import 'widgets/passage_selection_bar.dart';
+import 'widgets/study_panel.dart';
 
 class BibleScreen extends ConsumerStatefulWidget {
   final String? initialBookId;
@@ -45,6 +48,13 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
   bool _footerRevealed = false;
   bool _confirming = false;
   Timer? _dwellTimer;
+
+  /// Passage selection (long-press to begin, tap to extend). Kept as a
+  /// contiguous, one-chapter range of at most 10 verses.
+  bool _selecting = false;
+  int? _selStart;
+  int? _selEnd;
+  static const int _maxSelectionVerses = 10;
 
   String get _effectiveLang {
     final locale = Localizations.localeOf(context).languageCode;
@@ -210,6 +220,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
   void _goAdjacent(int delta) {
     final next = _adjacentChapter(delta);
     if (next == null) return;
+    _cancelSelection();
     setState(() {
       _pickedBookId = next.bookId;
       _pickedChapter = next.chapter;
@@ -243,6 +254,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
             book: book,
             onSelected: (chapter) {
               Navigator.pop(ctx);
+              _cancelSelection();
               setState(() {
                 _pickedBookId = book.id;
                 _pickedChapter = chapter;
@@ -391,6 +403,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
 
   Future<void> _markReadingDone() async {
     final parsed = _resolveParsed();
+    _cancelSelection();
     setState(() => _confirming = true);
     if (_reflectionCtrl.text.trim().isNotEmpty) {
       await ref.read(journalNotifierProvider.notifier).saveEntry(_reflectionCtrl.text.trim());
@@ -439,6 +452,103 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
         reference: reference,
         isAm: _isAm,
         verseIndex: index,
+        onStudy: () {
+          Navigator.of(context).pop();
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) _openStudyForRange(index, index);
+          });
+        },
+      ),
+    );
+  }
+
+  ScriptureChapter? _currentChapter() {
+    final parsed = _resolveParsed();
+    if (parsed == null) return null;
+    return ref.read(scriptureProvider((
+      bookId: parsed.bookId,
+      chapter: parsed.chapter,
+      isAmharic: _isAm,
+    ))).valueOrNull;
+  }
+
+  /// Long-press a verse to enter passage selection; it becomes the anchor.
+  void _enterSelection(ScriptureVerse verse, int index) {
+    if (_selecting) return;
+    setState(() {
+      _selecting = true;
+      _selStart = index;
+      _selEnd = index;
+    });
+  }
+
+  /// While selecting, tapping another verse extends the contiguous range,
+  /// clamped to at most [_maxSelectionVerses] verses in either direction.
+  void _extendSelection(ScriptureVerse verse, int index) {
+    if (!_selecting || _selStart == null) return;
+    final anchor = _selStart!;
+    var end = index;
+    if (index >= anchor) {
+      if (index > anchor + _maxSelectionVerses - 1) {
+        end = anchor + _maxSelectionVerses - 1;
+      }
+    } else {
+      if (index < anchor - (_maxSelectionVerses - 1)) {
+        end = anchor - (_maxSelectionVerses - 1);
+      }
+    }
+    setState(() {
+      _selStart = anchor < end ? anchor : end;
+      _selEnd = anchor < end ? end : anchor;
+    });
+  }
+
+  void _cancelSelection() {
+    if (!_selecting) return;
+    setState(() {
+      _selecting = false;
+      _selStart = null;
+      _selEnd = null;
+    });
+  }
+
+  void _studySelection() {
+    if (!_selecting || _selStart == null || _selEnd == null) return;
+    final start = _selStart!;
+    final end = _selEnd!;
+    _cancelSelection();
+    _openStudyForRange(start, end);
+  }
+
+  /// Opens the study panel for a contiguous index range within the chapter.
+  void _openStudyForRange(int startIdx, int endIdx) {
+    final parsed = _resolveParsed();
+    final chapter = _currentChapter();
+    if (parsed == null || chapter == null) return;
+    final lo = startIdx < endIdx ? startIdx : endIdx;
+    final hi = startIdx < endIdx ? endIdx : startIdx;
+    final texts = [
+      for (var i = lo; i <= hi; i++) chapter.verses[i].text,
+    ];
+    final reference = StudyReference(
+      bookId: parsed.bookId,
+      chapter: parsed.chapter,
+      startVerse: chapter.verses[lo].number,
+      endVerse: chapter.verses[hi].number,
+    );
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      sheetAnimationStyle: AnimationStyle(
+          duration: const Duration(milliseconds: 300), curve: Curves.easeInOut),
+      builder: (_) => StudyPanel(
+        request: StudyRequest(
+          reference: reference,
+          isAmharic: _isAm,
+          verseTexts: texts,
+        ),
+        isAm: _isAm,
       ),
     );
   }
@@ -552,7 +662,11 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
                                 ? playerState.currentVerse
                                 : null,
                             isAm: _isAm,
-                            onVerseTap: _showVerseSheet,
+                            onVerseTap:
+                                _selecting ? _extendSelection : _showVerseSheet,
+                            onVerseLongPress: _enterSelection,
+                            selectionStart: _selStart,
+                            selectionEnd: _selEnd,
                             highlightedVerseColors: highlightedVerseColors,
                             controller: _scrollCtrl,
                           );
@@ -565,7 +679,15 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
               ),
             ),
           ),
-          _buildFooter(l),
+          _selecting && _selStart != null && _selEnd != null
+              ? PassageSelectionBar(
+                  studyLabel: l.studyVersesCount(_selEnd! - _selStart! + 1),
+                  cancelLabel: l.studyCancel,
+                  hintLabel: l.studySelectHint,
+                  onStudy: _studySelection,
+                  onCancel: _cancelSelection,
+                )
+              : _buildFooter(l),
         ],
       ),
     );
@@ -724,6 +846,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
             isAm: _isAm,
             onSelected: (bookId, chapter) {
               Navigator.pop(ctx);
+              _cancelSelection();
               setState(() {
                 _pickedBookId = bookId;
                 _pickedChapter = chapter;
@@ -747,6 +870,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
       builder: (_) => LibrarySheet(
         isAm: _isAm,
         onBookSelected: (bookId, chapter, language) {
+          _cancelSelection();
           setState(() {
             _selectedLang = language;
             _pickedBookId = bookId;

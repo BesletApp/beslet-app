@@ -1418,4 +1418,59 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chapter => 'Chapter';
+
+  @override
+  String get study => 'Study';
+
+  @override
+  String studyVersesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Study · $count verses',
+      one: 'Study · 1 verse',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get studySelectHint => 'Tap another verse to extend the selection';
+
+  @override
+  String get studyCancel => 'Cancel';
+
+  @override
+  String get studySectionSummary => 'Summary';
+
+  @override
+  String get studySectionContext => 'Context';
+
+  @override
+  String get studySectionObservations => 'Observations';
+
+  @override
+  String get studySectionTeachings => 'Teachings';
+
+  @override
+  String get studySectionReflection => 'Reflection';
+
+  @override
+  String get studySectionCrossReferences => 'Cross-References';
+
+  @override
+  String get studyContextBehind => 'Behind the text';
+
+  @override
+  String get studyContextInText => 'In the text';
+
+  @override
+  String get studyAuthorityFooter =>
+      'Scripture and your church remain the authority. These notes are a study aid, not a replacement.';
+
+  @override
+  String get studyLoading => 'Preparing your study note…';
+
+  @override
+  String get studyOfflineNote =>
+      'A full study note for this passage needs a connection right now. The passage stands on its own — read it, sit with it, and let it do its work.';
 }

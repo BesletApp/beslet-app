@@ -2677,6 +2677,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Chapter'**
   String get chapter;
+
+  /// No description provided for @study.
+  ///
+  /// In en, this message translates to:
+  /// **'Study'**
+  String get study;
+
+  /// No description provided for @studyVersesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Study · 1 verse} other{Study · {count} verses}}'**
+  String studyVersesCount(int count);
+
+  /// No description provided for @studySelectHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap another verse to extend the selection'**
+  String get studySelectHint;
+
+  /// No description provided for @studyCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get studyCancel;
+
+  /// No description provided for @studySectionSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Summary'**
+  String get studySectionSummary;
+
+  /// No description provided for @studySectionContext.
+  ///
+  /// In en, this message translates to:
+  /// **'Context'**
+  String get studySectionContext;
+
+  /// No description provided for @studySectionObservations.
+  ///
+  /// In en, this message translates to:
+  /// **'Observations'**
+  String get studySectionObservations;
+
+  /// No description provided for @studySectionTeachings.
+  ///
+  /// In en, this message translates to:
+  /// **'Teachings'**
+  String get studySectionTeachings;
+
+  /// No description provided for @studySectionReflection.
+  ///
+  /// In en, this message translates to:
+  /// **'Reflection'**
+  String get studySectionReflection;
+
+  /// No description provided for @studySectionCrossReferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Cross-References'**
+  String get studySectionCrossReferences;
+
+  /// No description provided for @studyContextBehind.
+  ///
+  /// In en, this message translates to:
+  /// **'Behind the text'**
+  String get studyContextBehind;
+
+  /// No description provided for @studyContextInText.
+  ///
+  /// In en, this message translates to:
+  /// **'In the text'**
+  String get studyContextInText;
+
+  /// No description provided for @studyAuthorityFooter.
+  ///
+  /// In en, this message translates to:
+  /// **'Scripture and your church remain the authority. These notes are a study aid, not a replacement.'**
+  String get studyAuthorityFooter;
+
+  /// No description provided for @studyLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing your study note…'**
+  String get studyLoading;
+
+  /// No description provided for @studyOfflineNote.
+  ///
+  /// In en, this message translates to:
+  /// **'A full study note for this passage needs a connection right now. The passage stands on its own — read it, sit with it, and let it do its work.'**
+  String get studyOfflineNote;
 }
 
 class _AppLocalizationsDelegate

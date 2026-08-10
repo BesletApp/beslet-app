@@ -11,6 +11,9 @@ class VerseListView extends ConsumerWidget {
   final int? currentVerseIndex;
   final bool isAm;
   final void Function(ScriptureVerse verse, int verseIndex)? onVerseTap;
+  final void Function(ScriptureVerse verse, int verseIndex)? onVerseLongPress;
+  final int? selectionStart;
+  final int? selectionEnd;
   final Map<int, String> highlightedVerseColors;
   final ScrollController? controller;
 
@@ -20,6 +23,9 @@ class VerseListView extends ConsumerWidget {
     this.currentVerseIndex,
     this.isAm = false,
     this.onVerseTap,
+    this.onVerseLongPress,
+    this.selectionStart,
+    this.selectionEnd,
     this.highlightedVerseColors = const {},
     this.controller,
   });
@@ -60,23 +66,34 @@ class VerseListView extends ConsumerWidget {
         final isCurrent = current != null && index == current;
         final colorId = highlightedVerseColors[verse.number];
         final highlightColor = colorId != null ? highlightColorFor(colorId) : null;
+        final isSelected = selectionStart != null &&
+            selectionEnd != null &&
+            index >= selectionStart! &&
+            index <= selectionEnd!;
 
         return InkWell(
           onTap: onVerseTap != null ? () => onVerseTap!(verse, index) : null,
+          onLongPress: onVerseLongPress != null
+              ? () => onVerseLongPress!(verse, index)
+              : null,
           highlightColor: Colors.transparent,
           splashColor: Colors.transparent,          child: Container(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
             margin: EdgeInsets.only(top: index > 0 && (index % 10 == 0) ? AppSpacing.sm : 0),
             decoration: BoxDecoration(
-              color: highlightColor != null
-                  ? highlightColor.withValues(alpha: 0.18)
-                  : isCurrent
-                      ? AppColors.audioBlue.withValues(alpha: 0.08)
-                      : null,
+              color: isSelected
+                  ? c.primary.withValues(alpha: 0.16)
+                  : highlightColor != null
+                      ? highlightColor.withValues(alpha: 0.18)
+                      : isCurrent
+                          ? AppColors.audioBlue.withValues(alpha: 0.08)
+                          : null,
               border: Border(
-                left: highlightColor != null
-                    ? BorderSide(color: highlightColor, width: 3)
-                    : BorderSide.none,
+                left: isSelected
+                    ? BorderSide(color: c.primary, width: 3)
+                    : highlightColor != null
+                        ? BorderSide(color: highlightColor, width: 3)
+                        : BorderSide.none,
                 bottom: isCurrent
                     ? const BorderSide(color: AppColors.audioBlue, width: 2)
                     : BorderSide.none,

@@ -430,5 +430,27 @@
   "aiKeyRemoved": "Key removed.",
   "previousChapter": "Previous chapter",
   "nextChapter": "Next chapter",
-  "chapter": "Chapter"
+  "chapter": "Chapter",
+  "study": "Study",
+  "studyVersesCount": "{count, plural, =1{Study · 1 verse} other{Study · {count} verses}}",
+  "@studyVersesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "studySelectHint": "Tap another verse to extend the selection",
+  "studyCancel": "Cancel",
+  "studySectionSummary": "Summary",
+  "studySectionContext": "Context",
+  "studySectionObservations": "Observations",
+  "studySectionTeachings": "Teachings",
+  "studySectionReflection": "Reflection",
+  "studySectionCrossReferences": "Cross-References",
+  "studyContextBehind": "Behind the text",
+  "studyContextInText": "In the text",
+  "studyAuthorityFooter": "Scripture and your church remain the authority. These notes are a study aid, not a replacement.",
+  "studyLoading": "Preparing your study note…",
+  "studyOfflineNote": "A full study note for this passage needs a connection right now. The passage stands on its own — read it, sit with it, and let it do its work."
 }

@@ -430,5 +430,27 @@
   "aiKeyRemoved": "ቁልፍ ተወግዷል።",
   "previousChapter": "ቀዳሚ ምዕራፍ",
   "nextChapter": "ቀጣይ ምዕራፍ",
-  "chapter": "ምዕራፍ"
+  "chapter": "ምዕራፍ",
+  "study": "ማጥናት",
+  "studyVersesCount": "{count, plural, =1{ማጥናት · 1 ጥቅስ} other{ማጥናት · {count} ጥቅሶች}}",
+  "@studyVersesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "studySelectHint": "ሌላ ጥቅስ መታ በማድረግ ምርጫውን አስፋ",
+  "studyCancel": "ሰርዝ",
+  "studySectionSummary": "ማጠቃለያ",
+  "studySectionContext": "ዐውድ",
+  "studySectionObservations": "ምልከታ",
+  "studySectionTeachings": "ትምህርት",
+  "studySectionReflection": "ነጸብራቅ",
+  "studySectionCrossReferences": "ተዛማጅ ጥቅሶች",
+  "studyContextBehind": "ከጽሑፉ በስተጀርባ",
+  "studyContextInText": "በጽሑፉ ውስጥ",
+  "studyAuthorityFooter": "ሥልጣኑ መጽሐፍ ቅዱስና ቤተ ክርስቲያንህ ነው። እነዚህ ማስታወሻዎች የጥናት መርጃ ናቸው፣ ምትክ አይደሉም።",
+  "studyLoading": "የጥናት ማስታወሻዎን በማዘጋጀት ላይ…",
+  "studyOfflineNote": "የዚህ ጥቅስ ሙሉ የጥናት ማስታወሻ አሁን ግንኙነት ይፈልጋል። ጽሑፉ በራሱ ቆሞ ይበቃል — አንብበው፣ ቀና ብለው አስተንትኑት፣ ራሱ ይሥራ።"
 }
