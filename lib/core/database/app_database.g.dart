@@ -10048,6 +10048,492 @@ class VerseChallengesCompanion extends UpdateCompanion<VerseChallenge> {
   }
 }
 
+class $AiMomentsTable extends AiMoments
+    with TableInfo<$AiMomentsTable, AiMoment> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AiMomentsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _dayKeyMeta = const VerificationMeta('dayKey');
+  @override
+  late final GeneratedColumn<String> dayKey = GeneratedColumn<String>(
+    'day_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+    'type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _modeMeta = const VerificationMeta('mode');
+  @override
+  late final GeneratedColumn<String> mode = GeneratedColumn<String>(
+    'mode',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sourceMeta = const VerificationMeta('source');
+  @override
+  late final GeneratedColumn<String> source = GeneratedColumn<String>(
+    'source',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _referenceMeta = const VerificationMeta(
+    'reference',
+  );
+  @override
+  late final GeneratedColumn<String> reference = GeneratedColumn<String>(
+    'reference',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _itemIdMeta = const VerificationMeta('itemId');
+  @override
+  late final GeneratedColumn<String> itemId = GeneratedColumn<String>(
+    'item_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    dayKey,
+    type,
+    mode,
+    source,
+    reference,
+    itemId,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'ai_moments';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AiMoment> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('day_key')) {
+      context.handle(
+        _dayKeyMeta,
+        dayKey.isAcceptableOrUnknown(data['day_key']!, _dayKeyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dayKeyMeta);
+    }
+    if (data.containsKey('type')) {
+      context.handle(
+        _typeMeta,
+        type.isAcceptableOrUnknown(data['type']!, _typeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_typeMeta);
+    }
+    if (data.containsKey('mode')) {
+      context.handle(
+        _modeMeta,
+        mode.isAcceptableOrUnknown(data['mode']!, _modeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_modeMeta);
+    }
+    if (data.containsKey('source')) {
+      context.handle(
+        _sourceMeta,
+        source.isAcceptableOrUnknown(data['source']!, _sourceMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sourceMeta);
+    }
+    if (data.containsKey('reference')) {
+      context.handle(
+        _referenceMeta,
+        reference.isAcceptableOrUnknown(data['reference']!, _referenceMeta),
+      );
+    }
+    if (data.containsKey('item_id')) {
+      context.handle(
+        _itemIdMeta,
+        itemId.isAcceptableOrUnknown(data['item_id']!, _itemIdMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  AiMoment map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AiMoment(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      dayKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}day_key'],
+      )!,
+      type: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}type'],
+      )!,
+      mode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}mode'],
+      )!,
+      source: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source'],
+      )!,
+      reference: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reference'],
+      ),
+      itemId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}item_id'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $AiMomentsTable createAlias(String alias) {
+    return $AiMomentsTable(attachedDatabase, alias);
+  }
+}
+
+class AiMoment extends DataClass implements Insertable<AiMoment> {
+  final int id;
+  final String dayKey;
+  final String type;
+  final String mode;
+  final String source;
+  final String? reference;
+  final String? itemId;
+  final DateTime createdAt;
+  const AiMoment({
+    required this.id,
+    required this.dayKey,
+    required this.type,
+    required this.mode,
+    required this.source,
+    this.reference,
+    this.itemId,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['day_key'] = Variable<String>(dayKey);
+    map['type'] = Variable<String>(type);
+    map['mode'] = Variable<String>(mode);
+    map['source'] = Variable<String>(source);
+    if (!nullToAbsent || reference != null) {
+      map['reference'] = Variable<String>(reference);
+    }
+    if (!nullToAbsent || itemId != null) {
+      map['item_id'] = Variable<String>(itemId);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  AiMomentsCompanion toCompanion(bool nullToAbsent) {
+    return AiMomentsCompanion(
+      id: Value(id),
+      dayKey: Value(dayKey),
+      type: Value(type),
+      mode: Value(mode),
+      source: Value(source),
+      reference: reference == null && nullToAbsent
+          ? const Value.absent()
+          : Value(reference),
+      itemId: itemId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(itemId),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory AiMoment.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AiMoment(
+      id: serializer.fromJson<int>(json['id']),
+      dayKey: serializer.fromJson<String>(json['dayKey']),
+      type: serializer.fromJson<String>(json['type']),
+      mode: serializer.fromJson<String>(json['mode']),
+      source: serializer.fromJson<String>(json['source']),
+      reference: serializer.fromJson<String?>(json['reference']),
+      itemId: serializer.fromJson<String?>(json['itemId']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'dayKey': serializer.toJson<String>(dayKey),
+      'type': serializer.toJson<String>(type),
+      'mode': serializer.toJson<String>(mode),
+      'source': serializer.toJson<String>(source),
+      'reference': serializer.toJson<String?>(reference),
+      'itemId': serializer.toJson<String?>(itemId),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  AiMoment copyWith({
+    int? id,
+    String? dayKey,
+    String? type,
+    String? mode,
+    String? source,
+    Value<String?> reference = const Value.absent(),
+    Value<String?> itemId = const Value.absent(),
+    DateTime? createdAt,
+  }) => AiMoment(
+    id: id ?? this.id,
+    dayKey: dayKey ?? this.dayKey,
+    type: type ?? this.type,
+    mode: mode ?? this.mode,
+    source: source ?? this.source,
+    reference: reference.present ? reference.value : this.reference,
+    itemId: itemId.present ? itemId.value : this.itemId,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  AiMoment copyWithCompanion(AiMomentsCompanion data) {
+    return AiMoment(
+      id: data.id.present ? data.id.value : this.id,
+      dayKey: data.dayKey.present ? data.dayKey.value : this.dayKey,
+      type: data.type.present ? data.type.value : this.type,
+      mode: data.mode.present ? data.mode.value : this.mode,
+      source: data.source.present ? data.source.value : this.source,
+      reference: data.reference.present ? data.reference.value : this.reference,
+      itemId: data.itemId.present ? data.itemId.value : this.itemId,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AiMoment(')
+          ..write('id: $id, ')
+          ..write('dayKey: $dayKey, ')
+          ..write('type: $type, ')
+          ..write('mode: $mode, ')
+          ..write('source: $source, ')
+          ..write('reference: $reference, ')
+          ..write('itemId: $itemId, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, dayKey, type, mode, source, reference, itemId, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AiMoment &&
+          other.id == this.id &&
+          other.dayKey == this.dayKey &&
+          other.type == this.type &&
+          other.mode == this.mode &&
+          other.source == this.source &&
+          other.reference == this.reference &&
+          other.itemId == this.itemId &&
+          other.createdAt == this.createdAt);
+}
+
+class AiMomentsCompanion extends UpdateCompanion<AiMoment> {
+  final Value<int> id;
+  final Value<String> dayKey;
+  final Value<String> type;
+  final Value<String> mode;
+  final Value<String> source;
+  final Value<String?> reference;
+  final Value<String?> itemId;
+  final Value<DateTime> createdAt;
+  const AiMomentsCompanion({
+    this.id = const Value.absent(),
+    this.dayKey = const Value.absent(),
+    this.type = const Value.absent(),
+    this.mode = const Value.absent(),
+    this.source = const Value.absent(),
+    this.reference = const Value.absent(),
+    this.itemId = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  AiMomentsCompanion.insert({
+    this.id = const Value.absent(),
+    required String dayKey,
+    required String type,
+    required String mode,
+    required String source,
+    this.reference = const Value.absent(),
+    this.itemId = const Value.absent(),
+    required DateTime createdAt,
+  }) : dayKey = Value(dayKey),
+       type = Value(type),
+       mode = Value(mode),
+       source = Value(source),
+       createdAt = Value(createdAt);
+  static Insertable<AiMoment> custom({
+    Expression<int>? id,
+    Expression<String>? dayKey,
+    Expression<String>? type,
+    Expression<String>? mode,
+    Expression<String>? source,
+    Expression<String>? reference,
+    Expression<String>? itemId,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (dayKey != null) 'day_key': dayKey,
+      if (type != null) 'type': type,
+      if (mode != null) 'mode': mode,
+      if (source != null) 'source': source,
+      if (reference != null) 'reference': reference,
+      if (itemId != null) 'item_id': itemId,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  AiMomentsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? dayKey,
+    Value<String>? type,
+    Value<String>? mode,
+    Value<String>? source,
+    Value<String?>? reference,
+    Value<String?>? itemId,
+    Value<DateTime>? createdAt,
+  }) {
+    return AiMomentsCompanion(
+      id: id ?? this.id,
+      dayKey: dayKey ?? this.dayKey,
+      type: type ?? this.type,
+      mode: mode ?? this.mode,
+      source: source ?? this.source,
+      reference: reference ?? this.reference,
+      itemId: itemId ?? this.itemId,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (dayKey.present) {
+      map['day_key'] = Variable<String>(dayKey.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
+    }
+    if (mode.present) {
+      map['mode'] = Variable<String>(mode.value);
+    }
+    if (source.present) {
+      map['source'] = Variable<String>(source.value);
+    }
+    if (reference.present) {
+      map['reference'] = Variable<String>(reference.value);
+    }
+    if (itemId.present) {
+      map['item_id'] = Variable<String>(itemId.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AiMomentsCompanion(')
+          ..write('id: $id, ')
+          ..write('dayKey: $dayKey, ')
+          ..write('type: $type, ')
+          ..write('mode: $mode, ')
+          ..write('source: $source, ')
+          ..write('reference: $reference, ')
+          ..write('itemId: $itemId, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -10081,6 +10567,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $VerseChallengesTable verseChallenges = $VerseChallengesTable(
     this,
   );
+  late final $AiMomentsTable aiMoments = $AiMomentsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -10109,6 +10596,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     readingSessions,
     vineDay,
     verseChallenges,
+    aiMoments,
   ];
 }
 
@@ -16080,6 +16568,251 @@ typedef $$VerseChallengesTableProcessedTableManager =
       VerseChallenge,
       PrefetchHooks Function()
     >;
+typedef $$AiMomentsTableCreateCompanionBuilder =
+    AiMomentsCompanion Function({
+      Value<int> id,
+      required String dayKey,
+      required String type,
+      required String mode,
+      required String source,
+      Value<String?> reference,
+      Value<String?> itemId,
+      required DateTime createdAt,
+    });
+typedef $$AiMomentsTableUpdateCompanionBuilder =
+    AiMomentsCompanion Function({
+      Value<int> id,
+      Value<String> dayKey,
+      Value<String> type,
+      Value<String> mode,
+      Value<String> source,
+      Value<String?> reference,
+      Value<String?> itemId,
+      Value<DateTime> createdAt,
+    });
+
+class $$AiMomentsTableFilterComposer
+    extends Composer<_$AppDatabase, $AiMomentsTable> {
+  $$AiMomentsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get dayKey => $composableBuilder(
+    column: $table.dayKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get mode => $composableBuilder(
+    column: $table.mode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get reference => $composableBuilder(
+    column: $table.reference,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get itemId => $composableBuilder(
+    column: $table.itemId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$AiMomentsTableOrderingComposer
+    extends Composer<_$AppDatabase, $AiMomentsTable> {
+  $$AiMomentsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get dayKey => $composableBuilder(
+    column: $table.dayKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get mode => $composableBuilder(
+    column: $table.mode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get reference => $composableBuilder(
+    column: $table.reference,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get itemId => $composableBuilder(
+    column: $table.itemId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$AiMomentsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $AiMomentsTable> {
+  $$AiMomentsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get dayKey =>
+      $composableBuilder(column: $table.dayKey, builder: (column) => column);
+
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<String> get mode =>
+      $composableBuilder(column: $table.mode, builder: (column) => column);
+
+  GeneratedColumn<String> get source =>
+      $composableBuilder(column: $table.source, builder: (column) => column);
+
+  GeneratedColumn<String> get reference =>
+      $composableBuilder(column: $table.reference, builder: (column) => column);
+
+  GeneratedColumn<String> get itemId =>
+      $composableBuilder(column: $table.itemId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$AiMomentsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $AiMomentsTable,
+          AiMoment,
+          $$AiMomentsTableFilterComposer,
+          $$AiMomentsTableOrderingComposer,
+          $$AiMomentsTableAnnotationComposer,
+          $$AiMomentsTableCreateCompanionBuilder,
+          $$AiMomentsTableUpdateCompanionBuilder,
+          (AiMoment, BaseReferences<_$AppDatabase, $AiMomentsTable, AiMoment>),
+          AiMoment,
+          PrefetchHooks Function()
+        > {
+  $$AiMomentsTableTableManager(_$AppDatabase db, $AiMomentsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AiMomentsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AiMomentsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AiMomentsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> dayKey = const Value.absent(),
+                Value<String> type = const Value.absent(),
+                Value<String> mode = const Value.absent(),
+                Value<String> source = const Value.absent(),
+                Value<String?> reference = const Value.absent(),
+                Value<String?> itemId = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => AiMomentsCompanion(
+                id: id,
+                dayKey: dayKey,
+                type: type,
+                mode: mode,
+                source: source,
+                reference: reference,
+                itemId: itemId,
+                createdAt: createdAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String dayKey,
+                required String type,
+                required String mode,
+                required String source,
+                Value<String?> reference = const Value.absent(),
+                Value<String?> itemId = const Value.absent(),
+                required DateTime createdAt,
+              }) => AiMomentsCompanion.insert(
+                id: id,
+                dayKey: dayKey,
+                type: type,
+                mode: mode,
+                source: source,
+                reference: reference,
+                itemId: itemId,
+                createdAt: createdAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$AiMomentsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $AiMomentsTable,
+      AiMoment,
+      $$AiMomentsTableFilterComposer,
+      $$AiMomentsTableOrderingComposer,
+      $$AiMomentsTableAnnotationComposer,
+      $$AiMomentsTableCreateCompanionBuilder,
+      $$AiMomentsTableUpdateCompanionBuilder,
+      (AiMoment, BaseReferences<_$AppDatabase, $AiMomentsTable, AiMoment>),
+      AiMoment,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -16130,4 +16863,6 @@ class $AppDatabaseManager {
       $$VineDayTableTableManager(_db, _db.vineDay);
   $$VerseChallengesTableTableManager get verseChallenges =>
       $$VerseChallengesTableTableManager(_db, _db.verseChallenges);
+  $$AiMomentsTableTableManager get aiMoments =>
+      $$AiMomentsTableTableManager(_db, _db.aiMoments);
 }

@@ -414,5 +414,18 @@
   "aboutFeedbackBody": "ሃሳብ አለህ? በቴሌግራም ያነጋግረኝ።",
   "copyAccountNumber": "ተቀድቷል",
   "accountCopied": "የሂሳብ ቁጥሩ ተቀድቷል።",
-  "aboutVersion": "ስሪት {version}"
+  "aboutVersion": "ስሪት {version}",
+  "aiKeyTitle": "የአንተ AI ቁልፍ",
+  "aiKeySubtitle": "አማራጭ፦ የራስህን Gemini API ቁልፍ አገናኝ",
+  "aiKeyConnect": "የራስህን ቁልፍ አገናኝ",
+  "aiKeyConnected": "ተገናኝቷል",
+  "aiKeyBuiltIn": "በአብሮ የተሰራው ቁልፍ በመጠቀም ላይ",
+  "aiKeyDialogTitle": "የራስህ Gemini API ቁልፍ",
+  "aiKeyDialogBody": "በ AI Studio ነጻ ቁልፍ አግኝ፣ ከዚያም እዚህ ለጥፈው። ይህ አማራጭ ነው — ብስለት ለረጅም ጊዜ በአብሮ የተሰራው ቁልፍ ይሰራል።",
+  "aiKeyPlaceholder": "የAPI ቁልፍህን ለጥፍ",
+  "aiKeyOpenStudio": "AI Studio ክፈት",
+  "aiKeySave": "አስቀምጥ",
+  "aiKeyRemove": "ቁልፍ አስወግድ",
+  "aiKeySaved": "ቁልፍ ተቀምጧል።",
+  "aiKeyRemoved": "ቁልፍ ተወግዷል።"
 }

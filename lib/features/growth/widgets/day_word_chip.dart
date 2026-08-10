@@ -68,18 +68,19 @@ class DayWordChip extends ConsumerWidget {
               ],
             ),
           ),
-          TextButton.icon(
-            onPressed: () => ref
-                .read(audioPlayerProvider.notifier)
-                .speakVerse(text, isAmharic: isAm),
-            icon: Icon(Icons.volume_up, size: 16, color: AppColors.of(context).primary),
-            label: Text(l.listen, style: t.labelSmall.copyWith(color: AppColors.of(context).primary)),
-            style: TextButton.styleFrom(
-              foregroundColor: AppColors.of(context).primary,
-              visualDensity: VisualDensity.compact,
-              padding: EdgeInsets.zero,
+          if (!isAm)
+            TextButton.icon(
+              onPressed: () => ref
+                  .read(audioPlayerProvider.notifier)
+                  .speakVerse(text, isAmharic: isAm),
+              icon: Icon(Icons.volume_up, size: 16, color: AppColors.of(context).primary),
+              label: Text(l.listen, style: t.labelSmall.copyWith(color: AppColors.of(context).primary)),
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.of(context).primary,
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+              ),
             ),
-          ),
         ],
       ),
     );

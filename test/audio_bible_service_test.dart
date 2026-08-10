@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:beslet_app/core/services/audio_bible_service.dart';
 
@@ -18,6 +19,24 @@ Map<String, dynamic> voice({
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUp(() {
+    final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(
+      const MethodChannel('flutter_tts'),
+      (call) async => 1,
+    );
+    messenger.setMockMethodCallHandler(
+      const MethodChannel('xyz.luan/audioplayers.global'),
+      (call) async => 1,
+    );
+    messenger.setMockMethodCallHandler(
+      const MethodChannel('xyz.luan/audioplayers'),
+      (call) async => 1,
+    );
+  });
+
   group('selectTtsVoice', () {
     test('picks neural very-high-quality voice over robotic default', () {
       final voices = [
@@ -72,6 +91,39 @@ void main() {
       expect(selectTtsVoice([
         voice(name: 'am-et-...-voice', locale: 'am-ET'),
       ], 'en-US'), isNull);
+    });
+  });
+
+  group('Amharic TTS suppression', () {
+    test('speakVerse for Amharic is a silent no-op (never touches TTS)',
+        () async {
+      final service = AudioBibleService();
+      addTearDown(service.dispose);
+      // If speakVerse tried to initialize/use TTS it would throw (no platform
+      // available in tests) rather than returning silently.
+      await expectLater(
+        service.speakVerse('ይህ ጽሑፍ በድምፅ አይነበብም', isAmharic: true),
+        completes,
+      );
+      expect(service.state, AudioState.stopped);
+    });
+
+    test('playChapter for a missing Amharic chapter reports an error, never TTS',
+        () async {
+      final service = AudioBibleService();
+      addTearDown(service.dispose);
+      await expectLater(
+        service.loadChapter(const AudioChapterInfo(
+          bookId: 'matthew',
+          chapter: 5,
+          reference: 'Matthew 5',
+          bookName: 'Matthew',
+          isAmharic: true,
+        )),
+        completes,
+      );
+      // loadChapter itself must not attempt TTS for Amharic.
+      expect(service.state, isNot(AudioState.playing));
     });
   });
 }

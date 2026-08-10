@@ -13,6 +13,7 @@ import 'core/services/widget_service.dart';
 import 'core/services/prayer_reminder_service.dart';
 import 'core/services/prayer_alarm_sound_service.dart';
 import 'core/services/vineyard_reminder_service.dart';
+import 'core/services/bible_seed_service.dart';
 import 'core/personalization/personalization_engine.dart';
 import 'core/personalization/personalization_providers.dart';
 import 'core/providers/database_provider.dart';
@@ -83,6 +84,8 @@ Future<void> _warmStart(ProviderContainer container) async {
 
   await _attempt(() => WidgetService.updateWidgetData());
   await _attempt(() => PrayerReminderService.updatePrayerNotificationContent());
+  await _attempt(() => BibleSeedService.seedIfNeeded(),
+      timeout: const Duration(seconds: 60));
 
   final db = container.read(databaseProvider);
   String lang = 'en';

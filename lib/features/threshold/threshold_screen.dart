@@ -131,43 +131,44 @@ class _ThresholdScreenState extends ConsumerState<ThresholdScreen> {
                             textAlign: TextAlign.center,
                           ),
                           SizedBox(height: AppSpacing.md),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              IconButton(
-                                visualDensity: VisualDensity.compact,
-                                onPressed: () {
-                                  final notifier =
-                                      ref.read(audioPlayerProvider.notifier);
-                                  if (threadPlaying) {
-                                    notifier.stop();
-                                  } else {
-                                    notifier.speakVerse(
-                                      isAm
-                                          ? (verse.textAm ?? verse.text)
-                                          : verse.text,
-                                      isAmharic: isAm,
-                                    );
-                                  }
-                                },
-                                icon: Icon(
-                                  threadPlaying
-                                      ? Icons.pause_circle_filled
-                                      : Icons.play_circle_filled,
-                                  size: 34,
-                                  color: c.audioBlue,
+                          if (!isAm)
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                IconButton(
+                                  visualDensity: VisualDensity.compact,
+                                  onPressed: () {
+                                    final notifier =
+                                        ref.read(audioPlayerProvider.notifier);
+                                    if (threadPlaying) {
+                                      notifier.stop();
+                                    } else {
+                                      notifier.speakVerse(
+                                        isAm
+                                            ? (verse.textAm ?? verse.text)
+                                            : verse.text,
+                                        isAmharic: isAm,
+                                      );
+                                    }
+                                  },
+                                  icon: Icon(
+                                    threadPlaying
+                                        ? Icons.pause_circle_filled
+                                        : Icons.play_circle_filled,
+                                    size: 34,
+                                    color: c.audioBlue,
+                                  ),
                                 ),
-                              ),
-                              SizedBox(width: AppSpacing.xs),
-                              Text(
-                                threadPlaying
-                                    ? (isAm ? 'ማቆም' : 'stop')
-                                    : (isAm ? 'አዳምጥ' : 'hear it'),
-                                style: t.bodySmall.copyWith(
-                                    fontSize: 11, color: c.textMuted),
-                              ),
-                            ],
-                          ),
+                                SizedBox(width: AppSpacing.xs),
+                                Text(
+                                  threadPlaying
+                                      ? (isAm ? 'ማቆም' : 'stop')
+                                      : (isAm ? 'አዳምጥ' : 'hear it'),
+                                  style: t.bodySmall.copyWith(
+                                      fontSize: 11, color: c.textMuted),
+                                ),
+                              ],
+                            ),
                           if (verse.textAm != null) ...[
                             SizedBox(height: AppSpacing.md),
                             Text(

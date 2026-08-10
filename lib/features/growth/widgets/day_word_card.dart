@@ -39,17 +39,18 @@ class DayWordCard extends ConsumerWidget {
                 style: t.labelLarge.copyWith(color: c.textSecondary),
               ),
               const Spacer(),
-              TextButton.icon(
-                onPressed: () => ref
-                    .read(audioPlayerProvider.notifier)
-                    .speakVerse(text, isAmharic: isAm),
-                icon: Icon(Icons.volume_up, size: 16, color: AppColors.of(context).primary),
-                label: Text(l.listen),
-                style: TextButton.styleFrom(
-                  foregroundColor: AppColors.of(context).primary,
-                  visualDensity: VisualDensity.compact,
+              if (!isAm)
+                TextButton.icon(
+                  onPressed: () => ref
+                      .read(audioPlayerProvider.notifier)
+                      .speakVerse(text, isAmharic: isAm),
+                  icon: Icon(Icons.volume_up, size: 16, color: AppColors.of(context).primary),
+                  label: Text(l.listen),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.of(context).primary,
+                    visualDensity: VisualDensity.compact,
+                  ),
                 ),
-              ),
             ],
           ),
           const SizedBox(height: AppSpacing.sm),

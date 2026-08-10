@@ -2,12 +2,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/providers/theme_provider.dart';
 import '../../core/providers/user_provider.dart';
 import '../../core/providers/database_provider.dart';
+import '../../core/providers/ai_provider.dart';
 import '../../core/database/app_database.dart';
 import '../../core/services/notification_service.dart';
 import '../../core/services/vineyard_reminder_service.dart';
@@ -33,13 +35,98 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _visitsEnabled = false;
   String _visitsFrequency = 'gentle';
   String _visitsWindow = 'evening';
+  bool _aiKeyConnected = false;
 
   @override
   void initState() {
     super.initState();
     _loadReminderTime();
     _loadVisits();
+    _loadAiKey();
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSection());
+  }
+
+  Future<void> _loadAiKey() async {
+    final keyStore = ref.read(aiKeyStoreProvider);
+    final key = await keyStore.readUserKey();
+    if (!mounted) return;
+    setState(() => _aiKeyConnected = key != null && key.trim().isNotEmpty);
+  }
+
+  /// Quietly lets an advanced user connect their own Gemini key. Optional —
+  /// the bundled free-tier key is the default. Never prominent.
+  Future<void> _manageAiKey(BuildContext context) async {
+    final l = AppLocalizations.of(context)!;
+    final keyStore = ref.read(aiKeyStoreProvider);
+    final controller = TextEditingController();
+
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) {
+        final cc = AppColors.of(ctx);
+        return AlertDialog(
+          backgroundColor: cc.card,
+          title: Text(l.aiKeyDialogTitle, style: AppTextStyles.labelLarge),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(l.aiKeyDialogBody,
+                  style: AppTextStyles.bodySmall.copyWith(color: cc.textSecondary)),
+              const SizedBox(height: AppSpacing.sm),
+              TextField(
+                controller: controller,
+                obscureText: true,
+                decoration: InputDecoration(
+                  hintText: l.aiKeyPlaceholder,
+                  isDense: true,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              TextButton.icon(
+                onPressed: () =>
+                    launchUrl(Uri.parse('https://aistudio.google.com/apikey')),
+                icon: const Icon(Icons.open_in_new, size: 16),
+                label: Text(l.aiKeyOpenStudio,
+                    style: AppTextStyles.bodySmall),
+              ),
+            ],
+          ),
+          actions: [
+            if (_aiKeyConnected)
+              TextButton(
+                onPressed: () async {
+                  await keyStore.clearUserKey();
+                  if (ctx.mounted) Navigator.of(ctx).pop('removed');
+                },
+                child: Text(l.aiKeyRemove,
+                    style: TextStyle(color: AppColors.warning)),
+              ),
+            TextButton(
+              onPressed: () async {
+                if (controller.text.trim().isNotEmpty) {
+                  await keyStore.saveUserKey(controller.text);
+                }
+                if (ctx.mounted) Navigator.of(ctx).pop('saved');
+              },
+              child: Text(l.aiKeySave),
+            ),
+          ],
+        );
+      },
+    );
+    controller.dispose();
+
+    if (result == null || !context.mounted) return;
+    setState(() => _aiKeyConnected = result == 'saved');
+    final l10n = AppLocalizations.of(context)!;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(result == 'saved' ? l10n.aiKeySaved : l10n.aiKeyRemoved,
+          style: const TextStyle(fontFamily: 'Inter')),
+      backgroundColor: AppColors.success,
+      behavior: SnackBarBehavior.floating,
+      duration: const Duration(seconds: 2),
+    ));
   }
 
   Future<void> _loadReminderTime() async {
@@ -289,6 +376,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     onTap: () => _pickVineyardVisits(context),
                   ),
                 ],
+              ),
+            ),
+            SizedBox(height: AppSpacing.lg),
+            Text(l.aiKeyTitle, style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
+            SizedBox(height: AppSpacing.sm),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: c.card,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: c.border),
+              ),
+              child: ListTile(
+                leading: const Icon(Icons.key, color: AppColors.primary),
+                title: Text(l.aiKeyConnect, style: AppTextStyles.bodyMedium),
+                subtitle: Text(
+                  _aiKeyConnected ? l.aiKeyConnected : l.aiKeyBuiltIn,
+                  style: AppTextStyles.bodySmall.copyWith(color: c.textSecondary)),
+                trailing: Icon(Icons.chevron_right, color: c.textMuted, size: 18),
+                contentPadding: EdgeInsets.zero,
+                onTap: () => _manageAiKey(context),
               ),
             ),
           ]),

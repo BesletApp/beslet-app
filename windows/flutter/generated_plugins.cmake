@@ -5,6 +5,7 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   audioplayers_windows
   connectivity_plus
+  flutter_secure_storage_windows
   flutter_tts
   share_plus
   sqlite3_flutter_libs

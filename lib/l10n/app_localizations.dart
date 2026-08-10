@@ -2581,6 +2581,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Version {version}'**
   String aboutVersion(Object version);
+
+  /// No description provided for @aiKeyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your AI key'**
+  String get aiKeyTitle;
+
+  /// No description provided for @aiKeySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional: connect your own Gemini API key'**
+  String get aiKeySubtitle;
+
+  /// No description provided for @aiKeyConnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect your own key'**
+  String get aiKeyConnect;
+
+  /// No description provided for @aiKeyConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected'**
+  String get aiKeyConnected;
+
+  /// No description provided for @aiKeyBuiltIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Using the built-in key'**
+  String get aiKeyBuiltIn;
+
+  /// No description provided for @aiKeyDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Gemini API key'**
+  String get aiKeyDialogTitle;
+
+  /// No description provided for @aiKeyDialogBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Get a free key at AI Studio, then paste it here. This is optional — Beslet works with its built-in key for a long time.'**
+  String get aiKeyDialogBody;
+
+  /// No description provided for @aiKeyPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste your API key'**
+  String get aiKeyPlaceholder;
+
+  /// No description provided for @aiKeyOpenStudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Open AI Studio'**
+  String get aiKeyOpenStudio;
+
+  /// No description provided for @aiKeySave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get aiKeySave;
+
+  /// No description provided for @aiKeyRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove key'**
+  String get aiKeyRemove;
+
+  /// No description provided for @aiKeySaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Key saved.'**
+  String get aiKeySaved;
+
+  /// No description provided for @aiKeyRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Key removed.'**
+  String get aiKeyRemoved;
 }
 
 class _AppLocalizationsDelegate

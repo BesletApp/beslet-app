@@ -76,20 +76,22 @@ class LampCard extends ConsumerWidget {
             const SizedBox(height: AppSpacing.md),
             Row(
               children: [
-                _softAction(
-                  context: context,
-                  icon: Icons.headphones_outlined,
-                  label: l.profileLampListen,
-                  onTap: () {
-                    final isAm =
-                        Localizations.localeOf(context).languageCode == 'am';
-                    ref.read(audioPlayerProvider.notifier).speakVerse(
-                          keptWord,
-                          isAmharic: isAm,
-                        );
-                  },
-                ),
-                const SizedBox(width: AppSpacing.sm),
+                if (Localizations.localeOf(context).languageCode != 'am')
+                  _softAction(
+                    context: context,
+                    icon: Icons.headphones_outlined,
+                    label: l.profileLampListen,
+                    onTap: () {
+                      final isAm =
+                          Localizations.localeOf(context).languageCode == 'am';
+                      ref.read(audioPlayerProvider.notifier).speakVerse(
+                            keptWord,
+                            isAmharic: isAm,
+                          );
+                    },
+                  ),
+                if (Localizations.localeOf(context).languageCode != 'am')
+                  const SizedBox(width: AppSpacing.sm),
                 _softAction(
                   context: context,
                   icon: Icons.close,

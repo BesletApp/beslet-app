@@ -304,9 +304,10 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
   @override
   Widget build(BuildContext context) {
     final isOnline = ref.watch(connectivityProvider).valueOrNull ?? true;
+    final bundleSeeded = ref.watch(bibleSeededProvider).valueOrNull ?? false;
     final l = AppLocalizations.of(context)!;
 
-    if (!isOnline) {
+    if (!isOnline && !bundleSeeded) {
       return _buildOfflineView();
     }
 

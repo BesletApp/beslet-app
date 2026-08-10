@@ -1,6 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/bible_text_service.dart';
+import '../services/bible_seed_service.dart';
 import '../services/scripture_service.dart';
+
+/// True once the bundled bilingual Bible has been seeded into the text cache
+/// on first launch, making the whole canon readable offline.
+final bibleSeededProvider = FutureProvider<bool>((ref) async {
+  return BibleSeedService.isSeeded();
+});
 
 class ScriptureVerse {
   final int number;

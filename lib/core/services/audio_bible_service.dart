@@ -31,10 +31,6 @@ class AudioBibleService {
   bool _initialized = false;
   String? _initLanguage;
   bool _isAmharic = false;
-  /// Amharic is only ever spoken with a real Amharic voice. When the device
-  /// has none, fidel text is never thrown at an English voice — it is simply
-  /// left silent.
-  bool _amharicSupported = true;
   int _currentVerseIndex = 0;
   List<String> _currentVerses = [];
   List<String> _currentVerseNumbers = [];
@@ -99,26 +95,22 @@ class AudioBibleService {
     _initialized = false;
     _initLanguage = language;
     _isAmharic = language == 'am-ET';
+    if (_isAmharic) {
+      // Amharic is never read aloud by TTS — only recorded narration is
+      // played for Amharic, so the TTS engine is left unconfigured.
+      return;
+    }
     try {
       await _tts.setLanguage(language);
-      _amharicSupported = true;
     } catch (_) {
-      if (_isAmharic) {
-        _amharicSupported = false;
-        return;
-      }
       await _tts.setLanguage('en-US');
     }
-    await _tts.setSpeechRate(_isAmharic ? 0.5 : 0.52);
+    await _tts.setSpeechRate(0.52);
     await _tts.setPitch(0.9);
     await _tts.setVolume(1.0);
     try {
       final voices = await _tts.getVoices;
       final chosen = voices != null ? selectTtsVoice(voices, language) : null;
-      if (_isAmharic && chosen == null) {
-        _amharicSupported = false;
-        return;
-      }
       if (chosen != null) {
         final ok = await _tts.setVoice({
           'name': chosen['name'],
@@ -222,6 +214,12 @@ class AudioBibleService {
           if (audioFile != null) { await _playRecordedAudio(audioFile.path); return; }
         } catch (_) {}
       }
+      if (info.isAmharic) {
+        _errorMessage = 'Amharic audio not available for this chapter';
+        _state = AudioState.error;
+        onStateChanged?.call();
+        return;
+      }
       await _playTtsAudio();
       return;
     }
@@ -254,10 +252,20 @@ class AudioBibleService {
           if (audioFile != null) { await _playRecordedAudio(audioFile.path); return; }
         } catch (_) {}
       }
+      if (info.isAmharic) {
+        _errorMessage = 'Amharic audio not available for this chapter';
+        _state = AudioState.error;
+        onStateChanged?.call();
+        return;
+      }
       await _playTtsAudio();
     } catch (e) {
-      if (_currentVerses.isNotEmpty) {
+      if (_currentVerses.isNotEmpty && !info.isAmharic) {
         await _playTtsAudio();
+      } else if (info.isAmharic) {
+        _errorMessage = 'Amharic audio not available for this chapter';
+        _state = AudioState.error;
+        onStateChanged?.call();
       } else {
         _errorMessage = 'Connect to the internet to listen to Bible audio';
         _state = AudioState.error;
@@ -276,6 +284,7 @@ class AudioBibleService {
   }
 
   Future<void> _playTtsAudio() async {
+    if (_isAmharic) return;
     _sourceType = AudioSourceType.tts;
     _state = AudioState.playing;
     onStateChanged?.call();
@@ -290,29 +299,25 @@ class AudioBibleService {
   }
 
   Future<void> _speakText(String text) async {
-    if (_isAmharic && !_amharicSupported) {
+    if (_isAmharic) {
+      // Amharic is never read aloud by TTS.
       _state = AudioState.stopped;
       onStateChanged?.call();
       return;
     }
-    if (_isAmharic) {
-      await _tts.speak(text);
-    } else {
-      final escaped = text
-          .replaceAll('&', '&amp;')
-          .replaceAll('<', '&lt;')
-          .replaceAll('>', '&gt;');
-      await _tts.speak('<speak>$escaped<break time="200ms"/></speak>');
-    }
+    final escaped = text
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;');
+    await _tts.speak('<speak>$escaped<break time="200ms"/></speak>');
   }
 
   /// Speaks a single passage (e.g. the daily thread verse) via TTS,
-  /// stopping any in-progress chapter playback.
+  /// stopping any in-progress chapter playback. Amharic is never read aloud
+  /// by TTS, so this is a no-op for Amharic.
   Future<void> speakVerse(String text, {required bool isAmharic}) async {
-    await _init(language: isAmharic ? 'am-ET' : 'en-US');
-    if (isAmharic && !_amharicSupported) {
-      return; // never read fidel with an English voice
-    }
+    if (isAmharic) return;
+    await _init(language: 'en-US');
     await _tts.stop();
     await _audioPlayer.stop();
     _sourceType = AudioSourceType.tts;

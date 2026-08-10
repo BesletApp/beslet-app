@@ -1369,4 +1369,44 @@ class AppLocalizationsEn extends AppLocalizations {
   String aboutVersion(Object version) {
     return 'Version $version';
   }
+
+  @override
+  String get aiKeyTitle => 'Your AI key';
+
+  @override
+  String get aiKeySubtitle => 'Optional: connect your own Gemini API key';
+
+  @override
+  String get aiKeyConnect => 'Connect your own key';
+
+  @override
+  String get aiKeyConnected => 'Connected';
+
+  @override
+  String get aiKeyBuiltIn => 'Using the built-in key';
+
+  @override
+  String get aiKeyDialogTitle => 'Your Gemini API key';
+
+  @override
+  String get aiKeyDialogBody =>
+      'Get a free key at AI Studio, then paste it here. This is optional — Beslet works with its built-in key for a long time.';
+
+  @override
+  String get aiKeyPlaceholder => 'Paste your API key';
+
+  @override
+  String get aiKeyOpenStudio => 'Open AI Studio';
+
+  @override
+  String get aiKeySave => 'Save';
+
+  @override
+  String get aiKeyRemove => 'Remove key';
+
+  @override
+  String get aiKeySaved => 'Key saved.';
+
+  @override
+  String get aiKeyRemoved => 'Key removed.';
 }

@@ -1356,4 +1356,44 @@ class AppLocalizationsAm extends AppLocalizations {
   String aboutVersion(Object version) {
     return 'ስሪት $version';
   }
+
+  @override
+  String get aiKeyTitle => 'የአንተ AI ቁልፍ';
+
+  @override
+  String get aiKeySubtitle => 'አማራጭ፦ የራስህን Gemini API ቁልፍ አገናኝ';
+
+  @override
+  String get aiKeyConnect => 'የራስህን ቁልፍ አገናኝ';
+
+  @override
+  String get aiKeyConnected => 'ተገናኝቷል';
+
+  @override
+  String get aiKeyBuiltIn => 'በአብሮ የተሰራው ቁልፍ በመጠቀም ላይ';
+
+  @override
+  String get aiKeyDialogTitle => 'የራስህ Gemini API ቁልፍ';
+
+  @override
+  String get aiKeyDialogBody =>
+      'በ AI Studio ነጻ ቁልፍ አግኝ፣ ከዚያም እዚህ ለጥፈው። ይህ አማራጭ ነው — ብስለት ለረጅም ጊዜ በአብሮ የተሰራው ቁልፍ ይሰራል።';
+
+  @override
+  String get aiKeyPlaceholder => 'የAPI ቁልፍህን ለጥፍ';
+
+  @override
+  String get aiKeyOpenStudio => 'AI Studio ክፈት';
+
+  @override
+  String get aiKeySave => 'አስቀምጥ';
+
+  @override
+  String get aiKeyRemove => 'ቁልፍ አስወግድ';
+
+  @override
+  String get aiKeySaved => 'ቁልፍ ተቀምጧል።';
+
+  @override
+  String get aiKeyRemoved => 'ቁልፍ ተወግዷል።';
 }

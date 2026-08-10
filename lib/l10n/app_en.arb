@@ -414,5 +414,18 @@
   "aboutFeedbackBody": "Have suggestions? Reach out on Telegram.",
   "copyAccountNumber": "Copied",
   "accountCopied": "Account number copied.",
-  "aboutVersion": "Version {version}"
+  "aboutVersion": "Version {version}",
+  "aiKeyTitle": "Your AI key",
+  "aiKeySubtitle": "Optional: connect your own Gemini API key",
+  "aiKeyConnect": "Connect your own key",
+  "aiKeyConnected": "Connected",
+  "aiKeyBuiltIn": "Using the built-in key",
+  "aiKeyDialogTitle": "Your Gemini API key",
+  "aiKeyDialogBody": "Get a free key at AI Studio, then paste it here. This is optional — Beslet works with its built-in key for a long time.",
+  "aiKeyPlaceholder": "Paste your API key",
+  "aiKeyOpenStudio": "Open AI Studio",
+  "aiKeySave": "Save",
+  "aiKeyRemove": "Remove key",
+  "aiKeySaved": "Key saved.",
+  "aiKeyRemoved": "Key removed."
 }
