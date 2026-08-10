@@ -1226,6 +1226,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get whatDidYouUnderstand => 'What did you understand?';
 
   @override
+  String get previousChapter => 'Previous chapter';
+
+  @override
+  String get nextChapter => 'Next chapter';
+
+  @override
+  String get chapter => 'Chapter';
+
+  @override
   String get profileLampTitle => 'The Word I carry';
 
   @override

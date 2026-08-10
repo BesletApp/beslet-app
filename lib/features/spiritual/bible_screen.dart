@@ -17,7 +17,6 @@ import '../../core/providers/growth_streams_provider.dart';
 import '../../core/providers/journal_provider.dart';
 import '../../core/services/scene_event_bus.dart';
 import '../../l10n/app_localizations.dart';
-import '../growth/widgets/mini_vine.dart';
 import 'widgets/audio_player_bar.dart';
 import 'widgets/verse_list_view.dart';
 import 'widgets/chapter_picker.dart';
@@ -108,7 +107,18 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
         _pickedChapter = last.chapter;
         if (last.language != null) _selectedLang = last.language;
       });
+      return;
     }
+    // No saved page (and none passed in): the Bible zone never opens empty —
+    // it lands on today's reading plan (NT plan, or the Day's Thread verse,
+    // or Genesis 1 as a graceful fallback), so there is always Scripture to
+    // read or hear, offline included.
+    if (!mounted) return;
+    final plan = ref.read(todayBiblePlanProvider);
+    setState(() {
+      _pickedBookId = plan.bookId;
+      _pickedChapter = plan.chapter;
+    });
   }
 
   void _saveOpenPage() {
@@ -172,6 +182,138 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
       return (bookId: _pickedBookId!, chapter: _pickedChapter!);
     }
     return null;
+  }
+
+  /// The chapter one step before or after the current one, flowing across
+  /// books in canonical order. Returns null at the canon's edges
+  /// (Genesis 1 going back, Revelation 22 going forward).
+  ({String bookId, int chapter})? _adjacentChapter(int delta) {
+    final parsed = _resolveParsed();
+    if (parsed == null) return null;
+    final books = ScriptureService.allBooks;
+    final idx = books.indexWhere((b) => b.id == parsed.bookId);
+    if (idx < 0) return null;
+    var book = books[idx];
+    var chapter = parsed.chapter + delta;
+    if (chapter < 1) {
+      if (idx == 0) return null;
+      book = books[idx - 1];
+      chapter = book.chapters;
+    } else if (chapter > book.chapters) {
+      if (idx == books.length - 1) return null;
+      book = books[idx + 1];
+      chapter = 1;
+    }
+    return (bookId: book.id, chapter: chapter);
+  }
+
+  void _goAdjacent(int delta) {
+    final next = _adjacentChapter(delta);
+    if (next == null) return;
+    setState(() {
+      _pickedBookId = next.bookId;
+      _pickedChapter = next.chapter;
+    });
+    _resetFooter();
+    _saveOpenPage();
+    _onChapterOpened();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _scrollCtrl.hasClients) _scrollCtrl.jumpTo(0);
+    });
+  }
+
+  /// A quick chapter grid for the current book, so the reader never has to
+  /// leave the reading view to switch chapters.
+  void _showQuickChapterPicker() {
+    final parsed = _resolveParsed();
+    final book = parsed != null ? ScriptureService.bookMap[parsed.bookId] : null;
+    if (book == null) return;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.of(context).background,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      isScrollControlled: true,
+      sheetAnimationStyle: AnimationStyle(
+          duration: const Duration(milliseconds: 300), curve: Curves.easeInOut),
+      builder: (ctx) {
+        return SizedBox(
+          height: MediaQuery.of(ctx).size.height * 0.6,
+          child: ChapterPicker(
+            book: book,
+            onSelected: (chapter) {
+              Navigator.pop(ctx);
+              setState(() {
+                _pickedBookId = book.id;
+                _pickedChapter = chapter;
+              });
+              _resetFooter();
+              _saveOpenPage();
+              _onChapterOpened();
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted && _scrollCtrl.hasClients) _scrollCtrl.jumpTo(0);
+              });
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  /// The slim prev / "Book chapter" / next strip above the reader. Previous
+  /// and Next flow across books; the center opens the quick chapter grid.
+  Widget _buildChapterNav(AppLocalizations l) {
+    final c = AppColors.of(context);
+    final parsed = _resolveParsed();
+    final prev = _adjacentChapter(-1);
+    final next = _adjacentChapter(1);
+    final book = parsed != null ? ScriptureService.bookMap[parsed.bookId] : null;
+    final label = parsed != null
+        ? '${book != null ? (_isAm ? book.nameAm : book.nameEn) : parsed.bookId} ${parsed.chapter}'
+        : '';
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+      child: Row(children: [
+        IconButton(
+          tooltip: l.previousChapter,
+          icon: Icon(Icons.chevron_left, color: prev == null ? c.textMuted.withValues(alpha: 0.25) : c.textPrimary),
+          visualDensity: VisualDensity.compact,
+          onPressed: prev == null ? null : () => _goAdjacent(-1),
+        ),
+        Expanded(
+          child: InkWell(
+            onTap: _showQuickChapterPicker,
+            borderRadius: BorderRadius.circular(8),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Column(children: [
+                Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.labelLarge.copyWith(
+                    color: c.textPrimary,
+                    fontSize: 14,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  l.chapter,
+                  style: TextStyle(fontSize: 10, color: c.textMuted),
+                ),
+              ]),
+            ),
+          ),
+        ),
+        IconButton(
+          tooltip: l.nextChapter,
+          icon: Icon(Icons.chevron_right, color: next == null ? c.textMuted.withValues(alpha: 0.25) : c.textPrimary),
+          visualDensity: VisualDensity.compact,
+          onPressed: next == null ? null : () => _goAdjacent(1),
+        ),
+      ]),
+    );
   }
 
   /// The quiet "done" state that lives at the bottom of the chapter — the
@@ -379,17 +521,12 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
       ),
       body: Column(
         children: [
-          MiniVine(
-            seed: 902,
-            emphasis: MiniVineEmphasis.light,
-            eventSource: ref.read(sceneEventBusProvider),
-            height: 68,
-          ),
           AudioPlayerBar(
             isAm: _isAm,
             bookId: parsed?.bookId,
             chapterNum: parsed?.chapter,
           ),
+          if (parsed != null) _buildChapterNav(l),
           Expanded(
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),

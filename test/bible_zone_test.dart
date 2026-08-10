@@ -6,6 +6,7 @@ import 'package:beslet_app/core/providers/scripture_provider.dart';
 import 'package:beslet_app/core/providers/soul_log_provider.dart';
 import 'package:beslet_app/core/providers/vine_life_provider.dart';
 import 'package:beslet_app/features/spiritual/bible_screen.dart';
+import 'package:beslet_app/features/spiritual/widgets/chapter_picker.dart';
 import 'package:beslet_app/l10n/app_localizations.dart';
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:flutter/material.dart';
@@ -67,8 +68,13 @@ void main() {
     WidgetTester tester, {
     int verses = 60,
     Locale? locale,
+    String? initialBookId = 'genesis',
+    int? initialChapter = 1,
+    void Function(String bookId, int chapter, bool isAmharic)? onScriptureRequested,
+    TodayReadingPlan? planOverride,
+    Map<String, Object>? prefs,
   }) async {
-    SharedPreferences.setMockInitialValues({});
+    SharedPreferences.setMockInitialValues(prefs ?? {});
     reading = _FakeReadingNotifier();
     journal = _FakeJournalNotifier();
     await tester.pumpWidget(
@@ -76,7 +82,12 @@ void main() {
         overrides: [
           connectivityProvider.overrideWith((ref) => Stream.value(true)),
           audioPlayerProvider.overrideWith(() => _FakeAudioPlayer()),
-          scriptureProvider.overrideWith((ref, params) async => _chapter(verses: verses)),
+          scriptureProvider.overrideWith((ref, params) async {
+            onScriptureRequested?.call(params.bookId, params.chapter, params.isAmharic);
+            return _chapter(verses: verses);
+          }),
+          if (planOverride != null)
+            todayBiblePlanProvider.overrideWithValue(planOverride),
           todayReadingProvider.overrideWith((ref) async => null),
           todaySoulLogProvider.overrideWith((ref) async => null),
           journalEntryProvider.overrideWith((ref) async => null),
@@ -95,7 +106,10 @@ void main() {
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           locale: locale,
-          home: const BibleScreen(initialBookId: 'genesis', initialChapter: 1),
+          home: BibleScreen(
+            initialBookId: initialBookId,
+            initialChapter: initialChapter,
+          ),
         ),
       ),
     );
@@ -206,6 +220,191 @@ void main() {
       expect(reading.marks.single.chapter, 1);
       expect(journal.saved, contains('The Word showed me rest.'),
           reason: 'the reflection must be written to today\'s journal');
+    });
+  });
+
+  group('Chapter navigation', () {
+    testWidgets('next moves to the following chapter in the same book',
+        (tester) async {
+      final requested = <({String bookId, int chapter})>[];
+      await pumpBible(
+        tester,
+        initialBookId: 'genesis',
+        initialChapter: 1,
+        onScriptureRequested: (bookId, chapter, _) =>
+            requested.add((bookId: bookId, chapter: chapter)),
+      );
+
+      await tester.tap(find.byTooltip('Next chapter'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      expect(requested.any((r) => r.bookId == 'genesis' && r.chapter == 2),
+          isTrue,
+          reason: 'next must open chapter 2 of the same book');
+    });
+
+    testWidgets('previous moves to the prior chapter in the same book',
+        (tester) async {
+      final requested = <({String bookId, int chapter})>[];
+      await pumpBible(
+        tester,
+        initialBookId: 'genesis',
+        initialChapter: 3,
+        onScriptureRequested: (bookId, chapter, _) =>
+            requested.add((bookId: bookId, chapter: chapter)),
+      );
+
+      await tester.tap(find.byTooltip('Previous chapter'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      expect(requested.any((r) => r.bookId == 'genesis' && r.chapter == 2),
+          isTrue,
+          reason: 'previous must open chapter 2 of the same book');
+    });
+
+    testWidgets('next flows into the next book at a book boundary',
+        (tester) async {
+      final requested = <({String bookId, int chapter})>[];
+      await pumpBible(
+        tester,
+        initialBookId: 'obadiah', // 1 chapter — next must leave the book
+        initialChapter: 1,
+        onScriptureRequested: (bookId, chapter, _) =>
+            requested.add((bookId: bookId, chapter: chapter)),
+      );
+
+      await tester.tap(find.byTooltip('Next chapter'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      expect(requested.any((r) => r.bookId == 'jonah' && r.chapter == 1),
+          isTrue,
+          reason: 'next at Obadiah 1 must land on Jonah 1');
+    });
+
+    testWidgets('previous flows into the prior book at a book boundary',
+        (tester) async {
+      final requested = <({String bookId, int chapter})>[];
+      await pumpBible(
+        tester,
+        initialBookId: 'jonah',
+        initialChapter: 1,
+        onScriptureRequested: (bookId, chapter, _) =>
+            requested.add((bookId: bookId, chapter: chapter)),
+      );
+
+      await tester.tap(find.byTooltip('Previous chapter'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      expect(requested.any((r) => r.bookId == 'obadiah' && r.chapter == 1),
+          isTrue,
+          reason: 'previous at Jonah 1 must land on Obadiah 1');
+    });
+
+    testWidgets('previous is disabled at the very start of the canon',
+        (tester) async {
+      await pumpBible(tester, initialBookId: 'genesis', initialChapter: 1);
+      final prev = tester.widget<IconButton>(
+        find.ancestor(
+          of: find.byTooltip('Previous chapter'),
+          matching: find.byType(IconButton),
+        ),
+      );
+      expect(prev.onPressed, isNull,
+          reason: 'nothing comes before Genesis 1');
+    });
+
+    testWidgets('next is disabled at the very end of the canon',
+        (tester) async {
+      await pumpBible(tester, initialBookId: 'revelation', initialChapter: 22);
+      final next = tester.widget<IconButton>(
+        find.ancestor(
+          of: find.byTooltip('Next chapter'),
+          matching: find.byType(IconButton),
+        ),
+      );
+      expect(next.onPressed, isNull,
+          reason: 'nothing comes after Revelation 22');
+    });
+
+    testWidgets('tapping the chapter label opens the quick chapter grid',
+        (tester) async {
+      final requested = <({String bookId, int chapter})>[];
+      await pumpBible(
+        tester,
+        initialBookId: 'genesis',
+        initialChapter: 1,
+        onScriptureRequested: (bookId, chapter, _) =>
+            requested.add((bookId: bookId, chapter: chapter)),
+      );
+
+      await tester.tap(find.text('Genesis 1'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      expect(find.byType(ChapterPicker), findsOneWidget,
+          reason: 'tapping the label must open the chapter grid');
+
+      await tester.tap(find.descendant(
+        of: find.byType(ChapterPicker),
+        matching: find.text('5'),
+      ));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      expect(requested.any((r) => r.bookId == 'genesis' && r.chapter == 5),
+          isTrue,
+          reason: 'selecting a chapter in the grid must update the reader');
+    });
+  });
+
+  group('Bible zone is never empty', () {
+    testWidgets('opens on the saved last-read chapter when present',
+        (tester) async {
+      final requested = <({String bookId, int chapter})>[];
+      await pumpBible(
+        tester,
+        initialBookId: null,
+        initialChapter: null,
+        prefs: {
+          'last_open_page':
+              '{"bookId":"psalms","chapter":23,"language":"en"}',
+        },
+        onScriptureRequested: (bookId, chapter, _) =>
+            requested.add((bookId: bookId, chapter: chapter)),
+      );
+
+      debugPrint('DBG requested=$requested');
+      expect(requested.any((r) => r.bookId == 'psalms' && r.chapter == 23),
+          isTrue,
+          reason: 'the Bible zone must restore the last-read chapter');
+    });
+
+    testWidgets('opens on today\'s plan when nothing was read yet',
+        (tester) async {
+      final requested = <({String bookId, int chapter})>[];
+      await pumpBible(
+        tester,
+        initialBookId: null,
+        initialChapter: null,
+        planOverride: const TodayReadingPlan(
+          bookId: 'matthew',
+          chapter: 5,
+          labelEn: 'Matthew 5',
+          labelAm: 'ማቴዎስ 5',
+        ),
+        onScriptureRequested: (bookId, chapter, _) =>
+            requested.add((bookId: bookId, chapter: chapter)),
+      );
+
+      expect(requested.any((r) => r.bookId == 'matthew' && r.chapter == 5),
+          isTrue,
+          reason: 'a fresh Bible zone must default to today\'s reading plan');
+      expect(find.text('Loading chapter...'), findsNothing,
+          reason: 'the Bible zone must never sit in an empty loading state');
     });
   });
 }
