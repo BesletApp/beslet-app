@@ -1214,15 +1214,6 @@ class AppLocalizationsAm extends AppLocalizations {
   String get whatDidYouUnderstand => 'ምን ተረዳህ?';
 
   @override
-  String get previousChapter => 'ቀዳሚ ምዕራፍ';
-
-  @override
-  String get nextChapter => 'ቀጣይ ምዕራፍ';
-
-  @override
-  String get chapter => 'ምዕራፍ';
-
-  @override
   String get profileLampTitle => 'የምይዘው ቃል';
 
   @override
@@ -1405,4 +1396,13 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get aiKeyRemoved => 'ቁልፍ ተወግዷል።';
+
+  @override
+  String get previousChapter => 'ቀዳሚ ምዕራፍ';
+
+  @override
+  String get nextChapter => 'ቀጣይ ምዕራፍ';
+
+  @override
+  String get chapter => 'ምዕራፍ';
 }

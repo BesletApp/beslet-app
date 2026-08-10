@@ -2312,24 +2312,6 @@ abstract class AppLocalizations {
   /// **'What did you understand?'**
   String get whatDidYouUnderstand;
 
-  /// No description provided for @previousChapter.
-  ///
-  /// In en, this message translates to:
-  /// **'Previous chapter'**
-  String get previousChapter;
-
-  /// No description provided for @nextChapter.
-  ///
-  /// In en, this message translates to:
-  /// **'Next chapter'**
-  String get nextChapter;
-
-  /// No description provided for @chapter.
-  ///
-  /// In en, this message translates to:
-  /// **'Chapter'**
-  String get chapter;
-
   /// No description provided for @profileLampTitle.
   ///
   /// In en, this message translates to:
@@ -2677,6 +2659,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Key removed.'**
   String get aiKeyRemoved;
+
+  /// No description provided for @previousChapter.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous chapter'**
+  String get previousChapter;
+
+  /// No description provided for @nextChapter.
+  ///
+  /// In en, this message translates to:
+  /// **'Next chapter'**
+  String get nextChapter;
+
+  /// No description provided for @chapter.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapter'**
+  String get chapter;
 }
 
 class _AppLocalizationsDelegate

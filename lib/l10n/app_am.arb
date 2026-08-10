@@ -427,5 +427,8 @@
   "aiKeySave": "አስቀምጥ",
   "aiKeyRemove": "ቁልፍ አስወግድ",
   "aiKeySaved": "ቁልፍ ተቀምጧል።",
-  "aiKeyRemoved": "ቁልፍ ተወግዷል።"
+  "aiKeyRemoved": "ቁልፍ ተወግዷል።",
+  "previousChapter": "ቀዳሚ ምዕራፍ",
+  "nextChapter": "ቀጣይ ምዕራፍ",
+  "chapter": "ምዕራፍ"
 }

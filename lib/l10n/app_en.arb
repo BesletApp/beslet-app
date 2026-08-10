@@ -427,5 +427,8 @@
   "aiKeySave": "Save",
   "aiKeyRemove": "Remove key",
   "aiKeySaved": "Key saved.",
-  "aiKeyRemoved": "Key removed."
+  "aiKeyRemoved": "Key removed.",
+  "previousChapter": "Previous chapter",
+  "nextChapter": "Next chapter",
+  "chapter": "Chapter"
 }

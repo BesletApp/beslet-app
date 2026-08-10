@@ -1226,15 +1226,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get whatDidYouUnderstand => 'What did you understand?';
 
   @override
-  String get previousChapter => 'Previous chapter';
-
-  @override
-  String get nextChapter => 'Next chapter';
-
-  @override
-  String get chapter => 'Chapter';
-
-  @override
   String get profileLampTitle => 'The Word I carry';
 
   @override
@@ -1418,4 +1409,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiKeyRemoved => 'Key removed.';
+
+  @override
+  String get previousChapter => 'Previous chapter';
+
+  @override
+  String get nextChapter => 'Next chapter';
+
+  @override
+  String get chapter => 'Chapter';
 }
