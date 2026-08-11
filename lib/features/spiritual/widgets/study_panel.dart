@@ -267,12 +267,70 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
             fontSize: 13,
           ),
         ),
-        const SizedBox(height: 6),
+        if (section.textFor(widget.isAm).isNotEmpty) ...[
+          const SizedBox(height: 6),
+          Text(
+            section.textFor(widget.isAm),
+            style: (widget.isAm ? AppTextStyles.amharicBody : AppTextStyles.bodyMedium)
+                .copyWith(color: c.textPrimary, height: 1.6),
+          ),
+        ],
+        if (section.terms.isNotEmpty) _buildTermsBlock(c, l, section.terms),
+      ],
+    );
+  }
+
+  /// The important-terms / original-language block: each word in its own
+  /// script, its transliteration, and its meaning in the reader's language.
+  Widget _buildTermsBlock(
+      ThemePalette c, AppLocalizations l, List<StudyTerm> terms) {
+    final meaningStyle = (widget.isAm
+            ? AppTextStyles.amharicBody
+            : AppTextStyles.bodyMedium)
+        .copyWith(color: c.textPrimary, height: 1.6);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 10),
         Text(
-          section.textFor(widget.isAm),
-          style: (widget.isAm ? AppTextStyles.amharicBody : AppTextStyles.bodyMedium)
-              .copyWith(color: c.textPrimary, height: 1.6),
+          l.studyKeyTerms,
+          style: TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: c.textMuted,
+          ),
         ),
+        const SizedBox(height: 6),
+        for (final term in terms) ...[
+          Text.rich(
+            TextSpan(
+              text: term.term,
+              style: AppTextStyles.labelLarge.copyWith(
+                color: c.textPrimary,
+                fontSize: 13,
+              ),
+              children: [
+                if (term.transliteration != null &&
+                    term.transliteration!.trim().isNotEmpty) ...[
+                  TextSpan(
+                    text: '  ${term.transliteration!.trim()}',
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      fontStyle: FontStyle.italic,
+                      color: c.textMuted,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(term.meaningFor(widget.isAm), style: meaningStyle),
+          const SizedBox(height: 8),
+        ],
       ],
     );
   }

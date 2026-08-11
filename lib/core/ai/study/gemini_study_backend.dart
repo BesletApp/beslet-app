@@ -69,7 +69,20 @@ Future<String> Function(String prompt) buildGeminiTransport({
           'text': Schema.string(description: 'A plain tracing of what the passage says.'),
         }),
         'meaningBackground': Schema.object(properties: {
-          'text': Schema.string(description: 'Meaning, key terms, and background.'),
+          'text': Schema.string(
+              description: 'Meaning, key terms, and historical/cultural/theological background, with textual observations.'),
+          'terms': Schema.array(
+            items: Schema.object(properties: {
+              'term': Schema.string(
+                  description: 'The important term or original-language word in its own script.'),
+              'language': Schema.string(
+                  description: 'e.g. hebrew, aramaic, greek, amharic, english.'),
+              'transliteration': Schema.string(
+                  description: 'Pronunciation guide, when useful.'),
+              'meaning': Schema.string(
+                  description: 'Short meaning in the reader\'s language, anchored in this passage.'),
+            }),
+          ),
         }),
         'biblicalConnections': Schema.object(properties: {
           'items': Schema.array(

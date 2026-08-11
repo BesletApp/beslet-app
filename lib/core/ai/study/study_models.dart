@@ -18,10 +18,10 @@ import '../../services/scripture_service.dart';
 
 /// Bump when the prompt, schema, or generation rules change so cached notes
 /// from an older version are never served.
-const int studyPromptVersion = 2;
+const int studyPromptVersion = 4;
 
 /// The version of the serialized cache payload.
-const int _cacheVersion = 3;
+const int _cacheVersion = 4;
 
 /// One of the seven sections of a study note. The order in the enum is the
 /// order the panel renders them.
@@ -107,6 +107,58 @@ class StudyTieredBlock {
       am: raw['am'] is String ? raw['am'] as String : '',
     );
     return block.isEmpty ? null : block;
+  }
+}
+
+/// One important term or original-language word worth a reader's attention.
+/// The term itself stays in its own script (Hebrew, Greek, Ge'ez, ...), the
+/// meaning is carried in both languages so the panel answers in the reader's
+/// language. Only an AI note generates these; the curated bank keeps its terms
+/// inside its prose.
+class StudyTerm {
+  final String term;
+  final String language;
+  final String? transliteration;
+  final String en;
+  final String am;
+
+  const StudyTerm({
+    required this.term,
+    this.language = '',
+    this.transliteration,
+    this.en = '',
+    this.am = '',
+  });
+
+  bool get isEmpty => term.trim().isEmpty;
+
+  String meaningFor(bool isAm) {
+    final t = isAm ? am : en;
+    return t.trim();
+  }
+
+  Map<String, dynamic> toJson() => {
+        'term': term,
+        if (language.isNotEmpty) 'language': language,
+        if (transliteration != null && transliteration!.isNotEmpty)
+          'transliteration': transliteration,
+        'en': en,
+        'am': am,
+      };
+
+  static StudyTerm? tryParse(dynamic raw) {
+    if (raw is! Map) return null;
+    final term = raw['term'];
+    if (term is! String || term.trim().isEmpty) return null;
+    return StudyTerm(
+      term: term.trim(),
+      language: raw['language'] is String ? raw['language'] as String : '',
+      transliteration: raw['transliteration'] is String
+          ? raw['transliteration'] as String
+          : null,
+      en: raw['en'] is String ? raw['en'] as String : '',
+      am: raw['am'] is String ? raw['am'] as String : '',
+    );
   }
 }
 
@@ -246,6 +298,9 @@ class StudySection {
   /// Tier-labeled blocks for [StudySectionKind.whatCanBeUnderstood].
   final List<StudyTieredBlock> blocks;
 
+  /// Important terms and original-language words (meaningBackground).
+  final List<StudyTerm> terms;
+
   /// How confident the producer is in this section (null = unstated).
   final StudyConfidence? confidence;
 
@@ -260,6 +315,7 @@ class StudySection {
     this.amSub,
     this.references = const [],
     this.blocks = const [],
+    this.terms = const [],
     this.confidence,
     this.sourceIds = const [],
   });
@@ -268,7 +324,11 @@ class StudySection {
   bool get isEmpty {
     if (kind == StudySectionKind.biblicalConnections) return references.isEmpty;
     if (kind == StudySectionKind.whatCanBeUnderstood) return blocks.isEmpty;
-    return en.trim().isEmpty && am.trim().isEmpty;
+    final hasText = en.trim().isNotEmpty || am.trim().isNotEmpty;
+    if (kind == StudySectionKind.meaningBackground) {
+      return !hasText && terms.isEmpty;
+    }
+    return !hasText;
   }
 
   /// The primary text in the reader's language (behind-the-text for context).
@@ -294,6 +354,7 @@ class StudySection {
           'references': references.map((r) => r.toJson()).toList(),
         if (blocks.isNotEmpty)
           'blocks': blocks.map((b) => b.toJson()).toList(),
+        if (terms.isNotEmpty) 'terms': terms.map((t) => t.toJson()).toList(),
         if (confidence != null) 'confidence': confidence!.name,
         if (sourceIds.isNotEmpty) 'sourceIds': sourceIds,
       };
@@ -317,6 +378,10 @@ class StudySection {
       blocks: (raw['blocks'] as List<dynamic>? ?? [])
           .map(StudyTieredBlock.tryParse)
           .whereType<StudyTieredBlock>()
+          .toList(),
+      terms: (raw['terms'] as List<dynamic>? ?? [])
+          .map(StudyTerm.tryParse)
+          .whereType<StudyTerm>()
           .toList(),
       confidence: StudyConfidence.values
           .where((c) => c.name == raw['confidence'])

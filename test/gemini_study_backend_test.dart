@@ -93,6 +93,20 @@ void main() {
       expect(seen, contains('እግዚአብሔር'));
     });
 
+    test('the prompt demands depth, accuracy, teaching, and terms', () async {
+      String? seen;
+      final backend = _backend((prompt) async {
+        seen = prompt;
+        return _goodJson();
+      });
+      await backend.study(_request());
+      expect(seen, contains('Accuracy over impressiveness'));
+      expect(seen, contains('continue studying on their own'));
+      expect(seen, contains('The AI provides understanding'));
+      expect(seen, contains('dictionary-style list'));
+      expect(seen, contains('"terms"'));
+    });
+
     test('invalid content (banned phrase) fails validation and yields null',
         () async {
       final backend = _backend((_) async => jsonEncode({

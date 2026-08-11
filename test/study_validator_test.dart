@@ -26,6 +26,9 @@ Map<String, dynamic> _enPayload() => {
       },
       'meaningBackground': {
         'text': 'A shepherd leads, feeds, and protects the flock.',
+        'terms': [
+          {'term': 'רֹעִי', 'language': 'hebrew', 'transliteration': 'ro’i', 'meaning': 'shepherd'},
+        ],
       },
       'reflection': {'text': "Where do you need the Shepherd's presence?"},
       'biblicalConnections': {
@@ -66,7 +69,12 @@ Map<String, dynamic> _amPayload() => {
       'setting': {'text': _am},
       'context': {'behindTheText': _am2, 'inTheText': _am2},
       'whatTextSays': {'text': _am},
-      'meaningBackground': {'text': _am},
+      'meaningBackground': {
+        'text': _am,
+        'terms': [
+          {'term': 'רֹעִי', 'language': 'hebrew', 'meaning': 'እረኛ'},
+        ],
+      },
       'reflection': {'text': 'እረኛው የት ያስፈልገኛል?'},
       'biblicalConnections': {
         'items': [
@@ -99,6 +107,72 @@ void main() {
       final kinds = result.sections.map((s) => s.kind).toSet();
       expect(kinds, StudySectionKind.values.toSet(),
           reason: 'every section kind must be present');
+    });
+
+    test('sections render in canonical enum order', () {
+      final result = validator.validate(raw: _enPayload(), request: _request())!;
+      expect(
+        result.sections.map((s) => s.kind).toList(),
+        StudySectionKind.values.where(
+          (k) => result.sections.any((s) => s.kind == k),
+        ),
+        reason: 'the note must follow Setting → Context → … → Reflection',
+      );
+    });
+
+    test('terms attach to meaningBackground and answer in the reader language',
+        () {
+      final result = validator.validate(raw: _enPayload(), request: _request())!;
+      final section = result.sections
+          .firstWhere((s) => s.kind == StudySectionKind.meaningBackground);
+      expect(section.terms, isNotEmpty);
+      expect(section.terms.single.term, 'רֹעִי');
+      expect(section.terms.single.meaningFor(false), 'shepherd');
+    });
+
+    test('an invalid term is dropped; a valid one survives', () {
+      final raw = _enPayload();
+      raw['meaningBackground'] = {
+        'text': 'A shepherd leads, feeds, and protects the flock.',
+        'terms': [
+          {'term': 'רֹעִי', 'language': 'hebrew', 'meaning': 'shepherd'},
+          {'term': '', 'language': 'hebrew', 'meaning': 'empty term'},
+          {'term': 'x' * 100, 'language': 'hebrew', 'meaning': 'too long'},
+          {'term': 'ΔΟΞΑ', 'language': 'madeuplang', 'meaning': 'unknown language'},
+          {'term': 'λόγος', 'language': 'greek', 'meaning': 'የተሳሳተ ፊደል'},
+        ],
+      };
+      final result = validator.validate(raw: raw, request: _request())!;
+      final section = result.sections
+          .firstWhere((s) => s.kind == StudySectionKind.meaningBackground);
+      expect(section.terms.length, 1);
+      expect(section.terms.single.term, 'רֹעִי');
+    });
+
+    test('terms are capped at maxTerms', () {
+      final raw = _enPayload();
+      raw['meaningBackground'] = {
+        'text': 'A shepherd leads, feeds, and protects the flock.',
+        'terms': [
+          for (var i = 0; i < StudyLengthBudget.maxTerms + 3; i++)
+            {'term': 'word$i', 'language': 'greek', 'meaning': 'a meaning'},
+        ],
+      };
+      final result = validator.validate(raw: raw, request: _request())!;
+      final section = result.sections
+          .firstWhere((s) => s.kind == StudySectionKind.meaningBackground);
+      expect(section.terms.length, StudyLengthBudget.maxTerms);
+    });
+
+    test('a banned phrase inside a term meaning rejects the result', () {
+      final raw = _enPayload();
+      raw['meaningBackground'] = {
+        'text': 'A shepherd leads, feeds, and protects the flock.',
+        'terms': [
+          {'term': 'word', 'language': 'greek', 'meaning': 'God wants you to.'},
+        ],
+      };
+      expect(validator.validate(raw: raw, request: _request()), isNull);
     });
 
     test('context keeps both halves; in-the-text lands in enSub', () {

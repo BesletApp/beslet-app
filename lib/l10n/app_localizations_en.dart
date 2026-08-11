@@ -1480,6 +1480,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get studyContextInText => 'In the text';
 
   @override
+  String get studyKeyTerms => 'Key terms & original language';
+
+  @override
   String get studyAuthorityFooter =>
       'Scripture and your church remain the authority. These notes are a study aid, not a replacement.';
 

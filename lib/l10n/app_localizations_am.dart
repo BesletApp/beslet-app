@@ -1466,6 +1466,9 @@ class AppLocalizationsAm extends AppLocalizations {
   String get studyContextInText => 'በጽሑፉ ውስጥ';
 
   @override
+  String get studyKeyTerms => 'ቁልፍ ቃላት እና የመጀመሪያ ቋንቋ';
+
+  @override
   String get studyAuthorityFooter =>
       'ሥልጣኑ መጽሐፍ ቅዱስና ቤተ ክርስቲያንህ ነው። እነዚህ ማስታወሻዎች የጥናት መርጃ ናቸው፣ ምትክ አይደሉም።';
 

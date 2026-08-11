@@ -65,16 +65,22 @@ class StudyValidator {
     }
 
     final meaningBackground = _clean(_map(raw['meaningBackground'])?['text']);
+    final terms = _validatedTerms(_map(raw['meaningBackground']), isAm);
     if (_acceptText(
         meaningBackground, isAm, StudyLengthBudget.meaningBackgroundMax)) {
-      sections.add(_textSection(
-          StudySectionKind.meaningBackground, meaningBackground, isAm));
-    }
-
-    final reflection = _clean(_map(raw['reflection'])?['text']);
-    if (_acceptText(reflection, isAm, StudyLengthBudget.reflectionMax) &&
-        _isSingleQuestion(reflection)) {
-      sections.add(_textSection(StudySectionKind.reflection, reflection, isAm));
+      sections.add(StudySection(
+        kind: StudySectionKind.meaningBackground,
+        en: isAm ? '' : meaningBackground,
+        am: isAm ? meaningBackground : '',
+        terms: terms,
+      ));
+    } else if (terms.isNotEmpty) {
+      // The text was dropped (empty, wrong script, or over budget) but the
+      // terms are still honest material; keep them under the same section.
+      sections.add(StudySection(
+        kind: StudySectionKind.meaningBackground,
+        terms: terms,
+      ));
     }
 
     final references = _validatedReferences(raw['biblicalConnections'], isAm);
@@ -87,6 +93,12 @@ class StudyValidator {
     if (blocks.isNotEmpty) {
       sections.add(
           StudySection(kind: StudySectionKind.whatCanBeUnderstood, blocks: blocks));
+    }
+
+    final reflection = _clean(_map(raw['reflection'])?['text']);
+    if (_acceptText(reflection, isAm, StudyLengthBudget.reflectionMax) &&
+        _isSingleQuestion(reflection)) {
+      sections.add(_textSection(StudySectionKind.reflection, reflection, isAm));
     }
 
     if (sections.isEmpty) return null;
@@ -161,6 +173,45 @@ class StudyValidator {
     return out;
   }
 
+  /// Validates the important-terms / original-language list attached to
+  /// "meaning and background". A term needs a non-empty word within the hard
+  /// cap, a meaning in the reader's script under the per-term cap, and a
+  /// recognized language label; invalid terms are dropped, and never more than
+  /// [StudyLengthBudget.maxTerms] survive. The term's word stays in its own
+  /// script — it is not subject to the reader-script check.
+  List<StudyTerm> _validatedTerms(dynamic raw, bool isAm) {
+    final items = _list(_map(raw)?['terms']);
+    if (items.isEmpty) return const [];
+    const knownLanguages = {
+      'hebrew', 'aramaic', 'greek', 'amharic', 'english', 'geez', 'ge\'ez',
+    };
+    final out = <StudyTerm>[];
+    for (final item in items) {
+      if (out.length >= StudyLengthBudget.maxTerms) break;
+      final m = _map(item);
+      if (m == null) continue;
+      final term = _clean(m['term']);
+      if (term.isEmpty) continue;
+      if (term.runes.length > StudyLengthBudget.termMax) continue;
+      final language = _clean(m['language']);
+      if (language.isNotEmpty && !knownLanguages.contains(language)) continue;
+      final transliteration = _clean(m['transliteration']);
+      final meaning = _clean(m['meaning']);
+      if (meaning.isEmpty) continue;
+      if (_hasGeEz(meaning) != isAm) continue;
+      if (_wordCount(meaning) > StudyLengthBudget.termMeaningMax) continue;
+      final t = StudyTerm(
+        term: term,
+        language: language,
+        transliteration: transliteration.isEmpty ? null : transliteration,
+        en: isAm ? '' : meaning,
+        am: isAm ? meaning : '',
+      );
+      out.add(t);
+    }
+    return out;
+  }
+
   /// Validates the cross-reference list against the deterministic canon.
   /// Invalid, reasonless, wrong-script, oversized, or out-of-canon references
   /// are dropped; up to [StudyLengthBudget.maxCrossReferences] valid ones
@@ -229,6 +280,10 @@ class StudyValidator {
       add(context['inTheText']);
     }
     add(_map(raw['meaningBackground'])?['text']);
+    for (final term in _list(_map(raw['meaningBackground'])?['terms'])) {
+      add(_map(term)?['meaning']);
+      add(_map(term)?['transliteration']);
+    }
     add(_map(raw['reflection'])?['text']);
     for (final item in _list(_map(raw['biblicalConnections'])?['items'])) {
       add(_map(item)?['reason']);

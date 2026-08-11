@@ -1,6 +1,6 @@
 {
-  "version": "1.26.1",
-  "versionCode": 48,
-  "downloadUrl": "https://github.com/BesletApp/beslet-app/releases/download/v1.26.1/app-release.apk",
-  "releaseNotes": "Study trust layer: deterministic canon with real-schema validation, curated source registry with in-panel attribution, in-sheet cross-reference viewer."
+  "version": "1.26.2",
+  "versionCode": 49,
+  "downloadUrl": "https://github.com/BesletApp/beslet-app/releases/download/v1.26.2/app-release.apk",
+  "releaseNotes": "Deeper study notes: full historical, cultural, literary, and original-language background, structured key-terms, richer validated cross-references, accurate section ordering, and a cleanup of legacy AI code."
 }

@@ -2780,6 +2780,12 @@ abstract class AppLocalizations {
   /// **'In the text'**
   String get studyContextInText;
 
+  /// No description provided for @studyKeyTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'Key terms & original language'**
+  String get studyKeyTerms;
+
   /// No description provided for @studyAuthorityFooter.
   ///
   /// In en, this message translates to:
