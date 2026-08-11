@@ -1,6 +1,6 @@
 {
-  "version": "1.3.0",
-  "versionCode": 4,
-  "downloadUrl": "PASTE_GITHUB_APK_LINK_HERE",
-  "releaseNotes": "Barnabas daily prompts, book journal, cloud of witnesses, wisdom pass"
+  "version": "1.26.1",
+  "versionCode": 48,
+  "downloadUrl": "https://github.com/BesletApp/beslet-app/releases/download/v1.26.1/app-release.apk",
+  "releaseNotes": "Study trust layer: deterministic canon with real-schema validation, curated source registry with in-panel attribution, in-sheet cross-reference viewer."
 }
