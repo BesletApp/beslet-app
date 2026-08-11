@@ -1427,22 +1427,37 @@ class AppLocalizationsAm extends AppLocalizations {
   String get studyCancel => 'ሰርዝ';
 
   @override
-  String get studySectionSummary => 'ማጠቃለያ';
+  String get studySectionSetting => 'የጥቅሱ ቦታ';
 
   @override
   String get studySectionContext => 'ዐውድ';
 
   @override
-  String get studySectionObservations => 'ምልከታ';
+  String get studySectionWhatTextSays => 'ጽሑፉ የሚለው';
 
   @override
-  String get studySectionTeachings => 'ትምህርት';
+  String get studySectionMeaningBackground => 'ትርጉም እና ዳራ';
+
+  @override
+  String get studySectionBiblicalConnections => 'ተዛማጅ ጥቅሶች';
+
+  @override
+  String get studySectionWhatCanBeUnderstood => 'ምን መረዳት ይቻላል';
 
   @override
   String get studySectionReflection => 'ነጸብራቅ';
 
   @override
-  String get studySectionCrossReferences => 'ተዛማጅ ጥቅሶች';
+  String get studySectionSources => 'ምንጮች';
+
+  @override
+  String get studyTierClearlyStated => 'ጽሑፉ በግልጽ ይላል';
+
+  @override
+  String get studyTierSupportedUnderstanding => 'በአብዛኛው እንዲህ እንደሆነ ይታሰባል';
+
+  @override
+  String get studyTierDisputed => 'ክርክር አለበት';
 
   @override
   String get studyContextBehind => 'ከጽሑፉ በስተጀርባ';
@@ -1460,4 +1475,10 @@ class AppLocalizationsAm extends AppLocalizations {
   @override
   String get studyOfflineNote =>
       'የዚህ ጥቅስ ሙሉ የጥናት ማስታወሻ አሁን ግንኙነት ይፈልጋል። ጽሑፉ በራሱ ቆሞ ይበቃል — አንብበው፣ ቀና ብለው አስተንትኑት፣ ራሱ ይሥራ።';
+
+  @override
+  String get studyReadPassage => 'ይህን ጥቅስ አንብብ';
+
+  @override
+  String get studyReferenceUnavailable => 'ይህ ጥቅስ አሁን አይገኝም።';
 }

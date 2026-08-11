@@ -1,4 +1,4 @@
-import '../../services/scripture_service.dart';
+import 'book_meta.dart';
 import 'study_models.dart';
 import 'study_prompt.dart';
 
@@ -11,13 +11,19 @@ import 'study_prompt.dart';
 ///  - shape/type checks, hard length caps, and script consistency are applied
 ///    per section — a bloated or wrong-language section is dropped while the
 ///    honest rest of the note survives;
-///  - cross-references are checked against the real canon; invalid or
-///    reasonless ones are dropped, only canonical app-resolved labels render.
+///  - cross-references are checked against the deterministic canon; invalid,
+///    reasonless, or out-of-canon ones are dropped, only canonical app-resolved
+///    labels render;
+///  - interpretation is split into labeled tiers, and the reflection must be
+///    a single open-ended question, never a directive.
 ///
 /// A rejected (null) result becomes the quiet "unavailable" fallback; a note
 /// the validator cannot stand behind is never shown.
 class StudyValidator {
-  const StudyValidator();
+  /// The deterministic canon every reference is checked against.
+  final StudyCanon canon;
+
+  const StudyValidator({required this.canon});
 
   StudyResult? validate({required Map<String, dynamic> raw, required StudyRequest request}) {
     final isAm = request.isAmharic;
@@ -29,9 +35,9 @@ class StudyValidator {
 
     final sections = <StudySection>[];
 
-    final summary = _clean(_map(raw['summary'])?['text']);
-    if (_acceptText(summary, isAm, StudyLengthBudget.summaryMax)) {
-      sections.add(_textSection(StudySectionKind.summary, summary, isAm));
+    final setting = _clean(_map(raw['setting'])?['text']);
+    if (_acceptText(setting, isAm, StudyLengthBudget.settingMax)) {
+      sections.add(_textSection(StudySectionKind.setting, setting, isAm));
     }
 
     final context = _map(raw['context']);
@@ -52,24 +58,35 @@ class StudyValidator {
       }
     }
 
-    final observations = _clean(_map(raw['observations'])?['text']);
-    if (_acceptText(observations, isAm, StudyLengthBudget.observationsMax)) {
-      sections.add(_textSection(StudySectionKind.observations, observations, isAm));
+    final whatTextSays = _clean(_map(raw['whatTextSays'])?['text']);
+    if (_acceptText(whatTextSays, isAm, StudyLengthBudget.whatTextSaysMax)) {
+      sections.add(
+          _textSection(StudySectionKind.whatTextSays, whatTextSays, isAm));
     }
 
-    final teachings = _clean(_map(raw['teachings'])?['text']);
-    if (_acceptText(teachings, isAm, StudyLengthBudget.teachingsMax)) {
-      sections.add(_textSection(StudySectionKind.teachings, teachings, isAm));
+    final meaningBackground = _clean(_map(raw['meaningBackground'])?['text']);
+    if (_acceptText(
+        meaningBackground, isAm, StudyLengthBudget.meaningBackgroundMax)) {
+      sections.add(_textSection(
+          StudySectionKind.meaningBackground, meaningBackground, isAm));
     }
 
     final reflection = _clean(_map(raw['reflection'])?['text']);
-    if (_acceptText(reflection, isAm, StudyLengthBudget.reflectionMax)) {
+    if (_acceptText(reflection, isAm, StudyLengthBudget.reflectionMax) &&
+        _isSingleQuestion(reflection)) {
       sections.add(_textSection(StudySectionKind.reflection, reflection, isAm));
     }
 
-    final references = _validatedReferences(raw['crossReferences'], isAm);
+    final references = _validatedReferences(raw['biblicalConnections'], isAm);
     if (references.isNotEmpty) {
-      sections.add(StudySection(kind: StudySectionKind.crossReferences, references: references));
+      sections.add(
+          StudySection(kind: StudySectionKind.biblicalConnections, references: references));
+    }
+
+    final blocks = _validatedBlocks(raw['whatCanBeUnderstood'], isAm);
+    if (blocks.isNotEmpty) {
+      sections.add(
+          StudySection(kind: StudySectionKind.whatCanBeUnderstood, blocks: blocks));
     }
 
     if (sections.isEmpty) return null;
@@ -83,7 +100,8 @@ class StudyValidator {
     );
   }
 
-  StudySection _textSection(StudySectionKind kind, String text, bool isAm) => StudySection(
+  StudySection _textSection(StudySectionKind kind, String text, bool isAm) =>
+      StudySection(
         kind: kind,
         en: isAm ? '' : text,
         am: isAm ? text : '',
@@ -99,10 +117,54 @@ class StudyValidator {
     return true;
   }
 
-  /// Validates the cross-reference list against the real canon. Invalid,
-  /// reasonless, wrong-script, or oversized references are dropped; up to
-  /// [StudyLengthBudget.maxCrossReferences] valid ones survive. Never invents
-  /// a reference that does not exist.
+  /// The reflection must be a single open-ended question — a directive or a
+  /// run-on list would change the reader's posture toward the text.
+  bool _isSingleQuestion(String text) {
+    final t = text.trim();
+    if (t.isEmpty) return false;
+    // ASCII, Arabic (U+061F), fullwidth (U+FF1F), and Ethiopic (U+1367)
+    // question marks.
+    const marks = ['?', '\u061F', '\uFF1F', '፧'];
+    if (!marks.any(t.endsWith)) return false;
+    var count = 0;
+    for (final m in marks) {
+      count += m.allMatches(t).length;
+    }
+    return count == 1;
+  }
+
+  /// Validates the tiered "what can be understood" blocks. A block needs a
+  /// recognized tier and in-script text under the per-block cap; invalid
+  /// blocks are dropped, and never more than [StudyLengthBudget.maxTierBlocks]
+  /// survive. The model never upgrades a claim to a stronger tier than it can
+  /// honestly hold.
+  List<StudyTieredBlock> _validatedBlocks(dynamic raw, bool isAm) {
+    final items = _list(_map(raw)?['blocks']);
+    if (items.isEmpty) return const [];
+    final out = <StudyTieredBlock>[];
+    for (final item in items) {
+      if (out.length >= StudyLengthBudget.maxTierBlocks) break;
+      final m = _map(item);
+      if (m == null) continue;
+      final tier = StudyTier.values
+          .where((t) => t.name == m['tier'])
+          .firstOrNull;
+      if (tier == null) continue;
+      final text = _clean(m['text']);
+      if (!_acceptText(text, isAm, StudyLengthBudget.tierBlockMax)) continue;
+      out.add(StudyTieredBlock(
+        tier: tier,
+        en: isAm ? '' : text,
+        am: isAm ? text : '',
+      ));
+    }
+    return out;
+  }
+
+  /// Validates the cross-reference list against the deterministic canon.
+  /// Invalid, reasonless, wrong-script, oversized, or out-of-canon references
+  /// are dropped; up to [StudyLengthBudget.maxCrossReferences] valid ones
+  /// survive. Never invents a reference that does not exist.
   List<StudyCrossReference> _validatedReferences(dynamic raw, bool isAm) {
     final items = _list(_map(raw)?['items']);
     if (items.isEmpty) return const [];
@@ -123,10 +185,18 @@ class StudyValidator {
           _hasGeEz(reason) != isAm) {
         continue;
       }
-      final book = ScriptureService.bookMap[bookId];
-      if (book == null) continue;
-      if (chapter < 1 || chapter > book.chapters) continue;
-      if (startVerse < 1 || endVerse < startVerse) continue;
+      final priorityRaw = m['priority'];
+      final priority = priorityRaw is int ? priorityRaw : 0;
+      if (priority < 0 || priority > 2) continue;
+      if (!canon.validReference(
+        bookId: bookId,
+        chapter: chapter,
+        startVerse: startVerse,
+        endVerse: endVerse,
+        isAmharic: isAm,
+      )) {
+        continue;
+      }
       out.add(StudyCrossReference(
         bookId: bookId,
         chapter: chapter,
@@ -134,14 +204,16 @@ class StudyValidator {
         endVerse: endVerse,
         en: isAm ? '' : reason,
         am: isAm ? reason : '',
+        priority: priority,
       ));
     }
     return out;
   }
 
-  /// Collects every text the model produced (main sections, both context
-  /// halves, and cross-reference reasons) for the whole-result banned-phrase
-  /// guard. A banned phrase in any of them rejects the entire note.
+  /// Collects every text the model produced (all sections, both context
+  /// halves, tiered blocks, and cross-reference reasons) for the whole-result
+  /// banned-phrase guard. A banned phrase in any of them rejects the entire
+  /// note.
   List<String> _collectAllTexts(Map<String, dynamic> raw) {
     final out = <String>[];
     void add(dynamic v) {
@@ -149,17 +221,20 @@ class StudyValidator {
       if (t.isNotEmpty) out.add(t);
     }
 
-    add(_map(raw['summary'])?['text']);
+    add(_map(raw['setting'])?['text']);
+    add(_map(raw['whatTextSays'])?['text']);
     final context = _map(raw['context']);
     if (context != null) {
       add(context['behindTheText']);
       add(context['inTheText']);
     }
-    add(_map(raw['observations'])?['text']);
-    add(_map(raw['teachings'])?['text']);
+    add(_map(raw['meaningBackground'])?['text']);
     add(_map(raw['reflection'])?['text']);
-    for (final item in _list(_map(raw['crossReferences'])?['items'])) {
+    for (final item in _list(_map(raw['biblicalConnections'])?['items'])) {
       add(_map(item)?['reason']);
+    }
+    for (final block in _list(_map(raw['whatCanBeUnderstood'])?['blocks'])) {
+      add(_map(block)?['text']);
     }
     return out;
   }

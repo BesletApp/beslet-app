@@ -24,7 +24,7 @@ class GeminiStudyBackend implements StudyBackend {
 
   GeminiStudyBackend({
     required this.transport,
-    this.validator = const StudyValidator(),
+    required this.validator,
     this.promptBuilder = const StudyPromptBuilder(),
     this.timeout = const Duration(seconds: 30),
   });
@@ -58,32 +58,41 @@ Future<String> Function(String prompt) buildGeminiTransport({
     final model = GenerativeModel(model: modelName, apiKey: key);
     final schema = Schema.object(
       properties: {
-        'summary': Schema.object(properties: {
-          'text': Schema.string(description: 'Very short plain prose summary.'),
+        'setting': Schema.object(properties: {
+          'text': Schema.string(description: 'One or two sentences anchoring the passage.'),
         }),
         'context': Schema.object(properties: {
           'behindTheText': Schema.string(description: 'Author, audience, setting.'),
           'inTheText': Schema.string(description: 'Immediate context and argument.'),
         }),
-        'observations': Schema.object(properties: {
-          'text': Schema.string(description: 'Literary/textual observations.'),
+        'whatTextSays': Schema.object(properties: {
+          'text': Schema.string(description: 'A plain tracing of what the passage says.'),
         }),
-        'teachings': Schema.object(properties: {
-          'text': Schema.string(description: 'What the text communicates.'),
+        'meaningBackground': Schema.object(properties: {
+          'text': Schema.string(description: 'Meaning, key terms, and background.'),
         }),
-        'reflection': Schema.object(properties: {
-          'text': Schema.string(description: '1-2 open-ended questions.'),
-        }),
-        'crossReferences': Schema.object(properties: {
+        'biblicalConnections': Schema.object(properties: {
           'items': Schema.array(
             items: Schema.object(properties: {
               'bookId': Schema.string(description: 'Canonical book id from the list.'),
               'chapter': Schema.integer(),
               'startVerse': Schema.integer(),
               'endVerse': Schema.integer(),
+              'priority': Schema.integer(description: '0 = essential, 1 = helpful, 2 = supporting.'),
               'reason': Schema.string(description: 'One-clause reason.'),
             }),
           ),
+        }),
+        'whatCanBeUnderstood': Schema.object(properties: {
+          'blocks': Schema.array(
+            items: Schema.object(properties: {
+              'tier': Schema.string(description: 'clearlyStated | supportedUnderstanding | disputed'),
+              'text': Schema.string(description: 'One careful interpretive observation.'),
+            }),
+          ),
+        }),
+        'reflection': Schema.object(properties: {
+          'text': Schema.string(description: 'One open-ended question ending with "?".'),
         }),
       },
     );

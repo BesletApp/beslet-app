@@ -54,11 +54,11 @@ void main() {
       );
 
   group('StudyService.study', () {
-    test('resolves a banked passage to all six sections', () async {
+    test('resolves a banked passage to all seven sections', () async {
       final result = await serviceWith().study(psalmRequest());
       expect(result.isAvailable, isTrue);
       expect(result.source, StudySource.localBank);
-      expect(result.sections.length, 6);
+      expect(result.sections.length, 7);
       expect(result.reference.referenceFor(false), 'Psalms 23:1–3');
     });
 
@@ -79,7 +79,7 @@ void main() {
         () async {
       final result = await serviceWith().study(psalmRequest());
       final summary = result.sections
-          .firstWhere((s) => s.kind == StudySectionKind.summary);
+          .firstWhere((s) => s.kind == StudySectionKind.whatTextSays);
       expect(summary.textFor(false), summary.en);
       expect(summary.textFor(true), summary.am);
     });
@@ -99,9 +99,10 @@ void main() {
 
       final second = await service.study(psalmRequest());
       expect(second.isAvailable, isTrue);
-      expect(second.sections.length, 6);
+      expect(second.sections.length, 7);
       expect(backendCalls, 1, reason: 'second call must come from the cache');
-      expect(cache.containsKey('study_v1_psalms_23_1_3_en'), isTrue);
+      expect(cache.containsKey('study_v${studyPromptVersion}_psalms_23_1_3_en'),
+          isTrue);
     });
 
     test('cache is keyed by language', () async {
@@ -112,7 +113,8 @@ void main() {
         writeCache: (k, v) async => cache[k] = v,
       );
       await service.study(psalmRequest(am: true));
-      expect(cache.containsKey('study_v1_psalms_23_1_3_am'), isTrue);
+      expect(cache.containsKey('study_v${studyPromptVersion}_psalms_23_1_3_am'),
+          isTrue);
     });
 
     test('cache key embeds the prompt version', () {
@@ -123,11 +125,11 @@ void main() {
 
     test('a corrupt cache entry falls through to the backend', () async {
       final cache = <String, String>{
-        'study_v1_psalms_23_1_3_en': 'not-json',
+        'study_v${studyPromptVersion}_psalms_23_1_3_en': 'not-json',
       };
       final result = await serviceWith(cache: cache).study(psalmRequest());
       expect(result.isAvailable, isTrue);
-      expect(result.sections.length, 6);
+      expect(result.sections.length, 7);
     });
   });
 }

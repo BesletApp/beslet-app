@@ -4,14 +4,16 @@ import 'study_models.dart';
 /// Word budgets the prompt promises and the validator enforces.
 /// High information value, low attention cost.
 class StudyLengthBudget {
-  static const int summaryMax = 45;
+  static const int settingMax = 25;
   static const int contextBehindMax = 60;
   static const int contextInMax = 50;
-  static const int observationsMax = 70;
-  static const int teachingsMax = 80;
+  static const int whatTextSaysMax = 55;
+  static const int meaningBackgroundMax = 100;
   static const int reflectionMax = 30;
+  static const int tierBlockMax = 45;
   static const int referenceReasonMax = 15;
   static const int maxCrossReferences = 3;
+  static const int maxTierBlocks = 3;
 
   /// A section is rejected outright when it exceeds this multiple of its
   /// budget — an overrun that large is not a style slip, it is a violation.
@@ -90,37 +92,56 @@ practices, quotations, theological consensus, or denominational positions. If
 a detail is uncertain or debated, say so plainly. Prefer silence over
 fabrication.
 
+SECTIONS — Fill each section only with what it is for; omit a field entirely
+when you have nothing honest to say. Never repeat the same point in two
+sections.
+
+SETTING — One or two sentences anchoring the passage in its book and moment
+(e.g. "a psalm of David", "Paul writing to the church in Rome"). Only what can
+be responsibly stated; mark guesses with "likely" / "tradition holds" /
+"debated".
+
 CONTEXT — "behind the text": author, audience, setting, situation — only what
 can be responsibly stated; mark guesses with "likely" / "tradition holds" /
 "debated"; if unknown say "not known from the text". "In the text": what
 immediately precedes and follows, and how the passage sits in the argument.
 Omit any context you cannot establish.
 
-OBSERVATIONS — Only literary/textual observations: repeated words, contrasts,
-structure, key terms, argument movement, relations between verses. Never
-devotional speculation dressed as insight.
+WHAT THE TEXT SAYS — A plain, faithful tracing of what the passage itself
+says, in order. Restraint is the virtue: no embellishment, no devotional
+flourish.
 
-TEACHINGS — Only what the text itself communicates about God, humanity, sin,
-salvation, faith, obedience, relationships, or God's character. Every teaching
-must be traceable to the selected text; mark it (A), (B), (C), or (D) as
-appropriate. Do not force a doctrine the passage does not carry.
+MEANING AND BACKGROUND — The meaning, key terms, and cultural or historical
+background a reader needs to understand the text (e.g. what "shepherd" meant,
+what a covenant is). Interpretive claims carry the honesty markers above.
 
-REFLECTION — Never tell the reader what to do. Write 1-2 open-ended questions
-in this spirit: "What might this passage bring into view about...?" / "What
-does it invite further reflection on...?" The questions send the reader back
-to the text, not to you.
+BIBLICAL CONNECTIONS — Scripture interprets Scripture: prefer a genuinely
+related passage over explanation. Give at most ${StudyLengthBudget.maxCrossReferences}. Each must be
+genuinely related and contextually appropriate — never a random
+"Christian-sounding" verse. Return each as a structured reference with a
+canonical bookId from the list above, plus a short reason (one clause) and a
+priority: 0 = essential connection, 1 = helpful, 2 = supporting. Never invent
+a reference that does not exist.
 
-CROSS-REFERENCES — Scripture interprets Scripture: prefer a genuinely related
-passage over explanation. Give at most 3. Each must be genuinely related and
-contextually appropriate — never a random "Christian-sounding" verse. Return
-each as a structured reference with a canonical bookId from the list above,
-plus a short reason (one clause). Never invent a reference that does not exist.
+WHAT CAN BE UNDERSTOOD — Careful interpretive observations, split into labeled
+tiers. At most ${StudyLengthBudget.maxTierBlocks} blocks, one tier per block:
+  clearlyStated — the text itself clearly states this;
+  supportedUnderstanding — a strongly supported, widely held understanding;
+  disputed — a point genuinely disputed among Christians.
+A claim in a lower tier must never be written as if it were a higher one, and
+no tier ever becomes "God is telling you".
+
+REFLECTION — Never tell the reader what to do. Write exactly one open-ended
+question that sends the reader back to the text, never to you. The question
+must end with a question mark. Example spirit: "What might this passage bring
+into view about...?" / "What does it invite further reflection on...?"
 
 LENGTH — Be brief: short paragraphs, no filler, no introductions, no closing
-sermon. Word budgets: summary <= ${StudyLengthBudget.summaryMax}; context:
+sermon. Word budgets: setting <= ${StudyLengthBudget.settingMax}; context:
 behind <= ${StudyLengthBudget.contextBehindMax}, in <= ${StudyLengthBudget.contextInMax};
-observations <= ${StudyLengthBudget.observationsMax}; teachings <= ${StudyLengthBudget.teachingsMax};
-reflection <= ${StudyLengthBudget.reflectionMax}; each cross-reference reason <= ${StudyLengthBudget.referenceReasonMax}.
+whatTextSays <= ${StudyLengthBudget.whatTextSaysMax}; meaningBackground <= ${StudyLengthBudget.meaningBackgroundMax};
+reflection <= ${StudyLengthBudget.reflectionMax}; each tiered block <= ${StudyLengthBudget.tierBlockMax};
+each cross-reference reason <= ${StudyLengthBudget.referenceReasonMax}.
 A section may be empty when it has nothing honest to say.
 
 AMHARIC (when the requested language is amharic) — Write in natural, ordinary
@@ -135,14 +156,17 @@ $_amharicHonestyMarkers
 OUTPUT — Reply with ONLY the JSON below; omit any field that should stay
 silent. Do not add commentary around the JSON.
 {
-  "summary":        {"text": "..."},
+  "setting":        {"text": "..."},
   "context":        {"behindTheText": "...", "inTheText": "..."},
-  "observations":   {"text": "..."},
-  "teachings":      {"text": "..."},
-  "reflection":     {"text": "..."},
-  "crossReferences":{"items": [
-    {"bookId": "romans", "chapter": 8, "startVerse": 28, "endVerse": 28, "reason": "..."}
-  ]}
+  "whatTextSays":   {"text": "..."},
+  "meaningBackground": {"text": "..."},
+  "biblicalConnections": {"items": [
+    {"bookId": "romans", "chapter": 8, "startVerse": 28, "endVerse": 28, "priority": 0, "reason": "..."}
+  ]},
+  "whatCanBeUnderstood": {"blocks": [
+    {"tier": "clearlyStated", "text": "..."}
+  ]},
+  "reflection":     {"text": "..."}
 }
 ''';
   }

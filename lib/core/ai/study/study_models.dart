@@ -9,38 +9,105 @@ import '../../services/scripture_service.dart';
 /// same `StudyBackend` seam. The UI only ever says "study this passage"; it
 /// never learns about Gemini, keys, models, or prompts.
 ///
-/// The six sections deliberately follow a Scripture-first shape:
-/// SCRIPTURE → UNDERSTANDING → REFLECTION → GOD. Cross-references are
-/// structured (book/chapter/verse + a short reason) so they can be validated
-/// against the real canon before anything is shown.
+/// The seven sections deliberately follow a Scripture-first shape:
+/// SCRIPTURE → CONTEXT → BACKGROUND → CONNECTIONS → INTERPRETATION →
+/// REFLECTION. Cross-references are structured (book/chapter/verse + a short
+/// reason) so they can be validated against the real canon before anything is
+/// shown. There is no Application section: personal understanding, conviction,
+/// application, and revelation belong to the reader and the Holy Spirit.
 
 /// Bump when the prompt, schema, or generation rules change so cached notes
 /// from an older version are never served.
-const int studyPromptVersion = 1;
+const int studyPromptVersion = 2;
 
 /// The version of the serialized cache payload.
-const int _cacheVersion = 2;
+const int _cacheVersion = 3;
 
-/// One of the six sections of a study note. The order in the enum is the
+/// One of the seven sections of a study note. The order in the enum is the
 /// order the panel renders them.
+///
+/// The shape deliberately follows the Scripture-first hierarchy:
+/// SCRIPTURE → CONTEXT → HISTORICAL/CULTURAL → LITERARY/TEXTUAL →
+/// BIBLICAL CONNECTIONS → CAREFUL INTERPRETIVE OBSERVATIONS →
+/// PERSONAL REFLECTION. The AI illuminates the text; the reader and the Holy
+/// Spirit do the personal work. There is deliberately no Application section.
 enum StudySectionKind {
-  /// What the passage says in its immediate flow. Very short.
-  summary,
+  /// One or two lines anchoring the passage in its book and moment.
+  setting,
 
   /// Historical + literary context: "behind the text" and "in the text".
   context,
 
-  /// Literary/textual observations: repeated words, contrasts, structure.
-  observations,
+  /// A plain, faithful tracing of what the passage itself says.
+  whatTextSays,
 
-  /// What the passage itself communicates about God, humanity, etc.
-  teachings,
+  /// Meaning, key terms, and cultural/historical background needed to
+  /// understand the text. Interpretive claims carry tier labels.
+  meaningBackground,
+
+  /// Validated cross-references with a short reason each.
+  biblicalConnections,
+
+  /// Careful interpretive observations split into three honest tiers.
+  whatCanBeUnderstood,
 
   /// Open-ended questions that send the reader back to the text.
   reflection,
+}
 
-  /// Validated cross-references with a short reason each.
-  crossReferences,
+/// How firmly a claim can be held. The model must never present a lower tier
+/// as a higher one, and no tier ever becomes "God is telling you".
+enum StudyTier {
+  /// The text clearly states this.
+  clearlyStated,
+
+  /// A strongly supported, widely held understanding.
+  supportedUnderstanding,
+
+  /// A point genuinely disputed among Christians.
+  disputed,
+}
+
+/// How confident the source is in a section. Carried so the reader can weigh
+/// the note honestly; never used to inflate authority.
+enum StudyConfidence { high, medium, low }
+
+/// One tier-labeled block inside [StudySectionKind.whatCanBeUnderstood].
+class StudyTieredBlock {
+  final StudyTier tier;
+  final String en;
+  final String am;
+
+  const StudyTieredBlock({
+    required this.tier,
+    this.en = '',
+    this.am = '',
+  });
+
+  bool get isEmpty => en.trim().isEmpty && am.trim().isEmpty;
+
+  String textFor(bool isAm) {
+    final t = isAm ? am : en;
+    return t.trim();
+  }
+
+  Map<String, dynamic> toJson() => {
+        'tier': tier.name,
+        'en': en,
+        'am': am,
+      };
+
+  static StudyTieredBlock? tryParse(dynamic raw) {
+    if (raw is! Map) return null;
+    final tier = StudyTier.values.where((t) => t.name == raw['tier']).firstOrNull;
+    if (tier == null) return null;
+    final block = StudyTieredBlock(
+      tier: tier,
+      en: raw['en'] is String ? raw['en'] as String : '',
+      am: raw['am'] is String ? raw['am'] as String : '',
+    );
+    return block.isEmpty ? null : block;
+  }
 }
 
 /// Which engine produced a note — keeps the Gemini seam honest and lets a
@@ -100,6 +167,7 @@ class StudyCrossReference {
   final int endVerse;
   final String en; // reason, English (empty when the note is Amharic-only)
   final String am; // reason, Amharic (empty when the note is English-only)
+  final int priority; // 0 (core) to 2 (supporting), for ordering only
 
   const StudyCrossReference({
     required this.bookId,
@@ -108,6 +176,7 @@ class StudyCrossReference {
     required this.endVerse,
     this.en = '',
     this.am = '',
+    this.priority = 0,
   });
 
   /// Localized canonical label, e.g. "John 10:11" or "ዮሐንስ 10፡11".
@@ -131,6 +200,7 @@ class StudyCrossReference {
         'endVerse': endVerse,
         'en': en,
         'am': am,
+        if (priority != 0) 'priority': priority,
       };
 
   static StudyCrossReference? tryParse(dynamic raw) {
@@ -152,6 +222,7 @@ class StudyCrossReference {
       endVerse: endVerse,
       en: raw['en'] is String ? raw['en'] as String : '',
       am: raw['am'] is String ? raw['am'] as String : '',
+      priority: raw['priority'] is int ? raw['priority'] as int : 0,
     );
   }
 }
@@ -172,6 +243,15 @@ class StudySection {
   final String? amSub;
   final List<StudyCrossReference> references;
 
+  /// Tier-labeled blocks for [StudySectionKind.whatCanBeUnderstood].
+  final List<StudyTieredBlock> blocks;
+
+  /// How confident the producer is in this section (null = unstated).
+  final StudyConfidence? confidence;
+
+  /// Curated sources this content draws on (empty for AI-generated notes).
+  final List<String> sourceIds;
+
   const StudySection({
     required this.kind,
     this.en = '',
@@ -179,11 +259,15 @@ class StudySection {
     this.enSub,
     this.amSub,
     this.references = const [],
+    this.blocks = const [],
+    this.confidence,
+    this.sourceIds = const [],
   });
 
   /// True when the section has no renderable content ("preserve silence").
   bool get isEmpty {
-    if (kind == StudySectionKind.crossReferences) return references.isEmpty;
+    if (kind == StudySectionKind.biblicalConnections) return references.isEmpty;
+    if (kind == StudySectionKind.whatCanBeUnderstood) return blocks.isEmpty;
     return en.trim().isEmpty && am.trim().isEmpty;
   }
 
@@ -208,6 +292,10 @@ class StudySection {
         if (amSub != null) 'amSub': amSub,
         if (references.isNotEmpty)
           'references': references.map((r) => r.toJson()).toList(),
+        if (blocks.isNotEmpty)
+          'blocks': blocks.map((b) => b.toJson()).toList(),
+        if (confidence != null) 'confidence': confidence!.name,
+        if (sourceIds.isNotEmpty) 'sourceIds': sourceIds,
       };
 
   static StudySection? tryParse(dynamic raw) {
@@ -226,6 +314,18 @@ class StudySection {
           .map(StudyCrossReference.tryParse)
           .whereType<StudyCrossReference>()
           .toList(),
+      blocks: (raw['blocks'] as List<dynamic>? ?? [])
+          .map(StudyTieredBlock.tryParse)
+          .whereType<StudyTieredBlock>()
+          .toList(),
+      confidence: StudyConfidence.values
+          .where((c) => c.name == raw['confidence'])
+          .firstOrNull,
+      sourceIds: raw['sourceIds'] is List
+          ? (raw['sourceIds'] as List)
+              .whereType<String>()
+              .toList()
+          : const [],
     );
     if (section.isEmpty) return null;
     return section;

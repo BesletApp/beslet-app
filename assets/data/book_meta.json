@@ -1,0 +1,533 @@
+{
+  "version": 1,
+  "books": [
+    {
+      "id": "genesis",
+      "nameEn": "Genesis",
+      "nameAm": "ዘፍጥረት",
+      "chapters": 50,
+      "sectionId": "torah",
+      "wordprojectId": 1
+    },
+    {
+      "id": "exodus",
+      "nameEn": "Exodus",
+      "nameAm": "ዘጸአት",
+      "chapters": 40,
+      "sectionId": "torah",
+      "wordprojectId": 2
+    },
+    {
+      "id": "leviticus",
+      "nameEn": "Leviticus",
+      "nameAm": "ዘሌዋውያን",
+      "chapters": 27,
+      "sectionId": "torah",
+      "wordprojectId": 3
+    },
+    {
+      "id": "numbers",
+      "nameEn": "Numbers",
+      "nameAm": "ዘኁልቁ",
+      "chapters": 36,
+      "sectionId": "torah",
+      "wordprojectId": 4
+    },
+    {
+      "id": "deuteronomy",
+      "nameEn": "Deuteronomy",
+      "nameAm": "ዘዳግም",
+      "chapters": 34,
+      "sectionId": "torah",
+      "wordprojectId": 5
+    },
+    {
+      "id": "joshua",
+      "nameEn": "Joshua",
+      "nameAm": "ኢያሱ",
+      "chapters": 24,
+      "sectionId": "history",
+      "wordprojectId": 6
+    },
+    {
+      "id": "judges",
+      "nameEn": "Judges",
+      "nameAm": "መሳፍንት",
+      "chapters": 21,
+      "sectionId": "history",
+      "wordprojectId": 7
+    },
+    {
+      "id": "ruth",
+      "nameEn": "Ruth",
+      "nameAm": "ሩት",
+      "chapters": 4,
+      "sectionId": "history",
+      "wordprojectId": 8
+    },
+    {
+      "id": "1samuel",
+      "nameEn": "1 Samuel",
+      "nameAm": "1 ሳሙኤል",
+      "chapters": 31,
+      "sectionId": "history",
+      "wordprojectId": 9
+    },
+    {
+      "id": "2samuel",
+      "nameEn": "2 Samuel",
+      "nameAm": "2 ሳሙኤል",
+      "chapters": 24,
+      "sectionId": "history",
+      "wordprojectId": 10
+    },
+    {
+      "id": "1kings",
+      "nameEn": "1 Kings",
+      "nameAm": "1 ነገሥት",
+      "chapters": 22,
+      "sectionId": "history",
+      "wordprojectId": 11
+    },
+    {
+      "id": "2kings",
+      "nameEn": "2 Kings",
+      "nameAm": "2 ነገሥት",
+      "chapters": 25,
+      "sectionId": "history",
+      "wordprojectId": 12
+    },
+    {
+      "id": "1chronicles",
+      "nameEn": "1 Chronicles",
+      "nameAm": "1 ዜና መዋዕል",
+      "chapters": 29,
+      "sectionId": "history",
+      "wordprojectId": 13
+    },
+    {
+      "id": "2chronicles",
+      "nameEn": "2 Chronicles",
+      "nameAm": "2 ዜና መዋዕል",
+      "chapters": 36,
+      "sectionId": "history",
+      "wordprojectId": 14
+    },
+    {
+      "id": "ezra",
+      "nameEn": "Ezra",
+      "nameAm": "ዕዝራ",
+      "chapters": 10,
+      "sectionId": "history",
+      "wordprojectId": 15
+    },
+    {
+      "id": "nehemiah",
+      "nameEn": "Nehemiah",
+      "nameAm": "ነህምያ",
+      "chapters": 13,
+      "sectionId": "history",
+      "wordprojectId": 16
+    },
+    {
+      "id": "esther",
+      "nameEn": "Esther",
+      "nameAm": "አስቴር",
+      "chapters": 10,
+      "sectionId": "history",
+      "wordprojectId": 17
+    },
+    {
+      "id": "job",
+      "nameEn": "Job",
+      "nameAm": "ኢዮብ",
+      "chapters": 42,
+      "sectionId": "poetry",
+      "wordprojectId": 18
+    },
+    {
+      "id": "psalms",
+      "nameEn": "Psalms",
+      "nameAm": "መዝሙረ ዳዊት",
+      "chapters": 150,
+      "sectionId": "poetry",
+      "wordprojectId": 19
+    },
+    {
+      "id": "proverbs",
+      "nameEn": "Proverbs",
+      "nameAm": "ምሳሌ",
+      "chapters": 31,
+      "sectionId": "poetry",
+      "wordprojectId": 20
+    },
+    {
+      "id": "ecclesiastes",
+      "nameEn": "Ecclesiastes",
+      "nameAm": "መክብብ",
+      "chapters": 12,
+      "sectionId": "poetry",
+      "wordprojectId": 21
+    },
+    {
+      "id": "songofsongs",
+      "nameEn": "Song of Songs",
+      "nameAm": "መኃልየ መኃልይ",
+      "chapters": 8,
+      "sectionId": "poetry",
+      "wordprojectId": 22
+    },
+    {
+      "id": "isaiah",
+      "nameEn": "Isaiah",
+      "nameAm": "ኢሳይያስ",
+      "chapters": 66,
+      "sectionId": "majorProphets",
+      "wordprojectId": 23
+    },
+    {
+      "id": "jeremiah",
+      "nameEn": "Jeremiah",
+      "nameAm": "ኤርምያስ",
+      "chapters": 52,
+      "sectionId": "majorProphets",
+      "wordprojectId": 24
+    },
+    {
+      "id": "lamentations",
+      "nameEn": "Lamentations",
+      "nameAm": "ልቅሶ",
+      "chapters": 5,
+      "sectionId": "majorProphets",
+      "wordprojectId": 25
+    },
+    {
+      "id": "ezekiel",
+      "nameEn": "Ezekiel",
+      "nameAm": "ሕዝቅኤል",
+      "chapters": 48,
+      "sectionId": "majorProphets",
+      "wordprojectId": 26
+    },
+    {
+      "id": "daniel",
+      "nameEn": "Daniel",
+      "nameAm": "ዳንኤል",
+      "chapters": 12,
+      "sectionId": "majorProphets",
+      "wordprojectId": 27
+    },
+    {
+      "id": "hosea",
+      "nameEn": "Hosea",
+      "nameAm": "ሆሴዕ",
+      "chapters": 14,
+      "sectionId": "minorProphets",
+      "wordprojectId": 28
+    },
+    {
+      "id": "joel",
+      "nameEn": "Joel",
+      "nameAm": "ዮኤል",
+      "chapters": 3,
+      "sectionId": "minorProphets",
+      "wordprojectId": 29
+    },
+    {
+      "id": "amos",
+      "nameEn": "Amos",
+      "nameAm": "አሞጽ",
+      "chapters": 9,
+      "sectionId": "minorProphets",
+      "wordprojectId": 30
+    },
+    {
+      "id": "obadiah",
+      "nameEn": "Obadiah",
+      "nameAm": "አብድዩ",
+      "chapters": 1,
+      "sectionId": "minorProphets",
+      "wordprojectId": 31
+    },
+    {
+      "id": "jonah",
+      "nameEn": "Jonah",
+      "nameAm": "ዮናስ",
+      "chapters": 4,
+      "sectionId": "minorProphets",
+      "wordprojectId": 32
+    },
+    {
+      "id": "micah",
+      "nameEn": "Micah",
+      "nameAm": "ሚክያስ",
+      "chapters": 7,
+      "sectionId": "minorProphets",
+      "wordprojectId": 33
+    },
+    {
+      "id": "nahum",
+      "nameEn": "Nahum",
+      "nameAm": "ናሆም",
+      "chapters": 3,
+      "sectionId": "minorProphets",
+      "wordprojectId": 34
+    },
+    {
+      "id": "habakkuk",
+      "nameEn": "Habakkuk",
+      "nameAm": "ዕንባቆም",
+      "chapters": 3,
+      "sectionId": "minorProphets",
+      "wordprojectId": 35
+    },
+    {
+      "id": "zephaniah",
+      "nameEn": "Zephaniah",
+      "nameAm": "ሶፎንያስ",
+      "chapters": 3,
+      "sectionId": "minorProphets",
+      "wordprojectId": 36
+    },
+    {
+      "id": "haggai",
+      "nameEn": "Haggai",
+      "nameAm": "ሐጌ",
+      "chapters": 2,
+      "sectionId": "minorProphets",
+      "wordprojectId": 37
+    },
+    {
+      "id": "zechariah",
+      "nameEn": "Zechariah",
+      "nameAm": "ዘካርያስ",
+      "chapters": 14,
+      "sectionId": "minorProphets",
+      "wordprojectId": 38
+    },
+    {
+      "id": "malachi",
+      "nameEn": "Malachi",
+      "nameAm": "ሚልክያስ",
+      "chapters": 4,
+      "sectionId": "minorProphets",
+      "wordprojectId": 39
+    },
+    {
+      "id": "matthew",
+      "nameEn": "Matthew",
+      "nameAm": "ማቴዎስ",
+      "chapters": 28,
+      "sectionId": "gospels",
+      "wordprojectId": 40
+    },
+    {
+      "id": "mark",
+      "nameEn": "Mark",
+      "nameAm": "ማርቆስ",
+      "chapters": 16,
+      "sectionId": "gospels",
+      "wordprojectId": 41
+    },
+    {
+      "id": "luke",
+      "nameEn": "Luke",
+      "nameAm": "ሉቃስ",
+      "chapters": 24,
+      "sectionId": "gospels",
+      "wordprojectId": 42
+    },
+    {
+      "id": "john",
+      "nameEn": "John",
+      "nameAm": "ዮሐንስ",
+      "chapters": 21,
+      "sectionId": "gospels",
+      "wordprojectId": 43
+    },
+    {
+      "id": "acts",
+      "nameEn": "Acts",
+      "nameAm": "የሐዋርያት ሥራ",
+      "chapters": 28,
+      "sectionId": "acts",
+      "wordprojectId": 44
+    },
+    {
+      "id": "romans",
+      "nameEn": "Romans",
+      "nameAm": "ሮሜ",
+      "chapters": 16,
+      "sectionId": "paulsLetters",
+      "wordprojectId": 45
+    },
+    {
+      "id": "1corinthians",
+      "nameEn": "1 Corinthians",
+      "nameAm": "1 ቆሮንቶስ",
+      "chapters": 16,
+      "sectionId": "paulsLetters",
+      "wordprojectId": 46
+    },
+    {
+      "id": "2corinthians",
+      "nameEn": "2 Corinthians",
+      "nameAm": "2 ቆሮንቶስ",
+      "chapters": 13,
+      "sectionId": "paulsLetters",
+      "wordprojectId": 47
+    },
+    {
+      "id": "galatians",
+      "nameEn": "Galatians",
+      "nameAm": "ገላትያ",
+      "chapters": 6,
+      "sectionId": "paulsLetters",
+      "wordprojectId": 48
+    },
+    {
+      "id": "ephesians",
+      "nameEn": "Ephesians",
+      "nameAm": "ኤፌሶን",
+      "chapters": 6,
+      "sectionId": "paulsLetters",
+      "wordprojectId": 49
+    },
+    {
+      "id": "philippians",
+      "nameEn": "Philippians",
+      "nameAm": "ፊልጵስዩስ",
+      "chapters": 4,
+      "sectionId": "paulsLetters",
+      "wordprojectId": 50
+    },
+    {
+      "id": "colossians",
+      "nameEn": "Colossians",
+      "nameAm": "ቆላስይስ",
+      "chapters": 4,
+      "sectionId": "paulsLetters",
+      "wordprojectId": 51
+    },
+    {
+      "id": "1thessalonians",
+      "nameEn": "1 Thessalonians",
+      "nameAm": "1 ተሰሎንቄ",
+      "chapters": 5,
+      "sectionId": "paulsLetters",
+      "wordprojectId": 52
+    },
+    {
+      "id": "2thessalonians",
+      "nameEn": "2 Thessalonians",
+      "nameAm": "2 ተሰሎንቄ",
+      "chapters": 3,
+      "sectionId": "paulsLetters",
+      "wordprojectId": 53
+    },
+    {
+      "id": "1timothy",
+      "nameEn": "1 Timothy",
+      "nameAm": "1 ጢሞቴዎስ",
+      "chapters": 6,
+      "sectionId": "paulsLetters",
+      "wordprojectId": 54
+    },
+    {
+      "id": "2timothy",
+      "nameEn": "2 Timothy",
+      "nameAm": "2 ጢሞቴዎስ",
+      "chapters": 4,
+      "sectionId": "paulsLetters",
+      "wordprojectId": 55
+    },
+    {
+      "id": "titus",
+      "nameEn": "Titus",
+      "nameAm": "ቲቶ",
+      "chapters": 3,
+      "sectionId": "paulsLetters",
+      "wordprojectId": 56
+    },
+    {
+      "id": "philemon",
+      "nameEn": "Philemon",
+      "nameAm": "ፊልሞና",
+      "chapters": 1,
+      "sectionId": "paulsLetters",
+      "wordprojectId": 57
+    },
+    {
+      "id": "hebrews",
+      "nameEn": "Hebrews",
+      "nameAm": "ዕብራውያን",
+      "chapters": 13,
+      "sectionId": "generalEpistles",
+      "wordprojectId": 58
+    },
+    {
+      "id": "james",
+      "nameEn": "James",
+      "nameAm": "ያዕቆብ",
+      "chapters": 5,
+      "sectionId": "generalEpistles",
+      "wordprojectId": 59
+    },
+    {
+      "id": "1peter",
+      "nameEn": "1 Peter",
+      "nameAm": "1 ጴጥሮስ",
+      "chapters": 5,
+      "sectionId": "generalEpistles",
+      "wordprojectId": 60
+    },
+    {
+      "id": "2peter",
+      "nameEn": "2 Peter",
+      "nameAm": "2 ጴጥሮስ",
+      "chapters": 3,
+      "sectionId": "generalEpistles",
+      "wordprojectId": 61
+    },
+    {
+      "id": "1john",
+      "nameEn": "1 John",
+      "nameAm": "1 ዮሐንስ",
+      "chapters": 5,
+      "sectionId": "generalEpistles",
+      "wordprojectId": 62
+    },
+    {
+      "id": "2john",
+      "nameEn": "2 John",
+      "nameAm": "2 ዮሐንስ",
+      "chapters": 1,
+      "sectionId": "generalEpistles",
+      "wordprojectId": 63
+    },
+    {
+      "id": "3john",
+      "nameEn": "3 John",
+      "nameAm": "3 ዮሐንስ",
+      "chapters": 1,
+      "sectionId": "generalEpistles",
+      "wordprojectId": 64
+    },
+    {
+      "id": "jude",
+      "nameEn": "Jude",
+      "nameAm": "ይሁዳ",
+      "chapters": 1,
+      "sectionId": "generalEpistles",
+      "wordprojectId": 65
+    },
+    {
+      "id": "revelation",
+      "nameEn": "Revelation",
+      "nameAm": "ራእይ",
+      "chapters": 22,
+      "sectionId": "revelation",
+      "wordprojectId": 66
+    }
+  ]
+}

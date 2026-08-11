@@ -4,12 +4,27 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../ai_key_store.dart';
 import '../../secrets.dart';
+import 'book_meta.dart';
 import 'gemini_study_backend.dart';
 import 'study_backend.dart';
 import 'study_fallback_backend.dart';
 import 'study_local_bank.dart';
 import 'study_service.dart';
+import 'study_sources.dart';
 import 'study_usage_gate.dart';
+import 'study_validator.dart';
+
+/// The deterministic canon (book list + per-chapter verse counts), loaded
+/// once and shared by the validator and the in-sheet passage viewer.
+final studyCanonProvider = FutureProvider<StudyCanon>((ref) {
+  return StudyCanon.load();
+});
+
+/// The immutable curated-source registry, loaded once and shared. Bank
+/// `sourceIds` reference this registry; a label is only ever the app's own.
+final studySourcesProvider = FutureProvider<StudySourceRegistry>((ref) {
+  return StudySourceRegistry.load();
+});
 
 /// The curated study bank, loaded once and kept alive.
 final studyLocalBankProvider = FutureProvider<StudyLocalBank>((ref) {
@@ -27,12 +42,14 @@ final studyLocalBankProvider = FutureProvider<StudyLocalBank>((ref) {
 ///      sees Gemini, keys, models, or prompts.
 final studyServiceProvider = FutureProvider<StudyService>((ref) async {
   final bank = await ref.watch(studyLocalBankProvider.future);
+  final canon = await ref.watch(studyCanonProvider.future);
   final keyStore = AiKeyStore();
   final gemini = GeminiStudyBackend(
     transport: buildGeminiTransport(
       bundledKey: defaultGeminiKey,
       userKeyProvider: keyStore.readUserKey,
     ),
+    validator: StudyValidator(canon: canon),
   );
   final backend = StudyFallbackBackend(
     local: LocalStudyBackend(bank),

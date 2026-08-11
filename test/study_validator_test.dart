@@ -3,6 +3,8 @@ import 'package:beslet_app/core/ai/study/study_prompt.dart';
 import 'package:beslet_app/core/ai/study/study_validator.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'study_test_utils.dart';
+
 const _am = 'እግዚአብሔር እረኛዬ ነው።';
 const _am2 = 'በሸለቆ ውስጥ እንኳን አልፈራም።';
 
@@ -14,21 +16,26 @@ StudyRequest _request({bool am = false}) => StudyRequest(
     );
 
 Map<String, dynamic> _enPayload() => {
-      'summary': {'text': 'The Lord is a caring shepherd who provides and guides.'},
+      'setting': {'text': 'A psalm of David, a song of trust in the LORD.'},
       'context': {
         'behindTheText': 'A psalm of David, a man who knew shepherding.',
         'inTheText': 'The psalm moves from provision to presence in the valley.',
       },
-      'observations': {'text': 'Notice the verbs: leads, restores, guides.'},
-      'teachings': {'text': 'God provides what we truly need (v. 1).'},
+      'whatTextSays': {
+        'text': 'The LORD is a caring shepherd who provides and guides.',
+      },
+      'meaningBackground': {
+        'text': 'A shepherd leads, feeds, and protects the flock.',
+      },
       'reflection': {'text': "Where do you need the Shepherd's presence?"},
-      'crossReferences': {
+      'biblicalConnections': {
         'items': [
           {
             'bookId': 'john',
             'chapter': 10,
             'startVerse': 11,
             'endVerse': 11,
+            'priority': 0,
             'reason': 'Jesus calls Himself the good Shepherd.',
           },
           {
@@ -36,33 +43,52 @@ Map<String, dynamic> _enPayload() => {
             'chapter': 999,
             'startVerse': 1,
             'endVerse': 1,
+            'priority': 1,
             'reason': 'Out of range chapter — must be dropped.',
+          },
+        ],
+      },
+      'whatCanBeUnderstood': {
+        'blocks': [
+          {
+            'tier': 'clearlyStated',
+            'text': 'God is presented as a personal keeper.',
+          },
+          {
+            'tier': 'supportedUnderstanding',
+            'text': 'Many read the valley as a time of trial.',
           },
         ],
       },
     };
 
 Map<String, dynamic> _amPayload() => {
-      'summary': {'text': _am},
+      'setting': {'text': _am},
       'context': {'behindTheText': _am2, 'inTheText': _am2},
-      'observations': {'text': _am},
-      'teachings': {'text': _am},
-      'reflection': {'text': _am},
-      'crossReferences': {
+      'whatTextSays': {'text': _am},
+      'meaningBackground': {'text': _am},
+      'reflection': {'text': 'እረኛው የት ያስፈልገኛል?'},
+      'biblicalConnections': {
         'items': [
           {
             'bookId': 'john',
             'chapter': 10,
             'startVerse': 11,
             'endVerse': 11,
+            'priority': 0,
             'reason': 'ኢየሱስ ጥሩ እረኛ ነው።',
           },
+        ],
+      },
+      'whatCanBeUnderstood': {
+        'blocks': [
+          {'tier': 'clearlyStated', 'text': _am},
         ],
       },
     };
 
 void main() {
-  const validator = StudyValidator();
+  final validator = StudyValidator(canon: loadTestCanon());
 
   group('StudyValidator (English)', () {
     test('a well-formed payload becomes a gemini StudyResult', () {
@@ -71,7 +97,8 @@ void main() {
       expect(result!.source, StudySource.gemini);
       expect(result.isAvailable, isTrue);
       final kinds = result.sections.map((s) => s.kind).toSet();
-      expect(kinds, containsAll(StudySectionKind.values));
+      expect(kinds, StudySectionKind.values.toSet(),
+          reason: 'every section kind must be present');
     });
 
     test('context keeps both halves; in-the-text lands in enSub', () {
@@ -85,33 +112,40 @@ void main() {
     test('invalid cross-references are dropped, valid ones kept', () {
       final result = validator.validate(raw: _enPayload(), request: _request())!;
       final refs = result.sections
-          .firstWhere((s) => s.kind == StudySectionKind.crossReferences)
+          .firstWhere((s) => s.kind == StudySectionKind.biblicalConnections)
           .references;
       expect(refs.length, 1, reason: 'out-of-range chapter must be dropped');
       expect(refs.single.bookId, 'john');
       expect(refs.single.referenceFor(false), 'John 10:11');
+      expect(refs.single.priority, 0);
     });
 
     test('a section over the hard cap is dropped; honest sections survive',
         () {
       final raw = _enPayload();
-      raw['summary'] = {
-        'text': 'word ' * (StudyLengthBudget.summaryMax * 3),
+      raw['whatTextSays'] = {
+        'text': 'word ' * (StudyLengthBudget.whatTextSaysMax * 3),
       };
       final result = validator.validate(raw: raw, request: _request());
       expect(result, isNotNull);
       expect(
-        result!.sections.any((s) => s.kind == StudySectionKind.summary),
+        result!.sections.any((s) => s.kind == StudySectionKind.whatTextSays),
         isFalse,
         reason: 'the over-budget section must be dropped',
       );
-      expect(result.sections.any((s) => s.kind == StudySectionKind.teachings),
-          isTrue);
+      expect(
+        result.sections.any((s) => s.kind == StudySectionKind.meaningBackground),
+        isTrue,
+      );
     });
 
     test('a banned authority phrase rejects the result', () {
       final raw = _enPayload();
-      raw['teachings'] = {'text': 'God wants you to do this.'};
+      raw['whatCanBeUnderstood'] = {
+        'blocks': [
+          {'tier': 'clearlyStated', 'text': 'God wants you to do this.'},
+        ],
+      };
       expect(validator.validate(raw: raw, request: _request()), isNull);
     });
 
@@ -119,8 +153,8 @@ void main() {
       expect(
         validator.validate(
           raw: {
-            'summary': {'text': ''},
-            'crossReferences': {'items': []},
+            'whatTextSays': {'text': ''},
+            'biblicalConnections': {'items': []},
           },
           request: _request(),
         ),
@@ -130,13 +164,85 @@ void main() {
 
     test('a cross-reference with a missing reason is dropped', () {
       final raw = _enPayload();
-      (raw['crossReferences'] as Map)['items'] = [
+      (raw['biblicalConnections'] as Map)['items'] = [
         {'bookId': 'john', 'chapter': 10, 'startVerse': 11, 'endVerse': 11},
       ];
       final result = validator.validate(raw: raw, request: _request())!;
       final refs = result.sections
-          .where((s) => s.kind == StudySectionKind.crossReferences);
+          .where((s) => s.kind == StudySectionKind.biblicalConnections);
       expect(refs.isEmpty, isTrue);
+    });
+
+    test('a cross-reference whose verse is outside the canon is dropped', () {
+      final raw = _enPayload();
+      (raw['biblicalConnections'] as Map)['items'] = [
+        {
+          'bookId': 'john',
+          'chapter': 3,
+          'startVerse': 36,
+          'endVerse': 37,
+          'priority': 0,
+          'reason': 'John 3 ends at verse 36, so 37 does not exist.',
+        },
+      ];
+      final result = validator.validate(raw: raw, request: _request())!;
+      final refs = result.sections
+          .where((s) => s.kind == StudySectionKind.biblicalConnections);
+      expect(refs.isEmpty, isTrue,
+          reason: 'a verse outside the canon must never render');
+    });
+
+    test('a cross-reference with an out-of-range priority is dropped', () {
+      final raw = _enPayload();
+      (raw['biblicalConnections'] as Map)['items'] = [
+        {
+          'bookId': 'john',
+          'chapter': 10,
+          'startVerse': 11,
+          'endVerse': 11,
+          'priority': 3,
+          'reason': 'Priority must be 0-2.',
+        },
+      ];
+      final result = validator.validate(raw: raw, request: _request())!;
+      final refs = result.sections
+          .where((s) => s.kind == StudySectionKind.biblicalConnections);
+      expect(refs.isEmpty, isTrue);
+    });
+
+    test('a reflection that is not a question is dropped', () {
+      final raw = _enPayload();
+      raw['reflection'] = {'text': 'Rest in the shepherd.'};
+      final result = validator.validate(raw: raw, request: _request())!;
+      expect(
+        result.sections.any((s) => s.kind == StudySectionKind.reflection),
+        isFalse,
+        reason: 'the reflection must be a question, never a directive',
+      );
+    });
+
+    test('tiered blocks: invalid tiers are dropped, valid ones kept', () {
+      final raw = _enPayload();
+      (raw['whatCanBeUnderstood'] as Map)['blocks'] = [
+        {'tier': 'clearlyStated', 'text': 'A clear claim from the text itself.'},
+        {'tier': 'not_a_tier', 'text': 'This must be dropped.'},
+      ];
+      final result = validator.validate(raw: raw, request: _request())!;
+      final blocks = result.sections
+          .firstWhere((s) => s.kind == StudySectionKind.whatCanBeUnderstood)
+          .blocks;
+      expect(blocks.length, 1);
+      expect(blocks.single.tier, StudyTier.clearlyStated);
+    });
+
+    test('tiered blocks: an empty block list is omitted', () {
+      final raw = _enPayload();
+      raw['whatCanBeUnderstood'] = {'blocks': []};
+      final result = validator.validate(raw: raw, request: _request())!;
+      expect(
+        result.sections.any((s) => s.kind == StudySectionKind.whatCanBeUnderstood),
+        isFalse,
+      );
     });
   });
 
@@ -145,23 +251,25 @@ void main() {
       final result = validator.validate(raw: _amPayload(), request: _request(am: true));
       expect(result, isNotNull);
       final summary = result!.sections
-          .firstWhere((s) => s.kind == StudySectionKind.summary);
+          .firstWhere((s) => s.kind == StudySectionKind.whatTextSays);
       expect(summary.en.trim(), isEmpty);
       expect(summary.am.trim(), isNotEmpty);
     });
 
     test('Latin text in an Amharic request is dropped per section', () {
       final raw = _amPayload();
-      raw['summary'] = {'text': 'The Lord is my shepherd.'};
+      raw['whatTextSays'] = {'text': 'The Lord is my shepherd.'};
       final result = validator.validate(raw: raw, request: _request(am: true));
       expect(result, isNotNull);
       expect(
-        result!.sections.any((s) => s.kind == StudySectionKind.summary),
+        result!.sections.any((s) => s.kind == StudySectionKind.whatTextSays),
         isFalse,
         reason: 'the Latin summary must be dropped from an Amharic note',
       );
-      expect(result.sections.any((s) => s.kind == StudySectionKind.teachings),
-          isTrue);
+      expect(
+        result.sections.any((s) => s.kind == StudySectionKind.meaningBackground),
+        isTrue,
+      );
     });
 
     test("Ge'ez text in an English request is rejected", () {
@@ -173,7 +281,7 @@ void main() {
 
     test('an Amharic banned phrase rejects the result', () {
       final raw = _amPayload();
-      raw['teachings'] = {'text': 'እግዚአብሔር ይነግርሃል ይህን ልታደርግ።'};
+      raw['whatTextSays'] = {'text': 'እግዚአብሔር ይነግርሃል ይህን ልታደርግ።'};
       expect(validator.validate(raw: raw, request: _request(am: true)), isNull);
     });
   });

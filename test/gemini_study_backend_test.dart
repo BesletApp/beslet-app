@@ -2,7 +2,10 @@ import 'dart:convert';
 
 import 'package:beslet_app/core/ai/study/gemini_study_backend.dart';
 import 'package:beslet_app/core/ai/study/study_models.dart';
+import 'package:beslet_app/core/ai/study/study_validator.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'study_test_utils.dart';
 
 StudyRequest _request({bool am = false}) => StudyRequest(
       reference: const StudyReference(
@@ -11,24 +14,40 @@ StudyRequest _request({bool am = false}) => StudyRequest(
       verseTexts: const ['a', 'b', 'c'],
     );
 
+GeminiStudyBackend _backend(Future<String> Function(String) transport) =>
+    GeminiStudyBackend(
+      transport: transport,
+      validator: StudyValidator(canon: loadTestCanon()),
+    );
+
 String _goodJson() => jsonEncode({
-      'summary': {'text': 'The Lord is a caring shepherd who provides and guides.'},
+      'setting': {'text': 'A psalm of David, a song of trust.'},
       'context': {
         'behindTheText': 'A psalm of David, a man who knew shepherding.',
         'inTheText': 'The psalm moves from provision to presence in the valley.',
       },
-      'observations': {'text': 'Notice the verbs: leads, restores, guides.'},
-      'teachings': {'text': 'God provides what we truly need (v. 1).'},
+      'whatTextSays': {
+        'text': 'The Lord is a caring shepherd who provides and guides.',
+      },
+      'meaningBackground': {
+        'text': 'A shepherd leads, feeds, and protects the flock.',
+      },
       'reflection': {'text': 'Where do you need his presence?'},
-      'crossReferences': {
+      'biblicalConnections': {
         'items': [
           {
             'bookId': 'john',
             'chapter': 10,
             'startVerse': 11,
             'endVerse': 11,
+            'priority': 0,
             'reason': 'Jesus calls Himself the good Shepherd.',
           },
+        ],
+      },
+      'whatCanBeUnderstood': {
+        'blocks': [
+          {'tier': 'clearlyStated', 'text': 'God is a personal keeper.'},
         ],
       },
     });
@@ -36,7 +55,7 @@ String _goodJson() => jsonEncode({
 void main() {
   group('GeminiStudyBackend', () {
     test('a valid transport payload becomes an available gemini result', () async {
-      final backend = GeminiStudyBackend(transport: (_) async => _goodJson());
+      final backend = _backend((_) async => _goodJson());
       final result = await backend.study(_request());
       expect(result, isNotNull);
       expect(result!.isAvailable, isTrue);
@@ -44,32 +63,28 @@ void main() {
     });
 
     test('a throwing transport yields null (never raises)', () async {
-      final backend = GeminiStudyBackend(
-        transport: (_) async => throw Exception('offline'),
-      );
+      final backend = _backend((_) async => throw Exception('offline'));
       expect(await backend.study(_request()), isNull);
     });
 
     test('a malformed transport reply yields null', () async {
-      final backend = GeminiStudyBackend(
-        transport: (_) async => 'not json at all',
-      );
+      final backend = _backend((_) async => 'not json at all');
       expect(await backend.study(_request()), isNull);
     });
 
     test('a non-map JSON reply yields null', () async {
-      final backend = GeminiStudyBackend(transport: (_) async => '[1,2,3]');
+      final backend = _backend((_) async => '[1,2,3]');
       expect(await backend.study(_request()), isNull);
     });
 
     test('an empty reply yields null', () async {
-      final backend = GeminiStudyBackend(transport: (_) async => '   ');
+      final backend = _backend((_) async => '   ');
       expect(await backend.study(_request()), isNull);
     });
 
     test("the prompt asks for the reader's language", () async {
       String? seen;
-      final backend = GeminiStudyBackend(transport: (prompt) async {
+      final backend = _backend((prompt) async {
         seen = prompt;
         return _goodJson();
       });
@@ -80,11 +95,9 @@ void main() {
 
     test('invalid content (banned phrase) fails validation and yields null',
         () async {
-      final backend = GeminiStudyBackend(
-        transport: (_) async => jsonEncode({
-          'teachings': {'text': 'God is telling you to do this.'},
-        }),
-      );
+      final backend = _backend((_) async => jsonEncode({
+            'whatTextSays': {'text': 'God is telling you to do this.'},
+          }));
       expect(await backend.study(_request()), isNull);
     });
   });

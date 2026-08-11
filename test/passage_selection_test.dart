@@ -4,6 +4,7 @@ import 'package:beslet_app/core/ai/study/study_backend.dart';
 import 'package:beslet_app/core/ai/study/study_local_bank.dart';
 import 'package:beslet_app/core/ai/study/study_provider.dart';
 import 'package:beslet_app/core/ai/study/study_service.dart';
+import 'package:beslet_app/core/ai/study/study_sources.dart';
 import 'package:beslet_app/core/providers/audio_player_provider.dart';
 import 'package:beslet_app/core/providers/connectivity_provider.dart';
 import 'package:beslet_app/core/providers/growth_streams_provider.dart';
@@ -69,8 +70,10 @@ Future<void> pumpBible(
       overrides: [
         connectivityProvider.overrideWith((ref) => Stream.value(true)),
         audioPlayerProvider.overrideWith(() => _FakeAudioPlayer()),
-        scriptureProvider.overrideWith((ref, params) async =>
-            _chapter(bookId: params.bookId, chapter: params.chapter, verses: verses)),
+        scriptureProvider.overrideWith((ref, params) async {
+          if (params.bookId == 'revelation') return null;
+          return _chapter(bookId: params.bookId, chapter: params.chapter, verses: 20);
+        }),
         todayBiblePlanProvider.overrideWithValue(const TodayReadingPlan(
           bookId: 'genesis', chapter: 1, labelEn: 'Genesis 1', labelAm: 'ዘፍጥረት 1',
         )),
@@ -90,6 +93,9 @@ Future<void> pumpBible(
         studyLocalBankProvider.overrideWith((ref) async =>
             StudyLocalBank.fromJsonString(
                 File('assets/data/study.json').readAsStringSync())),
+        studySourcesProvider.overrideWith((ref) async =>
+            StudySourceRegistry.fromJsonString(
+                File('assets/data/study_sources.json').readAsStringSync())),
         // Local-only service: no Gemini, no network, deterministic in tests.
         studyServiceProvider.overrideWith((ref) async {
           final bank = await ref.watch(studyLocalBankProvider.future);
@@ -176,6 +182,9 @@ void main() {
 
   testWidgets('Study opens the panel with the banked note for the passage',
       (tester) async {
+    tester.view.physicalSize = const Size(800, 1800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
     await pumpBible(tester, bookId: 'psalms', chapter: 23, verses: 6);
 
     await tester.longPress(find.text('1'));
@@ -187,8 +196,38 @@ void main() {
     await pumpPanel(tester);
 
     expect(find.text('Psalms 23:1–3'), findsOneWidget);
-    expect(find.text('Summary'), findsOneWidget);
+    expect(find.text('What the Text Says'), findsOneWidget);
     expect(find.textContaining('shepherd'), findsWidgets);
+  });
+
+  testWidgets('the panel names the curated sources each section draws on',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 3200);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    await pumpBible(tester, bookId: 'psalms', chapter: 23, verses: 6);
+
+    await tester.longPress(find.text('1'));
+    await tester.pump();
+    await tester.tap(find.text('3'));
+    await tester.pump();
+
+    await tester.tap(find.text('Study · 3 verses'));
+    await pumpPanel(tester);
+
+    await tester.scrollUntilVisible(
+        find.textContaining('Scripture and your church remain the authority'),
+        200,
+        scrollable: find.byType(Scrollable).last);
+
+    // The "what the text says" section draws on Holy Scripture only.
+    expect(find.textContaining('Sources: Holy Scripture'), findsWidgets);
+    // A background section draws on Scripture and the received teaching.
+    expect(
+      find.textContaining('Sources: Holy Scripture · '
+          'The received teaching of the Church'),
+      findsWidgets,
+    );
   });
 
   testWidgets('unbanked passage shows the quiet needs-connection note',
@@ -222,5 +261,61 @@ void main() {
     await pumpPanel(tester);
 
     expect(find.text('Psalms 23:1'), findsOneWidget);
+  });
+
+  testWidgets('tapping a cross-reference opens the in-sheet viewer with the '
+      'app-owned passage text', (tester) async {
+    tester.view.physicalSize = const Size(800, 1800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    await pumpBible(tester, bookId: 'psalms', chapter: 23, verses: 6);
+
+    await tester.longPress(find.text('1'));
+    await tester.pump();
+    await tester.tap(find.text('3'));
+    await tester.pump();
+
+    await tester.tap(find.text('Study · 3 verses'));
+    await pumpPanel(tester);
+
+    await tester.scrollUntilVisible(find.text('John 10:11'), 200,
+        scrollable: find.byType(Scrollable).first);
+    await tester.tap(find.text('John 10:11'));
+    await pumpPanel(tester);
+
+    // The viewer reuses the app's own Bible text for the reference (never AI).
+    expect(
+      find.descendant(
+        of: find.byType(ListView).last,
+        matching: find.text('Verse 11'),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('a cross-reference with no local passage text stays quiet',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 1800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    await pumpBible(tester, bookId: 'psalms', chapter: 23, verses: 6);
+
+    await tester.longPress(find.text('1'));
+    await tester.pump();
+    await tester.tap(find.text('3'));
+    await tester.pump();
+
+    await tester.tap(find.text('Study · 3 verses'));
+    await pumpPanel(tester);
+
+    await tester.scrollUntilVisible(find.text('Revelation 7:17'), 200,
+        scrollable: find.byType(Scrollable).first);
+    await tester.tap(find.text('Revelation 7:17'));
+    await pumpPanel(tester);
+
+    expect(
+      find.text("This passage isn't available right now."),
+      findsOneWidget,
+    );
   });
 }

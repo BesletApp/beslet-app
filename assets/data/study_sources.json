@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "sources": [
+    {
+      "id": "scripture",
+      "en": "Holy Scripture",
+      "am": "ቅዱስ መጽሐፍ"
+    },
+    {
+      "id": "tradition",
+      "en": "The received teaching of the Church",
+      "am": "የቤተ ክርስቲያን ትውፊት"
+    }
+  ]
+}

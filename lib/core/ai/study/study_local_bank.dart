@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 
 import '../../services/scripture_service.dart';
+import 'book_meta.dart';
 import 'study_models.dart';
+import 'study_sources.dart';
 
 /// A curated, hand-written study note for one passage in the bundled bank.
 class StudyBankEntry {
@@ -77,9 +79,15 @@ class StudyLocalBank {
 
   /// Returns a list of content problems (empty when the bank is clean).
   /// Called at load and asserted in tests so a bad edit cannot ship.
-  List<String> validate() {
+  ///
+  /// When [canon] is provided, every passage and cross-reference must also
+  /// exist in both languages' actual texts — the strongest fail-closed gate.
+  /// When [sources] is provided, every `sourceIds` referenced by a section
+  /// must resolve to a known source in the registry — an unattributed claim
+  /// fails closed.
+  List<String> validate({StudyCanon? canon, StudySourceRegistry? sources}) {
     final issues = <String>[];
-    if (version != 1) issues.add('bank version must be 1, found $version');
+    if (version != 2) issues.add('bank version must be 2, found $version');
     final seen = <String>{};
     for (final entry in entries) {
       if (!seen.add(entry.id)) issues.add('duplicate entry id ${entry.id}');
@@ -96,41 +104,94 @@ class StudyLocalBank {
       if (entry.endVerse < entry.startVerse) {
         issues.add('entry ${entry.id}: endVerse before startVerse');
       }
+      if (canon != null) {
+        for (final isAm in [false, true]) {
+          if (!canon.validReference(
+            bookId: entry.bookId,
+            chapter: entry.chapter,
+            startVerse: entry.startVerse,
+            endVerse: entry.endVerse,
+            isAmharic: isAm,
+          )) {
+            issues.add(
+                'entry ${entry.id}: ${entry.bookId} ${entry.chapter}:${entry.startVerse}-${entry.endVerse} is outside the canon');
+          }
+        }
+      }
       final kinds = entry.sections.map((s) => s.kind).toSet();
-      if (kinds.length != StudySectionKind.values.length) {
-        issues.add('entry ${entry.id}: must contain all six sections, got ${kinds.length}');
+      if (entry.sections.length != StudySectionKind.values.length ||
+          kinds.length != StudySectionKind.values.length) {
+        issues.add(
+            'entry ${entry.id}: must contain all seven sections exactly once, got ${entry.sections.length}');
       }
       for (final section in entry.sections) {
-        _validateSection(entry.id, section, issues);
+        _validateSection(entry.id, section, issues, canon, sources);
       }
     }
     if (entries.isEmpty) issues.add('bank must contain at least one entry');
     return issues;
   }
 
-  void _validateSection(String entryId, StudySection section, List<String> issues) {
-    if (section.kind == StudySectionKind.crossReferences) {
+  void _validateSection(String entryId, StudySection section,
+      List<String> issues, StudyCanon? canon, StudySourceRegistry? sources) {
+    if (sources != null) {
+      if (section.sourceIds.isEmpty) {
+        issues.add('entry $entryId ${section.kind.name}: sourceIds required');
+      }
+      final unknown = sources.unknownIn(section.sourceIds);
+      for (final id in unknown) {
+        issues.add(
+            'entry $entryId ${section.kind.name}: unknown source id "$id"');
+      }
+    }
+    if (section.kind == StudySectionKind.biblicalConnections) {
       if (section.references.isEmpty) {
-        issues.add('entry $entryId crossReferences: at least one reference required');
+        issues.add('entry $entryId biblicalConnections: at least one reference required');
       }
       for (final ref in section.references) {
         if (ref.en.trim().isEmpty || ref.am.trim().isEmpty) {
           issues.add(
-              'entry $entryId crossReference ${ref.referenceFor(false)}: reason needs both languages');
+              'entry $entryId biblicalConnections ${ref.referenceFor(false)}: reason needs both languages');
         }
         final book = ScriptureService.bookMap[ref.bookId];
         if (book == null) {
-          issues.add('entry $entryId crossReference: unknown book ${ref.bookId}');
+          issues.add('entry $entryId biblicalConnections: unknown book ${ref.bookId}');
         } else {
           if (ref.chapter < 1 || ref.chapter > book.chapters) {
-            issues.add('entry $entryId crossReference ${ref.bookId}: chapter ${ref.chapter} out of range (${book.chapters})');
+            issues.add('entry $entryId biblicalConnections ${ref.bookId}: chapter ${ref.chapter} out of range (${book.chapters})');
           }
         }
         if (ref.startVerse < 1) {
-          issues.add('entry $entryId crossReference: startVerse must be >= 1');
+          issues.add('entry $entryId biblicalConnections: startVerse must be >= 1');
         }
         if (ref.endVerse < ref.startVerse) {
-          issues.add('entry $entryId crossReference: endVerse before startVerse');
+          issues.add('entry $entryId biblicalConnections: endVerse before startVerse');
+        }
+        if (canon != null) {
+          for (final isAm in [false, true]) {
+            if (!canon.validReference(
+              bookId: ref.bookId,
+              chapter: ref.chapter,
+              startVerse: ref.startVerse,
+              endVerse: ref.endVerse,
+              isAmharic: isAm,
+            )) {
+              issues.add(
+                  'entry $entryId biblicalConnections ${ref.referenceFor(false)}: outside the canon');
+            }
+          }
+        }
+      }
+      return;
+    }
+
+    if (section.kind == StudySectionKind.whatCanBeUnderstood) {
+      if (section.blocks.isEmpty) {
+        issues.add('entry $entryId whatCanBeUnderstood: at least one tiered block required');
+      }
+      for (final block in section.blocks) {
+        if (block.en.trim().isEmpty || block.am.trim().isEmpty) {
+          issues.add('entry $entryId whatCanBeUnderstood ${block.tier.name}: both languages required');
         }
       }
       return;

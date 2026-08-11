@@ -1440,22 +1440,38 @@ class AppLocalizationsEn extends AppLocalizations {
   String get studyCancel => 'Cancel';
 
   @override
-  String get studySectionSummary => 'Summary';
+  String get studySectionSetting => 'Setting';
 
   @override
   String get studySectionContext => 'Context';
 
   @override
-  String get studySectionObservations => 'Observations';
+  String get studySectionWhatTextSays => 'What the Text Says';
 
   @override
-  String get studySectionTeachings => 'Teachings';
+  String get studySectionMeaningBackground => 'Meaning & Background';
+
+  @override
+  String get studySectionBiblicalConnections => 'Biblical Connections';
+
+  @override
+  String get studySectionWhatCanBeUnderstood => 'What Can Be Understood';
 
   @override
   String get studySectionReflection => 'Reflection';
 
   @override
-  String get studySectionCrossReferences => 'Cross-References';
+  String get studySectionSources => 'Sources';
+
+  @override
+  String get studyTierClearlyStated => 'The text clearly says';
+
+  @override
+  String get studyTierSupportedUnderstanding =>
+      'How it is generally understood';
+
+  @override
+  String get studyTierDisputed => 'Disputed among Christians';
 
   @override
   String get studyContextBehind => 'Behind the text';
@@ -1473,4 +1489,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get studyOfflineNote =>
       'A full study note for this passage needs a connection right now. The passage stands on its own — read it, sit with it, and let it do its work.';
+
+  @override
+  String get studyReadPassage => 'Read this passage';
+
+  @override
+  String get studyReferenceUnavailable =>
+      'This passage isn\'t available right now.';
 }

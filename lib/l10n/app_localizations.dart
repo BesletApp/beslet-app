@@ -2702,11 +2702,11 @@ abstract class AppLocalizations {
   /// **'Cancel'**
   String get studyCancel;
 
-  /// No description provided for @studySectionSummary.
+  /// No description provided for @studySectionSetting.
   ///
   /// In en, this message translates to:
-  /// **'Summary'**
-  String get studySectionSummary;
+  /// **'Setting'**
+  String get studySectionSetting;
 
   /// No description provided for @studySectionContext.
   ///
@@ -2714,17 +2714,29 @@ abstract class AppLocalizations {
   /// **'Context'**
   String get studySectionContext;
 
-  /// No description provided for @studySectionObservations.
+  /// No description provided for @studySectionWhatTextSays.
   ///
   /// In en, this message translates to:
-  /// **'Observations'**
-  String get studySectionObservations;
+  /// **'What the Text Says'**
+  String get studySectionWhatTextSays;
 
-  /// No description provided for @studySectionTeachings.
+  /// No description provided for @studySectionMeaningBackground.
   ///
   /// In en, this message translates to:
-  /// **'Teachings'**
-  String get studySectionTeachings;
+  /// **'Meaning & Background'**
+  String get studySectionMeaningBackground;
+
+  /// No description provided for @studySectionBiblicalConnections.
+  ///
+  /// In en, this message translates to:
+  /// **'Biblical Connections'**
+  String get studySectionBiblicalConnections;
+
+  /// No description provided for @studySectionWhatCanBeUnderstood.
+  ///
+  /// In en, this message translates to:
+  /// **'What Can Be Understood'**
+  String get studySectionWhatCanBeUnderstood;
 
   /// No description provided for @studySectionReflection.
   ///
@@ -2732,11 +2744,29 @@ abstract class AppLocalizations {
   /// **'Reflection'**
   String get studySectionReflection;
 
-  /// No description provided for @studySectionCrossReferences.
+  /// No description provided for @studySectionSources.
   ///
   /// In en, this message translates to:
-  /// **'Cross-References'**
-  String get studySectionCrossReferences;
+  /// **'Sources'**
+  String get studySectionSources;
+
+  /// No description provided for @studyTierClearlyStated.
+  ///
+  /// In en, this message translates to:
+  /// **'The text clearly says'**
+  String get studyTierClearlyStated;
+
+  /// No description provided for @studyTierSupportedUnderstanding.
+  ///
+  /// In en, this message translates to:
+  /// **'How it is generally understood'**
+  String get studyTierSupportedUnderstanding;
+
+  /// No description provided for @studyTierDisputed.
+  ///
+  /// In en, this message translates to:
+  /// **'Disputed among Christians'**
+  String get studyTierDisputed;
 
   /// No description provided for @studyContextBehind.
   ///
@@ -2767,6 +2797,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'A full study note for this passage needs a connection right now. The passage stands on its own — read it, sit with it, and let it do its work.'**
   String get studyOfflineNote;
+
+  /// No description provided for @studyReadPassage.
+  ///
+  /// In en, this message translates to:
+  /// **'Read this passage'**
+  String get studyReadPassage;
+
+  /// No description provided for @studyReferenceUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This passage isn\'t available right now.'**
+  String get studyReferenceUnavailable;
 }
 
 class _AppLocalizationsDelegate

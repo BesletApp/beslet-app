@@ -1,7 +1,9 @@
+import 'package:beslet_app/core/ai/study/book_meta.dart';
 import 'package:beslet_app/core/ai/study/study_backend.dart';
 import 'package:beslet_app/core/ai/study/study_fallback_backend.dart';
 import 'package:beslet_app/core/ai/study/study_local_bank.dart';
 import 'package:beslet_app/core/ai/study/study_models.dart';
+import 'package:beslet_app/core/ai/study/study_sources.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class _FakeAi implements StudyBackend {
@@ -124,7 +126,7 @@ class _Bank implements StudyLocalBank {
   _Bank({this.empty = false});
 
   @override
-  int get version => 1;
+  int get version => 2;
 
   @override
   List<StudyBankEntry> get entries => empty ? const [] : const [
@@ -150,5 +152,6 @@ class _Bank implements StudyLocalBank {
         );
 
   @override
-  List<String> validate() => const [];
+  List<String> validate({StudyCanon? canon, StudySourceRegistry? sources}) =>
+      const [];
 }

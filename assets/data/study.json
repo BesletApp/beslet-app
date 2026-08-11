@@ -1,5 +1,5 @@
-﻿{
-  "version": 1,
+{
+  "version": 2,
   "entries": [
     {
       "id": "psalm23",
@@ -8,16 +8,105 @@
       "startVerse": 1,
       "endVerse": 6,
       "sections": [
-        { "kind": "summary", "en": "The Lord is a caring shepherd: He provides, restores, guides, protects, and leads His sheep through both green pastures and dark valleys - ending in His house forever.", "am": "እግዚአብሔር እረኛ ነው፤ ያቀርባል፣ ያድሳል፣ ይመራል፣ ይጠብቃል፤ በለመለመ መስክም ሆነ በጨለማ ሸለቆ ውስጥ በጎቹን ይመራቸዋል፤ በመጨረሻም በቤቱ ውስጥ ለዘላለም ያስቀምጣቸዋል።" },
-        { "kind": "context", "en": "A psalm of David, in the voice of a man who knew shepherding and the hard years of life. It pictures God not as a distant ruler but as a personal keeper who walks with the sheep.", "am": "የዳዊት መዝሙር ነው፤ እረኝነትንም በራሱ ሕይወት ያወቀ ሰው ነበር። እግዚአብሔርን የራቀ ገዥ ሳይሆን ከበጎቹ ጋር የሚሄድ የግል ጠባቂ አድርጎ ይሳሉታል።", "enSub": "The psalm moves from what the Shepherd provides (1-3), through His presence in the darkest place (4), to His goodness at the table of the Lord (5-6).", "amSub": "መዝሙሩ እረኛው ከሚሰጠው (1-3) ወደ ጨለማው ቦታ መገኘቱ (4) እና ወደ ጌታ ገበታ ቸርነቱ (5-6) ይሄዳል።" },
-        { "kind": "observations", "en": "Notice the verbs: the Lord 'makes me lie down', 'leads me', 'restores my soul', 'guides me'. Even in the valley of the shadow of death the psalmist says 'I will fear no evil' - not because the valley is absent, but because the Shepherd is present.", "am": "ግሶቹን አስተውል፦ እግዚአብሔር «ያሳደፈኝ፣ ይመራኛል፣ ነፍሴን ያድሳል፣ ይመራኛል»። በሞት ጥላ ሸለቆም «ክፉን አልፈራም» ይላል — ሸለቆው ስለሌለ ሳይሆን እረኛው ስላለ ነው።" },
-        { "kind": "teachings", "en": "God provides what we truly need (v. 1); He stays present through the worst places (v. 4); goodness and mercy pursue His people all their days (v. 6).", "am": "እግዚአብሔር የሚያስፈልገንን ይሰጣል (1)፤ በጣም አስቸጋሪ በሆነ ቦታ ከእኛ ጋር ይሄዳል (4)፤ ቸርነትና ምሕረት ሁሉንም ቀናችን ይከተሉናል (6)።" },
-        { "kind": "reflection", "en": "What might this psalm bring into view about where you are today? Where do you need the Shepherd's presence rather than an escape from the valley?", "am": "ይህ መዝሙር ዛሬ ስለምንሆንበት ቦታ ምን ያሳያል? ከሸለቆው መሸሽ ሳይሆን የእረኛውን መገኘት የምትፈልገው የት ነው?" },
-        { "kind": "crossReferences", "references": [
-          { "bookId": "john", "chapter": 10, "startVerse": 11, "endVerse": 11, "en": "Jesus calls Himself the good Shepherd", "am": "ኢየሱስ ራሱን መልካም እረኛ ብሎ ይጠራል" },
-          { "bookId": "1peter", "chapter": 5, "startVerse": 7, "endVerse": 7, "en": "cast your anxiety on Him because He cares for you", "am": "ጭንቀትህን በእርሱ ላይ ጣል — ያስባልናልና" },
-          { "bookId": "revelation", "chapter": 7, "startVerse": 17, "endVerse": 17, "en": "the Lamb shepherds His people and wipes every tear", "am": "በጉ ሕዝቡን ይመራል፣ እንባንም ያብሳል" }
-        ] }
+        {
+          "kind": "setting",
+          "en": "A psalm of David, one of the songs of trust near the start of the book of Psalms.",
+          "am": "የዳዊት መዝሙር፤ በመዝሙረ ዳዊት መጀመሪያ አካባቢ ከሚገኙት የመተማመን መዝሙሮች አንዱ።",
+          "sourceIds": [
+            "tradition"
+          ]
+        },
+        {
+          "kind": "context",
+          "en": "A psalm of David, in the voice of a man who knew shepherding and the hard years of life. It pictures God not as a distant ruler but as a personal keeper who walks with the sheep.",
+          "am": "የዳዊት መዝሙር ነው፤ እረኝነትንም በራሱ ሕይወት ያወቀ ሰው ነበር። እግዚአብሔርን የራቀ ገዥ ሳይሆን ከበጎቹ ጋር የሚሄድ የግል ጠባቂ አድርጎ ይሳሉታል።",
+          "enSub": "The psalm moves from what the Shepherd provides (1-3), through His presence in the darkest place (4), to His goodness at the table of the Lord (5-6).",
+          "amSub": "መዝሙሩ እረኛው ከሚሰጠው (1-3) ወደ ጨለማው ቦታ መገኘቱ (4) እና ወደ ጌታ ገበታ ቸርነቱ (5-6) ይሄዳል።",
+          "sourceIds": [
+            "tradition"
+          ]
+        },
+        {
+          "kind": "whatTextSays",
+          "en": "The Lord is a caring shepherd: He provides, restores, guides, protects, and leads His sheep through both green pastures and dark valleys - ending in His house forever.",
+          "am": "እግዚአብሔር እረኛ ነው፤ ያቀርባል፣ ያድሳል፣ ይመራል፣ ይጠብቃል፤ በለመለመ መስክም ሆነ በጨለማ ሸለቆ ውስጥ በጎቹን ይመራቸዋል፤ በመጨረሻም በቤቱ ውስጥ ለዘላለም ያስቀምጣቸዋል።",
+          "sourceIds": [
+            "scripture"
+          ]
+        },
+        {
+          "kind": "meaningBackground",
+          "en": "Notice the verbs: the Lord 'makes me lie down', 'leads me', 'restores my soul', 'guides me'. Even in the valley of the shadow of death the psalmist says 'I will fear no evil' - not because the valley is absent, but because the Shepherd is present.\n\nGod provides what we truly need (v. 1); He stays present through the worst places (v. 4); goodness and mercy pursue His people all their days (v. 6).",
+          "am": "ግሶቹን አስተውል፦ እግዚአብሔር «ያሳደፈኝ፣ ይመራኛል፣ ነፍሴን ያድሳል፣ ይመራኛል»። በሞት ጥላ ሸለቆም «ክፉን አልፈራም» ይላል — ሸለቆው ስለሌለ ሳይሆን እረኛው ስላለ ነው።\n\nእግዚአብሔር የሚያስፈልገንን ይሰጣል (1)፤ በጣም አስቸጋሪ በሆነ ቦታ ከእኛ ጋር ይሄዳል (4)፤ ቸርነትና ምሕረት ሁሉንም ቀናችን ይከተሉናል (6)።",
+          "sourceIds": [
+            "scripture",
+            "tradition"
+          ]
+        },
+        {
+          "kind": "biblicalConnections",
+          "references": [
+            {
+              "bookId": "john",
+              "chapter": 10,
+              "startVerse": 11,
+              "endVerse": 11,
+              "en": "Jesus calls Himself the good Shepherd",
+              "am": "ኢየሱስ ራሱን መልካም እረኛ ብሎ ይጠራል"
+            },
+            {
+              "bookId": "1peter",
+              "chapter": 5,
+              "startVerse": 7,
+              "endVerse": 7,
+              "en": "cast your anxiety on Him because He cares for you",
+              "am": "ጭንቀትህን በእርሱ ላይ ጣል — ያስባልናልና"
+            },
+            {
+              "bookId": "revelation",
+              "chapter": 7,
+              "startVerse": 17,
+              "endVerse": 17,
+              "en": "the Lamb shepherds His people and wipes every tear",
+              "am": "በጉ ሕዝቡን ይመራል፣ እንባንም ያብሳል"
+            }
+          ],
+          "sourceIds": [
+            "scripture"
+          ]
+        },
+        {
+          "kind": "whatCanBeUnderstood",
+          "blocks": [
+            {
+              "tier": "clearlyStated",
+              "en": "The Lord is a shepherd who provides, restores, guides, protects, and hosts His sheep.",
+              "am": "እግዚአብሔር የሚያቀርብ፣ የሚያድስ፣ የሚመራ፣ የሚጠብቅና በገበታው የሚያስተናግድ እረኛ ነው።"
+            },
+            {
+              "tier": "supportedUnderstanding",
+              "en": "The valley of the shadow of death is widely read as the darkest moments of life, where the comfort is the Shepherd's presence, not an escape.",
+              "am": "«የሞት ጥላ ሸለቆ» በአብዛኛው የሕይወት ጨለማ ጊዜያት ተደርጎ ይነበባል፤ እዚያ ያለው ማጽናኛ የእረኛው መገኘት እንጂ መሸሽ አይደለም።"
+            },
+            {
+              "tier": "disputed",
+              "en": "The 'table' in verse 5 is read by some as a host's feast and by others as an image of God's provision; both readings stay close to the text.",
+              "am": "«ገበታ» (ቁ. 5) አንዳንዶች የአስተናጋጅ ግብዣ አድርገው፣ ሌሎች የእግዚአብሔር አቅርቦት ምስል አድርገው ይነብባሉ፤ ሁለቱም ከጽሑፉ ጋር ቅርብ ናቸው።"
+            }
+          ],
+          "sourceIds": [
+            "scripture",
+            "tradition"
+          ]
+        },
+        {
+          "kind": "reflection",
+          "en": "What might this psalm bring into view about where you are today? Where do you need the Shepherd's presence rather than an escape from the valley?",
+          "am": "ይህ መዝሙር ዛሬ ስለምንሆንበት ቦታ ምን ያሳያል? ከሸለቆው መሸሽ ሳይሆን የእረኛውን መገኘት የምትፈልገው የት ነው?",
+          "sourceIds": [
+            "scripture"
+          ]
+        }
       ]
     },
     {
@@ -27,16 +116,105 @@
       "startVerse": 16,
       "endVerse": 16,
       "sections": [
-        { "kind": "summary", "en": "The heart of the gospel in one verse: God's love is the source, His Son is the gift, faith is the response, and eternal life is the promise.", "am": "የወንጌል ማንነት በአንድ ጥቅስ ውስጥ፦ የእግዚአብሔር ፍቅር ምንጩ ነው፣ ልጁ ስጦታው ነው፣ እምነት ምላሹ ነው፣ ዘላለማዊ ሕይወትም ተስፋው ነው።" },
-        { "kind": "context", "en": "Spoken by Jesus to Nicodemus, a teacher of Israel who came by night to understand who Jesus was.", "am": "ኢየሱስ በሌሊት ወደ እርሱ ለመጣው የእስራኤል መምህር ለኒቆዲሞስ የተናገረው ነው።", "enSub": "In the conversation about being 'born again', Jesus moves from the need to the reason it is possible: the love of God.", "amSub": "ስለ «እንደገና መወለድ» በሚደረገው ውይይት ኢየሱስ ከፍላጎቱ ወደ መንስኤው ይደርሳል፦ የእግዚአብሔር ፍቅር።" },
-        { "kind": "observations", "en": "The verse says God so loved the world 'that He gave'. Love is measured by what it costs - and it cost the Father His one and only Son. Notice also the scope: the world, not only the worthy.", "am": "ጥቅሱ «እንዲሁ ወዶአልና ሰጠ» ይላል። ፍቅር የሚለካው በዋጋው ነው — አብ አንድያ ልጁን ሰጠ። ስፋቱንም አስተውል፦ ዓለምን ወደደ እንጂ የሚገባውን ብቻ አይደለም።" },
-        { "kind": "teachings", "en": "God's love is the initiative; the gift of the Son makes salvation possible; believing is the response that brings life, not perishing.", "am": "የእግዚአብሔር ፍቅር ነው የመነሻው፤ የልጁ ስጦታ መዳንን ያስቻለው፤ ማመን ሕይወትን የሚያመጣው ምላሽ ነው እንጂ ጥፋት አይደለም።" },
-        { "kind": "reflection", "en": "What might this verse bring into view about the nature of God's love? Where does your trust rest - in what you earn, or in the gift?", "am": "ይህ ጥቅስ ስለ እግዚአብሔር ፍቅር ምን ያሳያል? እምነትህ በምታገኘው ወይም በስጦታው ላይ የት ነው የሚያርፈው?" },
-        { "kind": "crossReferences", "references": [
-          { "bookId": "1john", "chapter": 4, "startVerse": 9, "endVerse": 10, "en": "God's love revealed by sending His Son", "am": "ፍቅሩ ልጁን በመላክ ተገለጠ" },
-          { "bookId": "romans", "chapter": 5, "startVerse": 8, "endVerse": 8, "en": "Christ died for us while we were still sinners", "am": "ኃጢአተኞች ሳለን ክርስቶስ ሞተ" },
-          { "bookId": "john", "chapter": 3, "startVerse": 17, "endVerse": 17, "en": "sent not to condemn but to save", "am": "ሊፈርድ ሳይሆን ሊያድን መጣ" }
-        ] }
+        {
+          "kind": "setting",
+          "en": "Jesus speaks these words in His night conversation with Nicodemus, a teacher of Israel.",
+          "am": "ኢየሱስ ከኒቆዲሞስ ጋር በሌሊት ባደረገው ውይይት ይህን ተናግሯል፤ ኒቆዲሞስም የእስራኤል መምህር ነው።",
+          "sourceIds": [
+            "tradition"
+          ]
+        },
+        {
+          "kind": "context",
+          "en": "Spoken by Jesus to Nicodemus, a teacher of Israel who came by night to understand who Jesus was.",
+          "am": "ኢየሱስ በሌሊት ወደ እርሱ ለመጣው የእስራኤል መምህር ለኒቆዲሞስ የተናገረው ነው።",
+          "enSub": "In the conversation about being 'born again', Jesus moves from the need to the reason it is possible: the love of God.",
+          "amSub": "ስለ «እንደገና መወለድ» በሚደረገው ውይይት ኢየሱስ ከፍላጎቱ ወደ መንስኤው ይደርሳል፦ የእግዚአብሔር ፍቅር።",
+          "sourceIds": [
+            "tradition"
+          ]
+        },
+        {
+          "kind": "whatTextSays",
+          "en": "The heart of the gospel in one verse: God's love is the source, His Son is the gift, faith is the response, and eternal life is the promise.",
+          "am": "የወንጌል ማንነት በአንድ ጥቅስ ውስጥ፦ የእግዚአብሔር ፍቅር ምንጩ ነው፣ ልጁ ስጦታው ነው፣ እምነት ምላሹ ነው፣ ዘላለማዊ ሕይወትም ተስፋው ነው።",
+          "sourceIds": [
+            "scripture"
+          ]
+        },
+        {
+          "kind": "meaningBackground",
+          "en": "The verse says God so loved the world 'that He gave'. Love is measured by what it costs - and it cost the Father His one and only Son. Notice also the scope: the world, not only the worthy.\n\nGod's love is the initiative; the gift of the Son makes salvation possible; believing is the response that brings life, not perishing.",
+          "am": "ጥቅሱ «እንዲሁ ወዶአልና ሰጠ» ይላል። ፍቅር የሚለካው በዋጋው ነው — አብ አንድያ ልጁን ሰጠ። ስፋቱንም አስተውል፦ ዓለምን ወደደ እንጂ የሚገባውን ብቻ አይደለም።\n\nየእግዚአብሔር ፍቅር ነው የመነሻው፤ የልጁ ስጦታ መዳንን ያስቻለው፤ ማመን ሕይወትን የሚያመጣው ምላሽ ነው እንጂ ጥፋት አይደለም።",
+          "sourceIds": [
+            "scripture",
+            "tradition"
+          ]
+        },
+        {
+          "kind": "biblicalConnections",
+          "references": [
+            {
+              "bookId": "1john",
+              "chapter": 4,
+              "startVerse": 9,
+              "endVerse": 10,
+              "en": "God's love revealed by sending His Son",
+              "am": "ፍቅሩ ልጁን በመላክ ተገለጠ"
+            },
+            {
+              "bookId": "romans",
+              "chapter": 5,
+              "startVerse": 8,
+              "endVerse": 8,
+              "en": "Christ died for us while we were still sinners",
+              "am": "ኃጢአተኞች ሳለን ክርስቶስ ሞተ"
+            },
+            {
+              "bookId": "john",
+              "chapter": 3,
+              "startVerse": 17,
+              "endVerse": 17,
+              "en": "sent not to condemn but to save",
+              "am": "ሊፈርድ ሳይሆን ሊያድን መጣ"
+            }
+          ],
+          "sourceIds": [
+            "scripture"
+          ]
+        },
+        {
+          "kind": "whatCanBeUnderstood",
+          "blocks": [
+            {
+              "tier": "clearlyStated",
+              "en": "God loved the world, gave His one and only Son, so that whoever believes is not lost but has eternal life.",
+              "am": "እግዚአብሔር ዓለሙን ወዶ አንድያ ልጁን ሰጠ፤ የሚያምን ሁሉ እንዳይጠፋ ዘላለማዊ ሕይወትን እንዲያገኝ ነው።"
+            },
+            {
+              "tier": "supportedUnderstanding",
+              "en": "'The world' is most often read as the whole of humanity, not only the worthy or the religious.",
+              "am": "«ዓለም» በአብዛኛው የሰው ዘር በሙሉ ተደርጎ ይነበባል፤ የሚገባቸው ወይም ሃይማኖተኞች ብቻ አይደሉም።"
+            },
+            {
+              "tier": "disputed",
+              "en": "Christians differ on how 'world' is best defined (the people of the world, or the fallen order it stands in); the love of God is the point both sides keep.",
+              "am": "«ዓለም» እንዴት መገለጽ እንዳለበት ክርክር አለ — የዓለም ሰዎች ወይም የወደቀው ሥርዓት ተደርጎ ነው፤ ሁለቱም ወገኖች የእግዚአብሔር ፍቅርን ዋና ነጥብ አድርገው ይይዛሉ።"
+            }
+          ],
+          "sourceIds": [
+            "scripture",
+            "tradition"
+          ]
+        },
+        {
+          "kind": "reflection",
+          "en": "What might this verse bring into view about the nature of God's love? Where does your trust rest - in what you earn, or in the gift?",
+          "am": "ይህ ጥቅስ ስለ እግዚአብሔር ፍቅር ምን ያሳያል? እምነትህ በምታገኘው ወይም በስጦታው ላይ የት ነው የሚያርፈው?",
+          "sourceIds": [
+            "scripture"
+          ]
+        }
       ]
     },
     {
@@ -46,16 +224,105 @@
       "startVerse": 28,
       "endVerse": 28,
       "sections": [
-        { "kind": "summary", "en": "God is at work weaving even hard things into good for those who love Him and are called according to His purpose.", "am": "እግዚአብሔር እጅግ አስቸጋሪ ነገሮችን እንኳ ለሚወዱትና እንደ ዓላማው ለተጠሩት ወደ በጎነት እየሠራ ነው።" },
-        { "kind": "context", "en": "Paul writes to believers in Rome about life in the Spirit, suffering, and the certainty of God's purposes.", "am": "ጳውሎስ ለሮሜ ምእመናን ስለ መንፈስ ሕይወት፣ ስለ መከራ እና ስለ እግዚአብሔር ዓላማ እርግጠኝነት ይጽፋል።", "enSub": "Verse 28 follows the groaning of creation and of believers; it is the anchor that nothing in that groaning is outside God's loving work.", "amSub": "ጥቅስ 28 ከፍጥረትና ከምእመናን አቆስቆስ በኋላ ይመጣል፤ በዚያ አቆስቆስ ውስጥ ከእግዚአብሔር ፍቅራዊ ሥራ ውጪ የሆነ ነገር የለም የሚለው መልህቅ ነው።" },
-        { "kind": "observations", "en": "The promise has conditions ('those who love God, those called according to His purpose') and it is about God's work, not ours. 'All things' includes the painful ones; the good is shaped by His purpose, not our comfort.", "am": "ተስፋው ቅድመ ሁኔታ አለው («እግዚአብሔርን ለሚወዱት፣ እንደ ዓላማው ለተጠሩት») እና ስለ እግዚአብሔር ሥራ እንጂ ስለእኛ ሥራ አይደለም። «ነገር ሁሉ» አሳማሚዎቹንም ይጨምራል፤ በጎነቱም በዓላማው ይቀረጻል እንጂ በእፎይታችን አይደለም።" },
-        { "kind": "teachings", "en": "Nothing that happens to a believer is beyond God's ability to redeem; His purpose, not our circumstances, defines the good.", "am": "ለምእመን የሚደርሰው ነገር ሁሉ እግዚአብሔር ወደ በጎነት ሊለውጠው ይችላል፤ በጎነትን የሚወስነው ዓላማው እንጂ ሁኔታችን አይደለም።" },
-        { "kind": "reflection", "en": "In a current hard thing, what might it look like for God to be working it toward good? How can you cooperate with His purpose rather than resist the process?", "am": "በአሁኑ አስቸጋሪ ሁኔታህ ውስጥ እግዚአብሔር ወደ በጎነት እየሠራው መሆን ምን ይመስላል? ሂደቱን ከመቃወም ይልቅ ከዓላማው ጋር እንዴት መተባበር ይቻላል?" },
-        { "kind": "crossReferences", "references": [
-          { "bookId": "genesis", "chapter": 50, "startVerse": 20, "endVerse": 20, "en": "what was meant for evil, God meant for good", "am": "ለክፉ የታሰበውን እግዚአብሔር ለበጎ ተጠቀመ" },
-          { "bookId": "romans", "chapter": 8, "startVerse": 18, "endVerse": 18, "en": "present sufferings are not worth comparing to coming glory", "am": "የአሁኑ መከራ ከሚመጣው ክብር ጋር አይወዳደርም" },
-          { "bookId": "ephesians", "chapter": 1, "startVerse": 11, "endVerse": 11, "en": "all things work according to His will", "am": "ሁሉም ነገር እንደ ፈቃዱ ይሠራል" }
-        ] }
+        {
+          "kind": "setting",
+          "en": "Paul writes this in his letter to the Romans, in a passage about life in the Spirit and suffering.",
+          "am": "ጳውሎስ ለሮሜ ሰዎች በጻፈው መልእክት ውስጥ፣ ስለ መንፈስ ሕይወትና ስለ መከራ ባደረገው ማስተማር ይህን ጽፏል።",
+          "sourceIds": [
+            "tradition"
+          ]
+        },
+        {
+          "kind": "context",
+          "en": "Paul writes to believers in Rome about life in the Spirit, suffering, and the certainty of God's purposes.",
+          "am": "ጳውሎስ ለሮሜ ምእመናን ስለ መንፈስ ሕይወት፣ ስለ መከራ እና ስለ እግዚአብሔር ዓላማ እርግጠኝነት ይጽፋል።",
+          "enSub": "Verse 28 follows the groaning of creation and of believers; it is the anchor that nothing in that groaning is outside God's loving work.",
+          "amSub": "ጥቅስ 28 ከፍጥረትና ከምእመናን አቆስቆስ በኋላ ይመጣል፤ በዚያ አቆስቆስ ውስጥ ከእግዚአብሔር ፍቅራዊ ሥራ ውጪ የሆነ ነገር የለም የሚለው መልህቅ ነው።",
+          "sourceIds": [
+            "tradition"
+          ]
+        },
+        {
+          "kind": "whatTextSays",
+          "en": "God is at work weaving even hard things into good for those who love Him and are called according to His purpose.",
+          "am": "እግዚአብሔር እጅግ አስቸጋሪ ነገሮችን እንኳ ለሚወዱትና እንደ ዓላማው ለተጠሩት ወደ በጎነት እየሠራ ነው።",
+          "sourceIds": [
+            "scripture"
+          ]
+        },
+        {
+          "kind": "meaningBackground",
+          "en": "The promise has conditions ('those who love God, those called according to His purpose') and it is about God's work, not ours. 'All things' includes the painful ones; the good is shaped by His purpose, not our comfort.\n\nNothing that happens to a believer is beyond God's ability to redeem; His purpose, not our circumstances, defines the good.",
+          "am": "ተስፋው ቅድመ ሁኔታ አለው («እግዚአብሔርን ለሚወዱት፣ እንደ ዓላማው ለተጠሩት») እና ስለ እግዚአብሔር ሥራ እንጂ ስለእኛ ሥራ አይደለም። «ነገር ሁሉ» አሳማሚዎቹንም ይጨምራል፤ በጎነቱም በዓላማው ይቀረጻል እንጂ በእፎይታችን አይደለም።\n\nለምእመን የሚደርሰው ነገር ሁሉ እግዚአብሔር ወደ በጎነት ሊለውጠው ይችላል፤ በጎነትን የሚወስነው ዓላማው እንጂ ሁኔታችን አይደለም።",
+          "sourceIds": [
+            "scripture",
+            "tradition"
+          ]
+        },
+        {
+          "kind": "biblicalConnections",
+          "references": [
+            {
+              "bookId": "genesis",
+              "chapter": 50,
+              "startVerse": 20,
+              "endVerse": 20,
+              "en": "what was meant for evil, God meant for good",
+              "am": "ለክፉ የታሰበውን እግዚአብሔር ለበጎ ተጠቀመ"
+            },
+            {
+              "bookId": "romans",
+              "chapter": 8,
+              "startVerse": 18,
+              "endVerse": 18,
+              "en": "present sufferings are not worth comparing to coming glory",
+              "am": "የአሁኑ መከራ ከሚመጣው ክብር ጋር አይወዳደርም"
+            },
+            {
+              "bookId": "ephesians",
+              "chapter": 1,
+              "startVerse": 11,
+              "endVerse": 11,
+              "en": "all things work according to His will",
+              "am": "ሁሉም ነገር እንደ ፈቃዱ ይሠራል"
+            }
+          ],
+          "sourceIds": [
+            "scripture"
+          ]
+        },
+        {
+          "kind": "whatCanBeUnderstood",
+          "blocks": [
+            {
+              "tier": "clearlyStated",
+              "en": "God works all things toward good for those who love Him and are called according to His purpose.",
+              "am": "እግዚአብሔር ለሚወዱትና እንደ ዓላማው ለተጠሩት ሁሉን ወደ በጎነት ይሠራል።"
+            },
+            {
+              "tier": "supportedUnderstanding",
+              "en": "The verse is most often read as comfort for the suffering, not a promise of comfort on earth.",
+              "am": "ጥቅሱ በአብዛኛው ለተሰቃዩ ማጽናኛ ተደርጎ ይነበባል፤ በምድር ላይ ምቾት የሚሰጥ ተስፋ አይደለም።"
+            },
+            {
+              "tier": "disputed",
+              "en": "Readers debate the exact wording — whether 'all things' work together by God's action or whether God works all things — and both sides agree God's purpose is the end.",
+              "am": "አንባቢዎች የጥቅሱን ትክክለኛ አገላለጽ ይከራከራሉ — «ሁሉ ነገር» በእግዚአብሔር ሥራ ይተባበራል ወይስ እግዚአብሔር ሁሉን ይሠራል — ሁለቱም የእግዚአብሔር ዓላማ መጨረሻው እንደሆነ ይስማማሉ።"
+            }
+          ],
+          "sourceIds": [
+            "scripture",
+            "tradition"
+          ]
+        },
+        {
+          "kind": "reflection",
+          "en": "In a current hard thing, what might it look like for God to be working it toward good? How can you cooperate with His purpose rather than resist the process?",
+          "am": "በአሁኑ አስቸጋሪ ሁኔታህ ውስጥ እግዚአብሔር ወደ በጎነት እየሠራው መሆን ምን ይመስላል? ሂደቱን ከመቃወም ይልቅ ከዓላማው ጋር እንዴት መተባበር ይቻላል?",
+          "sourceIds": [
+            "scripture"
+          ]
+        }
       ]
     },
     {
@@ -65,16 +332,105 @@
       "startVerse": 13,
       "endVerse": 13,
       "sections": [
-        { "kind": "summary", "en": "Christ is the source of strength for every situation the believer faces.", "am": "ምእመን በሚገጥመው ሁሉ ውስጥ ጥንካሬው ክርስቶስ ነው።" },
-        { "kind": "context", "en": "Paul wrote this from prison, learning contentment in plenty and in hunger.", "am": "ጳውሎስ ከእስር ቤት የጻፈው ነው፤ በብዛትም በራብም እርካታን ተምሯል።", "enSub": "The verse closes a passage on contentment: 'I can do all this through him who gives me strength.' The 'all things' is anchored to endurance and serving God, not comfort.", "amSub": "ጥቅሱ ስለ እርካታ የሚያስተምረውን ክፍል ይዘጋል፦ «ኃይልን በሚሰጠኝ በክርስቶስ ሁሉን እችላለሁ።» «ሁሉን» የሚያመለክተው ጽናትንና ለእግዚአብሔር ማገልገልን ነው እንጂ ምቾትን አይደለም።" },
-        { "kind": "observations", "en": "Read it in its flow: 'I have learned the secret of being content in any and every situation... I can do all this through him who gives me strength.' The 'all things' is a testimony of what Christ sustained Paul through, not a blank promise for personal goals.", "am": "ከዐውዱ ጋር አንብበው፦ «በሁሉም ነገር... እርካታን ተምሬአለሁ... ኃይልን በሚሰጠኝ በክርስቶስ ሁሉን እችላለሁ።» «ሁሉን» የሚያመለክተው እርካታን፣ ጽናትን እና ለእግዚአብሔር ማገልገልን ነው እንጂ ምቾትን አይደለም።" },
-        { "kind": "teachings", "en": "Christ's strength is sufficient in weakness; contentment is learned, not born; God's power shows most in our hard places.", "am": "የክርስቶስ ኃይል በድካማችን ይበቃል፤ እርካታ የሚማር እንጂ የሚወለድ አይደለም፤ የእግዚአብሔር ኃይል በአስቸጋሪ ቦታችን ይታያል።" },
-        { "kind": "reflection", "en": "When you feel you cannot go on, what might it look like to ask Christ for strength in the situation - not merely for an escape from it?", "am": "መቀጠል እንደማትችል በተሰማህ ጊዜ ከሁኔታው መሸሽን ብቻ ሳይሆን በሱ ውስጥ ለመጽናት ኃይልን በክርስቶስ መጠየቅ ምን ይመስላል?" },
-        { "kind": "crossReferences", "references": [
-          { "bookId": "2corinthians", "chapter": 12, "startVerse": 9, "endVerse": 9, "en": "My grace is sufficient; power is perfected in weakness", "am": "ጸጋዬ ይበቃሃል፣ ኃይሌ በድካም ይፈጸማል" },
-          { "bookId": "philippians", "chapter": 4, "startVerse": 11, "endVerse": 11, "en": "I have learned to be content", "am": "እርካታን ተምሬያለሁ" },
-          { "bookId": "psalms", "chapter": 18, "startVerse": 32, "endVerse": 32, "en": "God arms me with strength", "am": "እግዚአብሔር በኃይል ያታጥቀኛል" }
-        ] }
+        {
+          "kind": "setting",
+          "en": "Paul closes a passage about learning contentment while he is in prison.",
+          "am": "ጳውሎስ በእስር ቤት ሳለ ስለ እርካታ መማር የሚናገረውን ክፍል በዚህ ጥቅስ ይዘጋል።",
+          "sourceIds": [
+            "tradition"
+          ]
+        },
+        {
+          "kind": "context",
+          "en": "Paul wrote this from prison, learning contentment in plenty and in hunger.",
+          "am": "ጳውሎስ ከእስር ቤት የጻፈው ነው፤ በብዛትም በራብም እርካታን ተምሯል።",
+          "enSub": "The verse closes a passage on contentment: 'I can do all this through him who gives me strength.' The 'all things' is anchored to endurance and serving God, not comfort.",
+          "amSub": "ጥቅሱ ስለ እርካታ የሚያስተምረውን ክፍል ይዘጋል፦ «ኃይልን በሚሰጠኝ በክርስቶስ ሁሉን እችላለሁ።» «ሁሉን» የሚያመለክተው ጽናትንና ለእግዚአብሔር ማገልገልን ነው እንጂ ምቾትን አይደለም።",
+          "sourceIds": [
+            "tradition"
+          ]
+        },
+        {
+          "kind": "whatTextSays",
+          "en": "Christ is the source of strength for every situation the believer faces.",
+          "am": "ምእመን በሚገጥመው ሁሉ ውስጥ ጥንካሬው ክርስቶስ ነው።",
+          "sourceIds": [
+            "scripture"
+          ]
+        },
+        {
+          "kind": "meaningBackground",
+          "en": "Read it in its flow: 'I have learned the secret of being content in any and every situation... I can do all this through him who gives me strength.' The 'all things' is a testimony of what Christ sustained Paul through, not a blank promise for personal goals.\n\nChrist's strength is sufficient in weakness; contentment is learned, not born; God's power shows most in our hard places.",
+          "am": "ከዐውዱ ጋር አንብበው፦ «በሁሉም ነገር... እርካታን ተምሬአለሁ... ኃይልን በሚሰጠኝ በክርስቶስ ሁሉን እችላለሁ።» «ሁሉን» የሚያመለክተው እርካታን፣ ጽናትን እና ለእግዚአብሔር ማገልገልን ነው እንጂ ምቾትን አይደለም።\n\nየክርስቶስ ኃይል በድካማችን ይበቃል፤ እርካታ የሚማር እንጂ የሚወለድ አይደለም፤ የእግዚአብሔር ኃይል በአስቸጋሪ ቦታችን ይታያል።",
+          "sourceIds": [
+            "scripture",
+            "tradition"
+          ]
+        },
+        {
+          "kind": "biblicalConnections",
+          "references": [
+            {
+              "bookId": "2corinthians",
+              "chapter": 12,
+              "startVerse": 9,
+              "endVerse": 9,
+              "en": "My grace is sufficient; power is perfected in weakness",
+              "am": "ጸጋዬ ይበቃሃል፣ ኃይሌ በድካም ይፈጸማል"
+            },
+            {
+              "bookId": "philippians",
+              "chapter": 4,
+              "startVerse": 11,
+              "endVerse": 11,
+              "en": "I have learned to be content",
+              "am": "እርካታን ተምሬያለሁ"
+            },
+            {
+              "bookId": "psalms",
+              "chapter": 18,
+              "startVerse": 32,
+              "endVerse": 32,
+              "en": "God arms me with strength",
+              "am": "እግዚአብሔር በኃይል ያታጥቀኛል"
+            }
+          ],
+          "sourceIds": [
+            "scripture"
+          ]
+        },
+        {
+          "kind": "whatCanBeUnderstood",
+          "blocks": [
+            {
+              "tier": "clearlyStated",
+              "en": "Through Christ who strengthens him, Paul can endure every situation, plenty and hunger alike.",
+              "am": "ጳውሎስ ኃይል በሚሰጠው በክርስቶስ ሁሉንም ሁኔታዎች ይታገሣል — ብዛትም ሆነ ራብ።"
+            },
+            {
+              "tier": "supportedUnderstanding",
+              "en": "'All things' is most often read in its context — contentment and endurance in serving God — not as a blank promise for any personal goal.",
+              "am": "«ሁሉን» ከዐውዱ ጋር ሲነበብ እርካታንና ለእግዚአብሔር ማገልገልን መጽናትን ያመለክታል፤ ለማንኛውም የግል ግብ ባዶ ተስፋ አይደለም።"
+            },
+            {
+              "tier": "disputed",
+              "en": "The verse is sometimes quoted apart from its context as a promise of unlimited ability; most readers keep it tied to what Paul is actually saying about contentment.",
+              "am": "ጥቅሱ አንዳንድ ጊዜ ያለ ዐውዱ ያልተገደበ ኃይል ተስፋ ሆኖ ይጠቀሳል፤ ብዙዎች ግን ከጳውሎስ ስለ እርካታ ከሚለው ጋር አያይዘው ያነባሉ።"
+            }
+          ],
+          "sourceIds": [
+            "scripture",
+            "tradition"
+          ]
+        },
+        {
+          "kind": "reflection",
+          "en": "When you feel you cannot go on, what might it look like to ask Christ for strength in the situation - not merely for an escape from it?",
+          "am": "መቀጠል እንደማትችል በተሰማህ ጊዜ ከሁኔታው መሸሽን ብቻ ሳይሆን በሱ ውስጥ ለመጽናት ኃይልን በክርስቶስ መጠየቅ ምን ይመስላል?",
+          "sourceIds": [
+            "scripture"
+          ]
+        }
       ]
     },
     {
@@ -84,16 +440,100 @@
       "startVerse": 33,
       "endVerse": 33,
       "sections": [
-        { "kind": "summary", "en": "Seek God's kingdom and righteousness first, and every need will be added by the Father who already knows what you need.", "am": "የእግዚአብሔርን መንግሥትና ጽድቁን ፈልግ፣ የሚያስፈልግህን ሁሉ አስቀድሞ የሚያውቀው አባት ይጨምርልሃል።" },
-        { "kind": "context", "en": "Part of the Sermon on the Mount, where Jesus teaches about worry, pointing to the birds of the air and the lilies of the field.", "am": "ከተራራው ስብከት ክፍል ነው፤ ኢየሱስ ስለ ጭንቀት ያስተምራል፣ የሰማይ ወፎችንና የሜዳ አበቦችን ይጠቁማል።", "enSub": "Verse 33 is the cure after the teaching about anxiety: seek the kingdom first, and let the Father handle provision (v. 32-34).", "amSub": "ጥቅስ 33 ስለ ጭንቀት ከሚሰጠው ትምህርት በኋላ ያለው ፈውስ ነው፦ መንግሥቱን አስቀድም ፈልግ፣ አባትህ አቅርቦትህን ይጠብቃል (32-34)።" },
-        { "kind": "observations", "en": "The order is the point: 'seek first'. The kingdom is not one priority among many; it is the first one that reorders all the rest. God's righteousness is His gift, received by faith, lived in obedience.", "am": "ቅደም ተከተሉ ዋናው ነገር ነው፦ «መጀመሪያ ፈልግ»። መንግሥቱ ከብዙ ቅድሚያዎች አንዱ አይደለም፤ ሁሉንም የሚቀይር የመጀመሪያው ነው። የእግዚአብሔር ጽድቅ በእምነት የሚቀበለውና በታዛዥነት የሚኖርበት ስጦታ ነው።" },
-        { "kind": "teachings", "en": "The Father knows our needs before we ask; kingdom priorities free us from anxious striving; provision follows the seeker of the kingdom.", "am": "አባት ከመጠየቃችን በፊት ፍላጎታችንን ያውቃል፤ የመንግሥት ቅድሚያ ከጭንቀት ግጭት ነጻ ያወጣናል፤ አቅርቦት መንግሥቱን የሚፈልገውን ይከተላል።" },
-        { "kind": "reflection", "en": "In a decision or a worry, what would honoring God's rule look like here? And what can you trust Him for after you act on that?", "am": "በውሳኔም ሆነ በጭንቀት ጊዜ እግዚአብሔር በዚህ ነገር መንገሥ ምን ይመስላል? በዚያ ከተግባራዊ ካደረግክ በኋላስ ምን እርሱን ማመን ይቻላል?" },
-        { "kind": "crossReferences", "references": [
-          { "bookId": "psalms", "chapter": 37, "startVerse": 4, "endVerse": 5, "en": "delight in the Lord, He gives the desires of your heart", "am": "በእግዚአብሔር ደስ ይበልህ፣ የልብህን ምኞት ይሰጥሃል" },
-          { "bookId": "colossians", "chapter": 3, "startVerse": 1, "endVerse": 2, "en": "set your mind on things above", "am": "በላይ ባሉት ነገሮች አእምሮህን አኑር" },
-          { "bookId": "matthew", "chapter": 6, "startVerse": 8, "endVerse": 8, "en": "your Father knows what you need before you ask", "am": "አባትህ ከመጠየቅህ በፊት ያስፈልግህን ያውቃል" }
-        ] }
+        {
+          "kind": "setting",
+          "en": "Jesus says this in the Sermon on the Mount, right after teaching about worry.",
+          "am": "ኢየሱስ ይህን የተናገረው በተራራው ስብከት ላይ፣ ስለ ጭንቀት ካስተማረ በኋላ በቀጥታ ነው።",
+          "sourceIds": [
+            "tradition"
+          ]
+        },
+        {
+          "kind": "context",
+          "en": "Part of the Sermon on the Mount, where Jesus teaches about worry, pointing to the birds of the air and the lilies of the field.",
+          "am": "ከተራራው ስብከት ክፍል ነው፤ ኢየሱስ ስለ ጭንቀት ያስተምራል፣ የሰማይ ወፎችንና የሜዳ አበቦችን ይጠቁማል።",
+          "enSub": "Verse 33 is the cure after the teaching about anxiety: seek the kingdom first, and let the Father handle provision (v. 32-34).",
+          "amSub": "ጥቅስ 33 ስለ ጭንቀት ከሚሰጠው ትምህርት በኋላ ያለው ፈውስ ነው፦ መንግሥቱን አስቀድም ፈልግ፣ አባትህ አቅርቦትህን ይጠብቃል (32-34)።",
+          "sourceIds": [
+            "tradition"
+          ]
+        },
+        {
+          "kind": "whatTextSays",
+          "en": "Seek God's kingdom and righteousness first, and every need will be added by the Father who already knows what you need.",
+          "am": "የእግዚአብሔርን መንግሥትና ጽድቁን ፈልግ፣ የሚያስፈልግህን ሁሉ አስቀድሞ የሚያውቀው አባት ይጨምርልሃል።",
+          "sourceIds": [
+            "scripture"
+          ]
+        },
+        {
+          "kind": "meaningBackground",
+          "en": "The order is the point: 'seek first'. The kingdom is not one priority among many; it is the first one that reorders all the rest. God's righteousness is His gift, received by faith, lived in obedience.\n\nThe Father knows our needs before we ask; kingdom priorities free us from anxious striving; provision follows the seeker of the kingdom.",
+          "am": "ቅደም ተከተሉ ዋናው ነገር ነው፦ «መጀመሪያ ፈልግ»። መንግሥቱ ከብዙ ቅድሚያዎች አንዱ አይደለም፤ ሁሉንም የሚቀይር የመጀመሪያው ነው። የእግዚአብሔር ጽድቅ በእምነት የሚቀበለውና በታዛዥነት የሚኖርበት ስጦታ ነው።\n\nአባት ከመጠየቃችን በፊት ፍላጎታችንን ያውቃል፤ የመንግሥት ቅድሚያ ከጭንቀት ግጭት ነጻ ያወጣናል፤ አቅርቦት መንግሥቱን የሚፈልገውን ይከተላል።",
+          "sourceIds": [
+            "scripture",
+            "tradition"
+          ]
+        },
+        {
+          "kind": "biblicalConnections",
+          "references": [
+            {
+              "bookId": "psalms",
+              "chapter": 37,
+              "startVerse": 4,
+              "endVerse": 5,
+              "en": "delight in the Lord, He gives the desires of your heart",
+              "am": "በእግዚአብሔር ደስ ይበልህ፣ የልብህን ምኞት ይሰጥሃል"
+            },
+            {
+              "bookId": "colossians",
+              "chapter": 3,
+              "startVerse": 1,
+              "endVerse": 2,
+              "en": "set your mind on things above",
+              "am": "በላይ ባሉት ነገሮች አእምሮህን አኑር"
+            },
+            {
+              "bookId": "matthew",
+              "chapter": 6,
+              "startVerse": 8,
+              "endVerse": 8,
+              "en": "your Father knows what you need before you ask",
+              "am": "አባትህ ከመጠየቅህ በፊት ያስፈልግህን ያውቃል"
+            }
+          ],
+          "sourceIds": [
+            "scripture"
+          ]
+        },
+        {
+          "kind": "whatCanBeUnderstood",
+          "blocks": [
+            {
+              "tier": "clearlyStated",
+              "en": "Seek God's kingdom and righteousness first, and the Father will provide what is needed.",
+              "am": "የእግዚአብሔርን መንግሥትና ጽድቁን ፈልግ፤ አባት የሚያስፈልገውን ያቀርባል።"
+            },
+            {
+              "tier": "supportedUnderstanding",
+              "en": "The order is the point: the kingdom is not one priority among many but the first that reorders the rest.",
+              "am": "ቅደም ተከተሉ ዋናው ነው፦ መንግሥቱ ከብዙ ቅድሚያዎች አንዱ ሳይሆን ሁሉንም የሚቀይር የመጀመሪያው ነው።"
+            }
+          ],
+          "sourceIds": [
+            "scripture",
+            "tradition"
+          ]
+        },
+        {
+          "kind": "reflection",
+          "en": "In a decision or a worry, what would honoring God's rule look like here? And what can you trust Him for after you act on that?",
+          "am": "በውሳኔም ሆነ በጭንቀት ጊዜ እግዚአብሔር በዚህ ነገር መንገሥ ምን ይመስላል? በዚያ ከተግባራዊ ካደረግክ በኋላስ ምን እርሱን ማመን ይቻላል?",
+          "sourceIds": [
+            "scripture"
+          ]
+        }
       ]
     },
     {
@@ -103,16 +543,100 @@
       "startVerse": 31,
       "endVerse": 31,
       "sections": [
-        { "kind": "summary", "en": "Those who wait on the Lord receive renewed strength: they rise, run, and walk without fainting.", "am": "እግዚአብሔርን የሚጠባበቁ ኃይላቸውን ያድሳሉ፤ ይወጣሉ፣ ይሮጣሉ፣ ይሄዳሉ እንጂ አይደክሙም።" },
-        { "kind": "context", "en": "Isaiah 40 comforts Israel in exile with the greatness of God; the prophet compares God's power with human weakness.", "am": "ኢሳይያስ 40 በምርኮ ውስጥ ያለችውን እስራኤልን በእግዚአብሔር ታላቅነት ያጽናናል፤ ነቢዩ የእግዚአብሔርን ኃይል ከሰው ድካም ጋር ያነጻጽራል።", "enSub": "Verse 31 closes the chapter's encouragement: strength comes to those who wait on the Lord, not to the self-reliant (v. 28-30).", "amSub": "ጥቅስ 31 የምዕራፉን ማበረታቻ ይዘጋዋል፦ ኃይል የሚገኘው እርሱን ለሚጠባበቁ ነው እንጂ በራስ ለሚተማመኑ አይደለም (28-30)።" },
-        { "kind": "observations", "en": "'Wait on the Lord' is active trust, not passivity. The picture moves upward (eagles), outward (running), and onward (walking) - strength that sustains the long road, not only the sprint.", "am": "«እግዚአብሔርን መጠባበቅ» ንቁ እምነት ነው፣ ተግባረ-ሰለማ አይደለም። ምስሉ ወደ ላይ (ንስር)፣ ወደ ውጭ (መሮጥ) እና ወደ ፊት (መሄድ) ይሄዳል — ለረጅም ጎዳና የሚያጸና ኃይል እንጂ ለአጭር ሩጫ ብቻ አይደለም።" },
-        { "kind": "teachings", "en": "Renewal comes from God, not from pushing harder; waiting on Him is the path to strength; weariness is not the end of the story.", "am": "እድሳት ከእግዚአብሔር ነው እንጂ የበለጠ ከመግፋት አይደለም፤ እርሱን መጠባበቅ ወደ ኃይል መንገድ ነው፤ ድካም የታሪክህ መጨረሻ አይደለም።" },
-        { "kind": "reflection", "en": "When strength runs out, what might waiting on the Lord look like in this season? And what are you waiting for?", "am": "ኃይል ሲያልቅ በዚህ ወቅት እግዚአብሔርን መጠባበቅ ምን ይመስላል? የምትጠብቀውስ ምንድን ነው?" },
-        { "kind": "crossReferences", "references": [
-          { "bookId": "psalms", "chapter": 27, "startVerse": 14, "endVerse": 14, "en": "wait on the Lord, be strong", "am": "እግዚአብሔርን ተጠባበቅ፣ በልበ ሙሉነት ኑር" },
-          { "bookId": "lamentations", "chapter": 3, "startVerse": 24, "endVerse": 25, "en": "the Lord is my portion, good to those who wait", "am": "እግዚአብሔር ዕጣዬ ነው፣ ለሚጠባበቁት መልካም ነው" },
-          { "bookId": "matthew", "chapter": 11, "startVerse": 28, "endVerse": 28, "en": "come to me and I will give you rest", "am": "ወደ እኔ ኑ፣ ያሳርፋችኋለሁ" }
-        ] }
+        {
+          "kind": "setting",
+          "en": "Isaiah speaks these words of encouragement to Israel in exile.",
+          "am": "ኢሳይያስ በምርኮ ለነበረችው እስራኤል የማበረታቻ ቃላትን ይናገራል።",
+          "sourceIds": [
+            "tradition"
+          ]
+        },
+        {
+          "kind": "context",
+          "en": "Isaiah 40 comforts Israel in exile with the greatness of God; the prophet compares God's power with human weakness.",
+          "am": "ኢሳይያስ 40 በምርኮ ውስጥ ያለችውን እስራኤልን በእግዚአብሔር ታላቅነት ያጽናናል፤ ነቢዩ የእግዚአብሔርን ኃይል ከሰው ድካም ጋር ያነጻጽራል።",
+          "enSub": "Verse 31 closes the chapter's encouragement: strength comes to those who wait on the Lord, not to the self-reliant (v. 28-30).",
+          "amSub": "ጥቅስ 31 የምዕራፉን ማበረታቻ ይዘጋዋል፦ ኃይል የሚገኘው እርሱን ለሚጠባበቁ ነው እንጂ በራስ ለሚተማመኑ አይደለም (28-30)።",
+          "sourceIds": [
+            "tradition"
+          ]
+        },
+        {
+          "kind": "whatTextSays",
+          "en": "Those who wait on the Lord receive renewed strength: they rise, run, and walk without fainting.",
+          "am": "እግዚአብሔርን የሚጠባበቁ ኃይላቸውን ያድሳሉ፤ ይወጣሉ፣ ይሮጣሉ፣ ይሄዳሉ እንጂ አይደክሙም።",
+          "sourceIds": [
+            "scripture"
+          ]
+        },
+        {
+          "kind": "meaningBackground",
+          "en": "'Wait on the Lord' is active trust, not passivity. The picture moves upward (eagles), outward (running), and onward (walking) - strength that sustains the long road, not only the sprint.\n\nRenewal comes from God, not from pushing harder; waiting on Him is the path to strength; weariness is not the end of the story.",
+          "am": "«እግዚአብሔርን መጠባበቅ» ንቁ እምነት ነው፣ ተግባረ-ሰለማ አይደለም። ምስሉ ወደ ላይ (ንስር)፣ ወደ ውጭ (መሮጥ) እና ወደ ፊት (መሄድ) ይሄዳል — ለረጅም ጎዳና የሚያጸና ኃይል እንጂ ለአጭር ሩጫ ብቻ አይደለም።\n\nእድሳት ከእግዚአብሔር ነው እንጂ የበለጠ ከመግፋት አይደለም፤ እርሱን መጠባበቅ ወደ ኃይል መንገድ ነው፤ ድካም የታሪክህ መጨረሻ አይደለም።",
+          "sourceIds": [
+            "scripture",
+            "tradition"
+          ]
+        },
+        {
+          "kind": "biblicalConnections",
+          "references": [
+            {
+              "bookId": "psalms",
+              "chapter": 27,
+              "startVerse": 14,
+              "endVerse": 14,
+              "en": "wait on the Lord, be strong",
+              "am": "እግዚአብሔርን ተጠባበቅ፣ በልበ ሙሉነት ኑር"
+            },
+            {
+              "bookId": "lamentations",
+              "chapter": 3,
+              "startVerse": 24,
+              "endVerse": 25,
+              "en": "the Lord is my portion, good to those who wait",
+              "am": "እግዚአብሔር ዕጣዬ ነው፣ ለሚጠባበቁት መልካም ነው"
+            },
+            {
+              "bookId": "matthew",
+              "chapter": 11,
+              "startVerse": 28,
+              "endVerse": 28,
+              "en": "come to me and I will give you rest",
+              "am": "ወደ እኔ ኑ፣ ያሳርፋችኋለሁ"
+            }
+          ],
+          "sourceIds": [
+            "scripture"
+          ]
+        },
+        {
+          "kind": "whatCanBeUnderstood",
+          "blocks": [
+            {
+              "tier": "clearlyStated",
+              "en": "Those who wait on the Lord renew their strength: they rise like eagles, run, and walk without growing faint.",
+              "am": "እግዚአብሔርን የሚጠባበቁ ኃይላቸውን ያድሳሉ፤ እንደ ንስር ይወጣሉ፣ ይሮጣሉ፣ ይሄዳሉ፣ አይደክሙም።"
+            },
+            {
+              "tier": "supportedUnderstanding",
+              "en": "'Waiting' is most often read as active, trustful dependence on God, not passive idleness.",
+              "am": "«መጠባበቅ» በአብዛኛው በእግዚአብሔር ላይ ንቁ የሆነ መተማመን ተደርጎ ይነበባል፤ ዝም ብሎ መቀመጥ አይደለም።"
+            }
+          ],
+          "sourceIds": [
+            "scripture",
+            "tradition"
+          ]
+        },
+        {
+          "kind": "reflection",
+          "en": "When strength runs out, what might waiting on the Lord look like in this season? And what are you waiting for?",
+          "am": "ኃይል ሲያልቅ በዚህ ወቅት እግዚአብሔርን መጠባበቅ ምን ይመስላል? የምትጠብቀውስ ምንድን ነው?",
+          "sourceIds": [
+            "scripture"
+          ]
+        }
       ]
     },
     {
@@ -122,16 +646,100 @@
       "startVerse": 8,
       "endVerse": 9,
       "sections": [
-        { "kind": "summary", "en": "Salvation is God's gift, received through faith - not earned by works, so no one can boast.", "am": "መዳን በእምነት የሚቀበለው የእግዚአብሔር ስጦታ ነው — የሥራ ዋጋ አይደለም፣ ስለዚህ ማንም አይመካም።" },
-        { "kind": "context", "en": "Paul has described how we were dead in sin and how God made us alive with Christ.", "am": "ጳውሎስ በኃጢአት ሞተኞች እንደነበርንና እግዚአብሔር ከክርስቶስ ጋር እንዳስነሳን ገልጿል።", "enSub": "Verses 8-9 are the hinge of the passage: rescue is entirely by grace through faith, a gift with no room for boasting.", "amSub": "ጥቅስ 8-9 የክፍሉ መገጣጠሚያ ነው፦ ማዳን በጸጋ በእምነት ነው፣ ለመመካት ቦታ የሌለው ስጦታ ነው።" },
-        { "kind": "observations", "en": "'By grace' gives the source, 'through faith' gives the channel, 'not by works' removes our contribution, and 'so that no one can boast' removes our pride. All the credit belongs to God.", "am": "«በጸጋ» ምንጩን ይሰጣል፣ «በእምነት» መንገዱን ይሰጣል፣ «ከሥራ አይደለም» የእኛን አስተዋጽዖ ያስወግዳል፣ «ማንም እንዳይመካ» ትዕቢታችንን ያስወግዳል። ክብሩ ሁሉ የእግዚአብሔር ነው።" },
-        { "kind": "teachings", "en": "We are saved by grace, not by effort; faith receives what we could never earn; the Christian life begins with a gift and continues in gratitude.", "am": "የዳንነው በጸጋ እንጂ በጥረታችን አይደለም፤ እምነት ልናገኘው የማንችለውን ይቀበላል፤ የክርስቲያን ሕይወት በስጦታ ይጀምራል፣ በምስጋናም ይቀጥላል።" },
-        { "kind": "reflection", "en": "Where are you still performing to be accepted? What might resting in what Christ has done look like for you this week?", "am": "ተቀባይነት ለማግኘት ገና የምትጨነቅበት ቦታ የት ነው? በክርስቶስ ባደረገው ነገር ማረፍ በዚህ ሳምንት ምን ይመስላል?" },
-        { "kind": "crossReferences", "references": [
-          { "bookId": "romans", "chapter": 3, "startVerse": 28, "endVerse": 28, "en": "justified by faith apart from works", "am": "ሰው ያጸደቀው በእምነት እንጂ በሥራ አይደለም" },
-          { "bookId": "titus", "chapter": 3, "startVerse": 5, "endVerse": 5, "en": "saved by His mercy, not by righteous things we have done", "am": "በምሕረቱ ድነናል እንጂ ባደረግነው ጽድቅ አይደለም" },
-          { "bookId": "romans", "chapter": 11, "startVerse": 6, "endVerse": 6, "en": "if by grace, it is no longer by works", "am": "በጸጋ ከሆነ በሥራ አይደለም" }
-        ] }
+        {
+          "kind": "setting",
+          "en": "Paul writes to the church in Ephesus about what God has done for believers in Christ.",
+          "am": "ጳውሎስ ለኤፌሶን ቤተክርስቲያን ክርስቶስ ለምእመናን ስላደረገው ነገር ይጽፋል።",
+          "sourceIds": [
+            "tradition"
+          ]
+        },
+        {
+          "kind": "context",
+          "en": "Paul has described how we were dead in sin and how God made us alive with Christ.",
+          "am": "ጳውሎስ በኃጢአት ሞተኞች እንደነበርንና እግዚአብሔር ከክርስቶስ ጋር እንዳስነሳን ገልጿል።",
+          "enSub": "Verses 8-9 are the hinge of the passage: rescue is entirely by grace through faith, a gift with no room for boasting.",
+          "amSub": "ጥቅስ 8-9 የክፍሉ መገጣጠሚያ ነው፦ ማዳን በጸጋ በእምነት ነው፣ ለመመካት ቦታ የሌለው ስጦታ ነው።",
+          "sourceIds": [
+            "tradition"
+          ]
+        },
+        {
+          "kind": "whatTextSays",
+          "en": "Salvation is God's gift, received through faith - not earned by works, so no one can boast.",
+          "am": "መዳን በእምነት የሚቀበለው የእግዚአብሔር ስጦታ ነው — የሥራ ዋጋ አይደለም፣ ስለዚህ ማንም አይመካም።",
+          "sourceIds": [
+            "scripture"
+          ]
+        },
+        {
+          "kind": "meaningBackground",
+          "en": "'By grace' gives the source, 'through faith' gives the channel, 'not by works' removes our contribution, and 'so that no one can boast' removes our pride. All the credit belongs to God.\n\nWe are saved by grace, not by effort; faith receives what we could never earn; the Christian life begins with a gift and continues in gratitude.",
+          "am": "«በጸጋ» ምንጩን ይሰጣል፣ «በእምነት» መንገዱን ይሰጣል፣ «ከሥራ አይደለም» የእኛን አስተዋጽዖ ያስወግዳል፣ «ማንም እንዳይመካ» ትዕቢታችንን ያስወግዳል። ክብሩ ሁሉ የእግዚአብሔር ነው።\n\nየዳንነው በጸጋ እንጂ በጥረታችን አይደለም፤ እምነት ልናገኘው የማንችለውን ይቀበላል፤ የክርስቲያን ሕይወት በስጦታ ይጀምራል፣ በምስጋናም ይቀጥላል።",
+          "sourceIds": [
+            "scripture",
+            "tradition"
+          ]
+        },
+        {
+          "kind": "biblicalConnections",
+          "references": [
+            {
+              "bookId": "romans",
+              "chapter": 3,
+              "startVerse": 28,
+              "endVerse": 28,
+              "en": "justified by faith apart from works",
+              "am": "ሰው ያጸደቀው በእምነት እንጂ በሥራ አይደለም"
+            },
+            {
+              "bookId": "titus",
+              "chapter": 3,
+              "startVerse": 5,
+              "endVerse": 5,
+              "en": "saved by His mercy, not by righteous things we have done",
+              "am": "በምሕረቱ ድነናል እንጂ ባደረግነው ጽድቅ አይደለም"
+            },
+            {
+              "bookId": "romans",
+              "chapter": 11,
+              "startVerse": 6,
+              "endVerse": 6,
+              "en": "if by grace, it is no longer by works",
+              "am": "በጸጋ ከሆነ በሥራ አይደለም"
+            }
+          ],
+          "sourceIds": [
+            "scripture"
+          ]
+        },
+        {
+          "kind": "whatCanBeUnderstood",
+          "blocks": [
+            {
+              "tier": "clearlyStated",
+              "en": "Salvation is a gift of God's grace received through faith, not earned by works.",
+              "am": "መዳን በእምነት የሚቀበለው የእግዚአብሔር ጸጋ ስጦታ ነው፤ በሥራ የሚገኝ አይደለም።"
+            },
+            {
+              "tier": "supportedUnderstanding",
+              "en": "Verse 9 explains the purpose: because it is not from works, no one can boast.",
+              "am": "ቁ. 9 ዓላማውን ይገልጻል፦ ከሥራ ስላልሆነ ማንም ሊመካ አይችልም።"
+            }
+          ],
+          "sourceIds": [
+            "scripture",
+            "tradition"
+          ]
+        },
+        {
+          "kind": "reflection",
+          "en": "Where are you still performing to be accepted? What might resting in what Christ has done look like for you this week?",
+          "am": "ተቀባይነት ለማግኘት ገና የምትጨነቅበት ቦታ የት ነው? በክርስቶስ ባደረገው ነገር ማረፍ በዚህ ሳምንት ምን ይመስላል?",
+          "sourceIds": [
+            "scripture"
+          ]
+        }
       ]
     },
     {
@@ -141,16 +749,100 @@
       "startVerse": 4,
       "endVerse": 7,
       "sections": [
-        { "kind": "summary", "en": "Love is the greatest mark of the Christian: patient, kind, humble, selfless, truthful, protective, hopeful, and enduring.", "am": "ፍቅር የክርስቲያን ታላቅ ምልክት ነው፦ ታጋሽ፣ ቸር፣ ትሑት፣ ራስ ወዳድ ያልሆነ፣ እውነተኛ፣ የሚከላከል፣ ተስፋ የሚሰጥ እና የሚጸና ነው።" },
-        { "kind": "context", "en": "Paul writes to a church rich in spiritual gifts but divided.", "am": "ጳውሎስ በመንፈሳዊ ስጦታ የበለጸገች ግን የተከፋፈለች ለሆነች ቤተክርስቲያን ይጽፋል።", "enSub": "Chapter 13 sits between teaching about spiritual gifts, showing love as the more excellent way every gift must breathe.", "amSub": "ምዕራፍ 13 ስለ መንፈሳዊ ስጦታ በሚሰጠው ትምህርት መካከል ይቆማል — ፍቅር የላቀው መንገድ፣ ስጦታዎች ሁሉ የሚተነፍሱበት መሆኑን ያሳያል።" },
-        { "kind": "observations", "en": "Love is described in verbs and everyday behaviors, not feelings. It does not insist on its own way - in a divided church, that phrase cuts deep. Love is both what we receive from God and what we learn to become.", "am": "ፍቅር የተገለጸው በግሶችና በዕለት ተዕለት ባሕርይ ነው እንጂ በስሜት አይደለም። «የራሱን አይፈልግም» — በተከፋፈለች ቤተክርስቲያን ውስጥ ይህ ሐረግ በጥልቀት ይነካል። ፍቅር ከእግዚአብሔር የምንቀበለውም ለመሆን የምንማረውም ነው።" },
-        { "kind": "teachings", "en": "Love is the measure of spiritual maturity; gifts without love are empty noise; love endures and never fails.", "am": "ፍቅር የመንፈሳዊ ብስለት መለኪያ ነው፤ ያለ ፍቅር ስጦታ ባዶ ድምፅ ነው፤ ፍቅር ይጸናል፣ ፈጽሞ አይወድቅም።" },
-        { "kind": "reflection", "en": "Which phrase of this love - patience, kindness, not keeping a record of wrongs - is most challenging for you to practice with one specific person this week?", "am": "ከዚህ ፍቅር — ትዕግሥት፣ ቸርነት፣ ክፉን አለማስታወስ — በዚህ ሳምንት ከአንድ የተወሰነ ሰው ጋር ለመተግበር ከባዱ የትኛው ነው?" },
-        { "kind": "crossReferences", "references": [
-          { "bookId": "john", "chapter": 13, "startVerse": 34, "endVerse": 35, "en": "love one another as I have loved you", "am": "እኔ እንደወደድኋችሁ እርስ በርሳችሁ ውደዱ" },
-          { "bookId": "1john", "chapter": 4, "startVerse": 19, "endVerse": 19, "en": "we love because He first loved us", "am": "እርሱ ቀድሞ ስለወደደን እኛ እንወዳለን" },
-          { "bookId": "colossians", "chapter": 3, "startVerse": 14, "endVerse": 14, "en": "love binds everything together in perfect harmony", "am": "ፍቅር ሁሉን በፍጹምነት ያስተሳስራል" }
-        ] }
+        {
+          "kind": "setting",
+          "en": "Paul places this chapter between two passages about spiritual gifts in his letter to the Corinthians.",
+          "am": "ጳውሎስ ይህን ምዕራፍ ለቆሮንቶስ ሰዎች ስለ መንፈሳዊ ስጦታ ባሉት ሁለት ክፍሎች መካከል ያስቀምጣል።",
+          "sourceIds": [
+            "tradition"
+          ]
+        },
+        {
+          "kind": "context",
+          "en": "Paul writes to a church rich in spiritual gifts but divided.",
+          "am": "ጳውሎስ በመንፈሳዊ ስጦታ የበለጸገች ግን የተከፋፈለች ለሆነች ቤተክርስቲያን ይጽፋል።",
+          "enSub": "Chapter 13 sits between teaching about spiritual gifts, showing love as the more excellent way every gift must breathe.",
+          "amSub": "ምዕራፍ 13 ስለ መንፈሳዊ ስጦታ በሚሰጠው ትምህርት መካከል ይቆማል — ፍቅር የላቀው መንገድ፣ ስጦታዎች ሁሉ የሚተነፍሱበት መሆኑን ያሳያል።",
+          "sourceIds": [
+            "tradition"
+          ]
+        },
+        {
+          "kind": "whatTextSays",
+          "en": "Love is the greatest mark of the Christian: patient, kind, humble, selfless, truthful, protective, hopeful, and enduring.",
+          "am": "ፍቅር የክርስቲያን ታላቅ ምልክት ነው፦ ታጋሽ፣ ቸር፣ ትሑት፣ ራስ ወዳድ ያልሆነ፣ እውነተኛ፣ የሚከላከል፣ ተስፋ የሚሰጥ እና የሚጸና ነው።",
+          "sourceIds": [
+            "scripture"
+          ]
+        },
+        {
+          "kind": "meaningBackground",
+          "en": "Love is described in verbs and everyday behaviors, not feelings. It does not insist on its own way - in a divided church, that phrase cuts deep. Love is both what we receive from God and what we learn to become.\n\nLove is the measure of spiritual maturity; gifts without love are empty noise; love endures and never fails.",
+          "am": "ፍቅር የተገለጸው በግሶችና በዕለት ተዕለት ባሕርይ ነው እንጂ በስሜት አይደለም። «የራሱን አይፈልግም» — በተከፋፈለች ቤተክርስቲያን ውስጥ ይህ ሐረግ በጥልቀት ይነካል። ፍቅር ከእግዚአብሔር የምንቀበለውም ለመሆን የምንማረውም ነው።\n\nፍቅር የመንፈሳዊ ብስለት መለኪያ ነው፤ ያለ ፍቅር ስጦታ ባዶ ድምፅ ነው፤ ፍቅር ይጸናል፣ ፈጽሞ አይወድቅም።",
+          "sourceIds": [
+            "scripture",
+            "tradition"
+          ]
+        },
+        {
+          "kind": "biblicalConnections",
+          "references": [
+            {
+              "bookId": "john",
+              "chapter": 13,
+              "startVerse": 34,
+              "endVerse": 35,
+              "en": "love one another as I have loved you",
+              "am": "እኔ እንደወደድኋችሁ እርስ በርሳችሁ ውደዱ"
+            },
+            {
+              "bookId": "1john",
+              "chapter": 4,
+              "startVerse": 19,
+              "endVerse": 19,
+              "en": "we love because He first loved us",
+              "am": "እርሱ ቀድሞ ስለወደደን እኛ እንወዳለን"
+            },
+            {
+              "bookId": "colossians",
+              "chapter": 3,
+              "startVerse": 14,
+              "endVerse": 14,
+              "en": "love binds everything together in perfect harmony",
+              "am": "ፍቅር ሁሉን በፍጹምነት ያስተሳስራል"
+            }
+          ],
+          "sourceIds": [
+            "scripture"
+          ]
+        },
+        {
+          "kind": "whatCanBeUnderstood",
+          "blocks": [
+            {
+              "tier": "clearlyStated",
+              "en": "Love is described in actions: patient, kind, not envious, not boastful, not proud, not self-seeking, not easily angered, keeping no record of wrongs.",
+              "am": "ፍቅር በተግባር ተገልጿል፦ ታጋሽ፣ ቸር፣ የማይቀና፣ የማይመካ፣ የማይኮራ፣ የራሱን የማይፈልግ፣ በቀላሉ የማይቆጣ፣ ክፉን የማያስታውስ ነው።"
+            },
+            {
+              "tier": "supportedUnderstanding",
+              "en": "This portrait of love is read as both who God is and the life the believer is called to grow into.",
+              "am": "ይህ የፍቅር ምስል እግዚአብሔር ማን እንደሆነና ምእመን ወደ እርሱ የሚያድግበት ሕይወት እንደሆነ ይነበባል።"
+            }
+          ],
+          "sourceIds": [
+            "scripture",
+            "tradition"
+          ]
+        },
+        {
+          "kind": "reflection",
+          "en": "Which phrase of this love - patience, kindness, not keeping a record of wrongs - is most challenging for you to practice with one specific person this week?",
+          "am": "ከዚህ ፍቅር — ትዕግሥት፣ ቸርነት፣ ክፉን አለማስታወስ — በዚህ ሳምንት ከአንድ የተወሰነ ሰው ጋር ለመተግበር ከባዱ የትኛው ነው?",
+          "sourceIds": [
+            "scripture"
+          ]
+        }
       ]
     }
   ]
