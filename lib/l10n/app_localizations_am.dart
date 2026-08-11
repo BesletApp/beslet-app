@@ -1433,19 +1433,19 @@ class AppLocalizationsAm extends AppLocalizations {
   String get studySectionContext => 'ዐውድ';
 
   @override
-  String get studySectionWhatTextSays => 'ጽሑፉ የሚለው';
+  String get studySectionWhatTextSays => 'ጽሑፉ የሚያስተላልፈው';
 
   @override
-  String get studySectionMeaningBackground => 'ትርጉም እና ዳራ';
+  String get studySectionMeaningBackground => 'ቃላትን በቅርበት መመልከት';
 
   @override
-  String get studySectionBiblicalConnections => 'ተዛማጅ ጥቅሶች';
+  String get studySectionBiblicalConnections => 'ጽሑፍ ከጽሑፍ ጋር';
 
   @override
-  String get studySectionWhatCanBeUnderstood => 'ምን መረዳት ይቻላል';
+  String get studySectionWhatCanBeUnderstood => 'ግልጽ የሆነው / ጥንቃቄ የሚሻው';
 
   @override
-  String get studySectionReflection => 'ነጸብራቅ';
+  String get studySectionReflection => 'አስተንትኑ';
 
   @override
   String get studySectionSources => 'ምንጮች';
@@ -1464,6 +1464,12 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get studyContextInText => 'በጽሑፉ ውስጥ';
+
+  @override
+  String get studyExpandSection => 'ክፍሉን አስፋ';
+
+  @override
+  String get studyCollapseSection => 'ክፍሉን ዝጋ';
 
   @override
   String get studyKeyTerms => 'ቁልፍ ቃላት እና የመጀመሪያ ቋንቋ';

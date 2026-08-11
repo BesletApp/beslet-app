@@ -55,6 +55,35 @@ List<String> englishStrings(StudyBankEntry entry) {
   return out;
 }
 
+/// Every renderable Amharic string in a bank entry (text + context halves +
+/// cross-reference reasons + tiered blocks + term meanings).
+List<String> amharicStrings(StudyBankEntry entry) {
+  final out = <String>[];
+  for (final section in entry.sections) {
+    if (section.kind == StudySectionKind.biblicalConnections) {
+      for (final ref in section.references) {
+        if (ref.am.isNotEmpty) out.add(ref.am);
+      }
+      continue;
+    }
+    if (section.kind == StudySectionKind.whatCanBeUnderstood) {
+      for (final block in section.blocks) {
+        if (block.am.isNotEmpty) out.add(block.am);
+      }
+      continue;
+    }
+    if (section.am.isNotEmpty) out.add(section.am);
+    final sub = section.amSub;
+    if (sub != null && sub.isNotEmpty) out.add(sub);
+    if (section.kind == StudySectionKind.meaningBackground) {
+      for (final term in section.terms) {
+        if (term.am.isNotEmpty) out.add(term.am);
+      }
+    }
+  }
+  return out;
+}
+
 void main() {
   group('StudyLocalBank (shipped asset)', () {
     late StudyLocalBank bank;
@@ -149,6 +178,21 @@ void main() {
                 reason: 'entry ${entry.id} contains "$banned"');
           }
         }
+      }
+    });
+
+    test('every entry is commentary-depth in both languages', () {
+      for (final entry in bank.entries) {
+        final en = englishStrings(entry).join(' ').split(RegExp(r'\s+'))
+            .where((w) => w.isNotEmpty)
+            .length;
+        final am = amharicStrings(entry).join(' ').split(RegExp(r'\s+'))
+            .where((w) => w.isNotEmpty)
+            .length;
+        expect(en, greaterThanOrEqualTo(200),
+            reason: 'entry ${entry.id} must be commentary depth in English, got $en words');
+        expect(am, greaterThanOrEqualTo(200),
+            reason: 'entry ${entry.id} must be commentary depth in Amharic, got $am words');
       }
     });
 

@@ -1,6 +1,6 @@
 {
-  "version": "1.26.2",
-  "versionCode": 49,
-  "downloadUrl": "https://github.com/BesletApp/beslet-app/releases/download/v1.26.2/app-release.apk",
-  "releaseNotes": "Deeper study notes: full historical, cultural, literary, and original-language background, structured key-terms, richer validated cross-references, accurate section ordering, and a cleanup of legacy AI code."
+  "version": "1.26.3",
+  "versionCode": 50,
+  "downloadUrl": "https://github.com/BesletApp/beslet-app/releases/download/v1.26.3/app-release.apk",
+  "releaseNotes": "Commentary-grade study notes: a rewritten curated bank at full commentary depth in English and Amharic, length bands that scale a note to the passage (500–2000 words), sections renamed to clear study vocabulary, collapsible section cards, and two-question reflections that keep the reader in the text."
 }

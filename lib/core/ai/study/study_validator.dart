@@ -97,7 +97,7 @@ class StudyValidator {
 
     final reflection = _clean(_map(raw['reflection'])?['text']);
     if (_acceptText(reflection, isAm, StudyLengthBudget.reflectionMax) &&
-        _isSingleQuestion(reflection)) {
+        _isConsider(reflection)) {
       sections.add(_textSection(StudySectionKind.reflection, reflection, isAm));
     }
 
@@ -129,9 +129,9 @@ class StudyValidator {
     return true;
   }
 
-  /// The reflection must be a single open-ended question — a directive or a
+  /// The reflection must be one or two open-ended questions — a directive or a
   /// run-on list would change the reader's posture toward the text.
-  bool _isSingleQuestion(String text) {
+  bool _isConsider(String text) {
     final t = text.trim();
     if (t.isEmpty) return false;
     // ASCII, Arabic (U+061F), fullwidth (U+FF1F), and Ethiopic (U+1367)
@@ -142,7 +142,7 @@ class StudyValidator {
     for (final m in marks) {
       count += m.allMatches(t).length;
     }
-    return count == 1;
+    return count >= 1 && count <= 2;
   }
 
   /// Validates the tiered "what can be understood" blocks. A block needs a

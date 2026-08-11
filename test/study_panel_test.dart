@@ -65,7 +65,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Meaning & Background'), findsOneWidget);
+    expect(find.text('Looking Closely at the Words'), findsOneWidget);
     expect(find.textContaining('רֹעִי'), findsOneWidget);
     expect(find.textContaining('ro’i'), findsOneWidget);
     expect(find.text('shepherd'), findsOneWidget);
@@ -95,7 +95,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Meaning & Background'), findsOneWidget);
+    expect(find.text('Looking Closely at the Words'), findsOneWidget);
     expect(find.text('Key terms & original language'), findsNothing);
   });
 }

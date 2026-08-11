@@ -107,6 +107,32 @@ void main() {
       expect(seen, contains('"terms"'));
     });
 
+    test('the prompt structures the note around the A-G section vocabulary',
+        () async {
+      String? seen;
+      final backend = _backend((prompt) async {
+        seen = prompt;
+        return _goodJson();
+      });
+      await backend.study(_request());
+      expect(seen, contains('LOOK CLOSELY AT THE WORDS'));
+      expect(seen, contains('WHAT THE TEXT COMMUNICATES'));
+      expect(seen, contains('SCRIPTURE ALONGSIDE SCRIPTURE'));
+      expect(seen, contains('WHAT IS CLEAR / WHAT REQUIRES CARE'));
+      expect(seen, contains('CONSIDER'));
+    });
+
+    test('the prompt names the length band for the passage', () async {
+      String? seen;
+      final backend = _backend((prompt) async {
+        seen = prompt;
+        return _goodJson();
+      });
+      await backend.study(_request());
+      expect(seen, contains('LENGTH —'));
+      expect(seen, contains('words (a "'));
+    });
+
     test('invalid content (banned phrase) fails validation and yields null',
         () async {
       final backend = _backend((_) async => jsonEncode({

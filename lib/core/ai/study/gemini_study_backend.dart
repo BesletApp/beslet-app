@@ -26,7 +26,7 @@ class GeminiStudyBackend implements StudyBackend {
     required this.transport,
     required this.validator,
     this.promptBuilder = const StudyPromptBuilder(),
-    this.timeout = const Duration(seconds: 30),
+    this.timeout = const Duration(seconds: 60),
   });
 
   @override
@@ -50,7 +50,7 @@ Future<String> Function(String prompt) buildGeminiTransport({
   String? bundledKey,
   Future<String?> Function() userKeyProvider = _noUserKey,
   String modelName = aiModelName,
-  Duration timeout = const Duration(seconds: 20),
+  Duration timeout = const Duration(seconds: 45),
 }) {
   return (prompt) async {
     final key = await _effectiveKey(bundledKey, userKeyProvider);

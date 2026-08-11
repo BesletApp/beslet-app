@@ -1446,19 +1446,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get studySectionContext => 'Context';
 
   @override
-  String get studySectionWhatTextSays => 'What the Text Says';
+  String get studySectionWhatTextSays => 'What the Text Communicates';
 
   @override
-  String get studySectionMeaningBackground => 'Meaning & Background';
+  String get studySectionMeaningBackground => 'Looking Closely at the Words';
 
   @override
-  String get studySectionBiblicalConnections => 'Biblical Connections';
+  String get studySectionBiblicalConnections => 'Scripture Alongside Scripture';
 
   @override
-  String get studySectionWhatCanBeUnderstood => 'What Can Be Understood';
+  String get studySectionWhatCanBeUnderstood =>
+      'What Is Clear / What Requires Care';
 
   @override
-  String get studySectionReflection => 'Reflection';
+  String get studySectionReflection => 'Consider';
 
   @override
   String get studySectionSources => 'Sources';
@@ -1478,6 +1479,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get studyContextInText => 'In the text';
+
+  @override
+  String get studyExpandSection => 'Expand section';
+
+  @override
+  String get studyCollapseSection => 'Collapse section';
 
   @override
   String get studyKeyTerms => 'Key terms & original language';

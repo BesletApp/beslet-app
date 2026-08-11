@@ -2717,31 +2717,31 @@ abstract class AppLocalizations {
   /// No description provided for @studySectionWhatTextSays.
   ///
   /// In en, this message translates to:
-  /// **'What the Text Says'**
+  /// **'What the Text Communicates'**
   String get studySectionWhatTextSays;
 
   /// No description provided for @studySectionMeaningBackground.
   ///
   /// In en, this message translates to:
-  /// **'Meaning & Background'**
+  /// **'Looking Closely at the Words'**
   String get studySectionMeaningBackground;
 
   /// No description provided for @studySectionBiblicalConnections.
   ///
   /// In en, this message translates to:
-  /// **'Biblical Connections'**
+  /// **'Scripture Alongside Scripture'**
   String get studySectionBiblicalConnections;
 
   /// No description provided for @studySectionWhatCanBeUnderstood.
   ///
   /// In en, this message translates to:
-  /// **'What Can Be Understood'**
+  /// **'What Is Clear / What Requires Care'**
   String get studySectionWhatCanBeUnderstood;
 
   /// No description provided for @studySectionReflection.
   ///
   /// In en, this message translates to:
-  /// **'Reflection'**
+  /// **'Consider'**
   String get studySectionReflection;
 
   /// No description provided for @studySectionSources.
@@ -2779,6 +2779,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'In the text'**
   String get studyContextInText;
+
+  /// No description provided for @studyExpandSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand section'**
+  String get studyExpandSection;
+
+  /// No description provided for @studyCollapseSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse section'**
+  String get studyCollapseSection;
 
   /// No description provided for @studyKeyTerms.
   ///

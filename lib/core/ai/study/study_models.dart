@@ -18,10 +18,10 @@ import '../../services/scripture_service.dart';
 
 /// Bump when the prompt, schema, or generation rules change so cached notes
 /// from an older version are never served.
-const int studyPromptVersion = 4;
+const int studyPromptVersion = 5;
 
 /// The version of the serialized cache payload.
-const int _cacheVersion = 4;
+const int _cacheVersion = 5;
 
 /// One of the seven sections of a study note. The order in the enum is the
 /// order the panel renders them.

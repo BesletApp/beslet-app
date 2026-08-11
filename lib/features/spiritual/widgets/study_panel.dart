@@ -150,7 +150,11 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
         _buildPassage(c),
         const SizedBox(height: AppSpacing.lg),
         for (final section in result.sections.where((s) => !s.isEmpty)) ...[
-          _buildSection(c, l, section),
+          _StudySectionCard(
+            title: _titleFor(l, section.kind),
+            isAm: widget.isAm,
+            child: _buildSectionBody(c, l, section),
+          ),
           if (sources != null && section.sourceIds.isNotEmpty) ...[
             const SizedBox(height: 6),
             _buildSources(c, l, sources, section.sourceIds),
@@ -247,37 +251,58 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
     );
   }
 
-  Widget _buildSection(ThemePalette c, AppLocalizations l, StudySection section) {
+  /// The body of a section, without its title (the collapsible card supplies
+  /// the title). Long prose is split into short paragraphs for breathing room.
+  Widget _buildSectionBody(
+      ThemePalette c, AppLocalizations l, StudySection section) {
     if (section.kind == StudySectionKind.context) {
-      return _buildContextSection(c, l, section);
+      return _buildContextBody(c, l, section);
     }
     if (section.kind == StudySectionKind.biblicalConnections) {
-      return _buildReferenceSection(c, section);
+      return _buildReferencesBody(c, section);
     }
     if (section.kind == StudySectionKind.whatCanBeUnderstood) {
-      return _buildTieredSection(c, l, section);
+      return _buildTieredBody(c, l, section);
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          _titleFor(l, section.kind),
-          style: AppTextStyles.labelLarge.copyWith(
-            color: c.primary,
-            fontSize: 13,
-          ),
-        ),
-        if (section.textFor(widget.isAm).isNotEmpty) ...[
-          const SizedBox(height: 6),
-          Text(
-            section.textFor(widget.isAm),
-            style: (widget.isAm ? AppTextStyles.amharicBody : AppTextStyles.bodyMedium)
-                .copyWith(color: c.textPrimary, height: 1.6),
-          ),
-        ],
+        if (section.textFor(widget.isAm).isNotEmpty)
+          _buildArticle(c, section.textFor(widget.isAm)),
         if (section.terms.isNotEmpty) _buildTermsBlock(c, l, section.terms),
       ],
     );
+  }
+
+  /// Renders prose as short paragraphs separated for readability.
+  Widget _buildArticle(ThemePalette c, String text) {
+    final style = (widget.isAm ? AppTextStyles.amharicBody : AppTextStyles.bodyMedium)
+        .copyWith(color: c.textPrimary, height: 1.6);
+    final paragraphs = _articleParagraphs(text);
+    if (paragraphs.length == 1) return Text(text.trim(), style: style);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (var i = 0; i < paragraphs.length; i++)
+          Padding(
+            padding: EdgeInsets.only(bottom: i == paragraphs.length - 1 ? 0 : 8),
+            child: Text(paragraphs[i], style: style),
+          ),
+      ],
+    );
+  }
+
+  /// Splits prose into paragraphs on blank lines, then on single newlines, so
+  /// a long section never becomes a wall of text.
+  List<String> _articleParagraphs(String text) {
+    final out = <String>[];
+    for (final block in text.split(RegExp(r'\n\s*\n'))) {
+      for (final line in block.split('\n')) {
+        final t = line.trim();
+        if (t.isNotEmpty) out.add(t);
+      }
+    }
+    return out;
   }
 
   /// The important-terms / original-language block: each word in its own
@@ -335,24 +360,14 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
     );
   }
 
-  Widget _buildContextSection(
+  Widget _buildContextBody(
       ThemePalette c, AppLocalizations l, StudySection section) {
-    final body = (widget.isAm ? AppTextStyles.amharicBody : AppTextStyles.bodyMedium)
-        .copyWith(color: c.textPrimary, height: 1.6);
     final behind = section.textFor(widget.isAm);
     final inText = section.subTextFor(widget.isAm);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          _titleFor(l, section.kind),
-          style: AppTextStyles.labelLarge.copyWith(
-            color: c.primary,
-            fontSize: 13,
-          ),
-        ),
         if (behind.isNotEmpty) ...[
-          const SizedBox(height: 6),
           Text(
             l.studyContextBehind,
             style: TextStyle(
@@ -363,7 +378,7 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
             ),
           ),
           const SizedBox(height: 4),
-          Text(behind, style: body),
+          _buildArticle(c, behind),
         ],
         if (inText != null) ...[
           const SizedBox(height: 10),
@@ -377,26 +392,18 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
             ),
           ),
           const SizedBox(height: 4),
-          Text(inText, style: body),
+          _buildArticle(c, inText),
         ],
       ],
     );
   }
 
-  Widget _buildReferenceSection(ThemePalette c, StudySection section) {
+  Widget _buildReferencesBody(ThemePalette c, StudySection section) {
     final refs = section.references;
     if (refs.isEmpty) return const SizedBox.shrink();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          _titleFor(AppLocalizations.of(context)!, section.kind),
-          style: AppTextStyles.labelLarge.copyWith(
-            color: c.primary,
-            fontSize: 13,
-          ),
-        ),
-        const SizedBox(height: 6),
         for (final ref in refs) ...[
           _ReferenceRow(
             label: ref.referenceFor(widget.isAm),
@@ -428,21 +435,11 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
 
   /// The "what can be understood" section: three labeled tiers that separate
   /// what the text clearly says from reasonable readings and genuine disputes.
-  Widget _buildTieredSection(
+  Widget _buildTieredBody(
       ThemePalette c, AppLocalizations l, StudySection section) {
-    final body = (widget.isAm ? AppTextStyles.amharicBody : AppTextStyles.bodyMedium)
-        .copyWith(color: c.textPrimary, height: 1.6);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          _titleFor(l, section.kind),
-          style: AppTextStyles.labelLarge.copyWith(
-            color: c.primary,
-            fontSize: 13,
-          ),
-        ),
-        const SizedBox(height: 6),
         for (final block in section.blocks) ...[
           Text(
             _tierLabel(l, block.tier),
@@ -454,7 +451,7 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
             ),
           ),
           const SizedBox(height: 4),
-          Text(block.textFor(widget.isAm), style: body),
+          _buildArticle(c, block.textFor(widget.isAm)),
           const SizedBox(height: 10),
         ],
       ],
@@ -497,6 +494,72 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
       case StudyTier.disputed:
         return l.studyTierDisputed;
     }
+  }
+}
+
+/// A single collapsible study section. The header shows the section title and
+/// a chevron; tapping it expands or collapses the body. Everything is expanded
+/// by default — collapsing is a reader convenience, never a way to hide
+/// content.
+class _StudySectionCard extends StatefulWidget {
+  final String title;
+  final bool isAm;
+  final Widget child;
+
+  const _StudySectionCard({
+    required this.title,
+    required this.isAm,
+    required this.child,
+  });
+
+  @override
+  State<_StudySectionCard> createState() => _StudySectionCardState();
+}
+
+class _StudySectionCardState extends State<_StudySectionCard> {
+  bool _expanded = true;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = AppColors.of(context);
+    final l = AppLocalizations.of(context)!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        InkWell(
+          onTap: () => setState(() => _expanded = !_expanded),
+          borderRadius: BorderRadius.circular(6),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    widget.title,
+                    style: AppTextStyles.labelLarge.copyWith(
+                      color: c.primary,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+                Tooltip(
+                  message: _expanded ? l.studyCollapseSection : l.studyExpandSection,
+                  child: Icon(
+                    _expanded ? Icons.expand_less : Icons.expand_more,
+                    size: 18,
+                    color: c.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (_expanded) ...[
+          const SizedBox(height: 6),
+          widget.child,
+        ],
+      ],
+    );
   }
 }
 

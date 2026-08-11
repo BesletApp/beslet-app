@@ -295,6 +295,31 @@ void main() {
       );
     });
 
+    test('a reflection with two questions is kept', () {
+      final raw = _enPayload();
+      raw['reflection'] = {
+        'text':
+            'Where do you need the Shepherd’s presence? What would change if you remembered He walks with you?'
+      };
+      final result = validator.validate(raw: raw, request: _request())!;
+      final reflection = result.sections
+          .firstWhere((s) => s.kind == StudySectionKind.reflection);
+      expect(reflection.en, contains('What would change'));
+    });
+
+    test('a reflection with three questions is dropped', () {
+      final raw = _enPayload();
+      raw['reflection'] = {
+        'text': 'Where are you? What do you see? Why does it matter?'
+      };
+      final result = validator.validate(raw: raw, request: _request())!;
+      expect(
+        result.sections.any((s) => s.kind == StudySectionKind.reflection),
+        isFalse,
+        reason: 'a run-on list of questions changes the reader\'s posture',
+      );
+    });
+
     test('tiered blocks: invalid tiers are dropped, valid ones kept', () {
       final raw = _enPayload();
       (raw['whatCanBeUnderstood'] as Map)['blocks'] = [

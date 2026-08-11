@@ -196,7 +196,7 @@ void main() {
     await pumpPanel(tester);
 
     expect(find.text('Psalms 23:1–3'), findsOneWidget);
-    expect(find.text('What the Text Says'), findsOneWidget);
+    expect(find.text('What the Text Communicates'), findsOneWidget);
     expect(find.textContaining('shepherd'), findsWidgets);
   });
 
@@ -295,7 +295,7 @@ void main() {
 
   testWidgets('a cross-reference with no local passage text stays quiet',
       (tester) async {
-    tester.view.physicalSize = const Size(800, 1800);
+    tester.view.physicalSize = const Size(800, 3200);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
     await pumpBible(tester, bookId: 'psalms', chapter: 23, verses: 6);
