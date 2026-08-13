@@ -147,6 +147,46 @@ void main() {
         reason: 'the offline index links psalm 23 to John 10:11');
   });
 
+  testWidgets('a slow backend does not hang the panel; it renders once the '
+      'note resolves', (tester) async {
+    var calls = 0;
+    final backend = _DelayedBackend(() => _result(), calls: () => calls++);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          studySourcesProvider.overrideWith((ref) async =>
+              StudySourceRegistry.fromJsonString(
+                  File('assets/data/study_sources.json').readAsStringSync())),
+          studyCrossRefProvider.overrideWith((ref) async =>
+              loadTestCrossRefs()),
+          studyServiceProvider.overrideWith((ref) async => StudyService(
+                backend: backend,
+                readCache: (_) async => null,
+                writeCache: (_, _) async {},
+              )),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: StudyPanel(request: _request(), isAm: false),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byType(CircularProgressIndicator), findsOneWidget,
+        reason: 'before the 300ms elapses the panel must show the loading '
+            'state, never a hung or empty frame');
+
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.text('Looking Closely at the Words'), findsOneWidget,
+        reason: 'after the note resolves the panel renders content');
+    expect(calls, 1, reason: 'a single open must trigger one backend call');
+  });
+
   testWidgets('offline connections are merged into the backend connections '
       'without duplication', (tester) async {
     final backendConnections = StudyResult(
@@ -197,4 +237,19 @@ class _FakeBackend implements StudyBackend {
 
   @override
   Future<StudyResult?> study(StudyRequest request) async => result;
+}
+
+/// A backend that answers after a real time delay, so the test can assert the
+/// panel holds its loading state instead of hanging or showing a blank frame.
+class _DelayedBackend implements StudyBackend {
+  final StudyResult Function() build;
+  final void Function() calls;
+  _DelayedBackend(this.build, {required this.calls});
+
+  @override
+  Future<StudyResult?> study(StudyRequest request) async {
+    calls();
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+    return build();
+  }
 }
