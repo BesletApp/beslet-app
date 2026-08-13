@@ -56,6 +56,13 @@ void main() {
       );
     });
 
+    test('replaces the singular "Psalm" form with the Amharic name', () {
+      expect(
+        ScriptureService.amharicReference('Psalm 46:10'),
+        'መዝሙረ ዳዊት 46:10',
+      );
+    });
+
     test('returns the input unchanged when no book matches', () {
       expect(ScriptureService.amharicReference('NotABook 1:2'), 'NotABook 1:2');
     });
@@ -92,8 +99,49 @@ void main() {
       expect(parsed.chapter, 4);
     });
 
+    test('parses the singular "Psalm" form as book "psalms"', () {
+      final parsed = ScriptureService.parseReference('Psalm 23');
+      expect(parsed, isNotNull);
+      expect(parsed!.bookId, 'psalms');
+      expect(parsed.chapter, 23);
+    });
+
     test('returns null for a non-book prefix', () {
       expect(ScriptureService.parseReference('NotABook 1'), isNull);
+    });
+  });
+
+  group('referenceRange', () {
+    test('resolves a single verse', () {
+      final r = ScriptureService.referenceRange('Philippians 4:13');
+      expect(r, isNotNull);
+      expect(r!.bookId, 'philippians');
+      expect(r.chapter, 4);
+      expect(r.verses, [13]);
+    });
+
+    test('resolves a verse range', () {
+      final r = ScriptureService.referenceRange('Proverbs 3:5-6');
+      expect(r, isNotNull);
+      expect(r!.bookId, 'proverbs');
+      expect(r.chapter, 3);
+      expect(r.verses, [5, 6]);
+    });
+
+    test('resolves the singular "Psalm" form', () {
+      final r = ScriptureService.referenceRange('Psalm 119:105');
+      expect(r, isNotNull);
+      expect(r!.bookId, 'psalms');
+      expect(r.chapter, 119);
+      expect(r.verses, [105]);
+    });
+
+    test('returns null for an invalid reference', () {
+      expect(ScriptureService.referenceRange('NotABook 1:2'), isNull);
+    });
+
+    test('rejects a reversed range', () {
+      expect(ScriptureService.referenceRange('Proverbs 3:6-5'), isNull);
     });
   });
 }

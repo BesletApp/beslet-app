@@ -216,6 +216,110 @@ void main() {
     expect(find.text('1 Peter 5:7'), findsOneWidget,
         reason: 'the offline-only reference must also appear');
   });
+
+  group('hierarchy rendering', () {
+    testWidgets('labeled movement steps render as numbered step rows',
+        (tester) async {
+      final result = StudyResult(
+        reference: _request().reference,
+        source: StudySource.gemini,
+        cachedAt: DateTime.now(),
+        isAvailable: true,
+        sections: const [
+          StudySection(
+            kind: StudySectionKind.whatTextSays,
+            en: 'Step 1 — The LORD opens the psalm as the shepherd.\n'
+                'Step 2 — He leads through the darkest valley.',
+          ),
+        ],
+      );
+      await _pumpResult(tester, result);
+
+      expect(find.textContaining('opens the psalm as the shepherd'),
+          findsOneWidget);
+      expect(
+          find.textContaining('leads through the darkest valley'), findsOneWidget);
+    });
+
+    testWidgets('bullet rows render as separate lines', (tester) async {
+      final result = StudyResult(
+        reference: _request().reference,
+        source: StudySource.gemini,
+        cachedAt: DateTime.now(),
+        isAvailable: true,
+        sections: const [
+          StudySection(
+            kind: StudySectionKind.meaningBackground,
+            en: '• The shepherd provides and restores.\n• He stays present.',
+          ),
+        ],
+      );
+      await _pumpResult(tester, result);
+
+      expect(find.textContaining('provides and restores'), findsOneWidget);
+      expect(find.textContaining('He stays present'), findsOneWidget);
+    });
+  });
+
+  group('takeaway rendering', () {
+    testWidgets('renders the neutral takeaway under the reflection question',
+        (tester) async {
+      final result = StudyResult(
+        reference: _request().reference,
+        source: StudySource.gemini,
+        cachedAt: DateTime.now(),
+        isAvailable: true,
+        sections: const [
+          StudySection(
+            kind: StudySectionKind.reflection,
+            en: "Where do you need the Shepherd's presence?",
+            takeawayEn:
+                'The LORD stays present as a shepherd, even in the darkest valley.',
+          ),
+        ],
+      );
+      await _pumpResult(tester, result);
+
+      expect(find.text('The passage itself says'), findsOneWidget);
+      expect(
+          find.text(
+              'The LORD stays present as a shepherd, even in the darkest valley.'),
+          findsOneWidget);
+    });
+
+    testWidgets('renders no takeaway when the reflection carries none',
+        (tester) async {
+      await _pumpResult(tester, _noTermsResult());
+      expect(find.text('The passage itself says'), findsNothing);
+    });
+  });
+}
+
+/// Pumps the panel for a given [StudyResult] with real l10n, so hierarchy and
+/// takeaway rendering assertions can see the app's actual strings.
+Future<void> _pumpResult(WidgetTester tester, StudyResult result) async {
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        studySourcesProvider.overrideWith((ref) async =>
+            StudySourceRegistry.fromJsonString(
+                File('assets/data/study_sources.json').readAsStringSync())),
+        studyCrossRefProvider
+            .overrideWith((ref) async => loadTestCrossRefs()),
+        studyServiceProvider.overrideWith((ref) async => StudyService(
+              backend: _FakeBackend(result),
+              readCache: (_) async => null,
+              writeCache: (_, _) async {},
+            )),
+      ],
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(body: StudyPanel(request: _request(), isAm: false)),
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
 }
 
 StudyResult _noTermsResult() => StudyResult(

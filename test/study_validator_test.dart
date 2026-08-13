@@ -450,4 +450,148 @@ void main() {
       expect(validator.validate(raw: raw, request: _request(am: true)), isNull);
     });
   });
+
+  group('movement steps, bullets & takeaway', () {
+    test('labeled movement steps are kept in whatTextSays', () {
+      final raw = _enPayload();
+      raw['whatTextSays'] = {
+        'text': 'Step 1 — The psalm opens with the LORD as shepherd.\n'
+            'Step 2 — It moves through the valley without fear.\n'
+            'Step 3 — It ends in the house of the LORD.',
+      };
+      final result = validator.validate(raw: raw, request: _request())!;
+      final kept = result.sections
+          .firstWhere((s) => s.kind == StudySectionKind.whatTextSays);
+      expect(kept.textFor(false), contains('Step 3 —'));
+    });
+
+    test('a step heading without a body is rejected, dropping the section', () {
+      final raw = _enPayload();
+      raw['whatTextSays'] = {'text': 'Step — let us trace the movement.'};
+      final result = validator.validate(raw: raw, request: _request())!;
+      expect(
+        result.sections.any((s) => s.kind == StudySectionKind.whatTextSays),
+        isFalse,
+        reason: 'a malformed step heading must not reach the reader',
+      );
+    });
+
+    test('more than five steps drops the section', () {
+      final raw = _enPayload();
+      raw['whatTextSays'] = {
+        'text': List.generate(6, (i) => 'Step ${i + 1} — one sentence.')
+            .join('\n'),
+      };
+      final result = validator.validate(raw: raw, request: _request())!;
+      expect(
+        result.sections.any((s) => s.kind == StudySectionKind.whatTextSays),
+        isFalse,
+        reason: 'a runaway step list is a violation, not a style slip',
+      );
+    });
+
+    test('real bullet rows are kept; a dash is plain prose', () {
+      final raw = _enPayload();
+      raw['whatTextSays'] = {
+        'text': '• The shepherd provides and restores.\n• He stays present.',
+      };
+      final result = validator.validate(raw: raw, request: _request())!;
+      expect(result, isNotNull);
+    });
+
+    test('a malformed bullet row (no space after the bullet) drops the section',
+        () {
+      final raw = _enPayload();
+      raw['whatTextSays'] = {'text': '•First point\nSecond paragraph.'};
+      final result = validator.validate(raw: raw, request: _request())!;
+      expect(
+        result.sections.any((s) => s.kind == StudySectionKind.whatTextSays),
+        isFalse,
+      );
+    });
+
+    test('a well-formed optional takeaway is kept on the reflection', () {
+      final raw = _enPayload();
+      raw['reflection'] = {
+        'text': "Where do you need the Shepherd's presence?",
+        'takeaway': 'The passage itself presents the LORD as a personal shepherd.',
+      };
+      final result = validator.validate(raw: raw, request: _request())!;
+      final reflection = result.sections
+          .firstWhere((s) => s.kind == StudySectionKind.reflection);
+      expect(reflection.takeawayFor(false),
+          'The passage itself presents the LORD as a personal shepherd.');
+    });
+
+    test('a question-shaped takeaway is dropped, reflection is kept', () {
+      final raw = _enPayload();
+      raw['reflection'] = {
+        'text': "Where do you need the Shepherd's presence?",
+        'takeaway': 'Is the LORD your shepherd?',
+      };
+      final result = validator.validate(raw: raw, request: _request())!;
+      final reflection = result.sections
+          .firstWhere((s) => s.kind == StudySectionKind.reflection);
+      expect(reflection.takeawayFor(false), isNull);
+    });
+
+    test('an over-long takeaway is dropped, reflection is kept', () {
+      final raw = _enPayload();
+      raw['reflection'] = {
+        'text': "Where do you need the Shepherd's presence?",
+        'takeaway': List.filled(45, 'word').join(' '),
+      };
+      final result = validator.validate(raw: raw, request: _request())!;
+      final reflection = result.sections
+          .firstWhere((s) => s.kind == StudySectionKind.reflection);
+      expect(reflection.takeawayFor(false), isNull);
+    });
+
+    test('a takeaway in the wrong script is dropped, reflection is kept', () {
+      final raw = _amPayload();
+      raw['reflection'] = {
+        'text': 'በዚህ መዝሙር ውስጥ ምን ትመለከታለህ?',
+        'takeaway': 'The passage itself presents the LORD as a shepherd.',
+      };
+      final result = validator.validate(raw: raw, request: _request(am: true))!;
+      final reflection = result.sections
+          .firstWhere((s) => s.kind == StudySectionKind.reflection);
+      expect(reflection.takeawayFor(true), isNull);
+      expect(reflection.textFor(true), contains('ትመለከታለህ'));
+    });
+
+    test('a directive takeaway rejects the entire note', () {
+      final raw = _enPayload();
+      raw['reflection'] = {
+        'text': "Where do you need the Shepherd's presence?",
+        'takeaway': 'God wants you to trust Him today.',
+      };
+      expect(validator.validate(raw: raw, request: _request()), isNull);
+    });
+  });
+
+  group('voice boundaries', () {
+    test('promotional hype rejects the entire note', () {
+      final raw = _enPayload();
+      raw['whatTextSays'] = {
+        'text': 'This is a life-changing promise for every reader.',
+      };
+      expect(validator.validate(raw: raw, request: _request()), isNull);
+    });
+
+    test('denominational posturing rejects the entire note', () {
+      final raw = _enPayload();
+      raw['context'] = {
+        'behindTheText': 'The Catholic Church teaches otherwise.',
+        'inTheText': 'The text itself is clear.',
+      };
+      expect(validator.validate(raw: raw, request: _request()), isNull);
+    });
+
+    test('a second-person directive rejects the entire note', () {
+      final raw = _enPayload();
+      raw['setting'] = {'text': 'You should read this psalm slowly.'};
+      expect(validator.validate(raw: raw, request: _request()), isNull);
+    });
+  });
 }

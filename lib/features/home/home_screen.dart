@@ -13,6 +13,7 @@ import '../../core/personalization/personalization_providers.dart';
 import '../../core/emotional/experience_profile.dart';
 import '../../core/services/summer_service.dart';
 import '../../core/services/widget_service.dart';
+import '../../core/services/scripture_service.dart';
 import '../../core/database/app_database.dart';
 import '../../core/providers/user_provider.dart';
 import '../../core/providers/tracking_provider.dart';
@@ -648,7 +649,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
                 border: Border.all(color: acc.withValues(alpha: 0.3)),
               ),
               child: Text(
-                todayWord.reference,
+                _isAm ? ScriptureService.amharicReference(todayWord.reference) : todayWord.reference,
                 style: AppTextStyles.bodySmall.copyWith(fontSize: 11, fontWeight: FontWeight.w700, color: acc),
               ),
             ),

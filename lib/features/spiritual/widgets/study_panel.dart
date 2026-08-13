@@ -35,7 +35,22 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
 
   Future<StudyResult> _load() async {
     final service = await ref.read(studyServiceProvider.future);
-    return service.study(widget.request);
+    // The service provider resolves the intro library, so by this point the
+    // genre is available (or the panel's test override left it untouched).
+    final genre = ref
+        .read(studyIntroLibraryProvider)
+        .valueOrNull
+        ?.introFor(widget.request.reference.bookId)
+        ?.genre;
+    final request = genre == null
+        ? widget.request
+        : StudyRequest(
+            reference: widget.request.reference,
+            isAmharic: widget.request.isAmharic,
+            verseTexts: widget.request.verseTexts,
+            genre: genre,
+          );
+    return service.study(request);
   }
 
   @override
@@ -347,6 +362,9 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
     if (section.kind == StudySectionKind.whatCanBeUnderstood) {
       return _buildTieredBody(c, l, section);
     }
+    if (section.kind == StudySectionKind.reflection) {
+      return _buildReflectionBody(c, l, section);
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -357,34 +375,182 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
     );
   }
 
-  /// Renders prose as short paragraphs separated for readability.
-  Widget _buildArticle(ThemePalette c, String text) {
-    final style = (widget.isAm ? AppTextStyles.amharicBody : AppTextStyles.bodyMedium)
+  /// The reflection: one or two open questions, then — when the note carries
+  /// one — the quiet "the passage itself says" line that anchors what was read.
+  /// Both are observations; neither ever tells the reader what to do.
+  Widget _buildReflectionBody(
+      ThemePalette c, AppLocalizations l, StudySection section) {
+    final text = section.textFor(widget.isAm);
+    final takeaway = section.takeawayFor(widget.isAm);
+    final style = (widget.isAm
+            ? AppTextStyles.amharicBody
+            : AppTextStyles.bodyMedium)
         .copyWith(color: c.textPrimary, height: 1.6);
-    final paragraphs = _articleParagraphs(text);
-    if (paragraphs.length == 1) return Text(text.trim(), style: style);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (var i = 0; i < paragraphs.length; i++)
+        if (text.isNotEmpty) _buildArticle(c, text),
+        if (takeaway != null && takeaway.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Text(
+            l.studyTakeaway,
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: c.primary,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            takeaway,
+            style: style.copyWith(fontStyle: FontStyle.italic),
+          ),
+        ],
+      ],
+    );
+  }
+
+  /// Renders prose with the study-note hierarchy: short paragraphs, "• " bullet
+  /// rows (U+2022), and labeled movement steps ("Step N — ", "ደረጃ N — ")
+  /// rendered as numbered steps. Anything else renders as a plain paragraph,
+  /// so the note always stays calm and readable.
+  Widget _buildArticle(ThemePalette c, String text) {
+    final style = (widget.isAm ? AppTextStyles.amharicBody : AppTextStyles.bodyMedium)
+        .copyWith(color: c.textPrimary, height: 1.6);
+    final blocks = _articleBlocks(text);
+    if (blocks.length == 1 &&
+        !blocks.single.isBullet &&
+        !blocks.single.isStep) {
+      return Text(blocks.single.text, style: style);
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (var i = 0; i < blocks.length; i++)
           Padding(
-            padding: EdgeInsets.only(bottom: i == paragraphs.length - 1 ? 0 : 8),
-            child: Text(paragraphs[i], style: style),
+            padding: EdgeInsets.only(
+                bottom: i == blocks.length - 1 ? 0 : 8),
+            child: _buildArticleBlock(c, blocks[i], style),
           ),
       ],
     );
   }
 
-  /// Splits prose into paragraphs on blank lines, then on single newlines, so
-  /// a long section never becomes a wall of text.
-  List<String> _articleParagraphs(String text) {
-    final out = <String>[];
-    for (final block in text.split(RegExp(r'\n\s*\n'))) {
-      for (final line in block.split('\n')) {
-        final t = line.trim();
-        if (t.isNotEmpty) out.add(t);
+  Widget _buildArticleBlock(
+      ThemePalette c, _ArticleBlock block, TextStyle style) {
+    if (block.isStep) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 22,
+            height: 22,
+            alignment: Alignment.center,
+            decoration:
+                BoxDecoration(color: c.primary, shape: BoxShape.circle),
+            child: Text(
+              '${block.stepNumber}',
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(child: Text(block.text, style: style)),
+        ],
+      );
+    }
+    if (block.isBullet) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 14,
+            child: Text(
+              '•',
+              textAlign: TextAlign.center,
+              style: style.copyWith(
+                color: c.primary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          Expanded(child: Text(block.text, style: style)),
+        ],
+      );
+    }
+    return Text(block.text, style: style);
+  }
+
+  /// Turns a section's prose into renderable blocks. Blank lines close steps
+  /// and paragraphs; a step header opens a numbered step that gathers the lines
+  /// until the next header or blank line; a "• " line is a bullet row. Only
+  /// the validated [StudyFormat] markers are honored.
+  List<_ArticleBlock> _articleBlocks(String text) {
+    final out = <_ArticleBlock>[];
+    final stepRe = StudyFormat.step(widget.isAm);
+    var paragraph = <String>[];
+    var openStep = false;
+    var stepNumber = 0;
+    var stepBody = <String>[];
+
+    void flushParagraph() {
+      if (paragraph.isEmpty) return;
+      final joined = paragraph.join(' ').trim();
+      paragraph = [];
+      if (joined.isEmpty) return;
+      out.add(_ArticleBlock(joined));
+    }
+
+    void flushStep() {
+      if (!openStep) return;
+      final joined = stepBody.join(' ').trim();
+      stepBody = [];
+      openStep = false;
+      if (joined.isEmpty) return;
+      out.add(_ArticleBlock(joined, stepNumber: stepNumber));
+    }
+
+    for (final rawLine in text.split('\n')) {
+      final line = rawLine.trim();
+      if (line.isEmpty) {
+        flushParagraph();
+        flushStep();
+        continue;
+      }
+      final stepMatch = stepRe.firstMatch(line);
+      if (stepMatch != null) {
+        flushParagraph();
+        flushStep();
+        openStep = true;
+        stepNumber = int.parse(stepMatch.group(1)!);
+        final body = stepMatch.group(2)!.trim();
+        if (body.isNotEmpty) stepBody.add(body);
+        continue;
+      }
+      final bulletMatch = StudyFormat.bullet.firstMatch(line);
+      if (bulletMatch != null) {
+        final body = bulletMatch.group(1)!.trim();
+        if (openStep) {
+          stepBody.add(body);
+        } else {
+          flushParagraph();
+          out.add(_ArticleBlock(body, isBullet: true));
+        }
+        continue;
+      }
+      if (openStep) {
+        stepBody.add(line);
+      } else {
+        paragraph.add(line);
       }
     }
+    flushParagraph();
+    flushStep();
     return out;
   }
 
@@ -578,6 +744,18 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
         return l.studyTierDisputed;
     }
   }
+}
+
+/// One rendered piece of a section's prose: a plain paragraph, a bullet row,
+/// or a numbered movement step. Built by `_StudyPanelState._articleBlocks`.
+class _ArticleBlock {
+  final String text;
+  final bool isBullet;
+  final int? stepNumber;
+
+  const _ArticleBlock(this.text, {this.isBullet = false, this.stepNumber});
+
+  bool get isStep => stepNumber != null;
 }
 
 /// A single collapsible study section. The header shows the section title and

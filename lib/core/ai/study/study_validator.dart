@@ -34,9 +34,9 @@ class StudyValidator {
     }
 
     final sections = <StudySection>[];
-
-    final setting = _clean(_map(raw['setting'])?['text']);
-    if (_acceptText(setting, isAm, StudyLengthBudget.settingMax)) {
+final setting = _clean(_map(raw['setting'])?['text']);
+    if (_acceptProse(setting, isAm, StudyLengthBudget.settingMax,
+        allowSteps: false)) {
       sections.add(_textSection(StudySectionKind.setting, setting, isAm));
     }
 
@@ -45,8 +45,10 @@ class StudyValidator {
       final behind = _clean(context['behindTheText']);
       final inText = _clean(context['inTheText']);
       if (behind.isNotEmpty || inText.isNotEmpty) {
-        if (_acceptText(behind, isAm, StudyLengthBudget.contextBehindMax) &&
-            _acceptText(inText, isAm, StudyLengthBudget.contextInMax)) {
+        if (_acceptProse(behind, isAm, StudyLengthBudget.contextBehindMax,
+                allowSteps: false) &&
+            _acceptProse(inText, isAm, StudyLengthBudget.contextInMax,
+                allowSteps: false)) {
           sections.add(StudySection(
             kind: StudySectionKind.context,
             en: isAm ? '' : behind,
@@ -57,17 +59,19 @@ class StudyValidator {
         }
       }
     }
-
     final whatTextSays = _clean(_map(raw['whatTextSays'])?['text']);
-    if (_acceptText(whatTextSays, isAm, StudyLengthBudget.whatTextSaysMax)) {
+    // The central section is allowed to trace the passage's movement in
+    // labeled steps, so its prose check permits steps.
+    if (_acceptProse(whatTextSays, isAm, StudyLengthBudget.whatTextSaysMax,
+        allowSteps: true)) {
       sections.add(
           _textSection(StudySectionKind.whatTextSays, whatTextSays, isAm));
     }
 
     final meaningBackground = _clean(_map(raw['meaningBackground'])?['text']);
     final terms = _validatedTerms(_map(raw['meaningBackground']), isAm);
-    if (_acceptText(
-        meaningBackground, isAm, StudyLengthBudget.meaningBackgroundMax)) {
+    if (_acceptProse(meaningBackground, isAm,
+        StudyLengthBudget.meaningBackgroundMax, allowSteps: false)) {
       sections.add(StudySection(
         kind: StudySectionKind.meaningBackground,
         en: isAm ? '' : meaningBackground,
@@ -95,10 +99,19 @@ class StudyValidator {
           StudySection(kind: StudySectionKind.whatCanBeUnderstood, blocks: blocks));
     }
 
-    final reflection = _clean(_map(raw['reflection'])?['text']);
+    final reflectionMap = _map(raw['reflection']);
+    final reflection = _clean(reflectionMap?['text']);
     if (_acceptText(reflection, isAm, StudyLengthBudget.reflectionMax) &&
         _isConsider(reflection)) {
-      sections.add(_textSection(StudySectionKind.reflection, reflection, isAm));
+      final takeaway = _validatedTakeaway(
+          _clean(reflectionMap?['takeaway']), isAm);
+      sections.add(StudySection(
+        kind: StudySectionKind.reflection,
+        en: isAm ? '' : reflection,
+        am: isAm ? reflection : '',
+        takeawayEn: isAm ? null : takeaway,
+        takeawayAm: isAm ? takeaway : null,
+      ));
     }
 
     if (sections.isEmpty) return null;
@@ -127,6 +140,47 @@ class StudyValidator {
     if (_hasGeEz(text) != isAm) return false;
     if (_wordCount(text) > budget * StudyLengthBudget.hardRejectFactor) return false;
     return true;
+  }
+
+  /// A prose section must pass the plain checks and a well-formed hierarchy:
+  /// bullets are real "• " rows, and labeled movement steps are allowed only
+  /// where the section may carry them ([allowSteps]) — and never more than
+  /// [StudyFormat.maxSteps]. Malformed markers (a dash bullet, a broken step
+  /// heading, a runaway step list) drop the section; the honest rest survives.
+  bool _acceptProse(String text, bool isAm, int budget,
+      {required bool allowSteps}) {
+    if (!_acceptText(text, isAm, budget)) return false;
+    if (text.isEmpty) return true;
+    var steps = 0;
+    final stepRe = StudyFormat.step(isAm);
+    final headingAttempt = StudyFormat.stepHeadingAttempt(isAm);
+    for (final rawLine in text.split('\n')) {
+      final line = rawLine.trim();
+      if (line.isEmpty) continue;
+      if (stepRe.hasMatch(line)) {
+        if (!allowSteps) return false;
+        steps++;
+        if (steps > StudyFormat.maxSteps) return false;
+        continue;
+      }
+      if (headingAttempt.hasMatch(line)) return false;
+      if (line.startsWith('•') && !StudyFormat.bullet.hasMatch(line)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /// The optional neutral takeaway line nested on the reflection. When absent
+  /// it stays silent; when present it must be in the reader's script, under the
+  /// cap, and an observation — never a question and never a directive (the
+  /// global banned-phrase pass already rules out second-person commands).
+  String? _validatedTakeaway(String text, bool isAm) {
+    if (text.isEmpty) return null;
+    if (_hasGeEz(text) != isAm) return null;
+    if (_wordCount(text) > StudyLengthBudget.takeawayMax) return null;
+    if (_isConsider(text)) return null;
+    return text;
   }
 
   /// The reflection must be one or two open-ended questions — a directive or a
@@ -163,7 +217,10 @@ class StudyValidator {
           .firstOrNull;
       if (tier == null) continue;
       final text = _clean(m['text']);
-      if (!_acceptText(text, isAm, StudyLengthBudget.tierBlockMax)) continue;
+      if (!_acceptProse(text, isAm, StudyLengthBudget.tierBlockMax,
+          allowSteps: false)) {
+        continue;
+      }
       out.add(StudyTieredBlock(
         tier: tier,
         en: isAm ? '' : text,
@@ -286,7 +343,9 @@ class StudyValidator {
       add(_map(term)?['meaning']);
       add(_map(term)?['transliteration']);
     }
-    add(_map(raw['reflection'])?['text']);
+    final reflectionMap = _map(raw['reflection']);
+    add(reflectionMap?['text']);
+    add(reflectionMap?['takeaway']);
     for (final item in _list(_map(raw['biblicalConnections'])?['items'])) {
       add(_map(item)?['reason']);
     }
@@ -316,6 +375,28 @@ class StudyValidator {
       'let me help',
       'i can help',
       'you can always come',
+      // Denominational posturing — the note must never take sides or lean on a
+      // tradition's authority; a reader from any background must meet only the
+      // text.
+      'the church teaches',
+      'our tradition says',
+      'we believe that',
+      'catholic church',
+      'orthodox church',
+      'protestants believe',
+      'catholics believe',
+      'orthodox believe',
+      'denominations teach',
+      'denominational',
+      // Hype — promotional language trades on excitement instead of the text.
+      'life-changing',
+      'mind-blowing',
+      'so powerful',
+      'amazing truth',
+      'this debunks',
+      'this refutes',
+      'proves them wrong',
+      'you will be blown away',
     ];
     const phrasesAm = [
       'እግዚአብሔር ይፈልጋል', // God wants
@@ -326,6 +407,12 @@ class StudyValidator {
       'አንቺ ይገብሽ', // you need to (f)
       'ተመለስ', // come back
       'ጠይቀኝ', // ask me
+      // Denominational posturing.
+      'የካቶሊክ ቤተ ክርስቲያን', // the catholic church
+      'የኦርቶዶክስ ቤተ ክርስቲያን', // the orthodox church
+      'ቤተ ክርስቲያን ያስተምራል', // the church teaches
+      'እኛ ፕሮቴስታንቶች', // we protestants
+      'ሌላ ትምህርት ይሰጣል', // (another tradition) teaches otherwise
     ];
     for (final p in isAm ? phrasesAm : phrasesEn) {
       if (lower.contains(p.toLowerCase())) return true;

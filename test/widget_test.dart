@@ -45,7 +45,9 @@ void main() {
     await tester.pump();
 
     expect(find.text('ብስለት'), findsNothing);
-    expect(find.text('Start'), findsOneWidget);
+    expect(find.text('OPEN THE WORD'), findsOneWidget);
+    expect(find.text('አማርኛ'), findsOneWidget);
+    expect(find.text('English'), findsOneWidget);
   });
 
   testWidgets('reduced-motion splash shows a static mark and navigates quickly', (tester) async {
@@ -81,6 +83,6 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
     await tester.pump();
 
-    expect(find.text('Start'), findsOneWidget);
+    expect(find.text('OPEN THE WORD'), findsOneWidget);
   });
 }

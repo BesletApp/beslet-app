@@ -812,12 +812,6 @@ abstract class AppLocalizations {
   /// **'Log Connection'**
   String get logConnection;
 
-  /// No description provided for @skip.
-  ///
-  /// In en, this message translates to:
-  /// **'Skip'**
-  String get skip;
-
   /// No description provided for @undo.
   ///
   /// In en, this message translates to:
@@ -1603,12 +1597,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Join'**
   String get join;
-
-  /// No description provided for @readyToGrow.
-  ///
-  /// In en, this message translates to:
-  /// **'Ready to grow!'**
-  String get readyToGrow;
 
   /// No description provided for @joinTelegram.
   ///
@@ -2816,17 +2804,47 @@ abstract class AppLocalizations {
   /// **'A full study note for this passage needs a connection right now. The passage stands on its own — read it, sit with it, and let it do its work.'**
   String get studyOfflineNote;
 
-  /// No description provided for @studyReadPassage.
+  /// No description provided for @studyTakeaway.
   ///
   /// In en, this message translates to:
-  /// **'Read this passage'**
-  String get studyReadPassage;
+  /// **'The passage itself says'**
+  String get studyTakeaway;
 
   /// No description provided for @studyReferenceUnavailable.
   ///
   /// In en, this message translates to:
   /// **'This passage isn\'t available right now.'**
   String get studyReferenceUnavailable;
+
+  /// No description provided for @doorSignal.
+  ///
+  /// In en, this message translates to:
+  /// **'ብስለት · MATURITY'**
+  String get doorSignal;
+
+  /// No description provided for @doorBridge.
+  ///
+  /// In en, this message translates to:
+  /// **'Maturity is a life that grows by remaining in the Vine. It ripens quietly, over all of life.'**
+  String get doorBridge;
+
+  /// No description provided for @doorCta.
+  ///
+  /// In en, this message translates to:
+  /// **'ቃሉን ክፈት'**
+  String get doorCta;
+
+  /// No description provided for @doorCtaCaps.
+  ///
+  /// In en, this message translates to:
+  /// **'OPEN THE WORD'**
+  String get doorCtaCaps;
+
+  /// No description provided for @doorWhisper.
+  ///
+  /// In en, this message translates to:
+  /// **'READ · PRAY · PLAN · GROW'**
+  String get doorWhisper;
 }
 
 class _AppLocalizationsDelegate

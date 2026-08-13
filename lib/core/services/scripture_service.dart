@@ -125,37 +125,41 @@ class ScriptureService {
   static List<BibleBook> get otBooks => sections.where((s) => ['torah', 'history', 'poetry', 'majorProphets', 'minorProphets'].contains(s.id)).expand((s) => s.books).toList();
   static List<BibleBook> get ntBooks => sections.where((s) => ['gospels', 'acts', 'paulsLetters', 'generalEpistles', 'revelation'].contains(s.id)).expand((s) => s.books).toList();
 
+  /// The Day's Thread canon: one fixed reference per calendar day, cycling
+  /// this finite loop. Only the REFERENCES live here; the wording is resolved
+  /// from the bundled Bible at display time (see DailyVerseService), so the
+  /// app never shows a second, hand-typed translation.
   static final List<Scripture> verses = [
-    Scripture(reference: 'Philippians 4:13', text: 'I can do all things through Christ who strengthens me.', textAm: 'ኃይልን በሚሰጠኝ በክርስቶስ ሁሉን እችላለሁ።'),
-    Scripture(reference: 'Psalm 23:1', text: 'The Lord is my shepherd; I shall not want.', textAm: 'እግዚአብሔር እረኛዬ ነው፥ የሚያሳጣኝ የለም።'),
-    Scripture(reference: 'Jeremiah 29:11', text: 'For I know the plans I have for you, declares the Lord, plans to prosper you and not to harm you.', textAm: 'እኔ ላሳባችሁ ያለሁትን ሐሳብ አውቃለሁ፥ የሰላም ሐሳብ እንጂ የክፉ ሐሳብ አይደለም፥ ተስፋንም መጨረሻን ልሰጣችሁ ነው።'),
-    Scripture(reference: 'Proverbs 3:5-6', text: 'Trust in the Lord with all your heart and lean not on your own understanding.', textAm: 'በሙሉ ልብህ በእግዚአብሔር ታመን፥ በራስህም ማስተዋል አትደገፍ። በመንገድህ ሁሉ እርሱን እወቅ፥ እርሱም ጎዳናህን ያቀናል።'),
-    Scripture(reference: 'Romans 8:28', text: 'All things work together for good to those who love God.', textAm: 'እግዚአብሔርን ለሚወዱት፥ እንደ ዓላማውም ለተጠሩት ሁሉ ነገር ሁሉ ለበጎ እንደሚሠራ እናውቃለን።'),
-    Scripture(reference: 'Isaiah 40:31', text: 'Those who hope in the Lord will renew their strength. They will soar on wings like eagles.', textAm: 'እግዚአብሔርን የሚጠባበቁ ግን ኃይላቸውን ያድሳሉ፤ እንደ ንስር በክንፍ ይወጣሉ፥ ይሮጣሉ እንጂ አይደክሙም፥ ይሄዳሉ እንጂ አይታክቱም።'),
-    Scripture(reference: 'Matthew 6:33', text: 'But seek first His kingdom and His righteousness, and all these things will be added to you.', textAm: 'ነገር ግን መጀመሪያ መንግሥቱንና ጽድቁን ፈልጉ፥ ይህ ሁሉ ይጨመርላችኋልና።'),
-    Scripture(reference: 'Joshua 1:9', text: 'Be strong and courageous. Do not be afraid; the Lord your God will be with you wherever you go.', textAm: 'ጽኑዕ ናቸው በልበ ሙሉነትም ኑሩ፥ አትፍሩ አትደንግጡም፤ ወደሄድክበት ሁሉ እግዚአብሔር አምላክህ ከአንተ ጋር ነውና።'),
-    Scripture(reference: '2 Timothy 1:7', text: 'For God has not given us a spirit of fear, but of power, love, and a sound mind.', textAm: 'እግዚአብሔር የፍርሃት መንፈስ አልሰጠንምና፥ የኃይልና የፍቅር የልበ ሙሉነትም መንፈስ ነው የሰጠን።'),
-    Scripture(reference: 'John 3:16', text: 'For God so loved the world that He gave His one and only Son.', textAm: 'እግዚአብሔር አንድያ ልጁን እስኪሰጥ ድረስ ዓለሙን እንዲሁ ወዶአልና፥ በእርሱ የሚያምን ሁሉ አይጠፋም ዘላለማዊ ሕይወትንም ያገኛል።'),
-    Scripture(reference: 'Psalm 46:10', text: 'Be still, and know that I am God.', textAm: 'ፀጥ በሉ እኔ አምላክ መሆኔን እወቁ።'),
-    Scripture(reference: '1 Corinthians 13:4', text: 'Love is patient, love is kind. It does not envy, it does not boast.', textAm: 'ፍቅር ታጋሽ ነው፥ መልካም ነው፤ ፍቅር አይቀናም፥ አይመካም፥ አይታበይም።'),
-    Scripture(reference: 'Galatians 5:22-23', text: 'The fruit of the Spirit is love, joy, peace, patience, kindness, goodness, faithfulness.', textAm: 'የመንፈስ ፍሬ ግን ፍቅር፥ ደስታ፥ ሰላም፥ ትዕግሥት፥ ቸርነት፥ በጎነት፥ ታማኝነት ነው።'),
-    Scripture(reference: 'Ephesians 2:8', text: 'For it is by grace you have been saved, through faith.', textAm: 'በጸጋ በእምነት በኩል ድናችኋልና ይህ ከእናንተ አይደለም የእግዚአብሔር ስጦታ ነው።'),
-    Scripture(reference: 'Hebrews 11:1', text: 'Faith is confidence in what we hope for and assurance about what we do not see.', textAm: 'እምነት የምንተማመነውን ነገር እርግጠኛ መሆን፥ የማናየውንም ነገር ማመን ነው።'),
-    Scripture(reference: 'James 1:2-3', text: 'Consider it pure joy whenever you face trials, because the testing of your faith produces perseverance.', textAm: 'ወንድሞቼ ሆይ፥ ወደ ልዩ ልዩ ፈተና በወደቃችሁ ጊዜ እንደ ታላቅ ደስታ ቁጠሩት፥ የእምነታችሁ መፈተን መጽናትን እንደሚያደርግ ታውቃላችሁና።'),
-    Scripture(reference: '1 Peter 5:7', text: 'Cast all your anxiety on Him because He cares for you.', textAm: 'ጭንቀታችሁን ሁሉ በእርሱ ላይ ጣሉ፥ ያስባልናልና።'),
-    Scripture(reference: 'Romans 12:2', text: 'Do not conform to the pattern of this world, but be transformed by the renewing of your mind.', textAm: 'ከዚህ ዓለም ጋር አትምሰሉ፥ ነገር ግን የእግዚአብሔር i. መልካምና ተቀባይ ፍጹም የሆነውን ፈቃድ ትለዩ ዘንድ አእምሯችሁ በመነቃቃት ተለወጡ።'),
-    Scripture(reference: 'Psalm 119:105', text: 'Your word is a lamp for my feet, a light on my path.', textAm: 'ቃልህ ለእግሮቼ መብራት፥ ለመንገዴም ብርሃን ነው።'),
-    Scripture(reference: 'Matthew 11:28', text: 'Come to me, all you who are weary and burdened, and I will give you rest.', textAm: 'ልከብዳችሁ የደከማችሁ ሁሉ ወደ እኔ ኑ፥ እኔም ያሳርፋችኋለሁ።'),
-    Scripture(reference: 'John 14:6', text: 'I am the way and the truth and the life.', textAm: 'እኔ መንገድና እውነት ሕይወትም ነኝ።'),
-    Scripture(reference: 'Romans 5:8', text: 'But God demonstrates his own love for us in this: while we were still sinners, Christ died for us.', textAm: 'እግዚአብሔር ግን ኃጢአተኞች ሳለን ክርስቶስ ስለ እኛ ሞተ፥ ይህም የራሱን ፍቅር ያሳየናል።'),
-    Scripture(reference: 'Lamentations 3:22-23', text: 'His mercies are new every morning; great is your faithfulness.', textAm: 'ከእግዚአብሔር ቸርነት የተነሣ አልጠፋንም፤ ምሕረቱ አልተወረወረምና፤ በየማለዳው አዲስ ነው፤ ታማኝነትህ ታላቅ ነው።'),
-    Scripture(reference: 'Psalm 34:8', text: 'Taste and see that the Lord is good.', textAm: 'እግዚአብሔር መልካም መሆኑን ቅመሱ እዩም።'),
-    Scripture(reference: 'Isaiah 41:10', text: 'Do not fear, for I am with you; do not be dismayed, for I am your God.', textAm: 'አትፍራ፥ ከአንተ ጋር ነኝና፤ አትደንግጥ፥ እኔ አምላክህ ነኝና፤ አበረታለሁ፥ ደግሞም እረዳሃለሁ፥ በጽድቄም ቀኝ እይዝሃለሁ።'),
-    Scripture(reference: 'Colossians 3:23', text: 'Whatever you do, work at it with all your heart, as working for the Lord.', textAm: 'የምትሠሩትን ሁሉ ለሰው ሳይሆን ለጌታ እንደ ሆነ በሙሉ ነፍሳችሁ ሥሩ።'),
-    Scripture(reference: '1 Thessalonians 5:16-18', text: 'Rejoice always, pray continually, give thanks in all circumstances.', textAm: 'ሁል ጊዜ ደስ ይበላችሁ፤ ያለማቋረጥ ጸልዩ፤ በሁሉ ነገር አመስግኑ።'),
-    Scripture(reference: 'Psalm 1:1-2', text: 'Blessed is the one whose delight is in the law of the Lord.', textAm: 'በእግዚአብሔር ሕግ ደስ የሚለው፥ ሕግሁንም በቀንና በሌሊት የሚያሰላስለው ሰው ብፁዕ ነው።'),
-    Scripture(reference: 'Micah 6:8', text: 'Act justly, love mercy, and walk humbly with your God.', textAm: 'ሰው ሆይ፥ መልካም ምን እንደ ሆነ ይነገርሃል፤ ፍትህንም ታደርግ ዘንድ፥ ምሕረትንም ትወድድ ዘንድ፥ ከአምላክህም ጋር በትሕትና ትሄድ ዘንድ እንጂ እግዚአብሔር ከአንተ ዘንድ ሌላ ምን ይፈልጋል?'),
-    Scripture(reference: 'Revelation 21:4', text: 'He will wipe every tear from their eyes. There will be no more death or mourning.', textAm: 'እንባም ሁሉ ከዓይናቸው ያብሳል፤ ከእንግዲህ ወዲህ ሞት ወይም ልቅሶ ወይም ጩኸት ወይም ሕመም አይሆንም፤ ቀዳሚው ነገር አልፏልና።'),
+    Scripture(reference: 'Philippians 4:13', text: ''),
+    Scripture(reference: 'Psalm 23:1', text: ''),
+    Scripture(reference: 'Jeremiah 29:11', text: ''),
+    Scripture(reference: 'Proverbs 3:5-6', text: ''),
+    Scripture(reference: 'Romans 8:28', text: ''),
+    Scripture(reference: 'Isaiah 40:31', text: ''),
+    Scripture(reference: 'Matthew 6:33', text: ''),
+    Scripture(reference: 'Joshua 1:9', text: ''),
+    Scripture(reference: '2 Timothy 1:7', text: ''),
+    Scripture(reference: 'John 3:16', text: ''),
+    Scripture(reference: 'Psalm 46:10', text: ''),
+    Scripture(reference: '1 Corinthians 13:4', text: ''),
+    Scripture(reference: 'Galatians 5:22-23', text: ''),
+    Scripture(reference: 'Ephesians 2:8', text: ''),
+    Scripture(reference: 'Hebrews 11:1', text: ''),
+    Scripture(reference: 'James 1:2-3', text: ''),
+    Scripture(reference: '1 Peter 5:7', text: ''),
+    Scripture(reference: 'Romans 12:2', text: ''),
+    Scripture(reference: 'Psalm 119:105', text: ''),
+    Scripture(reference: 'Matthew 11:28', text: ''),
+    Scripture(reference: 'John 14:6', text: ''),
+    Scripture(reference: 'Romans 5:8', text: ''),
+    Scripture(reference: 'Lamentations 3:22-23', text: ''),
+    Scripture(reference: 'Psalm 34:8', text: ''),
+    Scripture(reference: 'Isaiah 41:10', text: ''),
+    Scripture(reference: 'Colossians 3:23', text: ''),
+    Scripture(reference: 'Philippians 4:6-7', text: ''),
+    Scripture(reference: 'Psalm 1:1-2', text: ''),
+    Scripture(reference: 'Micah 6:8', text: ''),
+    Scripture(reference: 'Revelation 21:4', text: ''),
   ];
 
   static const List<String> phaseNamesAm = ['ዲሲፕሊን', 'እምነት', 'ታዛዥነት', 'ተፅዕኖ'];
@@ -213,23 +217,55 @@ class ScriptureService {
   }
 
   static ({String bookId, int chapter})? parseReference(String reference) {
-    for (final book in allBooks) {
-      if (reference.startsWith(book.nameEn)) {
-        final rest = reference.substring(book.nameEn.length).trim();
-        final chapter = int.tryParse(rest);
-        if (chapter != null) return (bookId: book.id, chapter: chapter);
-      }
-    }
-    return null;
+    final book = _matchBook(reference);
+    if (book == null) return null;
+    final rest = reference.substring(book.nameEn.length).trim();
+    final chapter = int.tryParse(rest.split(':').first) ??
+        int.tryParse(rest.split('-').first);
+    if (chapter == null) return null;
+    return (bookId: book.id, chapter: chapter);
+  }
+
+  /// Expands a reference like "Proverbs 3:5-6" (or "Psalm 23:1") into its
+  /// book, chapter, and every requested verse number. Returns null when the
+  /// reference cannot be parsed into a known book.
+  static ({String bookId, int chapter, List<int> verses})? referenceRange(
+      String reference) {
+    final book = _matchBook(reference);
+    if (book == null) return null;
+    final rest = reference.substring(book.nameEn.length).trim();
+    final parts = rest.split(':');
+    final chapter = int.tryParse(parts.first);
+    if (chapter == null || parts.length < 2) return null;
+    final verseParts = parts[1].split('-');
+    final start = int.tryParse(verseParts.first);
+    final end = int.tryParse(
+        verseParts.length > 1 ? verseParts[1] : verseParts.first);
+    if (start == null || end == null || end < start) return null;
+    return (
+      bookId: book.id,
+      chapter: chapter,
+      verses: [for (var v = start; v <= end; v++) v],
+    );
   }
 
   static String amharicReference(String reference) {
-    for (final book in allBooks) {
-      if (reference.startsWith(book.nameEn)) {
-        return reference.replaceFirst(book.nameEn, book.nameAm);
-      }
+    final book = _matchBook(reference);
+    if (book == null) return reference;
+    if (book.id == 'psalms' && reference.startsWith('Psalm ')) {
+      return reference.replaceFirst('Psalm ', '${book.nameAm} ');
     }
-    return reference;
+    return reference.replaceFirst(book.nameEn, book.nameAm);
+  }
+
+  /// Finds the book a reference names, tolerating the singular "Psalm" form
+  /// used by the daily-verse canon for Amharic book naming.
+  static BibleBook? _matchBook(String reference) {
+    for (final book in allBooks) {
+      if (reference.startsWith(book.nameEn)) return book;
+      if (book.id == 'psalms' && reference.startsWith('Psalm ')) return book;
+    }
+    return null;
   }
 
   static String referenceFor(String bookId, int chapter, int verse, bool isAm) {

@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tzdata;
 import 'prayer_reminder_service.dart';
+import 'daily_verse_service.dart';
 import 'scripture_service.dart';
 
 class NotificationService {
@@ -115,8 +116,8 @@ class NotificationService {
   static Future<void> init() async {
     if (_initialized) return;
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const iosSettings = DarwinInitializationSettings(
-      requestAlertPermission: true, requestBadgePermission: true, requestSoundPermission: true,
+const iosSettings = DarwinInitializationSettings(
+      requestAlertPermission: false, requestBadgePermission: false, requestSoundPermission: false,
     );
     await plugin.initialize(
       const InitializationSettings(android: androidSettings, iOS: iosSettings),
@@ -159,7 +160,7 @@ class NotificationService {
   static Future<void> scheduleDailyReminder(int hour, int minute) async {
     await cancelDailyReminder();
     final now = tz.TZDateTime.now(tz.local);
-    final verse = ScriptureService.threadVerseFor(now);
+    final verse = await DailyVerseService.resolveDay(now);
     final title = _isAmharicLang ? ScriptureService.amharicReference(verse.reference) : verse.reference;
     final body = _isAmharicLang ? (verse.textAm ?? verse.text) : verse.text;
     await _schedule(

@@ -107,6 +107,8 @@ Future<String> Function(String prompt) buildGeminiTransport({
         }),
         'reflection': Schema.object(properties: {
           'text': Schema.string(description: 'One open-ended question ending with "?".'),
+          'takeaway': Schema.string(
+              description: 'Optional. A single, quiet, neutral line gathering what the passage itself said. Never a directive, never "you", never a question, under 40 words. Omit if nothing honest belongs.'),
         }),
       },
     );

@@ -381,9 +381,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logConnection => 'Log Connection';
 
   @override
-  String get skip => 'Skip';
-
-  @override
   String get undo => 'Undo';
 
   @override
@@ -813,9 +810,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get join => 'Join';
-
-  @override
-  String get readyToGrow => 'Ready to grow!';
 
   @override
   String get joinTelegram => 'Join our community on Telegram';
@@ -1501,9 +1495,25 @@ class AppLocalizationsEn extends AppLocalizations {
       'A full study note for this passage needs a connection right now. The passage stands on its own — read it, sit with it, and let it do its work.';
 
   @override
-  String get studyReadPassage => 'Read this passage';
+  String get studyTakeaway => 'The passage itself says';
 
   @override
   String get studyReferenceUnavailable =>
       'This passage isn\'t available right now.';
+
+  @override
+  String get doorSignal => 'ብስለት · MATURITY';
+
+  @override
+  String get doorBridge =>
+      'Maturity is a life that grows by remaining in the Vine. It ripens quietly, over all of life.';
+
+  @override
+  String get doorCta => 'ቃሉን ክፈት';
+
+  @override
+  String get doorCtaCaps => 'OPEN THE WORD';
+
+  @override
+  String get doorWhisper => 'READ · PRAY · PLAN · GROW';
 }

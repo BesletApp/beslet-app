@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/providers/verse_content_provider.dart';
 import '../../core/providers/word_challenge_provider.dart';
 import '../../core/services/scripture_service.dart';
 import '../../core/theme/app_colors.dart';
@@ -51,9 +52,11 @@ class _WordChallengeScreenState extends ConsumerState<WordChallengeScreen> {
             ? AsyncError<VerseChallengeData>(all.error!, all.stackTrace ?? StackTrace.current)
             : const AsyncLoading<VerseChallengeData>();
       } else {
+        final todayVerse = ref.watch(todayDailyVerseProvider).valueOrNull;
         challenge = AsyncData(
           existing.isEmpty
-              ? VerseChallengeData.fromScripture(ScriptureService.threadVerseFor(DateTime.now()))
+              ? VerseChallengeData.fromScripture(
+                  todayVerse ?? ScriptureService.threadVerseFor(DateTime.now()))
               : existing.firstWhere((x) => x.id == widget.reviewId, orElse: () => existing.first),
         );
       }

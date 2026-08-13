@@ -119,7 +119,6 @@
   "iReachedOut": "ከአንድ ሰው ጋር ተገናኝቻለሁ",
   "whoDidYouConnect": "ከማን ጋር ተገናኘህ?",
   "logConnection": "ግንኙነት አስመዝግብ",
-  "skip": "ዝለል",
   "undo": "ቀልብስ",
   "logTime": "ጊዜ አስመዝግብ",
   "hours": "ሰዓታት",
@@ -251,7 +250,6 @@
   "tryAgain": "በድጋሚ ሞክር",
   "add": "አክል",
   "join": "ይቀላቀሉ",
-  "readyToGrow": "ለማደግ ዝግጁ ነህ!",
   "joinTelegram": "በቴሌግራም የእኛን ማህበረሰብ ይቀላቀሉ",
   "summerDayCount": "ቀን {elapsed} ከ{total} · {left} ቀርተዋል",
   "addFirstHabit": "መከታተል ለመጀመር የመጀመሪያ ልማድህን አክል!",
@@ -461,6 +459,11 @@
   "studyAuthorityFooter": "ሥልጣኑ መጽሐፍ ቅዱስና ቤተ ክርስቲያንህ ነው። እነዚህ ማስታወሻዎች የጥናት መርጃ ናቸው፣ ምትክ አይደሉም።",
   "studyLoading": "የጥናት ማስታወሻዎን በማዘጋጀት ላይ…",
   "studyOfflineNote": "የዚህ ጥቅስ ሙሉ የጥናት ማስታወሻ አሁን ግንኙነት ይፈልጋል። ጽሑፉ በራሱ ቆሞ ይበቃል — አንብበው፣ ቀና ብለው አስተንትኑት፣ ራሱ ይሥራ።",
-  "studyReadPassage": "ይህን ጥቅስ አንብብ",
-  "studyReferenceUnavailable": "ይህ ጥቅስ አሁን አይገኝም።"
+  "studyTakeaway": "ጽሑፉ ራሱ ይላል",
+  "studyReferenceUnavailable": "ይህ ጥቅስ አሁን አይገኝም።",
+  "doorSignal": "ብስለት · MATURITY",
+  "doorBridge": "ብስለት ማለት በወይኑ ውስጥ ቀርቶ የሚያድግ ሕይወት ነው። በጸጥታ ይበስላል — ለሕይወት ሁሉ።",
+  "doorCta": "ቃሉን ክፈት",
+  "doorCtaCaps": "OPEN THE WORD",
+  "doorWhisper": "አንብብ · ጸልይ · ዕቀድ · አድግ"
 }

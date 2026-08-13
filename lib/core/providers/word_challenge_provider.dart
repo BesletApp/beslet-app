@@ -13,6 +13,7 @@ import 'prayer_provider.dart';
 import 'scripture_provider.dart';
 import 'todo_provider.dart';
 import 'tracking_provider.dart';
+import 'verse_content_provider.dart';
 
 /// How far a verse has taken root. A gentle ladder, never a score: a quiet
 /// day simply doesn't climb.
@@ -97,12 +98,16 @@ const List<int> _reviewIntervals = [1, 3, 7, 30];
 
 /// Today's verse and its journey so far.
 final todayWordChallengeProvider = FutureProvider<VerseChallengeData>((ref) async {
-  final scripture = ScriptureService.threadVerseFor(DateTime.now());
+  final scripture = await ref.watch(todayDailyVerseProvider.future);
   final db = ref.watch(databaseProvider);
   final rows = await (db.select(db.verseChallenges)
         ..where((t) => t.id.equals(_verseId(scripture))))
       .get();
-  if (rows.isNotEmpty) return VerseChallengeData.fromRow(rows.first);
+  if (rows.isNotEmpty &&
+      rows.first.textEn == scripture.text &&
+      rows.first.textAm == scripture.textAm) {
+    return VerseChallengeData.fromRow(rows.first);
+  }
   return VerseChallengeData.fromScripture(scripture);
 });
 
@@ -137,7 +142,7 @@ class WordChallengeNotifier extends AsyncNotifier<void> {
 
   Future<void> completeBuild() async {
     final db = ref.read(databaseProvider);
-    final scripture = ScriptureService.threadVerseFor(DateTime.now());
+    final scripture = await ref.read(todayDailyVerseProvider.future);
     final id = _verseId(scripture);
     final today = _dateOnly(DateTime.now());
     final now = DateTime.now();
@@ -203,7 +208,7 @@ class WordChallengeNotifier extends AsyncNotifier<void> {
 
   Future<void> savePrayer(String prayer) async {
     final db = ref.read(databaseProvider);
-    final scripture = ScriptureService.threadVerseFor(DateTime.now());
+    final scripture = await ref.read(todayDailyVerseProvider.future);
     final id = _verseId(scripture);
     final existing = await (db.select(db.verseChallenges)
           ..where((t) => t.id.equals(id)))
@@ -228,7 +233,7 @@ class WordChallengeNotifier extends AsyncNotifier<void> {
 
   Future<void> chooseAct(String act) async {
     final db = ref.read(databaseProvider);
-    final scripture = ScriptureService.threadVerseFor(DateTime.now());
+    final scripture = await ref.read(todayDailyVerseProvider.future);
     final id = _verseId(scripture);
     final existing = await (db.select(db.verseChallenges)
           ..where((t) => t.id.equals(id)))

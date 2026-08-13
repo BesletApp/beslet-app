@@ -119,7 +119,6 @@
   "iReachedOut": "I reached out to someone",
   "whoDidYouConnect": "Who did you connect with?",
   "logConnection": "Log Connection",
-  "skip": "Skip",
   "undo": "Undo",
   "logTime": "Log Time",
   "hours": "hours",
@@ -251,7 +250,6 @@
   "tryAgain": "Try Again",
   "add": "Add",
   "join": "Join",
-  "readyToGrow": "Ready to grow!",
   "joinTelegram": "Join our community on Telegram",
   "summerDayCount": "Day {elapsed} of {total} · {left} left",
   "addFirstHabit": "Add your first habit to start tracking!",
@@ -461,6 +459,11 @@
   "studyAuthorityFooter": "Scripture and your church remain the authority. These notes are a study aid, not a replacement.",
   "studyLoading": "Preparing your study note…",
   "studyOfflineNote": "A full study note for this passage needs a connection right now. The passage stands on its own — read it, sit with it, and let it do its work.",
-  "studyReadPassage": "Read this passage",
-  "studyReferenceUnavailable": "This passage isn't available right now."
+  "studyTakeaway": "The passage itself says",
+  "studyReferenceUnavailable": "This passage isn't available right now.",
+  "doorSignal": "ብስለት · MATURITY",
+  "doorBridge": "Maturity is a life that grows by remaining in the Vine. It ripens quietly, over all of life.",
+  "doorCta": "ቃሉን ክፈት",
+  "doorCtaCaps": "OPEN THE WORD",
+  "doorWhisper": "READ · PRAY · PLAN · GROW"
 }

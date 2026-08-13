@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import '../../services/scripture_service.dart';
+import 'study_intro.dart';
 
 /// The on-demand Study feature — core types.
 ///
@@ -18,10 +19,44 @@ import '../../services/scripture_service.dart';
 
 /// Bump when the prompt, schema, or generation rules change so cached notes
 /// from an older version are never served.
-const int studyPromptVersion = 6;
+const int studyPromptVersion = 10;
 
 /// The version of the serialized cache payload.
-const int _cacheVersion = 6;
+const int _cacheVersion = 7;
+
+/// The shared marker vocabulary a note uses for hierarchy. The prompt tells the
+/// model to write these markers, the validator guarantees they are well-formed,
+/// and the panel renders them — so a reader always sees the same, calm
+/// structure whether a note came from the bank or from the model.
+class StudyFormat {
+  StudyFormat._();
+
+  /// A bulleted line: U+2022 BULLET, a space, then content. The only bullet
+  /// form the app understands — dashes and asterisks render as plain prose.
+  static final RegExp bullet = RegExp(r'^•\s+(.+)$');
+
+  /// A labeled movement step in the reader's language: "Step N — body" or
+  /// "ደረጃ N — body", all on one line. At most [maxSteps] per section.
+  static RegExp step(bool isAm) => isAm ? _stepAm : _stepEn;
+
+  static final RegExp _stepEn = RegExp(r'^Step\s+(\d+)\s*[—–-]\s*(.+)$');
+  static final RegExp _stepAm = RegExp(r'^ደረጃ\s+(\d+)\s*[—–-]\s*(.+)$');
+
+  /// A line that clearly intends to be a step heading but is not in the
+  /// validated form (e.g. "Step 1" with no dash, or "Step — body"). Used by
+  /// the validator to catch malformed structure.
+  static RegExp stepHeadingAttempt(bool isAm) =>
+      isAm ? _stepHeadingAttemptAm : _stepHeadingAttemptEn;
+
+  static final RegExp _stepHeadingAttemptEn =
+      RegExp(r'^Step\s+(?=\d|[—–-])');
+  static final RegExp _stepHeadingAttemptAm =
+      RegExp(r'^ደረጃ\s+(?=\d|[—–-])');
+
+  /// The most labeled movement steps one section may carry. Beyond this the
+  /// structure is runaway, not a passage tracing its own movement.
+  static const int maxSteps = 5;
+}
 
 /// One of the seven sections of a study note. The order in the enum is the
 /// order the panel renders them.
@@ -213,10 +248,16 @@ class StudyRequest {
   final bool isAmharic;
   final List<String> verseTexts;
 
+  /// The book's literary genre, when known. Deterministic for a given book, so
+  /// it needs no place in the cache key; it shapes the note's voice only
+  /// (`poetry` breathes imagery, `epistle` reads like a letter, ...).
+  final StudyGenre? genre;
+
   const StudyRequest({
     required this.reference,
     required this.isAmharic,
     required this.verseTexts,
+    this.genre,
   });
 }
 
@@ -312,6 +353,11 @@ class StudySection {
   /// Important terms and original-language words (meaningBackground).
   final List<StudyTerm> terms;
 
+  /// An optional, neutral one-line anchor that gathers what the passage itself
+  /// said, nested on the reflection. Never a directive and never a question.
+  final String? takeawayEn;
+  final String? takeawayAm;
+
   /// How confident the producer is in this section (null = unstated).
   final StudyConfidence? confidence;
 
@@ -327,6 +373,8 @@ class StudySection {
     this.references = const [],
     this.blocks = const [],
     this.terms = const [],
+    this.takeawayEn,
+    this.takeawayAm,
     this.confidence,
     this.sourceIds = const [],
   });
@@ -355,6 +403,13 @@ class StudySection {
     return t.trim().isEmpty ? null : t.trim();
   }
 
+  /// The neutral takeaway line in the reader's language, when present.
+  String? takeawayFor(bool isAm) {
+    final t = isAm ? takeawayAm : takeawayEn;
+    if (t == null) return null;
+    return t.trim().isEmpty ? null : t.trim();
+  }
+
   Map<String, dynamic> toJson() => {
         'kind': kind.name,
         'en': en,
@@ -366,6 +421,8 @@ class StudySection {
         if (blocks.isNotEmpty)
           'blocks': blocks.map((b) => b.toJson()).toList(),
         if (terms.isNotEmpty) 'terms': terms.map((t) => t.toJson()).toList(),
+        if (takeawayEn != null) 'takeawayEn': takeawayEn,
+        if (takeawayAm != null) 'takeawayAm': takeawayAm,
         if (confidence != null) 'confidence': confidence!.name,
         if (sourceIds.isNotEmpty) 'sourceIds': sourceIds,
       };
@@ -394,6 +451,8 @@ class StudySection {
           .map(StudyTerm.tryParse)
           .whereType<StudyTerm>()
           .toList(),
+      takeawayEn: raw['takeawayEn'] is String ? raw['takeawayEn'] as String : null,
+      takeawayAm: raw['takeawayAm'] is String ? raw['takeawayAm'] as String : null,
       confidence: StudyConfidence.values
           .where((c) => c.name == raw['confidence'])
           .firstOrNull,

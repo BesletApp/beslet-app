@@ -69,7 +69,6 @@ Future<void> _warmStart(ProviderContainer container) async {
     final sound = await PrayerAlarmSoundService.resolveAndroidSound();
     await PrayerAlarmSoundService.ensureChannel(sound);
   });
-  await _attempt(() => NotificationService.requestPermissions());
 
   try {
     final prefs = await SharedPreferences.getInstance().timeout(const Duration(seconds: 2));

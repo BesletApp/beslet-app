@@ -207,5 +207,13 @@ class StudyLocalBank {
         issues.add('entry $entryId context: both "in the text" parts required');
       }
     }
+    if (section.kind == StudySectionKind.reflection) {
+      final takeawayEn = section.takeawayEn?.trim() ?? '';
+      final takeawayAm = section.takeawayAm?.trim() ?? '';
+      if (takeawayEn.isEmpty || takeawayAm.isEmpty) {
+        issues.add(
+            'entry $entryId reflection: both-language takeaway required');
+      }
+    }
   }
 }

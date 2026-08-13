@@ -12,6 +12,7 @@ import '../../core/providers/journal_provider.dart';
 import '../../core/providers/soul_log_provider.dart';
 import '../../core/providers/streak_provider.dart';
 import '../../core/providers/vine_life_provider.dart';
+import '../../core/providers/verse_content_provider.dart';
 import '../../core/services/growth_content.dart';
 import '../../core/services/scene_event_bus.dart';
 import '../../core/services/vineyard_reminder_service.dart';
@@ -446,7 +447,11 @@ class _LivingVineyardState extends ConsumerState<_LivingVineyard> {
             const SizedBox(height: AppSpacing.sm),
             WeatherCard(mood: mood, isAm: isAm),
             const SizedBox(height: AppSpacing.sm),
-            DayWordChip(verse: ScriptureService.threadVerseFor(DateTime.now()), isAm: isAm),
+            DayWordChip(
+              verse: ref.watch(todayDailyVerseProvider).valueOrNull ??
+                  ScriptureService.threadVerseFor(DateTime.now()),
+              isAm: isAm,
+            ),
             const SizedBox(height: AppSpacing.sm),
             FruitDrawer(
               startDate: journey.startDate,

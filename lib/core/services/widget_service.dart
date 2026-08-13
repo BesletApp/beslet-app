@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:home_widget/home_widget.dart';
+import 'daily_verse_service.dart';
 import 'scripture_service.dart';
 
 enum LampLight { dawn, noon, dusk, night }
@@ -34,9 +35,11 @@ class WidgetService {
   }
 
   static Future<void> updateWidgetData({DateTime? now, bool isAm = false}) async {
-    final data = widgetDataFor(now ?? DateTime.now(), isAm: isAm);
-    await HomeWidget.saveWidgetData<String>('verseAm', data['verseAm']!);
-    await HomeWidget.saveWidgetData<String>('verseEn', data['verseEn']!);
+    final moment = now ?? DateTime.now();
+    final verse = await DailyVerseService.resolveDay(moment);
+    final data = widgetDataFor(moment, isAm: isAm);
+    await HomeWidget.saveWidgetData<String>('verseAm', verse.textAm ?? verse.text);
+    await HomeWidget.saveWidgetData<String>('verseEn', verse.reference);
     await HomeWidget.saveWidgetData<String>('lightState', data['lightState']!);
     await HomeWidget.saveWidgetData<String>('lightLabel', data['lightLabel']!);
 

@@ -377,9 +377,6 @@ class AppLocalizationsAm extends AppLocalizations {
   String get logConnection => 'ግንኙነት አስመዝግብ';
 
   @override
-  String get skip => 'ዝለል';
-
-  @override
   String get undo => 'ቀልብስ';
 
   @override
@@ -804,9 +801,6 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get join => 'ይቀላቀሉ';
-
-  @override
-  String get readyToGrow => 'ለማደግ ዝግጁ ነህ!';
 
   @override
   String get joinTelegram => 'በቴሌግራም የእኛን ማህበረሰብ ይቀላቀሉ';
@@ -1486,8 +1480,24 @@ class AppLocalizationsAm extends AppLocalizations {
       'የዚህ ጥቅስ ሙሉ የጥናት ማስታወሻ አሁን ግንኙነት ይፈልጋል። ጽሑፉ በራሱ ቆሞ ይበቃል — አንብበው፣ ቀና ብለው አስተንትኑት፣ ራሱ ይሥራ።';
 
   @override
-  String get studyReadPassage => 'ይህን ጥቅስ አንብብ';
+  String get studyTakeaway => 'ጽሑፉ ራሱ ይላል';
 
   @override
   String get studyReferenceUnavailable => 'ይህ ጥቅስ አሁን አይገኝም።';
+
+  @override
+  String get doorSignal => 'ብስለት · MATURITY';
+
+  @override
+  String get doorBridge =>
+      'ብስለት ማለት በወይኑ ውስጥ ቀርቶ የሚያድግ ሕይወት ነው። በጸጥታ ይበስላል — ለሕይወት ሁሉ።';
+
+  @override
+  String get doorCta => 'ቃሉን ክፈት';
+
+  @override
+  String get doorCtaCaps => 'OPEN THE WORD';
+
+  @override
+  String get doorWhisper => 'አንብብ · ጸልይ · ዕቀድ · አድግ';
 }
