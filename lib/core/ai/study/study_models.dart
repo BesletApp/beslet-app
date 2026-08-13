@@ -18,10 +18,10 @@ import '../../services/scripture_service.dart';
 
 /// Bump when the prompt, schema, or generation rules change so cached notes
 /// from an older version are never served.
-const int studyPromptVersion = 5;
+const int studyPromptVersion = 6;
 
 /// The version of the serialized cache payload.
-const int _cacheVersion = 5;
+const int _cacheVersion = 6;
 
 /// One of the seven sections of a study note. The order in the enum is the
 /// order the panel renders them.
@@ -164,7 +164,18 @@ class StudyTerm {
 
 /// Which engine produced a note — keeps the Gemini seam honest and lets a
 /// future remote backend be measured against the curated local one.
-enum StudySource { localBank, gemini }
+enum StudySource {
+  /// The handwritten, canon-verified bank.
+  localBank,
+
+  /// The AI model, standing behind the validator.
+  gemini,
+
+  /// A deterministic note assembled from the bundled knowledge layers (book
+  /// intro + cross-reference index) when nothing else is reachable. Served
+  /// only from memory; never persisted, so it can never shadow a richer note.
+  knowledge,
+}
 
 /// Which passage is being studied. Contiguous verses within one chapter.
 class StudyReference {
@@ -443,9 +454,10 @@ class StudyResult {
           .toList();
       return StudyResult(
         reference: reference,
-        source: data['source'] == 'gemini'
-            ? StudySource.gemini
-            : StudySource.localBank,
+        source: StudySource.values
+            .where((s) => s.name == data['source'])
+            .firstOrNull ??
+            StudySource.localBank,
         sections: sections,
         cachedAt: DateTime.tryParse(data['cachedAt'] as String? ?? '') ??
             DateTime.now(),

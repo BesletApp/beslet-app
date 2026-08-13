@@ -119,6 +119,210 @@ class StudyCanon {
 
   CanonBook? bookFor(String bookId) => books[bookId];
 
+  /// Resolves a raw book token to the app's canonical book id, or null when it
+  /// matches nothing. The AI commonly returns USFM codes (JHN, ROM, 1CO, PSA),
+  /// abbreviations, or names in any case and punctuation; this funnels them all
+  /// to the exact ids the canon knows so a cross-reference the reader can
+  /// actually open is never dropped for spelling.
+  String? resolveBookId(String? raw) {
+    final token = _normalizeBookToken(raw);
+    if (token == null) return null;
+    if (books.containsKey(token)) return token;
+    return _aliases[token];
+  }
+
+  /// Lowercases and strips punctuation, spaces, and common '1st/second' style
+  /// prefixes so '1 Sam', '1st Peter', '1Sam', and '1samuel' all collide.
+  static String? _normalizeBookToken(String? raw) {
+    if (raw == null) return null;
+    var t = raw.trim().toLowerCase();
+    if (t.isEmpty) return null;
+    t = t.replaceAll(RegExp(r"[.'\-–—():]"), '');
+    t = t.replaceAll(RegExp(r'\s+'), '');
+    if (t.startsWith('1st')) {
+      t = '1${t.substring(3)}';
+    } else if (t.startsWith('2nd')) {
+      t = '2${t.substring(3)}';
+    } else if (t.startsWith('3rd')) {
+      t = '3${t.substring(3)}';
+    } else if (t.startsWith('first')) {
+      t = '1${t.substring(5)}';
+    } else if (t.startsWith('second')) {
+      t = '2${t.substring(6)}';
+    } else if (t.startsWith('third')) {
+      t = '3${t.substring(5)}';
+    }
+    return t.isEmpty ? null : t;
+  }
+
+  /// USFM abbreviations and common name variants, normalized to the flat
+  /// lowercase form produced by [_normalizeBookToken]. Canonical ids resolve
+  /// directly and are not listed.
+  static const Map<String, String> _aliases = {
+    'gen': 'genesis',
+    'ge': 'genesis',
+    'exo': 'exodus',
+    'ex': 'exodus',
+    'lev': 'leviticus',
+    'lv': 'leviticus',
+    'num': 'numbers',
+    'nu': 'numbers',
+    'nm': 'numbers',
+    'deut': 'deuteronomy',
+    'deu': 'deuteronomy',
+    'dt': 'deuteronomy',
+    'jos': 'joshua',
+    'josh': 'joshua',
+    'js': 'joshua',
+    'jdg': 'judges',
+    'judg': 'judges',
+    'jgs': 'judges',
+    'rut': 'ruth',
+    'ru': 'ruth',
+    '1sa': '1samuel',
+    '1sam': '1samuel',
+    '1sm': '1samuel',
+    '2sa': '2samuel',
+    '2sam': '2samuel',
+    '2sm': '2samuel',
+    '1ki': '1kings',
+    '1kin': '1kings',
+    '1kgs': '1kings',
+    '1kg': '1kings',
+    '2ki': '2kings',
+    '2kin': '2kings',
+    '2kgs': '2kings',
+    '2kg': '2kings',
+    '1chr': '1chronicles',
+    '1ch': '1chronicles',
+    '2chr': '2chronicles',
+    '2ch': '2chronicles',
+    'ezr': 'ezra',
+    'ez': 'ezra',
+    'neh': 'nehemiah',
+    'est': 'esther',
+    'esth': 'esther',
+    'es': 'esther',
+    'psa': 'psalms',
+    'ps': 'psalms',
+    'pss': 'psalms',
+    'psl': 'psalms',
+    'pslm': 'psalms',
+    'psalm': 'psalms',
+    'prv': 'proverbs',
+    'prov': 'proverbs',
+    'pro': 'proverbs',
+    'qoh': 'ecclesiastes',
+    'ecc': 'ecclesiastes',
+    'eccl': 'ecclesiastes',
+    'ecl': 'ecclesiastes',
+    'sng': 'songofsongs',
+    'sos': 'songofsongs',
+    'song': 'songofsongs',
+    'songofsolomon': 'songofsongs',
+    'cant': 'songofsongs',
+    'canticles': 'songofsongs',
+    'isa': 'isaiah',
+    'is': 'isaiah',
+    'jer': 'jeremiah',
+    'je': 'jeremiah',
+    'jr': 'jeremiah',
+    'lam': 'lamentations',
+    'la': 'lamentations',
+    'ezk': 'ezekiel',
+    'ezek': 'ezekiel',
+    'eze': 'ezekiel',
+    'dan': 'daniel',
+    'dn': 'daniel',
+    'hos': 'hosea',
+    'jl': 'joel',
+    'jol': 'joel',
+    'amo': 'amos',
+    'oba': 'obadiah',
+    'obd': 'obadiah',
+    'abd': 'obadiah',
+    'jon': 'jonah',
+    'jnh': 'jonah',
+    'mic': 'micah',
+    'mich': 'micah',
+    'nam': 'nahum',
+    'na': 'nahum',
+    'hab': 'habakkuk',
+    'hb': 'habakkuk',
+    'zep': 'zephaniah',
+    'zeph': 'zephaniah',
+    'hag': 'haggai',
+    'hg': 'haggai',
+    'zec': 'zechariah',
+    'zech': 'zechariah',
+    'mal': 'malachi',
+    'mat': 'matthew',
+    'matt': 'matthew',
+    'mt': 'matthew',
+    'mrk': 'mark',
+    'mar': 'mark',
+    'mk': 'mark',
+    'luk': 'luke',
+    'lk': 'luke',
+    'jhn': 'john',
+    'joh': 'john',
+    'jn': 'john',
+    'act': 'acts',
+    'ac': 'acts',
+    'rom': 'romans',
+    'ro': 'romans',
+    '1co': '1corinthians',
+    '1cor': '1corinthians',
+    '2co': '2corinthians',
+    '2cor': '2corinthians',
+    'gal': 'galatians',
+    'ga': 'galatians',
+    'eph': 'ephesians',
+    'ep': 'ephesians',
+    'phil': 'philippians',
+    'php': 'philippians',
+    'phi': 'philippians',
+    'col': 'colossians',
+    'cl': 'colossians',
+    '1th': '1thessalonians',
+    '1thes': '1thessalonians',
+    '1thess': '1thessalonians',
+    '2th': '2thessalonians',
+    '2thes': '2thessalonians',
+    '2thess': '2thessalonians',
+    '1ti': '1timothy',
+    '1tim': '1timothy',
+    '1tm': '1timothy',
+    '2ti': '2timothy',
+    '2tim': '2timothy',
+    '2tm': '2timothy',
+    'tit': 'titus',
+    'ti': 'titus',
+    'phm': 'philemon',
+    'phlm': 'philemon',
+    'phile': 'philemon',
+    'heb': 'hebrews',
+    'jas': 'james',
+    'jm': 'james',
+    '1pe': '1peter',
+    '1pet': '1peter',
+    '1pt': '1peter',
+    '2pe': '2peter',
+    '2pet': '2peter',
+    '2pt': '2peter',
+    '1jn': '1john',
+    '1joh': '1john',
+    '2jn': '2john',
+    '2joh': '2john',
+    '3jn': '3john',
+    '3joh': '3john',
+    'jud': 'jude',
+    'jd': 'jude',
+    'rev': 'revelation',
+    're': 'revelation',
+    'revelations': 'revelation',
+  };
+
   /// How many verses a chapter holds in the reader's language, or null when
   /// the book or chapter does not exist.
   int? verseCount(String bookId, int chapter,

@@ -144,12 +144,13 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
 
   Widget _buildContent(ThemePalette c, AppLocalizations l, StudyResult result,
       StudySourceRegistry? sources) {
+    final sections = _canonicalSections(result);
     return ListView(
       padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.lg),
       children: [
         _buildPassage(c),
         const SizedBox(height: AppSpacing.lg),
-        for (final section in result.sections.where((s) => !s.isEmpty)) ...[
+        for (final section in sections) ...[
           _StudySectionCard(
             title: _titleFor(l, section.kind),
             isAm: widget.isAm,
@@ -164,6 +165,88 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
         _buildAuthorityFooter(c, l),
         const SizedBox(height: AppSpacing.lg),
       ],
+    );
+  }
+
+  /// The panel's canonical 8-step scaffold: the passage is step one, then the
+  /// seven sections in the order the app guarantees. Whatever order the
+  /// backend returned, the panel always renders the sections in this fixed
+  /// order — a backend that misorders a note cannot scramble the reader's path
+  /// through it.
+  static const List<StudySectionKind> _canonicalSectionOrder = [
+    StudySectionKind.setting,
+    StudySectionKind.context,
+    StudySectionKind.whatTextSays,
+    StudySectionKind.meaningBackground,
+    StudySectionKind.biblicalConnections,
+    StudySectionKind.whatCanBeUnderstood,
+    StudySectionKind.reflection,
+  ];
+
+  /// Merges the backend's sections with the panel's own canonical order and
+  /// with the offline cross-reference index, then drops empty sections.
+  ///
+  /// The canonical merge is done here, panel-side, so the reader sees one
+  /// stable note regardless of which backend produced it: the offline index's
+  /// validated connections are folded into `biblicalConnections` whenever they
+  /// add something the backend did not already supply, and everything renders
+  /// in the app's canonical sequence. Empty sections preserve silence — no
+  /// section is padded to fit a slot.
+  List<StudySection> _canonicalSections(StudyResult result) {
+    final byKind = <StudySectionKind, StudySection>{
+      for (final s in result.sections) s.kind: s,
+    };
+    final scaffold = <StudySection>[];
+    for (final kind in _canonicalSectionOrder) {
+      if (kind == StudySectionKind.biblicalConnections) {
+        final merged = _connectionsSection(byKind[kind]);
+        if (merged != null && !merged.isEmpty) scaffold.add(merged);
+        continue;
+      }
+      final section = byKind[kind];
+      if (section == null || section.isEmpty) continue;
+      scaffold.add(section);
+    }
+    return scaffold;
+  }
+
+  /// Builds the connections step of the scaffold. Folds the offline
+  /// cross-reference index into the backend's section, or supplies the slot
+  /// from the index alone when the backend returned nothing — the connections
+  /// step is never left blank when the app has validated material for it.
+  StudySection? _connectionsSection(StudySection? backendSection) {
+    final offline = ref
+        .watch(studyCrossRefProvider)
+        .valueOrNull
+        ?.crossReferencesFor(
+          widget.request.reference.bookId,
+          widget.request.reference.chapter,
+          widget.request.reference.startVerse,
+        ) ??
+        const <StudyCrossReference>[];
+
+    if (backendSection == null && offline.isEmpty) return null;
+
+    final seen = <String>{};
+    final merged = <StudyCrossReference>[];
+    void add(StudyCrossReference r) {
+      final key = '${r.bookId}:${r.chapter}:${r.startVerse}:${r.endVerse}';
+      if (seen.add(key)) merged.add(r);
+    }
+
+    if (backendSection != null) {
+      for (final r in backendSection.references) {
+        add(r);
+      }
+    }
+    for (final r in offline) {
+      add(r);
+    }
+    merged.sort((a, b) => a.priority.compareTo(b.priority));
+    return StudySection(
+      kind: StudySectionKind.biblicalConnections,
+      references: merged,
+      sourceIds: backendSection?.sourceIds ?? const [],
     );
   }
 

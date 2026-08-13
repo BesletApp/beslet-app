@@ -7,7 +7,9 @@ import '../../secrets.dart';
 import 'book_meta.dart';
 import 'gemini_study_backend.dart';
 import 'study_backend.dart';
+import 'study_cross_refs.dart';
 import 'study_fallback_backend.dart';
+import 'study_intro.dart';
 import 'study_local_bank.dart';
 import 'study_service.dart';
 import 'study_sources.dart';
@@ -31,6 +33,17 @@ final studyLocalBankProvider = FutureProvider<StudyLocalBank>((ref) {
   return StudyLocalBank.load();
 });
 
+/// The curated per-book knowledge layer (genre + bilingual background, flow,
+/// and key themes), loaded once and kept alive.
+final studyIntroLibraryProvider = FutureProvider<StudyIntroLibrary>((ref) {
+  return StudyIntroLibrary.load();
+});
+
+/// The curated offline cross-reference index, loaded once and kept alive.
+final studyCrossRefProvider = FutureProvider<StudyCrossRefIndex>((ref) {
+  return StudyCrossRefIndex.load();
+});
+
 /// The Study orchestrator. A FutureProvider because the bank is loaded from
 /// the bundle; results are cached in SharedPreferences behind the same key
 /// the panel derives from the request.
@@ -43,6 +56,8 @@ final studyLocalBankProvider = FutureProvider<StudyLocalBank>((ref) {
 final studyServiceProvider = FutureProvider<StudyService>((ref) async {
   final bank = await ref.watch(studyLocalBankProvider.future);
   final canon = await ref.watch(studyCanonProvider.future);
+  final intros = await ref.watch(studyIntroLibraryProvider.future);
+  final crossRefs = await ref.watch(studyCrossRefProvider.future);
   final keyStore = AiKeyStore();
   final gemini = GeminiStudyBackend(
     transport: buildGeminiTransport(
@@ -67,6 +82,8 @@ final studyServiceProvider = FutureProvider<StudyService>((ref) async {
   );
   return StudyService(
     backend: backend,
+    intros: intros,
+    crossRefs: crossRefs,
     readCache: (key) async =>
         (await SharedPreferences.getInstance()).getString(key),
     writeCache: (key, value) async =>

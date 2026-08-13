@@ -87,7 +87,8 @@ Future<String> Function(String prompt) buildGeminiTransport({
         'biblicalConnections': Schema.object(properties: {
           'items': Schema.array(
             items: Schema.object(properties: {
-              'bookId': Schema.string(description: 'Canonical book id from the list.'),
+              'bookId': Schema.string(
+                  description: 'Exact canonical book id from the prompt list (e.g. "psalms", "1corinthians") — never a USFM code such as JHN or ROM.'),
               'chapter': Schema.integer(),
               'startVerse': Schema.integer(),
               'endVerse': Schema.integer(),

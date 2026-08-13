@@ -1,0 +1,173 @@
+{
+  "version": 1,
+  "connections": [
+    {
+      "a": { "bookId": "psalms", "chapter": 23, "startVerse": 1, "endVerse": 1 },
+      "b": { "bookId": "john", "chapter": 10, "startVerse": 11, "endVerse": 11 },
+      "en": "The LORD who shepherds Israel meets Jesus the good Shepherd, who lays down His life for the sheep.",
+      "am": "የእስራኤልን የሚመራው እግዚአብሔር፣ ለበጎቹ ሕይወቱን ከሚሰጠው ከኢየሱስ መልካም እረኛ ጋር ይገናኛል።",
+      "priority": 0
+    },
+    {
+      "a": { "bookId": "psalms", "chapter": 23, "startVerse": 1, "endVerse": 1 },
+      "b": { "bookId": "1peter", "chapter": 5, "startVerse": 7, "endVerse": 7 },
+      "en": "Both quiet the anxious heart in the LORD's care: He is the shepherd, and He cares for us.",
+      "am": "ሁለቱም ጭንቀት ያለበትን ልብ በእግዚአብሔር እንክብካቤ ያረጋጣሉ፦ እርሱ እረኛ ነው፣ ስለኛም ያስባል።",
+      "priority": 1
+    },
+    {
+      "a": { "bookId": "psalms", "chapter": 23, "startVerse": 1, "endVerse": 1 },
+      "b": { "bookId": "revelation", "chapter": 7, "startVerse": 17, "endVerse": 17 },
+      "en": "The shepherd's table in time of need looks ahead to the care of the Lamb, where every tear is wiped away.",
+      "am": "በፍላጎት ጊዜ የእረኛው ገበታ፣ እንባ ሁሉ የሚጠበቅበትን የበጉን እንክብካቤ ወደፊት ያመለክታል።",
+      "priority": 0
+    },
+    {
+      "a": { "bookId": "john", "chapter": 3, "startVerse": 16, "endVerse": 16 },
+      "b": { "bookId": "1john", "chapter": 4, "startVerse": 9, "endVerse": 10 },
+      "en": "Both speak of God's love as defined by His giving His one and only Son.",
+      "am": "ሁለቱም የእግዚአብሔርን ፍቅር ብቸኛውን ልጁን በመስጠት ይገልጻሉ።",
+      "priority": 0
+    },
+    {
+      "a": { "bookId": "john", "chapter": 3, "startVerse": 16, "endVerse": 16 },
+      "b": { "bookId": "romans", "chapter": 5, "startVerse": 8, "endVerse": 8 },
+      "en": "Both show the love of God in Christ's death for sinners, not for the worthy.",
+      "am": "ሁለቱም የእግዚአብሔርን ፍቅር ለብቁ ሳይሆን ለኃጢአተኞች በክርስቶስ ሞት ያሳያሉ።",
+      "priority": 1
+    },
+    {
+      "a": { "bookId": "john", "chapter": 3, "startVerse": 16, "endVerse": 16 },
+      "b": { "bookId": "john", "chapter": 3, "startVerse": 17, "endVerse": 17 },
+      "en": "The verse beside it names the purpose of the Son's coming: not to condemn but to save.",
+      "am": "ከእርሱ አጠገብ ያለው ጥቅስ የልጁን መምጣት ዓላማ ያሳያል፦ ሊፈርድባት ሳይሆን ሊያድናት።",
+      "priority": 2
+    },
+    {
+      "a": { "bookId": "romans", "chapter": 8, "startVerse": 28, "endVerse": 28 },
+      "b": { "bookId": "genesis", "chapter": 50, "startVerse": 20, "endVerse": 20 },
+      "en": "The truth that God works all things for good is lived out in Joseph's words to his brothers.",
+      "am": "እግዚአብሔር ሁሉን ወደ በጎነት የሚሠራበት እውነት፣ ዮሴፍ ለወንድሞቹ ባለው ቃል በሕይወት ይገለጻል።",
+      "priority": 0
+    },
+    {
+      "a": { "bookId": "romans", "chapter": 8, "startVerse": 28, "endVerse": 28 },
+      "b": { "bookId": "romans", "chapter": 8, "startVerse": 18, "endVerse": 18 },
+      "en": "The chapter's earlier verse compares present suffering with the glory that will be revealed.",
+      "am": "የምዕራፉ ቀዳሚ ጥቅስ የአሁኑን መከራ ከሚገለጠው ክብር ጋር ያወዳድራል።",
+      "priority": 2
+    },
+    {
+      "a": { "bookId": "romans", "chapter": 8, "startVerse": 28, "endVerse": 28 },
+      "b": { "bookId": "ephesians", "chapter": 1, "startVerse": 11, "endVerse": 11 },
+      "en": "Both affirm that God works all things according to His settled purpose.",
+      "am": "ሁለቱም እግዚአብሔር ሁሉን እንደ ተረጋገጠ ዓላማው እንደሚሠራ ያረጋግጣሉ።",
+      "priority": 1
+    },
+    {
+      "a": { "bookId": "philippians", "chapter": 4, "startVerse": 13, "endVerse": 13 },
+      "b": { "bookId": "2corinthians", "chapter": 12, "startVerse": 9, "endVerse": 10 },
+      "en": "Both place strength in Christ alone — His grace sufficient, His power made perfect in weakness.",
+      "am": "ሁለቱም ኃይልን በክርስቶስ ብቻ ያስቀምጣሉ — ጸጋው በቂ፣ ኃይሉ በድካም ፍጹም የሚሆነው።",
+      "priority": 0
+    },
+    {
+      "a": { "bookId": "philippians", "chapter": 4, "startVerse": 13, "endVerse": 13 },
+      "b": { "bookId": "philippians", "chapter": 4, "startVerse": 11, "endVerse": 12 },
+      "en": "The verses just before define 'all things': learning contentment in hunger and in plenty.",
+      "am": "ከፊቱ ያሉት ጥቅሶች «ሁሉን» ይገልጻሉ፦ በራብና በብዛት እርካታን መማር።",
+      "priority": 2
+    },
+    {
+      "a": { "bookId": "philippians", "chapter": 4, "startVerse": 13, "endVerse": 13 },
+      "b": { "bookId": "psalms", "chapter": 18, "startVerse": 32, "endVerse": 39 },
+      "en": "The psalmist's hymn of the Lord who strengthens and equips matches Paul's confidence.",
+      "am": "ጌታ የሚያጠነክርና የሚያስታጥቅ የመዝሙረኛው መዝሙር ከጳውሎስ እርግጠኝነት ጋር ይገናኛል።",
+      "priority": 2
+    },
+    {
+      "a": { "bookId": "matthew", "chapter": 6, "startVerse": 33, "endVerse": 33 },
+      "b": { "bookId": "psalms", "chapter": 37, "startVerse": 4, "endVerse": 5 },
+      "en": "Seeking His kingdom first is the same posture as delighting in the Lord and committing the way to Him.",
+      "am": "መንግሥቱን መጀመሪያ መፈለግ በእግዚአብሔር መደሰትና መንገድን ለእርሱ ከማስረከብ ጋር አንድያ አቋም ነው።",
+      "priority": 1
+    },
+    {
+      "a": { "bookId": "matthew", "chapter": 6, "startVerse": 33, "endVerse": 33 },
+      "b": { "bookId": "matthew", "chapter": 6, "startVerse": 8, "endVerse": 8 },
+      "en": "The earlier verse in the same teaching grounds the promise: the Father already knows what we need.",
+      "am": "በተመሳሳዩ ትምህርት ውስጥ ያለው ቀዳሚ ጥቅስ ተስፋውን ያጸናዋል፦ አባት የሚያስፈልገንን አስቀድሞ ያውቃል።",
+      "priority": 2
+    },
+    {
+      "a": { "bookId": "matthew", "chapter": 6, "startVerse": 33, "endVerse": 33 },
+      "b": { "bookId": "colossians", "chapter": 3, "startVerse": 1, "endVerse": 2 },
+      "en": "Both call the disciple's desire upward — the kingdom sought first, the mind set on things above.",
+      "am": "ሁለቱም የደቀ መዝሙርን ምኞት ወደ ላይ ያዞራሉ — መንግሥቱ መጀመሪያ የሚፈለግ፣ አእምሮው በላይ ባሉት ላይ የሚኖር።",
+      "priority": 1
+    },
+    {
+      "a": { "bookId": "isaiah", "chapter": 40, "startVerse": 31, "endVerse": 31 },
+      "b": { "bookId": "psalms", "chapter": 27, "startVerse": 14, "endVerse": 14 },
+      "en": "Both bid the waiting heart take courage, for the LORD strengthens those who wait for Him.",
+      "am": "ሁለቱም የሚጠባበቀው ልብ ድፍረትን እንዲይዝ ያዛሉ፣ ጌታ የሚጠባበቁትን ያጠነክራልና።",
+      "priority": 0
+    },
+    {
+      "a": { "bookId": "isaiah", "chapter": 40, "startVerse": 31, "endVerse": 31 },
+      "b": { "bookId": "lamentations", "chapter": 3, "startVerse": 25, "endVerse": 26 },
+      "en": "The prophet and the lamenter agree: the LORD is good to the soul that waits for Him.",
+      "am": "ነቢዩና አላቃሳው ይስማማሉ፦ እግዚአብሔር ለሚጠባበቀው ነፍስ መልካም ነው።",
+      "priority": 0
+    },
+    {
+      "a": { "bookId": "isaiah", "chapter": 40, "startVerse": 31, "endVerse": 31 },
+      "b": { "bookId": "matthew", "chapter": 11, "startVerse": 28, "endVerse": 30 },
+      "en": "Israel's promise of renewed strength meets Jesus' summons — rest and strength for the weary.",
+      "am": "ለእስራኤል የኃይል እድሳት ተስፋ፣ ለደካማው የሚሰጠውን የኢየሱስ ጥሪ — ዕረፍትና ኃይል — ይገናኛል።",
+      "priority": 1
+    },
+    {
+      "a": { "bookId": "ephesians", "chapter": 2, "startVerse": 8, "endVerse": 9 },
+      "b": { "bookId": "romans", "chapter": 3, "startVerse": 23, "endVerse": 28 },
+      "en": "Both state salvation as a gift — justification by grace through faith, apart from works.",
+      "am": "ሁለቱም መዳንን እንደ ስጦታ ይናገራሉ — በጸጋ፣ በእምነት፣ ከሥራ ሌላ ማጽደቅ።",
+      "priority": 0
+    },
+    {
+      "a": { "bookId": "ephesians", "chapter": 2, "startVerse": 8, "endVerse": 9 },
+      "b": { "bookId": "titus", "chapter": 3, "startVerse": 4, "endVerse": 5 },
+      "en": "Paul's letters agree: rescue is by God's mercy, not by works of righteousness we performed.",
+      "am": "የጳውሎስ መልዕክቶች ይስማማሉ፦ መዳን በእግዚአብሔር ምሕረት እንጂ ባደረግነው ጽድቅ አይደለም።",
+      "priority": 1
+    },
+    {
+      "a": { "bookId": "ephesians", "chapter": 2, "startVerse": 8, "endVerse": 9 },
+      "b": { "bookId": "ephesians", "chapter": 2, "startVerse": 10, "endVerse": 10 },
+      "en": "The verse beside it guards the meaning of grace: we were saved to walk in the good works God prepared.",
+      "am": "ከእርሱ አጠገብ ያለው ጥቅስ የጸጋን ትርጉም ይጠብቃል፦ የተዳንነው እግዚአብሔር ባዘጋጃቸው መልካም ሥራ እንድንመላለስ ነው።",
+      "priority": 2
+    },
+    {
+      "a": { "bookId": "1corinthians", "chapter": 13, "startVerse": 4, "endVerse": 7 },
+      "b": { "bookId": "john", "chapter": 13, "startVerse": 34, "endVerse": 35 },
+      "en": "The portrait of love in action matches the new command of Jesus: love one another as He has loved.",
+      "am": "የፍቅር ሥዕል፣ የኢየሱስን አዲስ ትዕዛዝ ይገናኛል፦ እርሱ እንደወደደ እርስ በርሳችን ውደዱ።",
+      "priority": 0
+    },
+    {
+      "a": { "bookId": "1corinthians", "chapter": 13, "startVerse": 4, "endVerse": 7 },
+      "b": { "bookId": "1john", "chapter": 4, "startVerse": 8, "endVerse": 19 },
+      "en": "Love's source and pattern: we love because God first loved us; He is love.",
+      "am": "የፍቅር ምንጭና አምሳያ፦ እርሱ ቀድሞ ስለወደደን እንወዳለን፤ እርሱ ፍቅር ነው።",
+      "priority": 1
+    },
+    {
+      "a": { "bookId": "1corinthians", "chapter": 13, "startVerse": 4, "endVerse": 7 },
+      "b": { "bookId": "colossians", "chapter": 3, "startVerse": 12, "endVerse": 14 },
+      "en": "The garments of the new self culminate in love, the bond that holds everything together.",
+      "am": "የአዲሱ ሰው ልብሶች በፍቅር ይጠናቀቃሉ፣ ሁሉን በሚያስተሳስረው ፍቅር።",
+      "priority": 1
+    }
+  ]
+}

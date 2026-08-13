@@ -120,4 +120,49 @@ void main() {
       );
     });
   });
+
+  group('StudyCanon.resolveBookId (USFM and name aliases)', () {
+    final canon = loadTestCanon();
+
+    test('canonical ids resolve to themselves', () {
+      for (final id in canon.books.keys) {
+        expect(canon.resolveBookId(id), id, reason: id);
+      }
+    });
+
+    test('USFM codes resolve to their canonical book', () {
+      expect(canon.resolveBookId('GEN'), 'genesis');
+      expect(canon.resolveBookId('JHN'), 'john');
+      expect(canon.resolveBookId('ROM'), 'romans');
+      expect(canon.resolveBookId('1CO'), '1corinthians');
+      expect(canon.resolveBookId('2CO'), '2corinthians');
+      expect(canon.resolveBookId('PS'), 'psalms');
+      expect(canon.resolveBookId('PSA'), 'psalms');
+      expect(canon.resolveBookId('MAT'), 'matthew');
+      expect(canon.resolveBookId('1SA'), '1samuel');
+      expect(canon.resolveBookId('1TH'), '1thessalonians');
+      expect(canon.resolveBookId('1PE'), '1peter');
+      expect(canon.resolveBookId('1JN'), '1john');
+      expect(canon.resolveBookId('REV'), 'revelation');
+    });
+
+    test('names and abbreviations in any case or punctuation resolve', () {
+      expect(canon.resolveBookId('John'), 'john');
+      expect(canon.resolveBookId('1 Sam'), '1samuel');
+      expect(canon.resolveBookId('1st Peter'), '1peter');
+      expect(canon.resolveBookId('Song of Songs'), 'songofsongs');
+      expect(canon.resolveBookId('Song of Solomon'), 'songofsongs');
+      expect(canon.resolveBookId('  Romans  '), 'romans');
+      expect(canon.resolveBookId('1st Corinthians'), '1corinthians');
+      expect(canon.resolveBookId('second Peter'), '2peter');
+    });
+
+    test('unknown tokens resolve to null', () {
+      expect(canon.resolveBookId('Harambe'), isNull);
+      expect(canon.resolveBookId(''), isNull);
+      expect(canon.resolveBookId(null), isNull);
+      expect(canon.resolveBookId('  '), isNull);
+      expect(canon.resolveBookId('LOST'), isNull);
+    });
+  });
 }

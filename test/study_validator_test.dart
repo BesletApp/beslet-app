@@ -194,6 +194,72 @@ void main() {
       expect(refs.single.priority, 0);
     });
 
+    test('USFM and abbreviated bookIds are resolved to canonical ids', () {
+      final raw = _enPayload();
+      (raw['biblicalConnections'] as Map)['items'] = [
+        {
+          'bookId': 'JHN',
+          'chapter': 10,
+          'startVerse': 11,
+          'endVerse': 11,
+          'priority': 0,
+          'reason': 'Jesus calls Himself the good Shepherd.',
+        },
+        {
+          'bookId': 'Ps.',
+          'chapter': 95,
+          'startVerse': 7,
+          'endVerse': 7,
+          'priority': 1,
+          'reason': 'The people are the sheep of His hand.',
+        },
+        {
+          'bookId': '1 Cor',
+          'chapter': 15,
+          'startVerse': 20,
+          'endVerse': 20,
+          'priority': 1,
+          'reason': 'Christ is the firstfruits of those who sleep.',
+        },
+      ];
+      final result = validator.validate(raw: raw, request: _request())!;
+      final refs = result.sections
+          .firstWhere((s) => s.kind == StudySectionKind.biblicalConnections)
+          .references;
+      expect(refs.map((r) => r.bookId).toSet(),
+          {'john', 'psalms', '1corinthians'});
+      expect(refs.any(
+          (r) => r.referenceFor(false) == 'John 10:11'), isTrue);
+    });
+
+    test('an unknown bookId is dropped, valid ones survive', () {
+      final raw = _enPayload();
+      (raw['biblicalConnections'] as Map)['items'] = [
+        {
+          'bookId': 'john',
+          'chapter': 10,
+          'startVerse': 11,
+          'endVerse': 11,
+          'priority': 0,
+          'reason': 'Jesus calls Himself the good Shepherd.',
+        },
+        {
+          'bookId': 'Harambe',
+          'chapter': 1,
+          'startVerse': 1,
+          'endVerse': 1,
+          'priority': 1,
+          'reason': 'Not a real book.',
+        },
+      ];
+      final result = validator.validate(raw: raw, request: _request())!;
+      final refs = result.sections
+          .firstWhere((s) => s.kind == StudySectionKind.biblicalConnections)
+          .references;
+      expect(refs.length, 1);
+      expect(refs.single.bookId, 'john');
+    });
+
     test('a section over the hard cap is dropped; honest sections survive',
         () {
       final raw = _enPayload();

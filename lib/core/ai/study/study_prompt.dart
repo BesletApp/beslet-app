@@ -93,6 +93,12 @@ $lines
 
 CANONICAL BOOK IDS (use these exact ids for every cross-reference):
 $bookList
+These ids are the only accepted form. Never use USFM codes (GEN, JOS, PSA,
+MAT, JHN, ROM, 1CO, 1TH, 1PE, 1JN, REV), never abbreviate ("Gen", "Ps."), never
+add spaces or periods ("1 Samuel", "song of songs" are not ids). Write the id
+exactly as listed above, e.g. "psalms", "1samuel", "1corinthians",
+"songofsongs". A cross-reference in any other form is dropped before it reaches
+the reader.
 
 LENGTH — This passage calls for a note of approximately $bandMin to $bandMax
 words (a "$bandLabel" study). Scale to what this passage honestly requires:
@@ -188,9 +194,10 @@ same biblical theme, shows how another biblical writer treats the subject, or
 illuminates an important phrase. Give at least two whenever honest, strong
 connections exist; a well-chosen cross-reference is often the most valuable
 part of a study note. Return each as a structured reference with a canonical
-bookId from the list above, a short reason (one or two clauses), and a
-priority: 0 = essential connection, 1 = helpful, 2 = supporting. Never invent
-a reference that does not exist in the list above.
+bookId from the list above (the exact id, in no other form), a short reason
+(one or two clauses) written in the reader's language, and a priority:
+0 = essential connection, 1 = helpful, 2 = supporting. Never invent a
+reference that does not exist in the list above.
 
 WHAT IS CLEAR / WHAT REQUIRES CARE — Careful observations split into labeled
 blocks, at most ${StudyLengthBudget.maxTierBlocks}, one tier per block:

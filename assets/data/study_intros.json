@@ -1,0 +1,1069 @@
+{
+  "version": 1,
+  "books": [
+
+    {
+      "id": "genesis",
+      "genre": "narrative",
+      "background": {
+        "en": "The first book of the Torah. Jewish tradition and much scholarship ascribe the shaping of Genesis to Moses, working from earlier materials. It begins with the creation of the heavens and the earth and traces the families of Abraham, Isaac, and Jacob into Egypt. Questions of exact dating are debated; the book itself does not name its human author.",
+        "am": "የኦሪት የመጀመሪያው መጽሐፍ ነው። የአይሁድ ትውፊት እንዲሁም ብዙ ምሁራን የዘፍጥረትን አደረጃጀት ለሙሴ ያስረክባሉ፤ ሙሴም ከቀደሙ ጽሑፎች ጠቅሶ እንዳጠናከረ ይታመናል። መጽሐፉ የሰማይና የምድርን አፈጣጠር በመግለጽ ይጀምራል፤ ከዚያም የአብርሃምን፣ የይስሐቅንና የያዕቆብን ቤተሰብ እስከ ግብጽ ድረስ ይከታተላል። ትክክለኛው የጊዜ ምልከታ ክርክር ያለበት ነው፤ መጽሐፉ ራሱ ጸሐፊውን በስም አይገልጽም።"
+      },
+      "flow": {
+        "en": "Its arc moves from creation (1–2), the fall and its spread (3–11), to one family chosen to bless the nations: Abraham, Isaac, Jacob, and Joseph (12–50). A passage gains meaning from standing somewhere along this movement from universal creation to the promise of a people.",
+        "am": "የመጽሐፉ እንቅስቃሴ ከፍጥረት (1–2) ወደ ውድቀትና ወደ ውድቀቱ መስፋፋት (3–11)፣ ከዚያም ብሔራትን ለመባረክ ወደተመረጠው ቤተሰብ — አብርሃም፣ ይስሐቅ፣ ያዕቆብና ዮሴፍ (12–50) ይሄዳል። በዚህ መንገድ ላይ የቆመ ማንኛውም ጥቅስ፣ ከዓለም አፈጣጠር ወደ ሕዝብ ተስፋ አቅጣጫ ባለው እንቅስቃሴ ውስጥ ትርጉሙን ያገኛል።"
+      },
+      "keyThemes": {
+        "en": "God as Creator; the spread of sin; the promise of blessing to all nations through Abraham's line; covenant and faith.",
+        "am": "እግዚአብሔር ፈጣሪ መሆኑ፤ የኃጢአት መስፋፋት፤ በአብርሃም ዘር ለሁሉም ብሔራት የተሰጠ የበረከት ተስፋ፤ ኪዳንና እምነት።"
+      }
+    },
+    {
+      "id": "exodus",
+      "genre": "narrative",
+      "background": {
+        "en": "The second book of the Torah. Tradition and much scholarship connect its shaping to Moses. It narrates Israel's liberation from slavery in Egypt, the giving of the Law at Sinai, and the building of the tabernacle. Its exact composition history is a matter of scholarly debate.",
+        "am": "የኦሪት ሁለተኛው መጽሐፍ ነው። ትውፊትና ብዙ ምሁራን አደረጃጀቱን ከሙሴ ጋር ያያይዙታል። የእስራኤልን ከግብጽ ባርነት መውጣት፣ በሲና ተራራ ሕግ መሰጠትና የማደሪያ ድንኳኑን መሥራት ያስረታል። የቅንብሩ ትክክለኛ ታሪክ በምሁራን ዘንድ ክርክር ያለበት ነው።"
+      },
+      "flow": {
+        "en": "Exodus moves from bondage and deliverance (1–15) through the wilderness and the giving of the Law (16–24) to the tabernacle and its worship (25–40). Sinai — law and covenant — is the center toward which the book builds.",
+        "am": "ዘጸአት ከባርነትና ከመዳን (1–15) ወደ በረሃ ጉዞና ወደ ሕግ መሰጠት (16–24)፣ ከዚያም ወደ ማደሪያ ድንኳንና ወደ አምልኮው (25–40) ይንቀሳቀሳል። መጽሐፉ የሚገነባው ሲና — ሕግና ኪዳን — ላይ ነው።"
+      },
+      "keyThemes": {
+        "en": "Redemption from slavery; the holy presence of God; the Law as covenant instruction; worship shaped by God's command.",
+        "am": "ከባርነት መዳን፤ የእግዚአብሔር ቅዱስ መገኘት፤ ሕግ እንደ ኪዳን መመሪያ፤ አምልኮ በእግዚአብሔር ትዕዛዝ መቅረጽ።"
+      }
+    },
+    {
+      "id": "leviticus",
+      "genre": "law",
+      "background": {
+        "en": "The third book of the Torah, placed in the biblical narrative at Israel's camp at Sinai. It contains the priestly instructions for sacrifice, purity, atonement, and holiness. Tradition ties its shaping to the priestly stream connected with Moses and Aaron; exact authorship is not stated in the text.",
+        "am": "የኦሪት ሦስተኛው መጽሐፍ ሲሆን፣ በመጽሐፍ ቅዱስ ትረካ ውስጥ የተቀመጠው በእስራኤል የሲና ሰፈር ነው። ስለ መሥዋዕት፣ ስለ ንጽሕና፣ ስለ ማስተስረያና ስለ ቅድስና የካህናት መመሪያዎችን ይዟል። ትውፊት አደረጃጀቱን ከሙሴና ከአሮን ጋር ለተያያዘው የካህናት ጽሑፋዊ ወግ ያስረክባል፤ ትክክለኛው ጸሐፊ በጽሑፉ አልተጠቀሰም።"
+      },
+      "flow": {
+        "en": "After instructions for offerings and priesthood (1–10), the book sets out purity laws (11–15), the Day of Atonement (16), holiness in the whole of life (17–27). Its core call is that Israel, because God is holy, is to be holy.",
+        "am": "ስለ መዐርገ እግዚአብሔርና ስለ ክህነት (1–10) መመሪያዎችን ተከትሎ፣ መጽሐፉ የንጽሕና ሥርዓቶችን (11–15)፣ የማስተስረያ ቀንን (16)፣ ቅድስናውንም በመላ ሕይወት (17–27) ያስቀምጣል። ማዕከላዊው ጥሪው፣ እግዚአብሔር ቅዱስ ስለሆነ እስራኤል ቅዱስ መሆን እንደሚጠበቅበት ነው።"
+      },
+      "keyThemes": {
+        "en": "Holiness of God; atonement through sacrifice; the holiness code for daily life; the priesthood as mediator between God and people.",
+        "am": "የእግዚአብሔር ቅድስና፤ በመሥዋዕት ማስተስረያ፤ የዕለት ሕይወት ቅድስና ሥርዓት፤ ክህነት በእግዚአብሔርና በሕዝብ መካከል አማላጅ መሆኑ።"
+      }
+    },
+    {
+      "id": "numbers",
+      "genre": "narrative",
+      "background": {
+        "en": "The fourth book of the Torah. It narrates Israel's wandering in the wilderness from Sinai toward the promised land, including the census, the complaints, and the journeying of the camp. Tradition connects its shaping to Moses; the final form comes from later stages, and exact dating is debated.",
+        "am": "የኦሪት አራተኛው መጽሐፍ ነው። የእስራኤልን ከሲና ወደ ተስፋይቱ ምድር የበረሃ ተቅበዝባዥና ጉዞ ይተርካል፤ ቆጠራውን፣ ቅሬታዎቹንና የሰፈሩን ጉዞ ይጨምራል። ትውፊት አደረጃጀቱን ከሙሴ ጋር ያያይዛል፤ ትክክለኛው የማጠናቀቂያ ዘመን ክርክር ያለበት ነው።"
+      },
+      "flow": {
+        "en": "The book moves from preparation at Sinai (1–10) through the wilderness journey with its grumbling and discipline (11–25) to the edge of the land and final instructions (26–36). It shows a holy God journeying with an often-unfaithful people.",
+        "am": "መጽሐፉ ከሲና ዝግጅት (1–10) ወደ ቅሬታና ቅጣት በተሞላው የበረሃ ጉዞ (11–25)፣ ከዚያም ወደ ምድሪቱ ዳርቻና ወደ የመጨረሻ መመሪያዎች (26–36) ይሄዳል። ቅዱስ እግዚአብሔር ብዙ ጊዜ ታማፊ ከሆነ ሕዝብ ጋር አብሮ መጓዙን ያሳያል።"
+      },
+      "keyThemes": {
+        "en": "God's faithful presence in the wilderness; the consequences of unbelief; the holiness of God in the camp; the journey from Sinai to the promised land.",
+        "am": "የእግዚአብሔር በበረሃ ታማኝ መገኘት፤ የእምነት ማጣት መዘዝ፤ በሰፈር ውስጥ የእግዚአብሔር ቅድስና፤ ከሲና ወደ ተስፋይቱ ምድር የሚደረገው ጉዞ።"
+      }
+    },
+    {
+      "id": "deuteronomy",
+      "genre": "law",
+      "background": {
+        "en": "The fifth book of the Torah, presented as Moses' farewell addresses to Israel on the plains of Moab before entering Canaan. It restates the Law for the generation about to cross over. The book itself presents these as Moses' words; critical scholarship discusses later shaping, while the text remains a witness of covenant instruction.",
+        "am": "የኦሪት አምስተኛው መጽሐፍ ሲሆን፣ እስራኤል ወደ ከነዓን ሳትገባ በሞዓብ ሜዳ ላይ ሙሴ ያደረሳቸው የስንብት ንግግሮች ሆኖ ቀርቧል። ለማዶ ለሚያልፈው ትውልድ ሕጉን በድጋሚ ያቀርባል። መጽሐፉ ራሱ እነዚህን እንደ ሙሴ ቃላት ያቀርባል፤ ኋለኛ የማጠናቀቅ ሂደት በምሁራን ይብራራል፤ ጽሑፉ ግን የኪዳን መመሪያ ምስክር ሆኖ ይቆማል።"
+      },
+      "flow": {
+        "en": "Moses reviews the journey and the Law (1–11), expands the statutes (12–26), then sets the covenant before the people with blessings and curses (27–30) before his death and Joshua's succession (31–34).",
+        "am": "ሙሴ ጉዞውንና ሕጉን ይገምግማል (1–11)፣ ሥርዓቶቹን ያስፋፋል (12–26)፣ ከዚያም ኪዳኑን በበረከትና በእርግማን (27–30) በሕዝቡ ፊት ያስቀምጠዋል፤ በመጨረሻም ሞቱና የኢያሱ ተተካነት (31–34) ይገኛል።"
+      },
+      "keyThemes": {
+        "en": "Love of God with the whole heart; the choice of life or death; covenant loyalty as a response to grace; warning against forgetting the Lord.",
+        "am": "እግዚአብሔርን በመላ ልብ መውደድ፤ የሕይወት ወይም የሞት ምርጫ፤ ለቸርነት የሚደረግ የኪዳን ታማኝነት፤ ጌታን ላለመርሳት ማስጠንቀቂያ።"
+      }
+    },
+    {
+      "id": "joshua",
+      "genre": "history",
+      "background": {
+        "en": "The book of Joshua narrates Israel's entry into the promised land under Joshua, following Moses. It recounts the conquest, the division of the land, and the covenant renewal at Shechem. The book does not name its author; the account reflects generations who lived in the land.",
+        "am": "የኢያሱ መጽሐፍ በኢያሱ መሪነት እስራኤል ወደ ተስፋይቱ ምድር መግባቷን ይተርካል። ድል መንሳቱን፣ ምድሪቱን መከፋፈልንና በሴኬም የኪዳን መታደስን ይዘግባል። መጽሐፉ ጸሐፊውን አይገልጽም፤ ዘገባው ምድሪቱን ለሚኖሩ ትውልዶች የሚያንጸባርቅ ነው።"
+      },
+      "flow": {
+        "en": "The book moves from the crossing of the Jordan and the fall of Jericho (1–12) to the allotment of the land to the tribes (13–21), then to covenant renewal and the people's pledge to serve the Lord (22–24).",
+        "am": "መጽሐፉ ከዮርዳኖስ መሻገርና ከኢያሪኮ መውደቅ (1–12) ወደ ምድሪቱ ለነገዶች መከፋፈል (13–21)፣ ከዚያም ወደ ኪዳን መታደስና ሕዝቡ ጌታን ለማገልገል ወደሚሰጠው ቃል (22–24) ይሄዳል።"
+      },
+      "keyThemes": {
+        "en": "God's faithfulness in fulfilling His promises; the land as gift and inheritance; wholehearted obedience; the choice of whom the people will serve.",
+        "am": "እግዚአብሔር ተስፋውን ማሟላቱ፤ ምድር እንደ ስጦታና ውርስ፤ ከልብ መታዘዝ፤ ሕዝቡ ማንን እንደሚያገለግል የሚደረግ ምርጫ።"
+      }
+    },
+    {
+      "id": "judges",
+      "genre": "history",
+      "background": {
+        "en": "Judges spans the period after Joshua, when Israel was led by tribal 'judges' or deliverers. The book repeatedly describes a cycle: rebellion, oppression, crying out, and deliverance. Its authorship is not named; it was shaped to explain why the era was one of disorder.",
+        "am": "መሳፍንት ከኢያሱ በኋላ ያለውን ዘመን ይሸፍናል፤ በዚህ ዘመን እስራኤል በነገድ 'ፈራጆች' ወይም አዳኞች ይመራት ነበር። መጽሐፉ በተደጋጋሚ ዑደትን ይገልጻል፤ ዓመፅ፣ ጭቆና፣ ጩኸትና መዳን። ጸሐፊው አልተጠቀሰም፤ ዘመኑ የብጥብጥ የሆነበትን ምክንያት ለማስረዳት ተደርጎ ነው።"
+      },
+      "flow": {
+        "en": "A recurring cycle dominates the book (2:11–19 sets the pattern): the people do evil, God hands them over, they cry out, and a judge delivers them. The book ends with the refrain that Israel had no king and everyone did what was right in his own eyes.",
+        "am": "የተደጋገመ ዑደት መጽሐፉን ይቆጣጠራል (2፡11–19 ንድፉን ያስቀምጣል)፤ ሕዝቡ ክፋት ይሠራሉ፣ እግዚአብሔር ያስረክባቸዋል፣ ይጮኻሉ፣ ፈራጅም ያድናቸዋል። መጽሐፉ የሚያጠናቅቀው 'በዚያ ዘመን በእስራኤል ንጉሥ አልነበረም፤ ሰው ሁሉ በዓይኑ መልካም መስሎት ይሠራ ነበር' በማለት ነው።"
+      },
+      "keyThemes": {
+        "en": "God's patience and deliverance; the downward spiral of unfaithfulness; the need for a faithful king; the seriousness of human hearts without covenant loyalty.",
+        "am": "የእግዚአብሔር ትዕግስትና መዳን፤ የታማኝነት ማጣት ተንሸራታች ውድቀት፤ ታማኝ ንጉሥ ያስፈልጋል፤ ያለ ኪዳን ታማኝነት የሰው ልብ ክብደት።"
+      }
+    },
+    {
+      "id": "ruth",
+      "genre": "narrative",
+      "background": {
+        "en": "A short narrative set 'in the days when the judges ruled.' It tells of Ruth, a Moabite woman, her loyalty to Naomi, and her inclusion in the family line that leads to David. Its author is unnamed; the story is told warmly and with theological purpose.",
+        "am": "የፈራጆች ዘመን ውስጥ የሚገኝ አጭር ትረካ ነው። ስለ ሞዓባዊቷ ሩት፣ ለናኦሚ ስላደረገችው ታማኝነትና ወደ ዳዊት ወደምትወስድ ቤተሰብ መካተቷን ይነግራል። ጸሐፊው ስሙ አልተጠቀሰም፤ ታሪኩ በሙቀትና በሥነ-መለኮታዊ ዓላማ የተተረከ ነው።"
+      },
+      "flow": {
+        "en": "From loss and emptiness in Moab (1) to the gleaning fields of Bethlehem (2), the meeting with Boaz (3), and the redemption that brings marriage and a son in the line of David (4).",
+        "am": "በሞዓብ ካለው እጦትና ባድማነት (1) ወደ ቤተ ልሔም የማጨጃ እርሻዎች (2)፣ ለቦዔዝ ደረሰች (3)፣ ከዚያም በዳዊት ዘር ሠርግና ልጅ ወደሚያመጣው ቤዛነት (4)።"
+      },
+      "keyThemes": {
+        "en": "Loyal devotion; God's providence working through ordinary faithfulness; redemption and the family of God's king; the inclusion of a foreigner in God's people.",
+        "am": "ታማኝ ፍቅር፤ እግዚአብሔር በተራ ታማኝነት በኩል የሚሠራ አስተዳደር፤ ቤዛነትና የእግዚአብሔር ንጉሥ ቤተሰብ፤ መላው ሕዝብ ውስጥ ከሌላ ሕዝብ የመጣች ስትካተት።"
+      }
+    },
+    {
+      "id": "1samuel",
+      "genre": "history",
+      "background": {
+        "en": "1 Samuel narrates the transition from the judges to the monarchy, from Samuel the prophet through Saul's reign to the anointing of David. The books of Samuel do not name their author; they present history with prophetic and theological purpose.",
+        "am": "1 ሳሙኤል ከፈራጆች ወደ ንግሥና የሚደረገውን ሽግግር ይተርካል፤ ከነቢዩ ሳሙኤል ጀምሮ በሳኦል የግዛት ዘመንና የዳዊት መቀባት ድረስ። የሳሙኤል መጻሕፍት ጸሐፊያቸውን አይገልጹም፤ ታሪኩን በነቢያዊና በሥነ-መለኮታዊ ዓላማ ያቀርባሉ።"
+      },
+      "flow": {
+        "en": "The book moves from Samuel's birth and call (1–7), through Saul's rise and rejection (8–15), to David's anointing and his growing conflict with Saul (16–31).",
+        "am": "መጽሐፉ ከሳሙኤል ልደትና ጥሪ (1–7)፣ በሳኦል መነሳትና መገበየም (8–15)፣ ወደ ዳዊት መቀባትና ከሳኦል ጋር ያለው ግጭት እየጨመረ ሲሄድ (16–31) ይንቀሳቀሳል።"
+      },
+      "keyThemes": {
+        "en": "Obedience better than sacrifice; the Lord's choice of the person of the heart; God's anointing and patience; the cost of royal ambition apart from God.",
+        "am": "ከመሥዋዕት ትበልጣለች መታዘዝ፤ ጌታ የልብ ሰውን መምረጡ፤ የእግዚአብሔር መቀባትና ትዕግስት፤ ከእግዚአብሔር ርቆ የንጉሥነት ፍላጎት ዋጋ።"
+      }
+    },
+    {
+      "id": "2samuel",
+      "genre": "history",
+      "background": {
+        "en": "2 Samuel narrates the reign of David: his rise, his sins (with Bathsheba), the turmoil within his house, and the promise to his line. Like 1 Samuel it does not name its author and reads as history told with prophetic and theological purpose.",
+        "am": "2 ሳሙኤል የዳዊትን ግዛት ይተርካል፤ መነሳቱን፣ ኃጢአቶቹን (ከባትሸባ ጋር)፣ በቤቱ ውስጥ የነበረውን ግርግርና ለዘሩ የተሰጠውን ተስፋ ይጨምራል። እንደ 1 ሳሙኤል ጸሐፊውን አይገልጽም፤ ታሪኩን በነቢያዊና በሥነ-መለኮታዊ ዓላማ የተረከ ነው።"
+      },
+      "flow": {
+        "en": "David's victories and God's covenant promise (1–10) give way to his fall, the family strife that follows (11–20), and the closing chapters that settle his end (21–24).",
+        "am": "የዳዊት ድሎችና የእግዚአብሔር ኪዳን ተስፋ (1–10) ለውድቀቱና ለቀጣዩ የቤተሰብ ግጭት (11–20) እና ለመዝጊያው ምዕራፎች (21–24) ቦታ ይሰጣሉ።"
+      },
+      "keyThemes": {
+        "en": "Grace and judgment in the life of God's anointed; the covenant to David's house; sin's consequences and repentance; the house that God promised to establish.",
+        "am": "በእግዚአብሔር በተቀባው ሕይወት ውስጥ ጸጋና ፍርድ፤ ለዳዊት ቤት የተሰጠ ኪዳን፤ የኃጢአት መዘዝና ንስሐ፤ እግዚአብሔር ሊያጸናው የተስፋገደላት ቤት።"
+      }
+    },
+    {
+      "id": "1kings",
+      "genre": "history",
+      "background": {
+        "en": "1 Kings narrates the end of David's reign, the rise of Solomon, and the division of the kingdom after Solomon's death. It does not name its author and presents Israel's and Judah's kings against the measure of covenant faithfulness to the Lord.",
+        "am": "1 ነገሥት የዳዊትን የግዛት መጨረሻ፣ የሰሎሞንን መነሳትና ከሰሎሞን ሞት በኋላ መንግሥቱን መለያየት ይተርካል። ጸሐፊውን አይገልጽም፤ የእስራኤልንና የይሁዳን ነገሥታት ለጌታ ባላቸው የኪዳን ታማኝነት መለኪያ ያቀርባል።"
+      },
+      "flow": {
+        "en": "The book moves from Solomon's wisdom and temple (1–11) through the division of the kingdom and its early kings and prophets, including Elijah (12–22), judging each reign against covenant loyalty.",
+        "am": "መጽሐፉ ከሰሎሞን ጥበብና ቤተ መቅደስ (1–11) ወደ መንግሥቱ መለያየትና ወደ ቀዳሚ ነገሥታቱና ነቢያቱ፣ ኤልያስን ጨምሮ (12–22) ይንቀሳቀሳል፤ እያንዳንዱን ንግሥና በኪዳን ታማኝነት መለኪያ ይፈርዳል።"
+      },
+      "keyThemes": {
+        "en": "Wisdom as a gift and a test; the temple as God's dwelling; covenant faithfulness or idolatry as the measure of kings; the prophetic word against power.",
+        "am": "ጥበብ እንደ ስጦታና ፈተና፤ ቤተ መቅደስ የእግዚአብሔር መኖሪያ፤ ኪዳን ታማኝነት ወይም ጣዖት አምልኮ የነገሥታት መለኪያ፤ በሥልጣን ላይ የነቢይ ቃል።"
+      }
+    },
+    {
+      "id": "2kings",
+      "genre": "history",
+      "background": {
+        "en": "2 Kings continues the account of the divided kingdoms through their collapse — Israel carried into Assyrian exile, Judah into Babylon. It does not name its author and interprets the catastrophe as the fruit of covenant unfaithfulness.",
+        "am": "2 ነገሥት የተከፋፈሉትን መንግሥታት እስከ ውድቀታቸው ይከታተላል፤ እስራኤል ወደ አሦር ምርኮ፣ ይሁዳ ደግሞ ወደ ባቢሎን ተወሰደ። ጸሐፊውን አይገልጽም፤ የተመዘገበውን ጥፋት የኪዳን ታማኝነት ማጣት ፍሬ አድርጎ ይተረጉመዋል።"
+      },
+      "flow": {
+        "en": "Elijah's translation and Elisha's ministry (1–13) give way to the slow decline of the northern kingdom to Assyria (14–17) and Judah's slide to the Babylonian exile, with Josiah's reform as a bright central moment (22–23).",
+        "am": "የኤልያስ ለካህኑ መውጣትና የኤልሳዕ አገልግሎት (1–13) ለሰሜኑ መንግሥት ወደ አሦር ለሚደረገው ዝግ ውድቀት (14–17)ና ለይሁዳ ወደ ባቢሎን ምርኮ ለሚንሸራተት ጉዞ ቦታ ይሰጣል፤ የኢዮስያስ ማሻሻያ መካከል ብሩህ ጊዜ ነው (22–23)።"
+      },
+      "keyThemes": {
+        "en": "The consequences of persistent idolatry; God's long patience and mercy; the cost of forsaking the Lord; the hope of remnant and reform.",
+        "am": "የቀጠለ ጣዖት አምልኮ መዘዝ፤ የእግዚአብሔር ረጅም ትዕግስትና ምሕረት፤ ጌታን መተው ዋጋ፤ የቅሬታና የማሻሻያ ተስፋ።"
+      }
+    },
+    {
+      "id": "1chronicles",
+      "genre": "history",
+      "background": {
+        "en": "1 Chronicles retells Israel's history with an emphasis on David, the temple, and the priests and Levites, addressed to a people rebuilding after exile. It does not name its author; tradition associates it with the post-exilic priestly circles.",
+        "am": "1 ዜና መዋዕል የእስራኤልን ታሪክ በዳዊት፣ በቤተ መቅደስና በካህናትና ሌዋውያን ላይ በማተኮር ይደግማል፤ የተነገረውም ከምርኮ በኋላ ለሚያነበብሉ ሕዝብ ነው። ጸሐፊውን አይገልጽም፤ ትውፊት ከግዞት በኋላ ካሉ የካህናት ክበቦች ጋር ያያይዘዋል።"
+      },
+      "flow": {
+        "en": "Genealogies from Adam to the return from exile (1–9) lead into the reign of David, his preparation for the temple, and the organization of worship (10–29).",
+        "am": "ከአዳም እስከ ግዞት መመለስ ዘር-ሐረግ (1–9) ወደ ዳዊት ግዛት፣ ለቤተ መቅደስ ያደረገው ዝግጅትና የአምልኮ አደረጃጀት (10–29) ይመራል።"
+      },
+      "keyThemes": {
+        "en": "The people of God as one continuing family; the temple as the heart of worship; David's preparation; hope rebuilt around worship after exile.",
+        "am": "የእግዚአብሔር ሕዝብ እንደ አንድ ቀጣይ ቤተሰብ፤ ቤተ መቅደስ የአምልኮ ልብ መሆኑ፤ የዳዊት ዝግጅት፤ ከግዞት በኋላ በአምልኮ ዙሪያ ተስፋን መገንባት።"
+      }
+    },
+    {
+      "id": "2chronicles",
+      "genre": "history",
+      "background": {
+        "en": "2 Chronicles continues the retelling of Israel's history focused on Judah's kings, the temple, and worship, reaching the Babylonian exile and the decree of Cyrus. It does not name its author; its pastoral aim is to guide a restored people around the temple.",
+        "am": "2 ዜና መዋዕል የእስራኤልን ታሪክ በይሁዳ ነገሥታት፣ በቤተ መቅደስና በአምልኮ ላይ በማተኮር እስከ ባቢሎን ምርኮና እስከ ቂሮስ ትእዛዝ ድረስ ይደግማል። ጸሐፊውን አይገልጽም፤ የአርብቶ አደር ዓላማው በቤተ መቅደስ ዙሪያ የተመለሰ ሕዝብን መምራት ነው።"
+      },
+      "flow": {
+        "en": "Solomon's temple and splendor (1–9) give way to the divided monarchy's kings, each judged by their faithfulness to temple worship (10–36), ending in exile and the decree that allows return.",
+        "am": "የሰሎሞን ቤተ መቅደስና ክብር (1–9) ለተከፋፈለው ንግሥና ነገሥታት ቦታ ይሰጣሉ፤ እያንዳንዱም ለቤተ መቅደስ አምልኮ ባደረጉት ታማኝነት ይፈረድባቸዋል (10–36)፤ መጨረሻውም በምርኮና መመለስ በሚፈቅድ ትእዛዝ ነው።"
+      },
+      "keyThemes": {
+        "en": "The temple as the meeting place of God and people; the value of humble repentance; kings measured by worship; restoration as the goal of judgment.",
+        "am": "ቤተ መቅደስ የእግዚአብሔርና የሕዝብ መገናኛ፤ የትሑት ንስሐ ዋጋ፤ ነገሥታት በአምልኮ መለካታቸው፤ መመለስ የፍርድ ዓላማ መሆኑ።"
+      }
+    },
+    {
+      "id": "ezra",
+      "genre": "history",
+      "background": {
+        "en": "Ezra recounts the return of exiles to Jerusalem and the rebuilding of the temple under Zerubbabel, and later the reforms of Ezra the priest and scribe. The book does not name a single author; it draws on official records and priestly tradition from the restoration period.",
+        "am": "ዕዝራ የተመላሾችን ወደ ኢየሩሳሌም መመለስና በዘሩባቤል ሥር ቤተ መቅደሱን መልሶ መገንባትን፣ በኋላም የካህኑና የጸሐፊው ዕዝራ ማሻሻያዎችን ይዘግባል። አንድ ጸሐፊ አይገለጽም፤ ከመተላለፊያ ዘመን ኦፊሴላዊ ሰነዶችንና የካህናት ትውፊትን ይመካል። ዕዝራ እግዚአብሔር ለሕዝቡ ታማኝ እንደሆነና ቤተ መቅደሱንና አምልኮውን በመመለስ ማኅበረሰቡን እንደገና እንዳስተካከለ የሚያስተምር መጽሐፍ ነው።"
+      },
+      "flow": {
+        "en": "The book moves from the return and temple rebuilding under opposition (1–6) to Ezra's arrival and the people's repentance and covenant renewal (7–10).",
+        "am": "መጽሐፉ ከመመለስና ተቃውሞ ውስጥ ቤተ መቅደሱ መገንባት (1–6) ወደ ዕዝራ መምጣትና የሕዝቡ ንስሐና የኪዳን መታደስ (7–10) ይሄዳል።"
+      },
+      "keyThemes": {
+        "en": "Restoration and a new beginning; the authority of God's word; purity and separation in covenant community; worship rebuilt around the Law.",
+        "am": "መመለስና አዲስ ጅምር፤ የእግዚአብሔር ቃል ሥልጣን፤ በኪዳን ማኅበረሰብ ውስጥ ንጽሕናና መለያየት፤ በሕግ ዙሪያ አምልኮን መገንባት።"
+      }
+    },
+    {
+      "id": "nehemiah",
+      "genre": "history",
+      "background": {
+        "en": "Nehemiah recounts the rebuilding of Jerusalem's walls under Nehemiah, a cupbearer in the Persian court, and the renewal of covenant and worship in the city. The book draws on Nehemiah's own memoirs; its final shaping is debated.",
+        "am": "ነህምያ በፋርስ ቤተ መንግሥት ብርዕያዝ በነበረው ነህምያ መሪነት የኢየሩሳሌምን ቅጥር መልሶ መገንባትና በከተማይቱ ውስጥ የኪዳንና የአምልኮ መታደስን ይዘግባል። መጽሐፉ የነህምያን የግል ትዝታ ይመካል፤ የመጨረሻው አደረጃጀት ክርክር አለበት።"
+      },
+      "flow": {
+        "en": "From Nehemiah's commission and the wall's completion despite opposition (1–7) to the reading of the Law and covenant renewal (8–10), the community's resettlement, and continued reforms (11–13).",
+        "am": "ከነህምያ ተልዕኮና በተቃውሞ መካከል ቅጥሩ ተጠናቅቆ (1–7) ወደ ሕጉ ንባብና ኪዳን መታደስ (8–10)፣ የማኅበረሰቡ ምድር መመለስና ቀጣይ ማሻሻያዎች (11–13)።"
+      },
+      "keyThemes": {
+        "en": "Prayer and dependence on God in hard work; rebuilding community life; the Law read and obeyed; leaders who serve with prayer and courage.",
+        "am": "በጨለመ ሥራ ጸሎትና በእግዚአብሔር መደገፍ፤ የማኅበረሰብ ሕይወትን መልሶ መገንባት፤ ሕግ ተነቦ መታዘዝ፤ በጸሎትና በድፍረት የሚያገለግሉ መሪዎች።"
+      }
+    },
+    {
+      "id": "esther",
+      "genre": "narrative",
+      "background": {
+        "en": "Esther tells how a Jewish woman in the Persian court became queen and, with her cousin Mordecai, averted a planned destruction of the Jews. Uniquely, the book never names God directly, yet divine providence shapes every turn. Its author is unnamed.",
+        "am": "አስቴር በፋርስ ቤተ መንግሥት የነበረች አይሁዳዊት ሴት እንዴት ንግሥት እንደ ሆነችና ከአጎቷ ልጅ መርዶክዮስ ጋር በመሆን የአይሁድን የግዳት ብልሃት እንዴት እንዳከለሽች ይነግራል። በተለየ ሁኔታ መጽሐፉ የእግዚአብሔርን ስም በቀጥታ አይጠቅስም፤ ሆኖም መለኮታዊ አስተዳደር በእያንዳንዱ ለውጥ ውስጥ ይታያል። ጸሐፊው ስሙ አልተጠቀሰም።"
+      },
+      "flow": {
+        "en": "Esther becomes queen (1–2); Haman plots the Jews' destruction (3); through fasting, courage, and reversals the plot is exposed and turned (4–9); the feast of Purim is established (10).",
+        "am": "አስቴር ንግሥት ሆነች (1–2)፤ ሃማን የአይሁድን ጥፋት ሴራ አዘጋጀ (3)፤ በጾም፣ በድፍረትና በተቃራኒ ለውጦች አማካኝነት ሴራው ተገለጠና ወደ ኋላ ተመለሰ (4–9)፤ የፉር (ጵሩስ) በዓል ተመሠረተ (10)።"
+      },
+      "keyThemes": {
+        "en": "Divine providence behind ordinary events; courage in a dangerous court; the preservation of God's people; the reversal of the wicked's schemes.",
+        "am": "ከተራ ክስተቶች ጀርባ መለኮታዊ አስተዳደር፤ በአደገኛ ቤተ መንግሥት ውስጥ ድፍረት፤ የእግዚአብሔር ሕዝብ መጠበቅ፤ የክፉዎች ሴራ መገለባበጥ።"
+      }
+    },
+    {
+      "id": "job",
+      "genre": "poetry",
+      "background": {
+        "en": "Job is a poetic book about a righteous sufferer, set in prose framework (1–2 and 42). It explores why a good man suffers and whether piety serves God or is self-serving. The book does not name its author; its dialogues are some of the deepest poetry in Scripture.",
+        "am": "ኢዮብ ስለ ጻድቅ መከራ የሚናገር የግጥም መጽሐፍ ሲሆን፣ በስድ ድርሰት ማዕቀፍ (1–2 እና 42) ተቀምጧል። ጻድቅ ሰው ለምን እንደሚከር፣ አምልኮም እግዚአብሔርን የሚያገለግል ወይም ራስን የሚያገለግል ነው የሚለውን ይዳስሳል። መጽሐፉ ጸሐፊውን አይገልጽም፤ ንግግሮቹ በቅዱስ ጽሑፍ ውስጥ ከጥልቅ ግጥሞች መካከል ይገኙበታል።"
+      },
+      "flow": {
+        "en": "Loss and lament (1–3), then the long dialogues with his three friends and the younger Elihu about suffering and its causes (4–37), God's answer from the storm (38–41), and Job's restoration (42).",
+        "am": "ጥፋትና ልቅሶ (1–3)፣ ከዚያም ስለ መከራና ስፍራው ከሦስቱ ወዳጆቹና ከታናሹ ኤሊሁ ጋር ያደረጋቸው ረጅም ንግግሮች (4–37)፣ ከአውሎ ነፋስ የእግዚአብሔር መልስ (38–41)፣ የኢዮብ ማገገም (42)።"
+      },
+      "keyThemes": {
+        "en": "The mystery of undeserved suffering; the limits of human explanation; reverent awe before God's wisdom; faithfulness sustained through loss.",
+        "am": "ያልተገባ መከራ ምስጢር፤ የሰው ማብራሪያ ውስንነት፤ በእግዚአብሔር ጥበብ ፊት የመፍራት ፍሬያማነት፤ በጥፋት ውስጥ ታማኝነትን መያዝ።"
+      }
+    }
+  ,
+
+    {
+      "id": "psalms",
+      "genre": "poetry",
+      "background": {
+        "en": "The Psalter is a collection of 150 Hebrew prayers and songs for worship — laments, thanksgivings, royal psalms, wisdom poems, and praise. Tradition associates many with David; other titles name Asaph, the sons of Korah, Solomon, and Moses. The collection grew over centuries and was the hymnbook of the temple and the synagogue.",
+        "am": "መዝሙረ ዳዊት ለአምልኮ የተዘጋጁ 150 የዕብራይስጥ ጸሎቶችና ዝማሬዎች ስብስብ ነው — ልቅሶ፣ ምስጋና፣ የንጉሥ መዝሙሮች፣ የጥበብ ግጥሞችና ውዳሴ። ትውፊት ብዙዎቹን ከዳዊት ጋር ያያይዛል፤ ሌሎች ርዕሶች አሳፍን፣ የቆራሕ ልጆችን፣ ሰሎሞንንና ሙሴን ይጠቅሳሉ። ስብስቡ በዘመናት ርዝመት አድጎ፣ የቤተ መቅደስና የመህፈድ መዝሙር መጽሐፍ ሆነ።"
+      },
+      "flow": {
+        "en": "The psalms are gathered into five books (1–41; 42–72; 73–89; 90–106; 107–150) with doxologies closing the first four. The Psalter opens with the two ways (Ps 1) and closes with all-of-creation praise (Ps 150). A psalm should be read as part of this worshiping whole.",
+        "am": "መዝሙራቱ በአምስት መጻሕፍት ተከፋፍለዋል (1–41፤ 42–72፤ 73–89፤ 90–106፤ 107–150)፤ የመጀመሪያዎቹ አራት በምስጋና ይዘጋሉ። መዝሙረ ዳዊት በሁለቱ መንገዶች ይከፈታል (መዝ 1)፤ በፍጥረት ሁሉ ምስጋና ይዘጋል (መዝ 150)። ማንኛውም መዝሙር ከዚህ የአምልኮ አጠቃላይ ጋር ተያይዞ መነበብ አለበት።"
+      },
+      "keyThemes": {
+        "en": "Lament and trust in suffering; praise of God's character and deeds; the reign of God and His anointed king; God as refuge and shepherd.",
+        "am": "በመከራ ውስጥ ልቅሶና እምነት፤ የእግዚአብሔርን ባሕርይና ሥራ ማወደስ፤ የእግዚአብሔርና የተቀባው ንጉሥ ግዛት፤ እግዚአብሔር መጠጊያና እረኛ መሆኑ።"
+      }
+    },
+    {
+      "id": "proverbs",
+      "genre": "wisdom",
+      "background": {
+        "en": "Proverbs is a book of wisdom sayings and instructions, presented largely as the teaching of Solomon, king of Israel (1:1; 10:1; 25:1), with contributions attributed to other wise men and to Agur and Lemuel. It gathers centuries of Israelite wisdom for practical, godly living. Authorship of individual sayings is not always knowable.",
+        "am": "ምሳሌ የጥበብ አነጋገሮችና መመሪያዎች መጽሐፍ ሲሆን፣ በአብዛኛው የእስራኤል ንጉሥ የሰሎሞን ትምህርት ሆኖ ቀርቧል (1፡1፤ 10፡1፤ 25፡1)፤ ለሌሎች ጠቢባንና ለአጉርና ለለሙያልም የተሰጡ አስተዋጽኦዎች አሉት። የብዙ ምዕተ-ዓመታት የእስራኤላዊ ጥበብን ለተግባራዊ፣ እግዚአብሔርን ለሚያከብር ሕይወት ይሰበስባል። የግለሰብ አነጋገሮች ጸሐፊ ሁልጊዜ አይታወቅም።"
+      },
+      "flow": {
+        "en": "The opening chapters build a vision of wisdom as a way of life (1–9), then collections of sayings follow (10–22; 22–24; 25–29), with closing sayings from Agur and Lemuel (30–31). Read a proverb as a general pattern of wise life, not an absolute promise in every case.",
+        "am": "የመጀመሪያዎቹ ምዕራፎች ጥበብን እንደ ሕይወት መንገድ የሚያሳዩ ራእይ ይገነባሉ (1–9)፤ ከዚያም የአነጋገር ስብስቦች ይከተላሉ (10–22፤ 22–24፤ 25–29)፤ በአጉርና በለሙያል መዝጊያ አነጋገሮች ይጠናቀቃል (30–31)። ምሳሌን እንደ ጥበብ ሕይወት አጠቃላይ ንድፍ አድርገህ አንብብ፤ እንደ ሁልጊዜ የማይታመም ቃል ኪዳን አትመስለው።"
+      },
+      "keyThemes": {
+        "en": "The fear of the Lord as the beginning of knowledge; wisdom versus folly; the tongue, family, and work; discipline and the path of life.",
+        "am": "እግዚአብሔርን መፍራት የእውቀት መጀመሪያ መሆኑ፤ ጥበብ ከሞኝነት፤ አንደበት፣ ቤተሰብና ሥራ፤ ሥርዓትና የሕይወት መንገድ።"
+      }
+    },
+    {
+      "id": "ecclesiastes",
+      "genre": "wisdom",
+      "background": {
+        "en": "Ecclesiastes is a wisdom book presented as the words of 'the Teacher' (Qoheleth), traditionally connected with Solomon's voice. It reflects honestly on life's brevity and the limits of human striving 'under the sun.' The book does not name its author directly; its honesty about disappointment has made it a treasured meditation.",
+        "am": "መክብብ የጥበብ መጽሐፍ ሲሆን የ'መክብበ አርበኛ' (ቆሄለት) ቃላት ሆኖ ቀርቧል፤ በትውፊት ከሰሎሞን ድምጽ ጋር ይያያዛል። ስለ ሕይወት አጭርነትና በፀሐይ ሥር ስለ ሰው ጥረት ውስንነት በሐቀኝነት ያስተንትናል። ጸሐፊውን በቀጥታ አይገልጽም፤ ስለ ብስጭት ያለው ሐቀኝነት የሚወደድ ማሰላሰያ አድርጎታል።"
+      },
+      "flow": {
+        "en": "The Teacher examines labor, pleasure, wisdom, and time 'under the sun' and finds them insufficient (1–6), then turns toward the fear of God in a brief, uncertain life (7–12). The epilogue commends fearing God and keeping His commandments (12:13–14).",
+        "am": "መክቡ ጉልበትን፣ ደስታን፣ ጥበብንና ጊዜን በፀሐይ ሥር ይመረምራልና በቂ አይደሉም ይላል (1–6)፤ ከዚያም በአጭርና ባልተረጋገጠ ሕይወት ውስጥ ወደ እግዚአብሔር መፍራት ይመለሳል (7–12)። ማጠቃለያው እግዚአብሔርን መፍራትና ትእዛዙን መጠበቅን ይመክራል (12፡13–14)።"
+      },
+      "keyThemes": {
+        "en": "The brevity and mystery of life; the good gifts of God to be received with gratitude; the limits of human wisdom; the fear of God as the proper end.",
+        "am": "የሕይወት አጭርነትና ምስጢር፤ የእግዚአብሔር መልካም ስጦታዎች በምስጋና መቀበል፤ የሰው ጥበብ ውስንነት፤ እግዚአብሔርን መፍራት ትክክለኛ ፍጻሜ መሆኑ።"
+      }
+    },
+    {
+      "id": "songofsongs",
+      "genre": "poetry",
+      "background": {
+        "en": "Song of Songs is a collection of Hebrew love poetry celebrating the union of a man and a woman. Its title in Hebrew connects it with Solomon, and many regard it as marriage poetry. Christian and Jewish tradition has also read it as an image of the love between God and His people, while the literal celebration of faithful human love remains primary.",
+        "am": "መኃልየ መኃልይ የወንድና የሴት አንድነትን የሚያከብር የዕብራይስጥ የፍቅር ግጥሞች ስብስብ ነው። ርዕሱ በዕብራይስጥ ከሰሎሞን ጋር ያያይዘዋል። ክርስቲያናዊና አይሁዳዊ ትውፊት እንደ እግዚአብሔርና ሕዝቡ የፍቅር ምስል አድርገው አንብበዋል፤ ሆኖም በጽሑፉ ፊት የተነገረው ታማኝ የሰው ፍቅር ቀዳሚ ነው።"
+      },
+      "flow": {
+        "en": "The book unfolds as a series of love poems — longing, meeting, separation, reunion — among the beloved and her lover (and a chorus). It has no narrative argument; read it as lyric poetry about committed love and its longing.",
+        "am": "መጽሐፉ እንደ ተከታታይ የፍቅር ግጥሞች ይከፈታል — መጓጓት፣ መገናኘት፣ መለያየት፣ መተባበር — በእመቤቷና በፍቅረኛዋ (እና በማኅበር ሰዎች) መካከል። ተረታዊ ክርክር የለውም፤ ስለ ቁርጠኛ ፍቅርና መጓጓቱ እንደ ግጥም አንብበው።"
+      },
+      "keyThemes": {
+        "en": "Faithful covenant love; the goodness of God's design for marriage; longing and delight in one another; the flame of committed love.",
+        "am": "ታማኝ የኪዳን ፍቅር፤ እግዚአብሔር ለሠርግ የሰጠው ንድፍ መልካምነት፤ እርስ በእርስ መጓጓትና መደሰት፤ የቁርጠኛ ፍቅር ነበልባል።"
+      }
+    },
+    {
+      "id": "isaiah",
+      "genre": "prophecy",
+      "background": {
+        "en": "Isaiah is a prophetic book active in the eighth to seventh centuries BC, in and around Jerusalem during the Assyrian crisis. The book bears Isaiah son of Amoz's name and contains judgment, promise, the hope of a coming king, and the suffering servant. Questions about the book's composition history are actively debated; the text itself stands as prophecy that shaped Israel's hope.",
+        "am": "ኢሳይያስ የነቢይነት መጽሐፍ ሲሆን፣ በአብዛኛው በአሦር ቀውስ ዘመን በኢየሩሳሌም ዙሪያ በስምንተኛውና በሰባተኛው መቶ ክፍለ ዘመን ደርሷል። የአሞጽ ልጅ የኢሳይያስ ስም ይዞ የፍርድ፣ የተስፋ፣ የመምጪያ ንጉሥ ተስፋና የመከራ አገልጋይ ይዟል። ስለ መጽሐፉ አደረጃጀት ታሪክ ክርክር አለ፤ ጽሑፉ ራሱ የእስራኤልን ተስፋ የፈጠረ ትንቢት ሆኖ ይቆማል።"
+      },
+      "flow": {
+        "en": "Isaiah 1–39 pronounce judgment and promise a remnant, from the Assyrian threat to the hope of a coming king; 40–55 console exiled Israel with the servant and the new exodus; 56–66 look to a new heavens and a new earth.",
+        "am": "ኢሳይያስ 1–39 ፍርድን ይነግራልና ከአሦር ሥጋት እስከ መምጪያ ንጉሥ ተስፋ ድረስ ቅሬታን ይተስፋዋል፤ 40–55 በግዞት ያሉትን እስራኤልን በአገልጋዩና በአዲሱ ውጣ ውረድ ያጽናናል፤ 56–66 ወደ አዲስ ሰማይና አዲስ ምድር ይመለከታል።"
+      },
+      "keyThemes": {
+        "en": "The holiness of God; judgment and a faithful remnant; the promised Immanuel and his kingdom; the suffering servant; new creation.",
+        "am": "የእግዚአብሔር ቅድስና፤ ፍርድና ታማኝ ቅሬታ፤ የተስፋው ዓማኑኤልና መንግሥቱ፤ የመከራ አገልጋይ፤ አዲስ ፍጥረት።"
+      }
+    },
+    {
+      "id": "jeremiah",
+      "genre": "prophecy",
+      "background": {
+        "en": "Jeremiah prophesied in Judah in the decades before and during the Babylonian exile (late seventh to early sixth century BC). The book bears his name and mixes judgment, lament, and the promise of a new covenant. Jeremiah's own sorrowful testimony is woven through it; his secretary Baruch is named within the book.",
+        "am": "ኤርምያስ በይሁዳ፣ ከባቢሎን ግዞት በፊትና በግዞቱ (ከተሸጎጠው 7ኛው እስከ ስድስተኛው ክፍለ ዘመን) በነበሩት አሥርተ ዓመታት ትንቢት ተናግሯል። መጽሐፉ ስሙን ይዞ ፍርድን፣ ልቅሶንና የአዲስ ኪዳን ተስፋን ቀላቅሎ ይዟል። የኤርምያስ አሳዛኝ ምስክርነት በመላ ተሠልፎበታል፤ ጸሐፊው ባሩክ በመጽሐፉ ተጠቅሷል።"
+      },
+      "flow": {
+        "en": "The book moves from Jeremiah's call and early oracles of judgment (1–20), through oracles against kings and false prophets (21–29) and the promise of a new covenant (30–33), the siege and fall of Jerusalem (34–45), oracles against the nations (46–51), and a closing historical appendix (52).",
+        "am": "መጽሐፉ ከኤርምያስ ጥሪና ከፍርድ ቀዳሚ ትንቢቶች (1–20)፣ በነገሥታትና በሐሰት ነቢያት ላይ ባሉት ትንቢቶች (21–29)ና በአዲስ ኪዳን ተስፋ (30–33)፣ በኢየሩሳሌም ተከባብና ውድቀት (34–45)፣ በብሔራት ላይ ባሉት ትንቢቶች (46–51) እና በመዝጊያ ታሪካዊ መደመር (52) ይንቀሳቀሳል።"
+      },
+      "keyThemes": {
+        "en": "Judgment as covenant consequence; lament as honest faith; the new covenant written on the heart; the persistent call to repent.",
+        "am": "ፍርድ የኪዳን መዘዝ መሆኑ፤ ልቅሶ ሐቀኛ እምነት መሆኑ፤ በልብ ላይ የተጻፈ አዲስ ኪዳን፤ ወደ ንስሐ የሚጠራ የማያቋርጥ ጥሪ።"
+      }
+    },
+    {
+      "id": "lamentations",
+      "genre": "poetry",
+      "background": {
+        "en": "Lamentations is a book of five Hebrew poems mourning the destruction of Jerusalem and the temple by Babylon. Tradition connects them with Jeremiah, though the book itself does not name its author. They are acrostic laments that bring grief before God honestly, yet end in hope in His steadfast mercy.",
+        "am": "ልቅሶ በባቢሎን የኢየሩሳሌምንና የቤተ መቅደሱን ውድመት የሚያለቅሱ አምስት የዕብራይስጥ ግጥሞች መጽሐፍ ነው። ትውፊት ከኤርምያስ ጋር ያያይዛቸዋል፤ መጽሐፉ ራሱ ጸሐፊውን አይጠቅስም። ሐዘንን በሐቀኝነት ወደ እግዚአብሔር የሚያቀርቡ የፊደል ቅደም ተከተል ልቅሶዎች ሲሆኑ፣ ሆኖም በእርሱ በማይለወጠው ምሕረት ተስፋ ይዘው ይጠናቀቃሉ።"
+      },
+      "flow": {
+        "en": "Each chapter is a separate lament. The center of hope appears in 3:22–24 — 'the steadfast love of the Lord never ceases.' The poems move from the city's devastation to a plea for God to restore.",
+        "am": "እያንዳንዱ ምዕራፍ የተለየ ልቅሶ ነው። የተስፋው ማዕከል በ3፡22–24 ይገኛል — 'የእግዚአብሔር ቸርነት አያልቅም።' ግጥሞቹ ከከተማይቱ ውድመት ወደ እግዚአብሔር የመመለስ ልመና ይሄዳሉ።"
+      },
+      "keyThemes": {
+        "en": "Grief expressed honestly before God; the recognition of sin and its cost; hope in God's unfailing mercy; lament as a faithful posture.",
+        "am": "ሐዘንን በሐቀኝነት በእግዚአብሔር ፊት መግለጽ፤ ኃጢአትንና ዋጋውን ማወቅ፤ በእግዚአብሔር የማያልቅ ምሕረት መተማመን፤ ልቅሶ ታማኝ አቋም መሆኑ።"
+      }
+    },
+    {
+      "id": "ezekiel",
+      "genre": "prophecy",
+      "background": {
+        "en": "Ezekiel, a priest taken into Babylonian exile, prophesied among the exiles by the river Chebar in the sixth century BC. The book bears his name and uses vivid visions and acted signs to speak of judgment, restoration, and the glory of God. Its highly symbolic visions require careful reading as prophecy of that era and beyond.",
+        "am": "ወደ ባቢሎን ምርኮ የተወሰደው ካህኑ ሕዝቅኤል፣ በስድስተኛው ክፍለ ዘመን በኬባር ወንዝ አጠገብ በምርከኞች መካከል ትንቢት ተናግሯል። መጽሐፉ ስሙን ይዞ ስለ ፍርድ፣ ስለ መመለስና ስለ እግዚአብሔር ክብር ደማቅ ራእዮችንና ምሳሌያዊ አመልካች ምልክቶችን ይጠቀማል። ከፍተኛ ምሳሌያዊ የሆኑት ራእዮቹ እንደ ዘመኑና ከጊዜ በላይ ትንቢት ጥንቃቄ የሚጠይቁ ናቸው።"
+      },
+      "flow": {
+        "en": "Ezekiel announces judgment on Israel (1–24), on the nations (25–32), then turns to the promise of restoration, a new heart, and the return of God's glory (33–48), closing with the visionary temple and the life-giving river.",
+        "am": "ሕዝቅኤል በእስራኤል ላይ ፍርድ (1–24)፣ በብሔራት ላይ ፍርድ (25–32) ይናገራል፤ ከዚያም ወደ መመለስ፣ ወደ አዲስ ልብና ወደ እግዚአብሔር ክብር መመለስ ተስፋ (33–48) ይዞ ይዘጋል፤ በራእዩ ቤተ መቅደስና በሕይወት ሰጪው ወንዝ ይጠናቀቃል።"
+      },
+      "keyThemes": {
+        "en": "The glory of God; personal responsibility and a new heart; judgment and the hope of restoration; the presence of God dwelling with His people.",
+        "am": "የእግዚአብሔር ክብር፤ የግል ኃላፊነትና አዲስ ልብ፤ ፍርድና የመመለስ ተስፋ፤ እግዚአብሔር ከሕዝቡ ጋር መኖር።"
+      }
+    },
+    {
+      "id": "daniel",
+      "genre": "apocalyptic",
+      "background": {
+        "en": "Daniel tells of a faithful Judean in Babylon and contains apocalyptic visions of world kingdoms and the coming of the Son of Man. The book is set in the Babylonian and Persian courts; its apocalyptic chapters (7–12) use highly symbolic language about empires and the kingdom of God. Questions of dating and authorship are debated among scholars; the book itself presents Daniel as a sixth-century figure.",
+        "am": "ዳንኤል በባቢሎን ስለ ነበረው ታማኝ የይሁዳ ሰው ይነግራል፤ ስለ ዓለም መንግሥታትና ስለ የሰው ልጅ መምጣት ራእዮችን ይዟል። መጽሐፉ በባቢሎንና በፋርስ ቤተ መንግሥቶች ውስጥ ተቀምጧል፤ ራእያዊ ምዕራፎቹ (7–12) ስለ ኢምፓየሮችና ስለ እግዚአብሔር መንግሥት ከፍተኛ ምሳሌያዊ ቋንቋ ይጠቀማሉ። ስለ ቀኖችና ስለ ጸሐፊነት በምሁራን ዘንድ ክርክር አለ፤ መጽሐፉ ራሱ ዳንኤልን የስድስተኛው ክፍለ ዘመን ሰው አድርጎ ያቀርባል።"
+      },
+      "flow": {
+        "en": "Stories of faithful service and deliverance (1–6) give way to apocalyptic visions (7–12) that trace the world's empires and the triumph of God's kingdom. Daniel's visions should be read as symbolic, carefully interpreted prophecy, not as a private timetable.",
+        "am": "የታማኝ አገልግሎትና የመዳን ታሪኮች (1–6) ለራእዮች (7–12) ቦታ ይሰጣሉ፤ ራእዮቹ የዓለምን ኢምፓየሮችና የእግዚአብሔርን መንግሥት ድል ይከታተላሉ። የዳንኤል ራእዮች እንደ ምሳሌያዊ፣ በጥንቃቄ የሚተረጎም ትንቢት ሊነበቡ እንጂ እንደ የግል የጊዜ ሰሌዳ አይደሉም።"
+      },
+      "keyThemes": {
+        "en": "God's sovereignty over empires; faithful courage under pressure; apocalyptic symbols of the kingdom; the Ancient of Days and the Son of Man.",
+        "am": "እግዚአብሔር በኢምፓየሮች ላይ ሉዓላዊነቱ፤ በግፊት ውስጥ ታማኝ ድፍረት፤ የመንግሥቱ ራእያዊ ምልክቶች፤ የቀናቶች ጥንታዊውና የሰው ልጅ።"
+      }
+    },
+    {
+      "id": "hosea",
+      "genre": "prophecy",
+      "background": {
+        "en": "Hosea, an eighth-century prophet to the northern kingdom of Israel, used the devastating image of an unfaithful marriage to speak of Israel's covenant unfaithfulness to the Lord. The book bears his name. It mingles judgment with the astonishing hope of God's rekindled love.",
+        "am": "ሆሴዕ ለሰሜኑ መንግሥት የነበረ የስምንተኛው ክፍለ ዘመን ነቢይ ሲሆን፣ የእስራኤልን ለጌታ ያላቸውን የኪዳን ታማኝነት ማጣት ለመናገር የማይታመን ትዳር አሳዛኝ ምስል ተጠቅሟል። መጽሐፉ ስሙን ይይዛል። ፍርድን ከእግዚአብሔር ልብ በሚያነቃቃ ተስፋ ይቀላቀላል።"
+      },
+      "flow": {
+        "en": "Hosea's own painful marriage is a living sign of God's covenant with faithless Israel (1–3), followed by oracles of judgment and hope (4–14), ending with a call to return to the Lord.",
+        "am": "የሆሴዕ ራሱ አሳዛኝ ትዳር እግዚአብሔር ታማፊ ከሆነችው እስራኤል ጋር ያደረገው የኪዳን ሕያው ምልክት ነው (1–3)፤ ከዚያም የፍርድና የተስፋ ትንቢቶች (4–14) ይከተላሉ፤ ወደ ጌታ የመመለስ ጥሪ ይዘው ያበቃሉ።"
+      },
+      "keyThemes": {
+        "en": "God's wounded love for a faithless people; judgment as the other side of covenant love; the hope of God's renewed betrothal; knowing God rather than mere ritual.",
+        "am": "እግዚአብሔር ለታማፊ ሕዝብ ያለው የተጎዳ ፍቅር፤ ፍርድ የኪዳን ፍቅር ሌላኛው ገጽታ መሆኑ፤ እግዚአብሔር ትዳሩን የሚያደስበት ተስፋ፤ ከሥርዓት ይልቅ እግዚአብሔርን ማወቅ።"
+      }
+    },
+    {
+      "id": "joel",
+      "genre": "prophecy",
+      "background": {
+        "en": "Joel is a short prophetic book that uses a devastating locust plague as an image of the coming day of the Lord. Its call to repentance and its promise of the outpouring of the Spirit have made it central to Christian reading of Pentecost. The book does not date itself precisely; it is placed among the minor prophets.",
+        "am": "ዮኤል አጭር የትንቢት መጽሐፍ ሲሆን፣ የጌታን ቀን ለመግለጽ ገዳይ የአንበጣ ወረርሽኝ ምስል ይጠቀማል። ንስሐ የሚጠይቀው ጥሪውና የመንፈስ ፍሳሽ የሚሰጠው ተስፋው ለጰንጠቆስጤ በክርስትና ንባብ ማዕከላዊ አድርገውታል። መጽሐፉ ጊዜውን በትክክል አያስቀምጥም፤ ከትንንሽ ነቢያት መካከል ይጠቀሳል።"
+      },
+      "flow": {
+        "en": "The book calls to repentance in the face of locust devastation (1), declares the coming day of the Lord and the promise of the Spirit's outpouring (2), and looks to judgment on the nations and blessing on God's people (3).",
+        "am": "መጽሐፉ በአንበጣ ጥፋት ፊት ወደ ንስሐ ይጠራል (1)፣ የጌታን ቀንና የመንፈስ ፍሳሽ ተስፋን ያስታውቃል (2)፣ በብሔራት ላይ ፍርድንና በእግዚአብሔር ሕዝብ ላይ በረከትን ይመለከታል (3)።"
+      },
+      "keyThemes": {
+        "en": "The day of the Lord; sincere repentance and fasting; the promise of the Spirit; God's jealous love for His people.",
+        "am": "የጌታ ቀን፤ ከልብ ንስሐና ጾም፤ የመንፈስ ተስፋ፤ እግዚአብሔር ለሕዝቡ ያለው ቅናት ፍቅር።"
+      }
+    },
+    {
+      "id": "amos",
+      "genre": "prophecy",
+      "background": {
+        "en": "Amos, a shepherd and farmer from Tekoa, prophesied in the eighth century BC against the northern kingdom of Israel, denouncing social injustice and empty religion. The book bears his name. His message centered on the Lord's demand for righteousness and justice, especially toward the poor.",
+        "am": "አሞጽ ከተቆዓ የነበረ እረኛና ገበሬ ሲሆን፣ በስምንተኛው ክፍለ ዘመን በሰሜኑ መንግሥት ላይ የማኅበራዊ ኢፍትሐዊነትንና ባዶ ሃይማኖትን እየወቀሰ ትንቢት ተናግሯል። መጽሐፉ ስሙን ይይዛል። መልእክቱ በተለይ ለድሆች ጽድቅንና ፍትሕን የሚጠይቅ የጌታ ፍላጎት ላይ ያተኮረ ነበር።"
+      },
+      "flow": {
+        "en": "After oracles against the nations and Israel (1–2), Amos announces judgment on Israel's complacency and injustice (3–6), presents visions of coming judgment (7–9), and closes with a brief hope of restoration for David's fallen booth (9:11–15).",
+        "am": "በብሔራትና በእስራኤል ላይ ከሚናገሩት ትንቢቶች (1–2) በኋላ፣ አሞጽ በእስራኤል ርካሽነትና ኢፍትሕ ላይ ፍርድን ይናገራል (3–6)፣ የመምጪያ ፍርድ ራእዮችን ያቀርባል (7–9)፣ የተመለሰ የዳዊት ዳስ የሆነ አጭር የመመለስ ተስፋ ይዞ ይዘጋል (9፡11–15)።"
+      },
+      "keyThemes": {
+        "en": "Justice and righteousness as the Lord's demand; the emptiness of worship without obedience; the day of the Lord; hope for the fallen house of David.",
+        "am": "ፍትሕና ጽድቅ የጌታ ፍላጎት መሆናቸው፤ ያለ መታዘዝ የአምልኮ ባዶነት፤ የጌታ ቀን፤ ለወደቀው የዳዊት ቤት ተስፋ።"
+      }
+    },
+    {
+      "id": "obadiah",
+      "genre": "prophecy",
+      "background": {
+        "en": "Obadiah is the shortest book of the Old Testament, a single chapter of prophecy against Edom for its violence against Judah. The book does not give its date or the prophet's identity beyond the name. It proclaims that God holds nations accountable and that the kingdom will be the Lord's.",
+        "am": "አብድዩ የአሮጌ ኪዳን አጭሩ መጽሐፍ ሲሆን፣ ኤዶም በይሁዳ ላይ ስላደረሰው ግፍ ላይ የተነገረ አንድ ምዕራፍ ትንቢት ነው። መጽሐፉ ቀኑን ወይም የነቢዩን ማንነት ከስሙ በላይ አያስቀምጥም። እግዚአብሔር ብሔራትን ተጠያቂ እንደሚያደርግና መንግሥቱ የጌታ እንደሚሆን ያውጃል።"
+      },
+      "flow": {
+        "en": "The prophecy declares judgment on Edom's pride and violence against its brother nation (1–9), condemns its complicity (10–14), and ends with the day of the Lord and the triumph of the Lord's kingdom (15–21).",
+        "am": "ትንቢቱ በኤዶም ኩራትና በወንድሟ ላይ ባደረሰችው ግፍ ላይ ፍርድን ይናገራል (1–9)፣ አጋራነቷን ያወግዛል (10–14)፣ የጌታ ቀንና የጌታ መንግሥት ድል ይዞ ያበቃል (15–21)።"
+      },
+      "keyThemes": {
+        "en": "Pride before a fall; God's justice upon nations; the day of the Lord; the Lord's kingdom as the final word.",
+        "am": "ከውድቀት በፊት ኩራት፤ እግዚአብሔር ብሔራትን የሚፈርድባቸው ጽድቅ፤ የጌታ ቀን፤ የጌታ መንግሥት የመጨረሻ ቃል መሆኑ።"
+      }
+    },
+    {
+      "id": "jonah",
+      "genre": "narrative",
+      "background": {
+        "en": "Jonah is a short prophetic narrative about a prophet who resisted God's call to Nineveh. Unlike the other prophets, it is told as a story. Questions about its genre — whether a historical account or a didactic tale — are debated among readers; its message about God's mercy to a hostile city and His patience with an unwilling prophet stands in either case.",
+        "am": "ዮናስ ወደ ነነዌ የተሰጠውን የእግዚአብሔርን ጥሪ ስለተቃወመ ነቢይ የሚናገር አጭር ትንቢታዊ ትረካ ነው። ከሌሎቹ ነቢያት በተለየ እንደ ታሪክ ተነግሯል። እንደ ታሪካዊ ዘገባ ወይም እንደ ትምህርታዊ ተረት ተፈጥሮው በንባብ በምሁራን ይነሳል፤ እግዚአብሔር ለጠላት ከተማ ስላለው ምሕረትና ልቡ ካልታመሰ ነቢይ ጋር ስላለው ትዕግስት መልእክቱ በሁለቱም ሁኔታ ይቆማል።"
+      },
+      "flow": {
+        "en": "Jonah flees and is caught by a storm and a great fish (1), prays from the depth (2), reluctantly preaches to Nineveh which repents (3), and sulks while God teaches him a lesson of mercy (4).",
+        "am": "ዮናስ ሸሽቶ በማዕበልና በታላቅ ዓሣ ተይዞ ተሸነፈ (1)፣ ከጥልቁ ጸለየ (2)፣ ሳይወድ ለነነዌ ሰበከና ነነዌ ተጸጸተች (3)፣ እግዚአብሔር የምሕረት ትምህርት እስኪያስተምረው ድረስ ተቆጥቷል (4)።"
+      },
+      "keyThemes": {
+        "en": "God's mercy beyond Israel; the stubbornness of the reluctant servant; repentance that turns God's judgment; God's patience with both the city and the prophet.",
+        "am": "ከእስራኤል ባሻገር የእግዚአብሔር ምሕረት፤ የእንጉርጉራሹ አገልጋይ ግትርነት፤ የእግዚአብሔርን ፍርድ የሚመልስ ንስሐ፤ እግዚአብሔር ከከተማይቱም ከነቢዩም ጋር ያለው ትዕግስት።"
+      }
+    },
+    {
+      "id": "micah",
+      "genre": "prophecy",
+      "background": {
+        "en": "Micah, a contemporary of Isaiah, prophesied in the eighth century BC in Judah. The book bears his name and denounces injustice, announces judgment, and promises a coming ruler from Bethlehem and a future of peace. His call to 'do justice, love mercy, and walk humbly with God' (6:8) remains a summary of covenant living.",
+        "am": "ሚክያስ የኢሳይያስ ዘመን ሰው ሲሆን፣ በስምንተኛው ክፍለ ዘመን በይሁዳ ትንቢት ተናግሯል። መጽሐፉ ስሙን ይይዛል፤ ኢፍትሕን ያወግዛል፣ ፍርድን ያስታውቃል፣ ከቤተ ልሔም የሚመጣን ገዥና የሰላም ወደፊት ጊዜ ይተስፋዋል። 'ፍትሕን ማድረግ፣ ምሕረትን መውደድና ከእግዚአብሔር ጋር በትሕትና መራመድ' (6፡8) የሚለው ጥሪው የኪዳን ሕይወት አጠቃላይ ማጠቃለያ ሆኖ ይቀራል።"
+      },
+      "flow": {
+        "en": "Micah alternates judgment on the leaders of Israel and Judah (1–3) with promises of a coming shepherd-king from Bethlehem and universal peace (4–5), then restates the call to covenant faithfulness (6–7), closing in hope.",
+        "am": "ሚክያስ በእስራኤልና በይሁዳ መሪዎች ላይ ፍርድ (1–3) ከቤተ ልሔም የሚመጣ እረኛ-ንጉሥና ሁለንተናዊ ሰላም ተስፋ (4–5) ጋር ይለዋወጣል፤ ከዚያም የኪዳን ታማኝነት ጥሪን በድጋሚ ያስቀምጣል (6–7)፤ በተስፋ ይዘጋል።"
+      },
+      "keyThemes": {
+        "en": "Justice, mercy, and humility as covenant heart; judgment on corrupt leaders; the promised ruler from Bethlehem; the vision of peace.",
+        "am": "ፍትሕ፣ ምሕረትና ትሕትና የኪዳን ልብ መሆናቸው፤ በተበላሹ መሪዎች ላይ ፍርድ፤ ከቤተ ልሔም የተስፋገደው ገዥ፤ የሰላም ራእይ።"
+      }
+    },
+    {
+      "id": "nahum",
+      "genre": "prophecy",
+      "background": {
+        "en": "Nahum prophesied the fall of Nineveh, the capital of Assyria, the empire that had devastated Israel and Judah. The book bears his name. It announces God's judgment upon a violent empire and the relief that comes to the oppressed.",
+        "am": "ናሆም የእስራኤልንና የይሁዳን ያወደመውን የአሦር ኢምፓየር ገነኞች ነነዌ መውደቋን ትንቢት ተናግሯል። መጽሐፉ ስሙን ይይዛል። እግዚአብሔር ጨካኝ ኢምፓየርን እንደሚፈርድበትና ለጨቁኖች ነፃነት እንደሚመጣ ያውጃል። ነነዌ በወቅቱ ዓለም ኀያል ሆና የነበረች ከተማ ነበረች፤ ውድቀቷ የእግዚአብሔር ፍርድ ማንንም እንደማያባይ ያሳያል።"
+      },
+      "flow": {
+        "en": "Nahum describes the Lord's coming in judgment (1), prophesies the siege and fall of Nineveh (2), and taunts the fallen city with the certainty of its ruin (3).",
+        "am": "ናሆም ጌታ በፍርድ መምጣቱን ይገልጻል (1)፣ የነነዌን ከበባና ውድቀት ትንቢት ይናገራል (2)፣ የወደቀችውን ከተማ ውድመቷን በእርግጠኝነት በማሣለቅ (3) ያጠናቅቃል።"
+      },
+      "keyThemes": {
+        "en": "God's judgment on oppressive power; the vindication of the oppressed; God's might in nature and history; the certainty of God's word.",
+        "am": "እግዚአብሔር ጨቋኝ ሥልጣንን መፍረድ፤ ለተጨቁኖች ፍትሕ መመለስ፤ በተፈጥሮና በታሪክ ውስጥ የእግዚአብሔር ኀይል፤ የእግዚአብሔር ቃል እርግጠኝነት።"
+      }
+    },
+    {
+      "id": "habakkuk",
+      "genre": "prophecy",
+      "background": {
+        "en": "Habakkuk is a prophetic dialogue between the prophet and God about the injustice of his day and the strange ways God was working — using Babylon as His instrument. The book bears the prophet's name and moves from complaint to a stance of trust. Its line 'the righteous shall live by his faith' (2:4) became foundational in Christian thought.",
+        "am": "ዕንባቆም በዘመኑ ስለ ነበረው ኢፍትሕና እግዚአብሔር ባቢሎንን እንደ መሣሪያ እየተጠቀመበት ስለነበረው አስገራሚ የእግዚአብሔር ሥራ በነቢዩና በእግዚአብሔር መካከል የሚደረግ ውይይት ነው። መጽሐፉ የነቢዩን ስም ይይዛል፤ ከቅሬታ ወደ እምነት አቋም ይንቀሳቀሳል። 'ጻድቅ በእምነቱ ሕያው ይሆናል' (2፡4) የሚለው ቃል በክርስቲያናዊ ሐሳብ መሠረታዊ ሆነ።"
+      },
+      "flow": {
+        "en": "The prophet complains of unanswered injustice (1:1–4), learns that God is working in surprising ways (1:5–11), receives the vision of trust (2), and closes with a psalm of confidence in God even amid desolation (3).",
+        "am": "ነቢዩ ያልተመለሰ ኢፍትሕን ያማርራል (1፡1–4)፣ እግዚአብሔር አስገራሚ በሆኑ መንገዶች እየሠራ መሆኑን ይማራል (1፡5–11)፣ የእምነት ራእዩን ይቀበላል (2)፣ በጥፋት መካከልም በእግዚአብሔር የመተማመን መዝሙር ይዞ ይዘጋል (3)።"
+      },
+      "keyThemes": {
+        "en": "Honest questioning of God; the righteousness that lives by faith; God's sovereign ways beyond human reason; trust that endures empty seasons.",
+        "am": "እግዚአብሔርን በሐቀኝነት መጠየቅ፤ በእምነት የሚኖር ጽድቅ፤ ከሰው አስተሳሰብ በላይ የእግዚአብሔር ሉዓላዊ መንገዶች፤ ባድማ ወቅቶችን የሚታገስ እምነት።"
+      }
+    },
+    {
+      "id": "zephaniah",
+      "genre": "prophecy",
+      "background": {
+        "en": "Zephaniah prophesied in Judah in the seventh century BC, likely during the reign of Josiah, announcing the coming day of the Lord and the judgment of Jerusalem's complacency. The book bears his name. It moves from doom to a tender promise of God's presence singing over His restored people.",
+        "am": "ሶፎንያስ በሰባተኛው ክፍለ ዘመን፣ ምናልባትም በኢዮስያስ ዘመን፣ በይሁዳ ትንቢት ተናግሯል፤ የጌታን ቀን እና የኢየሩሳሌምን ርካሽነት ፍርድ አስታውቋል። መጽሐፉ ስሙን ይይዛል። ከጥፋት ወደ እግዚአብሔር በተመለሰ ሕዝቡ እንደሚዘምር ወደ ሚሰጠው ተላላ ተስፋ ይሄዳል።"
+      },
+      "flow": {
+        "en": "The prophecy announces judgment on the whole earth and on Jerusalem's complacent worship (1), calls for repentance before the day of the Lord (2:1–3), judges the nations (2:4–15), then closes with hope — a remnant restored and the Lord's joy over His people (3).",
+        "am": "ትንቢቱ በመላው ምድርና በኢየሩሳሌም ርካሽ አምልኮ ላይ ፍርድን ያስታውቃል (1)፣ የጌታን ቀን ሳይደርስ ወደ ንስሐ ይጠራል (2፡1–3)፣ በብሔራት ላይ ይፈርዳል (2፡4–15)፣ በተስፋ ይዘጋል፤ የተመለሰ ቅሬታና ጌታ በሕዝቡ ላይ ያለው ደስታ (3)።"
+      },
+      "keyThemes": {
+        "en": "The day of the Lord; judgment on complacency; humble seeking of the Lord; God's joy in a restored remnant.",
+        "am": "የጌታ ቀን፤ በርካሽነት ላይ ፍርድ፤ ጌታን በትሕትና መፈለግ፤ እግዚአብሔር በተመለሰ ቅሬታ ያለው ደስታ።"
+      }
+    },
+    {
+      "id": "haggai",
+      "genre": "prophecy",
+      "background": {
+        "en": "Haggai, a post-exilic prophet, urged the returned exiles to rebuild the temple in Jerusalem in the years around 520 BC. The book bears his name and records four brief oracles tied to specific dates, all centered on putting God's house first. Its message is that seeking first the Lord's house brings blessing, while neglect leads to leanness.",
+        "am": "ሐጌ ከግዞት የተመለሱት ሕዝብ በ520 ዓ.ዓ. አካባቢ በኢየሩሳሌም ቤተ መቅደሱን እንዲገነቡ ያሳሰበ ነቢይ ነው። መጽሐፉ ስሙን ይይዛል፤ ከተወሰኑ ቀኖች ጋር የተያያዙ አራት አጭር ትንቢቶችን ይዘግባል፤ ሁሉም የእግዚአብሔርን ቤት በመጀመሪያ ማስቀመጥ ላይ ያተኮሩ ናቸው። መልእክቱ፣ የጌታን ቤት መጀመሪያ መፈለግ በረከት ያመጣል፤ ችላ ማለት ደግሞ ድህነትን ያመጣል የሚለው ነው።"
+      },
+      "flow": {
+        "en": "The oracles call the people to rebuild the temple (1), strengthen them with the promise that God's glory will fill it (2:1–9), declare blessing for obedience (2:10–19), and give a promise to Zerubbabel (2:20–23).",
+        "am": "ትንቢቶቹ ሕዝቡ ቤተ መቅደሱን እንዲገነቡ ይጠራሉ (1)፣ የእግዚአብሔር ክብር እንደሚሞላው በሚሰጥ ተስፋ ያጸናሉ (2፡1–9)፣ ለመታዘዝ በረከትን ያውጃሉ (2፡10–19)፣ ለዘሩባቤል ተስፋ ይሰጣሉ (2፡20–23)።"
+      },
+      "keyThemes": {
+        "en": "Seeking first God's house; the priority of worship; the Lord's presence filling His temple; courage in obedient rebuilding.",
+        "am": "የእግዚአብሔርን ቤት መጀመሪያ መፈለግ፤ የአምልኮ ቅድምና፤ ጌታ ቤተ መቅደሱን መሙላት፤ በመታዘዝ ግንባታ ውስጥ ድፍረት።"
+      }
+    },
+    {
+      "id": "zechariah",
+      "genre": "prophecy",
+      "background": {
+        "en": "Zechariah, a post-exilic prophet alongside Haggai, used visions and oracles to encourage the rebuilding of the temple and the people, and to look forward to a coming king and shepherd. The book bears his name. Its dense visions use symbolic language to promise God's presence and the triumph of His peace.",
+        "am": "ዘካርያስ ከሐጌ ጎን የቆመ ከግዞት የተመለሰ ነቢይ ሲሆን፣ ቤተ መቅደሱንና ሕዝቡን መልሶ ለማነቃቃትና ወደ መጪው ንጉሥና እረኛ ለመመልከት ራእዮችንና ትንቢቶችን ተጠቅሟል። መጽሐፉ ስሙን ይይዛል። ጥቅጥቅ ያሉት ራእዮቹ የእግዚአብሔርን መገኘትና የሰላሙን ድል ለመተስፋው ምሳሌያዊ ቋንቋ ይጠቀማሉ።"
+      },
+      "flow": {
+        "en": "Zechariah begins with calls to return and a series of night visions (1–6), then oracles about fasting, the coming king, the shepherd, and restoration (7–14). The early chapters use apocalyptic-style symbols; the later chapters speak of a humble king and a fountain opened for sin and uncleanness.",
+        "am": "ዘካርያስ ወደ መመለስ በሚጠሩ ቃላትና በተከታታይ የሌሊት ራእዮች (1–6) ይጀምራል፤ ከዚያም ስለ ጾም፣ ስለ መጪው ንጉሥ፣ ስለ እረኛውና ስለ መመለስ (7–14) ትንቢቶች ይከተላሉ። ቀደምት ምዕራፎች ራእያዊ ምልክቶችን ይጠቀማሉ፤ ኋለኞቹ ምዕራፎች ስለ ትሑት ንጉሥና ለኃጢአትና ለርኩሰት ስለተከፈተ ምንጭ ይናገራሉ።"
+      },
+      "keyThemes": {
+        "en": "God's presence with His people; the humble king who brings peace; the good shepherd; the cleansing fountain and the restoration of Jerusalem.",
+        "am": "እግዚአብሔር ከሕዝቡ ጋር መገኘቱ፤ ሰላምን የሚያመጣ ትሑት ንጉሥ፤ መልካሙ እረኛ፤ የሚያነጻው ምንጭና የኢየሩሳሌም መመለስ።"
+      }
+    },
+    {
+      "id": "malachi",
+      "genre": "prophecy",
+      "background": {
+        "en": "Malachi, a post-exilic prophet, addressed religious decline and neglect of worship in restored Jerusalem with a series of disputations — the Lord's people questioning His word. The book bears the name 'my messenger.' It condemns rote worship, broken covenants, and injustices, and ends with the promise of Elijah's coming and the sun of righteousness.",
+        "am": "ሚልክያስ የተመለሰችውን ኢየሩሳሌም የተመለከተ ነቢይ ሲሆን፣ የሃይማኖት ውድቀትንና የአምልኮ ቸልተኝነትን በተከታታይ ክርክሮች ተናግሯል፤ የጌታ ሕዝብ በቃሉ ላይ ይጠይቁበት ነበር። መጽሐፉ የ'መልእክተኛዬ' ስም ይይዛል። ሜካኒካዊ አምልኮን፣ የተሰበሩ ኪዳኖችንና ኢፍትሐዊ ድርጊቶችን ያወግዛል፤ የኤልያስን መምጣትና የጽድቅ ፀሐይን ተስፋ ይዞ ይዘጋል።"
+      },
+      "flow": {
+        "en": "Malachi challenges the people's questioning (1), condemns the priests and rote, impure worship (1:6–2:9) and faithlessness in marriage and covenant (2:10–16), announces judgment on evildoers and the coming day (3–4), and closes with the promise of Elijah.",
+        "am": "ሚልክያስ የሕዝቡን ጥያቄ ይገፋፋል (1)፣ ካህናትንና ሜካኒካዊ፣ ርኩስ አምልኮን (1፡6–2፡9)ና በትዳርና በኪዳን ታማኝነት ማጣትን (2፡10–16) ያወግዛል፣ በክፉ ሠሪዎች ላይ ፍርድንና መምጪያውን ቀን ያስታውቃል (3–4)፣ የኤልያስን ተስፋ ይዞ ይዘጋል።"
+      },
+      "keyThemes": {
+        "en": "Whole-hearted worship versus rote ritual; the refining judgment of the Lord; covenant faithfulness; the hope of Elijah and the sun of righteousness.",
+        "am": "ከሜካኒካዊ ሥርዓት ይልቅ ከልብ የሆነ አምልኮ፤ የጌታ የሚያጠራ ፍርድ፤ የኪዳን ታማኝነት፤ የኤልያስና የጽድቅ ፀሐይ ተስፋ።"
+      }
+    }
+  ,
+
+    {
+      "id": "matthew",
+      "genre": "gospel",
+      "background": {
+        "en": "Matthew is a gospel — a carefully arranged account of the life, teaching, death, and resurrection of Jesus. Church tradition associates it with Matthew, the tax collector who became one of Jesus' twelve disciples, though the book itself does not name its author. It presents Jesus as the promised king of Israel, teaching and fulfilling the Scriptures. Like the other gospels, it is theology expressed as history.",
+        "am": "ማቴዎስ ወንጌል ነው — የኢየሱስን ሕይወት፣ ትምህርት፣ ሞትና ትንሣኤ በጥንቃቄ የተስተካከለ ዘገባ። የቤተ ክርስቲያን ትውፊት ከኢየሱስ አሥራ ሁለት ደቀ መዛሙርት መካከል አንዱ ከሆነው ከቀረጥ ሰብሳቢው ከማቴዎስ ጋር ያያይዘዋል፤ መጽሐፉ ራሱ ጸሐፊውን አይጠቅስም። ኢየሱስን የእስራኤል የተስፋገደው ንጉሥ ሆኖ፣ ቅዱሳት መጻሕፍትን የሚያስተምርና የሚፈጽም አድርጎ ያቀርባል። እንደሌሎቹ ወንጌላት ሁሉ ሥነ-መለኮት በታሪክ መልክ የተገለጸ ነው።"
+      },
+      "flow": {
+        "en": "Matthew opens with Jesus' genealogy and infancy (1–2), then his baptism, testing, and teaching (3–7), ministry of miracles and discipleship (8–20), the week of his death in Jerusalem (21–27), and his resurrection with the great commission (28).",
+        "am": "ማቴዎስ በኢየሱስ ትውልድና ሕጻንነት (1–2) ይከፈታል፤ ከዚያም ጥምቀቱ፣ ፈተናውና ትምህርቱ (3–7)፣ የተአምራትና የደቀ መዝሙርነት አገልግሎት (8–20)፣ በኢየሩሳሌም የሞት ሳምንት (21–27)፣ ትንሣኤውና ታላቁ ሥልጣን (28) ይከተላሉ።"
+      },
+      "keyThemes": {
+        "en": "Jesus as the promised king and fulfillment of the Law; the kingdom of heaven; discipleship as hearing and doing; the church and its mission to all nations.",
+        "am": "ኢየሱስ የተስፋገደው ንጉሥና የሕግ ፍጻሜ መሆኑ፤ የሰማያት መንግሥት፤ ደቀ መዝሙርነት መስማትና ማድረግ መሆኑ፤ ቤተ ክርስቲያንና ለሁሉም ብሔራት ተልዕኮዋ።"
+      }
+    },
+    {
+      "id": "mark",
+      "genre": "gospel",
+      "background": {
+        "en": "Mark is a gospel, widely regarded as the earliest-written account of Jesus' life. Church tradition links it to Mark, a companion of Peter and Paul, though the book does not name its author. It moves quickly, presenting Jesus as the powerful Son of God who comes to serve and give his life, and calling readers to follow even in suffering.",
+        "am": "ማርቆስ ወንጌል ሲሆን፣ ስለ ኢየሱስ ሕይወት ከሁሉም ቀደም ብሎ የተጻፈ ዘገባ እንደሆነ በሰፊው ይታመናል። የቤተ ክርስቲያን ትውፊት ከጴጥሮስና ከጳውሎስ ጓደኛ ከማርቆስ ጋር ያያይዘዋል፤ መጽሐፉ ጸሐፊውን አይጠቅስም። በፍጥነት ይሄዳል፤ ኢየሱስን ለማገልገልና ሕይወቱን ለመስጠት የመጣው ኀያል የእግዚአብሔር ልጅ አድርጎ ያቀርባል፤ አንባቢዎችን በመከራ ውስጥም እንዲከተሉ ይጠራል።"
+      },
+      "flow": {
+        "en": "Mark opens with Jesus' baptism and the beginning of his Galilean ministry (1), his miracles, teaching in parables, and growing conflict (2–10), the road to Jerusalem and the passion (11–15), and the empty tomb (16).",
+        "am": "ማርቆስ በኢየሱስ ጥምቀትና በገሊላ አገልግሎቱ መጀመሪያ (1) ይከፈታል፤ ተአምራቱ፣ የምሳሌ ትምህርቱና እያደገ የመጣው ግጭት (2–10)፣ ወደ ኢየሩሳሌም መንገድና ሕማማት (11–15)፣ ባዶው መቃብር (16) ይከተላሉ።"
+      },
+      "keyThemes": {
+        "en": "Jesus as the powerful yet serving Son of God; the mystery of the kingdom in parables; discipleship as the way of the cross; faith amid failure.",
+        "am": "ኢየሱስ ኀያልና ግን የሚያገለግል የእግዚአብሔር ልጅ መሆኑ፤ የመንግሥት ምስጢር በምሳሌዎች፤ ደቀ መዝሙርነት የመስቀል መንገድ መሆኑ፤ በውድቀት መካከል እምነት።"
+      }
+    },
+    {
+      "id": "luke",
+      "genre": "gospel",
+      "background": {
+        "en": "Luke is a gospel, written as an ordered account for Theophilus, a reader of some standing. Church tradition connects it with Luke, the physician and companion of Paul. It emphasizes Jesus' compassion for the poor, the outcast, women, and Gentiles, and pairs with Acts as a two-volume work. Like all gospels, it is faithful history in service of faith.",
+        "am": "ሉቃስ ወንጌል ሲሆን፣ ለተወሰነ ክብር ባለው አንባቢ ለቴዎፍሎስ የተጻፈ የታዘዘ ዘገባ ነው። የቤተ ክርስቲያን ትውፊት ከሐኪሙና ከጳውሎስ ጓደኛ ከሉቃስ ጋር ያያይዘዋል። ኢየሱስ ለድሆች፣ ለተገለሉ፣ ለሴቶችና ለአሕዛብ ያለውን ርኅራኄ ያጎላል፤ ከሐዋርያት ሥራ ጋር ባለ ሁለት ጥራዝ ሥራ ነው። እንደሁሉም ወንጌላት ለእምነት አገልግሎት የሚቆም ታማኝ ታሪክ ነው።"
+      },
+      "flow": {
+        "en": "Luke opens with the birth stories of John and Jesus (1–2), his ministry in Galilee (3–9), the long journey toward Jerusalem with much teaching (9:51–19), the passion in Jerusalem (20–23), and the resurrection appearances on the road to Emmaus (24).",
+        "am": "ሉቃስ በዮሐንስና በኢየሱስ ልደት ታሪኮች (1–2) ይከፈታል፤ በገሊላ አገልግሎት (3–9)፣ ወደ ኢየሩሳሌም የመጻው ረጅም ጉዞ ከብዙ ትምህርት ጋር (9፡51–19)፣ በኢየሩሳሌም ሕማማት (20–23)፣ በአምስቱ መንገድ የትንሣኤ መገለጦች (24) ይከተላሉ።"
+      },
+      "keyThemes": {
+        "en": "Jesus as Savior for all — poor, outcast, women, and nations; the joy of salvation; prayer and the Spirit; the risen Lord who opens the Scriptures.",
+        "am": "ኢየሱስ ለሁሉም — ለድሆች፣ ለተገለሉ፣ ለሴቶችና ለብሔራት — መድኃኒት መሆኑ፤ የመዳን ደስታ፤ ጸሎትና መንፈስ፤ ቅዱሳት መጻሕፍትን የሚከፍት የተነሣው ጌታ።"
+      }
+    },
+    {
+      "id": "john",
+      "genre": "gospel",
+      "background": {
+        "en": "John is a gospel that presents Jesus as the Word made flesh, the Son of God, through signs and extended discourses. Church tradition associates it with John, the son of Zebedee and beloved disciple, though the book identifies itself only as the testimony of 'the disciple whom Jesus loved.' It was written so that readers may believe that Jesus is the Christ and have life in his name.",
+        "am": "ዮሐንስ ወንጌል ሲሆን ኢየሱስን ቃሉ ሥጋ የሆነ፣ የእግዚአብሔር ልጅ አድርጎ በምልክቶችና በረጅም ንግግሮች ያቀርባል። የቤተ ክርስቲያን ትውፊት ከዘብዴዎስ ልጅና ከተወዳጁ ደቀ መዝሙር ከዮሐንስ ጋር ያያይዘዋል፤ መጽሐፉ ራሱ እንደ 'ኢየሱስ የወደደው ደቀ መዝሙር' ምስክርነት ብቻ ይለያል። የተጻፈው አንባቢዎች ኢየሱስ ክርስቶስ መሆኑን አምነው በስሙ ሕይወት እንዲያገኙ ነው።"
+      },
+      "flow": {
+        "en": "John opens with the Word made flesh (1), follows the signs and discourses that reveal Jesus (2–12), the farewell discourse of the night he was betrayed (13–17), his arrest, trial, crucifixion (18–19), and resurrection appearances (20–21).",
+        "am": "ዮሐንስ በሥጋ በተወው ቃል (1) ይከፈታል፤ ኢየሱስን የሚገልጹ ምልክቶችና ንግግሮች (2–12)፣ በተሰጠበት ሌሊት የማዕረገ ተሰንዮ (13–17)፣ መያዙ፣ ፍርዱ፣ መስቀሉ (18–19)፣ የትንሣኤ መገለጦች (20–21) ይከተላሉ።"
+      },
+      "keyThemes": {
+        "en": "Jesus as the Word and the Son of God; belief and eternal life; the signs that reveal glory; the Spirit as the one who leads into truth.",
+        "am": "ኢየሱስ ቃሉና የእግዚአብሔር ልጅ መሆኑ፤ እምነትና ዘላለም ሕይወት፤ ክብርን የሚገልጹ ምልክቶች፤ ወደ እውነት የሚመራው መንፈስ።"
+      }
+    },
+    {
+      "id": "acts",
+      "genre": "narrative",
+      "background": {
+        "en": "Acts continues Luke's account, telling how the risen Jesus' witnesses carried the gospel from Jerusalem to Rome. It is the story of the early church under the power of the Spirit, centered on Peter and then Paul. It is best read as part of a two-volume work with the Gospel of Luke and as the narrative bridge between the gospels and the letters.",
+        "am": "የሐዋርያት ሥራ የሉቃስ ዘገባ ቀጣይ ሲሆን፣ የተነሣው ኢየሱስ ምስክሮች ወንጌልን ከኢየሩሳሌም እስከ ሮም እንዴት እንዳደረሱ ይነግራል። በመንፈስ ኀይል ሥር የነበረችው የጥንቷ ቤተ ክርስቲያን ታሪክ ነው፤ በጴጥሮስና ከዚያም በጳውሎስ ላይ ያተኮረ ነው። ከሉቃስ ወንጌል ጋር ባለ ሁለት ጥራዝ ሥራ አካልና በወንጌላትና በመልዕክቶች መካከል ታሪካዊ ድልድይ ሆኖ ሊነበብ ይገባል።"
+      },
+      "flow": {
+        "en": "Acts moves from the risen Lord's commission and Pentecost in Jerusalem (1–7), through the gospel spreading in Judea and Samaria and to Cornelius (8–12), Paul's missionary journeys (13–21), his arrest and trials (22–26), and his voyage to Rome (27–28).",
+        "am": "የሐዋርያት ሥራ ከተነሣው ጌታ ሥልጣንና በኢየሩሳሌም ከጰንጠቆስጤ (1–7)፣ ወንጌል በይሁዳና በሰማርያ እስከ ቆርኔሌዎስ (8–12) መስፋፋት፣ የጳውሎስ ሚስዮናዊ ጉዞዎች (13–21)፣ መያዙና ፍርዶቹ (22–26)፣ ወደ ሮም ጉዞው (27–28) ይሄዳል።"
+      },
+      "keyThemes": {
+        "en": "The power of the Holy Spirit; the gospel crossing every boundary; bold witness amid suffering; the plan of God unfolding in history.",
+        "am": "የመንፈስ ቅዱስ ኀይል፤ ወንጌል እያንዳንዱን ድንበር መሻገሩ፤ በመከራ መካከል ደፋር ምስክርነት፤ የእግዚአብሔር ዕቅድ በታሪክ መገለጥ።"
+      }
+    },
+    {
+      "id": "romans",
+      "genre": "epistle",
+      "background": {
+        "en": "Romans is a letter from the apostle Paul to the Christians in Rome, probably written from Corinth before his final visit to Jerusalem. It is his fullest statement of the gospel: that all have sinned, that righteousness comes through faith in Jesus Christ, and that God's saving plan embraces both Jew and Gentile. It is a letter, to be read as part of Paul's pastoral correspondence.",
+        "am": "ሮሜ ሐዋርያው ጳውሎስ በሮም ለሚኖሩ ክርስቲያኖች፣ ምናልባትም ከቆሮንቶስ፣ ወደ ኢየሩሳሌም ከመጨረሻው ጉዞው በፊት የጻፈው መልዕክት ነው። ሁሉም ኃጢአት እንደሠራ፣ ጽድቅ በኢየሱስ ክርስቶስ በማመን እንደሚመጣ፣ የእግዚአብሔር የማዳን ዕቅድ አይሁዳዊውንና አሕዛቡን እንደሚያቅፍ የገለጸበት የእርሱ ሙሉ ትምህርት ነው። ከጳውሎስ የእረኝነት መልዕክቶች አካል ሆኖ ሊነበብ የሚገባው መልዕክት ነው።"
+      },
+      "flow": {
+        "en": "Paul argues that the gospel reveals God's righteousness for all (1–3), that justification is by faith as shown in Abraham (4), the new life in Christ and in the Spirit (5–8), God's faithfulness to Israel (9–11), then ethics of transformed living (12–15), closing with greetings (16).",
+        "am": "ጳውሎስ ወንጌል የእግዚአብሔርን ጽድቅ ለሁሉም እንደሚገልጥ (1–3)፣ እንደ አብርሃም በእምነት ማጽደቅ (4)፣ በክርስቶስና በመንፈስ ያለው አዲስ ሕይወት (5–8)፣ እግዚአብሔር ለእስራኤል ያለው ታማኝነት (9–11)፣ የተለወጠ ሕይወት ሥነ-ምግባር (12–15) ያብራራል፤ በሰላምታ (16) ይዘጋል።"
+      },
+      "keyThemes": {
+        "en": "The righteousness of God received by faith; justification and new life in Christ; sin and grace; unity of Jew and Gentile; living sacrifice as worship.",
+        "am": "የእግዚአብሔር ጽድቅ በእምነት መቀበል፤ ማጽደቅና በክርስቶስ አዲስ ሕይወት፤ ኃጢአትና ጸጋ፤ የአይሁድና የአሕዛብ አንድነት፤ ሕያው መሥዋዕት እንደ አምልኮ።"
+      }
+    },
+    {
+      "id": "1corinthians",
+      "genre": "epistle",
+      "background": {
+        "en": "First Corinthians is a letter from the apostle Paul to the church he founded in Corinth, a bustling, multi-cultural port city. He writes to correct divisions, sexual immorality, lawsuits, disorder in worship, and confusion about the resurrection. It is one letter in an ongoing pastoral correspondence, not a systematic theology.",
+        "am": "1 ቆሮንቶስ ሐዋርያው ጳውሎስ በቆሮንቶስ ለመሠረታት ለሚገኘው ቤተ ክርስቲያን የጻፈው መልዕክት ሲሆን፣ ቆሮንቶስ የተጨናነቀች፣ ባለብዙ ባሕል ወደብ ከተማ ነበረች። መለያየትን፣ የጾታ ብልግናን፣ ክስን፣ በአምልኮ ያለውን ሥርዓት ማጣትና ስለ ትንሣኤ ግራ መጋባትን ለማስተካከል ጽፏል። ከቀጣይ የእረኝነት መልዕክቶች መካከል አንዱ እንጂ ሥርዓታዊ ሥነ-መለኮት አይደለም።"
+      },
+      "flow": {
+        "en": "Paul addresses divisions and the foolishness of the cross (1–4), sexual sin and lawsuits (5–6), marriage and food offered to idols (7–10), worship and the Lord's Supper (11), spiritual gifts and love (12–14), and the resurrection (15), closing with the collection and greetings (16).",
+        "am": "ጳውሎስ መለያየትንና የመስቀል ሞኝነት (1–4)፣ የጾታ ኃጢአትንና ክስን (5–6)፣ ትዳርንና ለጣዖት የተሠዋ ምግብ (7–10)፣ አምልኮንና የጌታን እራት (11)፣ መንፈሳዊ ስጦታዎችንና ፍቅር (12–14)፣ ትንሣኤን (15) ያነሳል፤ በሰብሳቢውና በሰላምታ (16) ይዘጋል።"
+      },
+      "keyThemes": {
+        "en": "The foolishness of the cross as God's wisdom; the church as one body with many members; love as the greatest gift; the certainty of the resurrection.",
+        "am": "የመስቀል ሞኝነት የእግዚአብሔር ጥበብ መሆኑ፤ ቤተ ክርስቲያን ብዙ አባላት ያሏት አንድ አካል መሆኗ፤ ፍቅር ታላቁ ስጦታ መሆኑ፤ የትንሣኤ እርግጠኝነት።"
+      }
+    },
+    {
+      "id": "2corinthians",
+      "genre": "epistle",
+      "background": {
+        "en": "Second Corinthians is a deeply personal letter from Paul to the church in Corinth, defending his apostleship against rivals and opening his heart about suffering, weakness, and comfort. It is one of his most autobiographical letters and should be read as pastoral correspondence, not a formal treatise.",
+        "am": "2 ቆሮንቶስ ጳውሎስ በቆሮንቶስ ቤተ ክርስቲያን የጻፈው ጥልቅ የግል መልዕክት ሲሆን፣ ሐዋርያነቱን ከተቃዋሚዎች ጥበቃ በማድረግ ስለ መከራ፣ ስለ ድካምና ስለ ማጽናኛ ልቡን ይከፍታል። እጅግ የግል ከሆኑት መልዕክቶቹ አንዱ ነው፤ እንደ እረኝነት መልዕክት እንጂ እንደ ሥርዓታዊ ጽሑፍ መነበብ የለበትም።"
+      },
+      "flow": {
+        "en": "Paul opens with God's comfort in affliction (1), explains his changed plans and defends the ministry of the new covenant (2–7), urges the Corinthians to give generously (8–9), defends his apostolic credentials against false apostles (10–13), closing with appeals and greetings (13).",
+        "am": "ጳውሎስ በመከራ ውስጥ በእግዚአብሔር ማጽናኛ (1) ይከፈታል፤ የተቀየረ ዕቅዱን አብራርቶ የአዲስ ኪዳን አገልግሎትን ይከላከላል (2–7)፣ ቆሮንቶስ በልግስና እንዲሰጥ ያሳስባል (8–9)፣ ሐዋርያነቱን ከሐሰተኞች ሐዋርያት ይከላከላል (10–13)፤ በልመናና በሰላምታ (13) ይዘጋል።"
+      },
+      "keyThemes": {
+        "en": "Comfort in suffering and the God of all comfort; weakness as the place of God's power; the ministry of reconciliation; generosity as grace.",
+        "am": "በመከራ ውስጥ ማጽናኛና የሁሉ ማጽናኛ እግዚአብሔር፤ ድካም የእግዚአብሔር ኀይል ቦታ መሆኑ፤ የማስታረቅ አገልግሎት፤ ልግስና ጸጋ መሆኑ።"
+      }
+    },
+    {
+      "id": "galatians",
+      "genre": "epistle",
+      "background": {
+        "en": "Galatians is a letter from Paul to the churches of Galatia, written with urgency because they were being persuaded to add observance of the law to faith in Christ. He insists that justification is by faith alone and that adding the law empties the cross. It is a passionate pastoral argument, one of Paul's earliest letters.",
+        "am": "ገላትያ ጳውሎስ ለገላትያ ቤተ ክርስቲያኖች የጻፈው መልዕክት ሲሆን፣ የተጻፈው በክርስቶስ ለሚኖር እምነት የሕግን ሥርዓት እንዲጨምሩ እየተነገራቸው ስለነበረ በችኮላ ነው። ማጽደቅ በእምነት ብቻ እንደሆነና ሕግን መጨመር መስቀልን ባዶ እንደሚያደርግ አጥብቆ ይናገራል። ከጳውሎስ ቀደምት መልዕክቶች አንዱ የሆነ ንቁ የእረኝነት ክርክር ነው።"
+      },
+      "flow": {
+        "en": "Paul defends his gospel and apostleship (1–2), argues that justification is by faith, not works of the law (3–4), and calls believers to freedom lived by the Spirit rather than slavery to the flesh (5–6).",
+        "am": "ጳውሎስ ወንጌሉንና ሐዋርያነቱን ይከላከላል (1–2)፣ ማጽደቅ በእምነት እንጂ በሕግ ሥራ እንዳልሆነ ያከራክራል (3–4)፣ አማኞች በመንፈስ በሚኖር ነፃነት እንዲኖሩ እንጂ በሥጋ ባርነት እንዳይኖሩ ይጠራል (5–6)።"
+      },
+      "keyThemes": {
+        "en": "Justification by faith alone; freedom in Christ; the Spirit's fruit versus the works of the flesh; the cross as the center that cannot be added to.",
+        "am": "በእምነት ብቻ ማጽደቅ፤ በክርስቶስ ነፃነት፤ የመንፈስ ፍሬ ከሥጋ ሥራዎች፤ መስቀል ምንም የማይጨመርበት ማዕከል መሆኑ።"
+      }
+    },
+    {
+      "id": "ephesians",
+      "genre": "epistle",
+      "background": {
+        "en": "Ephesians is a letter attributed to the apostle Paul, likely written from prison to believers in Asia Minor, possibly a circular letter meant for several churches. It celebrates the great plan of God in Christ and calls the church to live in unity, holiness, and the full armor of God. Its opening chapter reads like a blessing of praise.",
+        "am": "ኤፌሶን ከሐዋርያው ጳውሎስ ጋር የተያያዘ መልዕክት ሲሆን፣ ምናልባትም ከእስር ቤት በትንሿ እስያ ላሉ አማኞች፣ ለብዙ ቤተ ክርስቲያኖች የታሰበ ክብ መልዕክት ሊሆን ይችላል። የእግዚአብሔርን በክርስቶስ ታላቅ ዕቅድ ያከብራል፤ ቤተ ክርስቲያን በአንድነት፣ በቅድስናና በእግዚአብሔር ሙሉ የጦር ዕቃ እንዲኖር ይጠራል። የመክፈቻው ምዕራፍ እንደ ምስጋና በረከት ይነበባል።"
+      },
+      "flow": {
+        "en": "Ephesians celebrates God's plan and the riches of grace (1–3), then calls the church to unity and new life in Christ (4), holiness in daily relationships (5), and spiritual warfare in the armor of God (6).",
+        "am": "ኤፌሶን የእግዚአብሔርን ዕቅድና የጸጋ ሀብት (1–3) ያከብራል፤ ከዚያም ቤተ ክርስቲያንን ወደ አንድነትና በክርስቶስ ወደ አዲስ ሕይወት (4)፣ በዕለት ተዕለት ግንኙነቶች ወደ ቅድስና (5)፣ በእግዚአብሔር የጦር ዕቃ ወደ መንፈሳዊ ውጊያ (6) ይጠራል።"
+      },
+      "keyThemes": {
+        "en": "The eternal plan of God in Christ; the riches of grace; the church as one body, the fullness of Christ; walking worthy and standing in the armor of God.",
+        "am": "በክርስቶስ የእግዚአብሔር ዘላለማዊ ዕቅድ፤ የጸጋ ሀብት፤ ቤተ ክርስቲያን አንድ አካል፣ የክርስቶስ ሙላት መሆኗ፤ ተገቢ መመላለስና በእግዚአብሔር የጦር ዕቃ መቆም።"
+      }
+    },
+    {
+      "id": "philippians",
+      "genre": "epistle",
+      "background": {
+        "en": "Philippians is a warm letter from Paul, likely from prison, to the church at Philippi that had supported him. It overflows with joy, gratitude, and encouragement, built around the great hymn of Christ's humility and exaltation (2:5–11). It is a pastoral letter of partnership in the gospel.",
+        "am": "ፊልጵስዩስ ጳውሎስ፣ ምናልባትም ከእስር ቤት፣ ለደገፈችው የፊልጵስዩስ ቤተ ክርስቲያን የጻፈው ሞቅ ያለ መልዕክት ነው። በደስታ፣ በምስጋናና በማበረታታት ይሞላል፤ በክርስቶስ ትሕትናና ከፍታ ዙሪያ ባለው ታላቅ መዝሙር (2፡5–11) ላይ የተገነባ ነው። በወንጌል አጋርነት ላይ የተጻፈ የእረኝነት መልዕክት ነው።"
+      },
+      "flow": {
+        "en": "Paul gives thanks and prays for the Philippians (1), urges unity through Christ's humility and holds out the goal of knowing him (2–3), closes with practical appeals and the peace of God (4).",
+        "am": "ጳውሎስ ለፊልጵስዩስ አመስግኖ ይጸልያል (1)፣ በክርስቶስ ትሕትና አንድነትን ያሳስባልና እርሱን የማወቅን ግብ ይይዛል (2–3)፣ በተግባራዊ ልመናዎችና በእግዚአብሔር ሰላም (4) ይዘጋል።"
+      },
+      "keyThemes": {
+        "en": "Joy even in suffering and imprisonment; the humility and exaltation of Christ; unity and the mind of Christ; contentment in Christ.",
+        "am": "በመከራና በእስር ውስጥም ደስታ፤ የክርስቶስ ትሕትናና ከፍታ፤ አንድነትና የክርስቶስ አስተሳሰብ፤ በክርስቶስ መጠጋጋት።"
+      }
+    },
+    {
+      "id": "colossians",
+      "genre": "epistle",
+      "background": {
+        "en": "Colossians is a letter from Paul, likely from prison, to a church in the Lycus valley that was being influenced by teachings that diminished Christ. He responds by exalting Christ as supreme — the image of God, the head of all things, the one in whom all fullness dwells. It is a pastoral letter of correction and encouragement.",
+        "am": "ቆላስይስ ጳውሎስ፣ ምናልባትም ከእስር ቤት፣ ክርስቶስን የሚያናንሱ ትምህርቶች ተጽዕኖ ለደረሰባት በሊከስ ሸለቆ ለሚገኘው ቤተ ክርስቲያን የጻፈው መልዕክት ነው። እርሱን ከፍ አድርጎ በማቅረብ ይመልሳል፤ ክርስቶስ የእግዚአብሔር ምሳሌ፣ የሁሉ ራስ፣ ሙላት ሁሉ በሚያድርበት አንዱ ነው። የማረምና የማበረታታ የእረኝነት መልዕክት ነው።"
+      },
+      "flow": {
+        "en": "Paul opens in thanksgiving and prayer (1), presents Christ as supreme and the mystery of God revealed (1:15–2), warns against deceptive philosophy and human rules (2), then calls to the new life in Christ in practice (3–4).",
+        "am": "ጳውሎስ በምስጋናና በጸሎት (1) ይከፈታል፣ ክርስቶስን ከፍ አድርጎና የተገለጠውን የእግዚአብሔር ምስጢር (1፡15–2) ያቀርባል፣ ከተሳሳተ ፍልስፍናና ከሰው ሥርዓት (2) ያስጠነቅቃል፣ ከዚያም በተግባር ወደ ክርስቶስ አዲስ ሕይወት (3–4) ይጠራል።"
+      },
+      "keyThemes": {
+        "en": "The supremacy and sufficiency of Christ; the fullness of God in him; freedom from human rules; the new self lived in Christ.",
+        "am": "የክርስቶስ ከፍታና በቂነት፤ የእግዚአብሔር ሙላት በእርሱ ውስጥ፤ ከሰው ሥርዓት ነፃነት፤ በክርስቶስ የሚኖር አዲስ ሰው።"
+      }
+    },
+    {
+      "id": "1thessalonians",
+      "genre": "epistle",
+      "background": {
+        "en": "First Thessalonians is likely the earliest surviving letter of Paul, written to a young church he had planted but had to leave. It is warm and encouraging, affirming their faith and teaching them about living blamelessly and about the coming of the Lord. It is a pastoral letter of thanks and instruction.",
+        "am": "1 ተሰሎንቄ ምናልባትም ጳውሎስ የቆየቀለተው መልዕክቱ ሲሆን፣ ለመሠረታት ቢሆንም ሊለቃት ለተገደደችው ወጣት ቤተ ክርስቲያን የተጻፈ ነው። ሞቅ ያለና አበረታች ሲሆን፣ እምነታቸውን ያረጋግጥና ያለ ነቀፋ ስለ መኖርና ስለ ጌታ መምጣት ያስተምራቸዋል። የምስጋናና የመመሪያ የእረኝነት መልዕክት ነው።"
+      },
+      "flow": {
+        "en": "Paul gives thanks for their faith (1), recalls his ministry among them (2), encourages them amid affliction (3), and instructs them on holy living (4:1–12) and the coming of the Lord (4:13–5), closing with final exhortations.",
+        "am": "ጳውሎስ ለእምነታቸው አመስግኖ (1)፣ በመካከላቸው የነበረውን አገልግሎት (2) ያስታውሳል፣ በመከራ መካከል ያበረታታል (3)፣ ስለ ቅዱስ ኑሮ (4፡1–12)ና ስለ ጌታ መምጣት (4፡13–5) ያስተምራል፤ በመጨረሻ ምክሮች ይዘጋል።"
+      },
+      "keyThemes": {
+        "en": "Faith, love, and hope in the gospel; holy living in the body and daily work; grief and the hope of the resurrection; readiness for the day of the Lord.",
+        "am": "በወንጌል እምነት፣ ፍቅርና ተስፋ፤ በአካልና በዕለት ሥራ ቅዱስ ኑሮ፤ ሐዘንና የትንሣኤ ተስፋ፤ ለጌታ ቀን ዝግጁነት።"
+      }
+    },
+    {
+      "id": "2thessalonians",
+      "genre": "epistle",
+      "background": {
+        "en": "Second Thessalonians is a short letter from Paul to a church confused about the day of the Lord and unsettled by persecution. He corrects their misunderstanding, encourages perseverance, and addresses idleness among some believers. It is a pastoral letter of correction and steadying hope.",
+        "am": "2 ተሰሎንቄ ጳውሎስ ስለ ጌታ ቀን ለተሳሳቱና በስደት ለተረበሸ ቤተ ክርስቲያን የጻፈው አጭር መልዕክት ነው። የተሳሳተ አስተሳሰባቸውን ያስተካክላል፣ ጽናትን ያበረታታል፣ በአንዳንድ አማኞች ዘንድ ያለውን ሥራ ፈትነት ይመለከታል። የማረምና የማያረጋጋ የእረኝነት መልዕክት ነው።"
+      },
+      "flow": {
+        "en": "Paul encourages the persecuted church (1), corrects teaching about the day of the Lord and the coming rebellion (2), and calls them to steady work and holy living (3).",
+        "am": "ጳውሎስ የተሰደደችውን ቤተ ክርስቲያን ያበረታታል (1)፣ ስለ ጌታ ቀንና ስለ መጪው አመጽ የተሳሳተ ትምህርትን ያስተካክላል (2)፣ በቋሚ ሥራና በቅዱስ ኑሮ (3) ይጠራል።"
+      },
+      "keyThemes": {
+        "en": "Perseverance under persecution; the timing of the day of the Lord; the coming rebellion; faithful, diligent work as love.",
+        "am": "በስደት መካከል ጽናት፤ የጌታ ቀን ጊዜ፤ የመጪው አመጽ፤ ታማኝና ትጉ ሥራ ፍቅር መሆኑ።"
+      }
+    },
+    {
+      "id": "1timothy",
+      "genre": "epistle",
+      "background": {
+        "en": "First Timothy is a letter from Paul to Timothy, his young coworker, giving instructions for leading the church at Ephesus — sound teaching, orderly worship, qualified leaders, and care for the vulnerable. Along with 2 Timothy and Titus it is called a pastoral letter. It addresses the pastoral situation of a real church.",
+        "am": "1 ጢሞቴዎስ ጳውሎስ ለወጣት አጋሩ ለጢሞቴዎስ የጻፈው መልዕክት ሲሆን፣ በኤፌሶን ያለውን ቤተ ክርስቲያን ለመመራት መመሪያዎችን — ጤናማ ትምህርት፣ ሥርዓታማ አምልኮ፣ ብቁ መሪዎችና ለደካሞች እንክብካቤ — ይሰጠዋል። ከ2 ጢሞቴዎስና ከቲቶ ጋር የእረኝነት መልዕክት ይባላል። የእውነተኛ ቤተ ክርስቲያንን የእረኝነት ሁኔታ ይነጋገራል።"
+      },
+      "flow": {
+        "en": "Paul warns against false teaching (1), gives instructions for public worship and for overseers and deacons (2–3), warns about later apostasy (4), and gives counsel on widows, elders, and slaves (5), closing with practical warnings (6).",
+        "am": "ጳውሎስ ከሐሰተኛ ትምህርት (1) ያስጠነቅቃል፣ ለሕዝብ አምልኮና ለአገልጋዮችና ለዲያቆናት (2–3) መመሪያ ይሰጣል፣ ስለ የኋላው እምነት መናቅር (4) ያስጠነቅቃል፣ ስለ መበለቶች፣ ሽማግሌዎችና ባሪያዎች (5) ምክር ይሰጣል፤ በተግባራዊ ማስጠንቀቂያዎች (6) ይዘጋል።"
+      },
+      "keyThemes": {
+        "en": "Sound teaching that matches the gospel; godly leadership in the church; the household of God and its conduct; contentment and the love of money.",
+        "am": "ከወንጌል ጋር የሚስማማ ጤናማ ትምህርት፤ በቤተ ክርስቲያን እግዚአብሔርን የሚፈሩ መሪዎች፤ የእግዚአብሔር ቤትና አኗኗሩ፤ መጠጋጋትና የገንዘብ ፍቅር።"
+      }
+    },
+    {
+      "id": "2timothy",
+      "genre": "epistle",
+      "background": {
+        "en": "Second Timothy is Paul's final letter, written from prison in the face of death, to his beloved Timothy. It is a personal charge to guard the gospel, endure suffering, and pass the faith on to faithful people who will teach others. It is the most personal of Paul's letters.",
+        "am": "2 ጢሞቴዎስ ጳውሎስ ከእስር ቤት፣ ሞትን እየተጋፈጠ፣ ለተወዳጁ ለጢሞቴዎስ የጻፈው የመጨረሻ መልዕክት ነው። ወንጌልን እንዲጠብቅ፣ መከራን እንዲታገሥና እምነትን ሌሎችን ለሚያስተምሩ ታማኝ ሰዎች እንዲያስተላልፍ የግል ኃላፊነት ነው። ከጳውሎስ መልዕክቶች እጅግ የግል ነው።"
+      },
+      "flow": {
+        "en": "Paul charges Timothy to guard the gospel and suffer for it (1), to endure as a good soldier, athlete, and farmer (2), warning of last-days godlessness (3), and gives his final charge and testimony (4).",
+        "am": "ጳውሎስ ጢሞቴዎስን ወንጌልን እንዲጠብቅና ለእርሱ እንዲሠቃይ (1)፣ እንደ መልካም ወታደር፣ እንደ ሩጫተኛና እንደ ገበሬ (2) እንዲጸና ያዘዛል፣ ስለ የመጨረሻ ዘመን ክህደት (3) ያስጠነቅቃል፣ የመጨረሻውን ኃላፊነትና ምስክርነት (4) ይሰጣል።"
+      },
+      "keyThemes": {
+        "en": "Guarding the deposit of the gospel; endurance through suffering; Scripture as God-breathed and useful; faithful transmission to the next generation.",
+        "am": "የወንጌል ክምችትን መጠበቅ፤ በመከራ መጽናት፤ ቅዱሳት መጻሕፍት በእግዚአብሔር እስትንፋስ የተሰጡና ጠቃሚ መሆናቸው፤ እምነትን ለሚቀጥለው ትውልድ በታማኝነት ማስተላለፍ።"
+      }
+    },
+    {
+      "id": "titus",
+      "genre": "epistle",
+      "background": {
+        "en": "Titus is a brief letter from Paul to Titus, his coworker left in Crete to put the churches there in order. It stresses sound doctrine that shows itself in good works, the appointment of godly elders, and the grace of God that trains us to live godly lives. It is one of the pastoral letters.",
+        "am": "ቲቶ ጳውሎስ በቀርጤስ ያሉትን ቤተ ክርስቲያኖች እንዲያስተካክል ለተተወው አጋሩ ለቲቶ የጻፈው አጭር መልዕክት ነው። በመልካም ሥራ የሚገለጽ ጤናማ ትምህርትን፣ እግዚአብሔርን የሚፈሩ ሽማግሌዎችን መሾምን፣ እግዚአብሔርን የሚያከብር ሕይወት እንድንኖር የሚያሠለጥነውን የእግዚአብሔርን ጸጋ ያጎላል። ከየእረኝነት መልዕክቶች አንዱ ነው።"
+      },
+      "flow": {
+        "en": "Paul instructs Titus on appointing elders and silencing false teachers (1), on teaching sound doctrine to various groups (2), and on the basis of godly living in the grace of God (2:11–3), closing with practical warnings.",
+        "am": "ጳውሎስ ቲቶን ሽማግሌዎች እንዲሾምና ሐሰተኞችን አስተማሪዎችን እንዲዘጋ (1)፣ ለተለያዩ ቡድኖች ጤናማ ትምህርት እንዲያስተምር (2)፣ በእግዚአብሔር ጸጋ ላይ የተመሠረተ እግዚአብሔርን የሚያከብር ኑሮ (2፡11–3) ያስተምራል፤ በተግባራዊ ማስጠንቀቂያዎች ይዘጋል።"
+      },
+      "keyThemes": {
+        "en": "Sound doctrine and good works together; godly leaders in every town; the grace of God as the trainer of godliness; a people zealous for good deeds.",
+        "am": "ጤናማ ትምህርትና መልካም ሥራ አብረው፤ በእያንዳንዱ ከተማ እግዚአብሔርን የሚፈሩ መሪዎች፤ የእግዚአብሔር ጸጋ የእግዚአብሔርን የሚያከብር ሕይወት አሠልጣኝ መሆኑ፤ ለመልካም ሥራ የሚጉሉ ሕዝብ።"
+      }
+    },
+    {
+      "id": "philemon",
+      "genre": "epistle",
+      "background": {
+        "en": "Philemon is Paul's briefest letter, a personal appeal to Philemon to receive back his runaway slave Onesimus, now a believer, as a brother. It is a model of Christian persuasion — love, dignity, and the way the gospel transforms relationships. It is a private letter that became Scripture.",
+        "am": "ፊልሞናዊያን ጳውሎስ በጣም አጭር መልዕክቱ ሲሆን፣ ፊልሞናዊያንን የሸሸውንና አሁን አማኝ የሆነውን ባሪያውን ኦንሲሞስን እንደ ወንድም እንዲቀበለው የግል ልመና ነው። የክርስቲያናዊ ማሳመን አምሳያ ነው — ፍቅር፣ ክብርና ወንጌል ግንኙነቶችን የሚቀይርበት መንገድ። መጽሐፍ ቅዱስ የሆነ የግል መልዕክት ነው።"
+      },
+      "flow": {
+        "en": "Paul greets Philemon and the church in his house (1–3), gives thanks and recalls their faith (4–7), then makes his appeal for Onesimus as a brother and partner (8–20), closing with greetings (21–25).",
+        "am": "ጳውሎስ ፊልሞናዊያንንና በቤቱ ያለውን ቤተ ክርስቲያን (1–3) ያነጋግራል፣ አመስግኖ እምነታቸውን (4–7) ያስታውሳል፣ ከዚያም ለኦንሲሞስ እንደ ወንድምና አጋር (8–20) ልመናውን ያቀርባል፤ በሰላምታ (21–25) ይዘጋል።"
+      },
+      "keyThemes": {
+        "en": "The gospel as the ground of transformed relationships; appeal with love and dignity; forgiveness and restoration; the church as family.",
+        "am": "ወንጌል የተለወጡ ግንኙነቶች መሠረት መሆኑ፤ በፍቅርና በክብር ልመና፤ ይቅርታና መመለስ፤ ቤተ ክርስቲያን ቤተሰብ መሆኗ።"
+      }
+    }
+  ,
+
+    {
+      "id": "hebrews",
+      "genre": "epistle",
+      "background": {
+        "en": "Hebrews is an anonymous sermon-like letter to believers facing pressure to turn back. It presents Jesus as God's final word — greater than angels, Moses, and the priests — and his one sacrifice as sufficient forever. The book does not name its author, and its exact audience and date are debated. It is written to strengthen wavering faith and urge perseverance.",
+        "am": "ዕብራውያን ሊመለሱ በሚገደዱ አማኞች የተጻፈ ስም የሌለው የስብከት መልክ ያለው መልዕክት ነው። ኢየሱስን የእግዚአብሔር የመጨረሻ ቃል አድርጎ ያቀርባል — ከመላእክት፣ ከሙሴና ከካህናት በላይ — የእርሱንም አንድ መሥዋዕት ለዘላለም በቂ አድርጎ ያቀርባል። መጽሐፉ ጸሐፊውን አይጠቅስም፤ ትክክለኛው ተቀባይና ቀኑም ይነጋገራል። የተጻፈው የሚያንገላቱን እምነት ለማጠናከርና ጽናትን ለማበረታታት ነው።"
+      },
+      "flow": {
+        "en": "Hebrews shows Jesus superior to the prophets and angels (1–2), to Moses and rest in the land (3–4), and to the priesthood and sacrifices (5–10), then calls readers to run the race of faith with endurance (11–13).",
+        "am": "ዕብራውያን ኢየሱስ ከነቢያትና ከመላእክት (1–2)፣ ከሙሴና ከአገር ዕረፍት (3–4)፣ ከካህንነትና ከመሥዋዕቶች (5–10) የላቀ መሆኑን ያሳያል፤ ከዚያም አንባቢዎችን የእምነት ሩጫ በጽናት እንዲሮጡ (11–13) ይጠራል።"
+      },
+      "keyThemes": {
+        "en": "Jesus as the final and superior word of God; the once-for-all sacrifice; the great high priest; perseverance by faith and the great cloud of witnesses.",
+        "am": "ኢየሱስ የእግዚአብሔር የመጨረሻና የላቀ ቃል መሆኑ፤ ለአንዴና ለሁሉ የተደረገ መሥዋዕት፤ ታላቁ ሊቀ ካህናት፤ በእምነት መጽናትና ታላቁ የምስክሮች ደመና።"
+      }
+    },
+    {
+      "id": "james",
+      "genre": "epistle",
+      "background": {
+        "en": "James is a practical letter addressed to Jewish believers scattered abroad. Tradition identifies its author as James, the brother of Jesus and leader of the Jerusalem church, though the letter does not claim that title. It stresses that genuine faith shows itself in works, and gives blunt, wisdom-shaped counsel for everyday life.",
+        "am": "ያዕቆብ ለተበተኑ አይሁዳውያን አማኞች የተጻፈ ተግባራዊ መልዕክት ነው። ትውፊት ጸሐፊውን የኢየሱስ ወንድምና የኢየሩሳሌም ቤተ ክርስቲያን መሪ ከሆነው ከያዕቆብ ጋር ያያይዘዋል፤ መልዕክቱ ግን ያንን ማዕረግ አይጠይቅም። እውነተኛ እምነት በሥራ እንደሚታይ ያጎላል፤ ለዕለት ተዕለት ሕይወት የጥበብ ቅርጽ ያለው ቀጥተኛ ምክር ይሰጣል።"
+      },
+      "flow": {
+        "en": "James calls for joy in trials and wisdom from above (1), warns against favoritism and dead faith (2), disciplines the tongue (3), confronts worldliness and self-reliance (4), and closes with warnings to the rich and a call to patient, prayerful faith (5).",
+        "am": "ያዕቆብ በፈተና ደስታንና ከላይ ያለውን ጥበብ (1) ይጠራል፣ ከፊል መዳረምንና ሙት እምነትን (2) ያስጠነቅቃል፣ አንደበትን (3) ይገሥጣል፣ ዓለምወዳድነትንና ራስን መተማመንን (4) ይጋፈጣል፤ ለሀብታሞች በማስጠንቀቅና ለታጋሽ፣ ጸሎተኛ እምነት በመጥራት (5) ይዘጋል።"
+      },
+      "keyThemes": {
+        "en": "Faith that works; wisdom from above; the power and danger of the tongue; humility before God; patience in suffering.",
+        "am": "የሚሠራ እምነት፤ ከላይ ያለው ጥበብ፤ የአንደበት ኀይልና አደጋ፤ በእግዚአብሔር ፊት ትሕትና፤ በመከራ ትዕግስት።"
+      }
+    },
+    {
+      "id": "1peter",
+      "genre": "epistle",
+      "background": {
+        "en": "First Peter is a letter from the apostle Peter to believers scattered across Asia Minor, many of them Gentiles, facing suffering and social pressure. He grounds their identity in Christ — a chosen people, a holy priesthood — and calls them to hope, holiness, and humble endurance. It is pastoral encouragement for a suffering people.",
+        "am": "1 ጴጥሮስ ሐዋርያው ጴጥሮስ በትንሿ እስያ ለተበተኑ፣ ብዙዎቹ አሕዛብ ለሆኑ፣ መከራንና የማኅበራዊ ግፊትን ለሚጋፈጡ አማኞች የጻፈው መልዕክት ነው። ማንነታቸውን በክርስቶስ ያጠነክራል — የተመረጠ ሕዝብ፣ ቅዱስ ክህነት — ተስፋን፣ ቅድስናንና ትሑት ጽናትን ይጠራቸዋል። ለተሠቃየ ሕዝብ የእረኝነት ማበረታቻ ነው።"
+      },
+      "flow": {
+        "en": "Peter grounds believers in salvation and living hope (1), calls them to holiness as a chosen people (2), addresses submission in society and marriage (2–3), and prepares them for suffering for righteousness' sake (3–4), closing with exhortations to elders and humility (5).",
+        "am": "ጴጥሮስ አማኞችን በመዳንና በሕያው ተስፋ (1) ያጸናል፣ እንደ የተመረጠ ሕዝብ ወደ ቅድስና (2) ይጠራል፣ በማኅበረሰብና በትዳር (2–3) መገዛትን ያነሳል፣ ለጽድቅ ሲሉ ለመከራ (3–4) ያዘጋጃቸዋል፤ ለሽማግሌዎች በማበረታታትና በትሕትና (5) ይዘጋል።"
+      },
+      "keyThemes": {
+        "en": "Living hope through the resurrection; a chosen people called to holiness; suffering as participation in Christ; humility and submission in a hostile world.",
+        "am": "በትንሣኤ የሚገኝ ሕያው ተስፋ፤ ወደ ቅድስና የተጠራ የተመረጠ ሕዝብ፤ መከራ በክርስቶስ መካፈል መሆኑ፤ በጠላት ዓለም ትሕትናና መገዛት።"
+      }
+    },
+    {
+      "id": "2peter",
+      "genre": "epistle",
+      "background": {
+        "en": "Second Peter is a letter from the apostle Peter warning believers about false teachers who distort the gospel and mock the promise of the Lord's coming. It calls readers to grow in the knowledge of Christ and to stand firm, assuring them that the day of the Lord will surely come. Some early churches were slow to accept it, but it has long been received as Scripture.",
+        "am": "2 ጴጥሮስ ሐዋርያው ጴጥሮስ ወንጌልን የሚያጣምሙና የጌታን መምጣት ተስፋ የሚያላግጡ ሐሰተኛ አስተማሪዎችን የሚያስጠነቅቅ መልዕክት ነው። አንባቢዎችን የክርስቶስን እውቀት እንዲያድጉና ጸንተው እንዲቆሙ ይጠራል፤ የጌታ ቀን በእርግጥ እንደሚመጣ ያረጋግጥላቸዋል። አንዳንድ የጥንት ቤተ ክርስቲያኖች ቀስ ብለው ተቀበሉት፤ ሆኖም ከረጅም ጊዜ በፊት እንደ ቅዱስ ጽሑፍ ተቀብሏል።"
+      },
+      "flow": {
+        "en": "Peter calls believers to grow in faith and knowledge (1), warns of false teachers and their judgment (2), and answers mockers by affirming the certainty of the day of the Lord and the hope of new heavens and a new earth (3).",
+        "am": "ጴጥሮስ አማኞችን በእምነትና በእውቀት እንዲያድጉ (1) ይጠራል፣ ስለ ሐሰተኛ አስተማሪዎችና ስለ ፍርዳቸው (2) ያስጠነቅቃል፣ አላጋጪዎችን የጌታን ቀን እርግጠኝነትና የአዲስ ሰማይና አዲስ ምድር ተስፋን በማረጋገጥ (3) ይመልሳል።"
+      },
+      "keyThemes": {
+        "en": "Growth in the knowledge of Christ; judgment on false teachers; the certainty of the Lord's coming; the hope of a new creation.",
+        "am": "የክርስቶስ እውቀት መደጎም፤ በሐሰተኛ አስተማሪዎች ላይ ፍርድ፤ የጌታ መምጣት እርግጠኝነት፤ የአዲስ ፍጥረት ተስፋ።"
+      }
+    },
+    {
+      "id": "1john",
+      "genre": "epistle",
+      "background": {
+        "en": "First John is a pastoral letter, likely from the apostle John, written to believers troubled by teachers who denied that Jesus came in the flesh. It is built around tests of true fellowship with God — believing rightly about Christ, obeying his commands, and loving one another. It is written so that readers may know they have eternal life.",
+        "am": "1 ዮሐንስ ምናልባትም ከሐዋርያው ዮሐንስ የተጻፈ የእረኝነት መልዕክት ሲሆን፣ ኢየሱስ በሥጋ መምጣቱን ለሚክዱ አስተማሪዎች ለተቸገሩ አማኞች የተጻፈ ነው። ከእግዚአብሔር ጋር ያለው እውነተኛ ኅብረት በሚለካባቸው ፈተናዎች ዙሪያ የተገነባ ነው — ስለ ክርስቶስ በትክክል ማመን፣ ትእዛዙን መጠበቅና እርስ በእርስ መዋደድ። የተጻፈው አንባቢዎች ዘላለም ሕይወት እንዳላቸው እንዲያውቁ ነው።"
+      },
+      "flow": {
+        "en": "John proclaims the Word of life (1), gives tests of knowing God through obedience and love (2), exposes those who deny Jesus (2–3), develops the theme of love from God and for one another (4), and closes with confidence in eternal life and warnings about idols (5).",
+        "am": "ዮሐንስ የሕይወትን ቃል (1) ያውጃል፣ በመታዘዝና በፍቅር እግዚአብሔርን የማወቅ ፈተናዎችን (2) ይሰጣል፣ ኢየሱስን የሚክዱትን (2–3) ያጋልጣል፣ ከእግዚአብሔር ያለውንና እርስ በእርስ ያለውን ፍቅር (4) ያስፋፋል፤ በዘላለም ሕይወት እርግጠኝነትና ስለ ጣዖታት ማስጠንቀቂያ (5) ይዘጋል።"
+      },
+      "keyThemes": {
+        "en": "Fellowship with the God who is light and love; Jesus Christ come in the flesh; obedience and love as tests of faith; assurance of eternal life.",
+        "am": "ብርሃንና ፍቅር ከሆነው እግዚአብሔር ጋር ኅብረት፤ ኢየሱስ ክርስቶስ በሥጋ መምጣቱ፤ መታዘዝና ፍቅር የእምነት ፈተና መሆናቸው፤ የዘላለም ሕይወት እርግጠኝነት።"
+      }
+    },
+    {
+      "id": "2john",
+      "genre": "epistle",
+      "background": {
+        "en": "Second John is a very short letter from 'the elder' to a chosen lady and her children — likely a church and its members. It urges love and obedience, and warns against welcoming false teachers who deny Christ into the home or fellowship. It is a brief pastoral warning against false teaching.",
+        "am": "2 ዮሐንስ 'ሽማግሌው' ለተመረጠች እመቤትና ለልጆቿ — ምናልባትም ለቤተ ክርስቲያንና ለአባሎቿ — የጻፈው በጣም አጭር መልዕክት ነው። ፍቅርንና መታዘዝን ያስተምራል፤ ክርስቶስን የሚክዱ ሐሰተኛ አስተማሪዎችን ወደ ቤት ወይም ወደ ኅብረት ከመቀበል ያስጠነቅቃል። በሐሰተኛ ትምህርት ላይ አጭር የእረኝነት ማስጠንቀቂያ ነው።"
+      },
+      "flow": {
+        "en": "The elder greets the lady and rejoices in her children walking in truth (1–4), urges mutual love and walking in Christ's commands (5–6), and warns against deceivers who deny Christ's coming in the flesh (7–11), closing with brief greetings (12–13).",
+        "am": "ሽማግሌው እመቤቷን ያነጋግራልና ልጆቿ በእውነት መመላለሳቸው ደስ ይለዋል (1–4)፣ እርስ በእርስ መዋደድንና በክርስቶስ ትእዛዝ መመላለስን (5–6) ያሳስባል፣ የክርስቶስን በሥጋ መምጣት የሚክዱ አታላዮችን (7–11) ያስጠነቅቃል፤ በአጭር ሰላምታ (12–13) ይዘጋል።"
+      },
+      "keyThemes": {
+        "en": "Love expressed in obedience to truth; guarding the church from deceivers; the limits of hospitality toward false teachers.",
+        "am": "በእውነት መታዘዝ ውስጥ የሚገለጽ ፍቅር፤ ቤተ ክርስቲያንን ከአታላዮች መጠበቅ፤ ለሐሰተኛ አስተማሪዎች ያለ እንግድነት ወሰን።"
+      }
+    },
+    {
+      "id": "3john",
+      "genre": "epistle",
+      "background": {
+        "en": "Third John is a very short letter from 'the elder' commending Gaius for his hospitality to traveling teachers, warning against Diotrephes who loved to be first and opposed the truth, and commending Demetrius. It is a personal letter about faithfulness in the ordinary work of supporting fellow believers.",
+        "am": "3 ዮሐንስ 'ሽማግሌው' ጋይዮስን ለተጓዦች አስተማሪዎች ስላደረገው እንግድነት የሚያደንቅበት፣ አንደኛ መሆንን ወደደና እውነትን የተቃወመውን ድዮጥሬስን የሚያስጠነቅቅበትና ዲሜጥርዮስን የሚያደንቅበት በጣም አጭር መልዕክት ነው። እምነት ባለባቸው ወንድሞች የመደገፍ ተራ ሥራ ላይ ስለ ታማኝነት የሚናገር የግል መልዕክት ነው።"
+      },
+      "flow": {
+        "en": "The elder rejoices in Gaius's faithfulness and hospitality (1–8), warns about Diotrephes's rejection of the apostles' authority (9–10), commends Demetrius, and closes with brief greetings (11–15).",
+        "am": "ሽማግሌው በጋይዮስ ታማኝነትና እንግድነት (1–8) ደስ ይለዋል፣ ስለ ድዮጥሬስ የሐዋርያትን ሥልጣን መናቅ (9–10) ያስጠነቅቃል፣ ዲሜጥርዮስን ያደንቃል፤ በአጭር ሰላምታ (11–15) ይዘጋል።"
+      },
+      "keyThemes": {
+        "en": "Hospitality as partnership in the truth; faithfulness in ordinary service; the conflict between self-promotion and the truth; the importance of a good testimony.",
+        "am": "እንግድነት በእውነት አጋርነት መሆኑ፤ በተራ አገልግሎት ታማኝነት፤ ራስን ማስተዋወቅና እውነት መጋጨት፤ መልካም ምስክርነት አስፈላጊነት።"
+      }
+    },
+    {
+      "id": "jude",
+      "genre": "epistle",
+      "background": {
+        "en": "Jude is a short, urgent letter from Jude, a servant of Jesus Christ and brother of James, warning believers to contend for the faith against ungodly teachers who had slipped in. It is dense with allusions to earlier Scripture and tradition. Its core call is to keep oneself in the love of God and to show mercy with fear.",
+        "am": "ይሁዳ የኢየሱስ ክርስቶስ አገልጋይና የያዕቆብ ወንድም የሆነው ይሁዳ ለእምነት እንዲታገሉ አሳስቦ፣ ሰርገው ስለገቡ ኃጢአተኛ አስተማሪዎች የሚያስጠነቅቅበት አጭርና አስቸኳይ መልዕክት ነው። በቀደሙት ቅዱሳት መጻሕፍትና ትውፊት ላይ የተመሠረቱ ብዙ ማጣቀሻዎችን ይይዛል። ዋናው ጥሪው ሰው በእግዚአብሔር ፍቅር ራሱን እንዲጠብቅና በፍርሃት ምሕረትን እንዲያደርግ ነው።"
+      },
+      "flow": {
+        "en": "Jude greets his readers (1–2), urges contending for the faith (3), exposes the false teachers with examples of judgment (4–16), and calls believers to build themselves up in faith and keep themselves in God's love (17–23), closing in doxology (24–25).",
+        "am": "ይሁዳ አንባቢዎቹን ያነጋግራል (1–2)፣ ለእምነት እንዲታገሉ (3) ያሳስባል፣ ሐሰተኛ አስተማሪዎችን በፍርድ ምሳሌዎች (4–16) ያጋልጣል፣ አማኞችን በእምነት ራሳቸውን እንዲገነቡና በእግዚአብሔር ፍቅር እንዲጠብቁ (17–23) ይጠራል፤ በክብር ምስጋና (24–25) ይዘጋል።"
+      },
+      "keyThemes": {
+        "en": "Contending for the faith once delivered; judgment on the ungodly; building up faith and praying in the Spirit; keeping oneself in God's love.",
+        "am": "በአንዴ ለቅዱሳን ለተሰጠው እምነት መታገል፤ በኃጢአተኞች ላይ ፍርድ፤ እምነትን መገንባትና በመንፈስ መጸለይ፤ ሰው በእግዚአብሔር ፍቅር ራሱን መጠበቅ።"
+      }
+    },
+    {
+      "id": "revelation",
+      "genre": "apocalyptic",
+      "background": {
+        "en": "Revelation is a book of prophecy in an apocalyptic style — highly symbolic visions of Christ, judgment, and the coming of God's kingdom — written to seven churches in Asia Minor facing pressure and persecution. It calls believers to faithful endurance now, in light of the certain victory of the Lamb. Its many symbols must be read with care, not as a private code for predicting events.",
+        "am": "ራእይ ራእያዊ ስልት ያለው የትንቢት መጽሐፍ ነው — ስለ ክርስቶስ፣ ስለ ፍርድና ስለ እግዚአብሔር መንግሥት መምጣት ከፍተኛ ምሳሌያዊ ራእዮች — ግፊትና ስደት ለሚጋፈጡ በትንሿ እስያ ለሚገኙ ሰባት ቤተ ክርስቲያኖች የተጻፈ ነው። አማኞችን የበጉን የማይቀየር ድል በማየት አሁን በታማኝነት እንዲጸኑ ይጠራል። ብዙ ምልክቶቹ ክስተቶችን ለመተንበይ እንደ የግል ምሥጢር ኮድ ሳይሆኑ፣ በጥንቃቄ መነበብ አለባቸው።"
+      },
+      "flow": {
+        "en": "Revelation opens with Christ among the seven lampstands (1–3), visions of heaven and the scroll (4–5), seals, trumpets, and bowls of judgment (6–16), the fall of Babylon and the triumph of the Lamb (17–19), the thousand years and final judgment (20), and the new heaven and new earth (21–22).",
+        "am": "ራእይ ክርስቶስ በሰባቱ ቀንድ አውድማዎች መካከል በመታየት (1–3) ይከፈታል፣ የሰማይና የመጽሐፉ (4–5) ራእዮች፣ ማኅተሞች፣ መለከቶችና የቁጣ ጎድጓዳ ሳሕኖች (6–16)፣ የባቢሎን ውድቀትና የበጉ ድል (17–19)፣ ሺቱ ዓመትና የመጨረሻው ፍርድ (20)፣ አዲሱ ሰማይና አዲሱ ምድር (21–22) ይከተላሉ።"
+      },
+      "keyThemes": {
+        "en": "The Lamb who was slain and is worthy; faithful endurance and witness under pressure; God's righteous judgment; the new heaven and new earth with God dwelling among his people.",
+        "am": "የታረደውና የሚገባው በግ፤ በግፊት መካከል ታማኝ ጽናትና ምስክርነት፤ የእግዚአብሔር ጽድቅ ፍርድ፤ እግዚአብሔር ከሕዝቡ ጋር የሚኖርበት አዲስ ሰማይና አዲስ ምድር።"
+      }
+    }
+  
+  ]
+}

@@ -229,6 +229,8 @@ class StudyValidator {
       final startVerse = m['startVerse'];
       final endVerseRaw = m['endVerse'];
       if (bookId is! String || chapter is! int || startVerse is! int) continue;
+      final canonicalBookId = canon.resolveBookId(bookId);
+      if (canonicalBookId == null) continue;
       final endVerse = endVerseRaw is int ? endVerseRaw : startVerse;
       final reason = _clean(m['reason']);
       if (reason.isEmpty ||
@@ -240,7 +242,7 @@ class StudyValidator {
       final priority = priorityRaw is int ? priorityRaw : 0;
       if (priority < 0 || priority > 2) continue;
       if (!canon.validReference(
-        bookId: bookId,
+        bookId: canonicalBookId,
         chapter: chapter,
         startVerse: startVerse,
         endVerse: endVerse,
@@ -249,7 +251,7 @@ class StudyValidator {
         continue;
       }
       out.add(StudyCrossReference(
-        bookId: bookId,
+        bookId: canonicalBookId,
         chapter: chapter,
         startVerse: startVerse,
         endVerse: endVerse,
