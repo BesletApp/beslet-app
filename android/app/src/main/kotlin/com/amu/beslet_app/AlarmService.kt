@@ -26,6 +26,7 @@ class AlarmService : Service() {
         const val ALARM_DURATION_MINUTES = 5L
         const val ACTION_PLAY = "com.amu.beslet_app.ALARM_PLAY"
         const val ACTION_DISMISS = "com.amu.beslet_app.ALARM_DISMISS"
+        const val ACTION_ALARM_FINISHED = "com.amu.beslet_app.ALARM_FINISHED"
         const val EXTRA_SOUND_URI = "sound_uri"
         const val EXTRA_TITLE = "title"
         const val EXTRA_BODY = "body"
@@ -43,23 +44,57 @@ class AlarmService : Service() {
                 val soundUri = intent.getStringExtra(EXTRA_SOUND_URI)
                 val title = intent.getStringExtra(EXTRA_TITLE) ?: "Time to pray! \uD83D\uDE4F"
                 val body = intent.getStringExtra(EXTRA_BODY) ?: "Your prayer reminder"
-                startForegroundWithNotification(title, body, soundUri)
+                startForegroundWithNotification(title, body, soundUri, intent)
                 startPlaying(soundUri)
                 scheduleAutoStop()
+                launchFullScreen(intent)
             }
             ACTION_DISMISS -> stopAlarm()
         }
         return START_STICKY
     }
 
-    private fun startForegroundWithNotification(title: String, body: String, soundUri: String?) {
+    /** Puts the full-screen prayer screen above the lock screen via the
+     *  notification's full-screen intent (the documented, background-activity
+     *  exempt way to surface an Activity when the process may be dead). */
+    private fun launchFullScreen(intent: Intent) {
+        try {
+            startActivity(buildActivityIntent(intent))
+        } catch (_: Exception) {
+            // Background start blocked (unlikely for an alarm) — the
+            // full-screen intent on the notification still surfaces it.
+        }
+    }
+
+    private fun buildActivityIntent(intent: Intent): Intent =
+        Intent(this, PrayerAlarmActivity::class.java).apply {
+            action = Intent.ACTION_VIEW
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra(EXTRA_TITLE, intent.getStringExtra(EXTRA_TITLE))
+            putExtra(EXTRA_BODY, intent.getStringExtra(EXTRA_BODY))
+            putExtra("verseText", intent.getStringExtra("verseText"))
+            putExtra("verseRef", intent.getStringExtra("verseRef"))
+            putExtra("hour", intent.getIntExtra("hour", -1))
+            putExtra("minute", intent.getIntExtra("minute", -1))
+            putExtra("dayIndex", intent.getIntExtra("dayIndex", 0))
+            putExtra("lang", intent.getStringExtra("lang"))
+        }
+
+    private fun startForegroundWithNotification(title: String, body: String, soundUri: String?, sourceIntent: Intent) {
         val openIntent = packageManager.getLaunchIntentForPackage(packageName)?.apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
-        val openPendingIntent = PendingIntent.getActivity(this, 0, openIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        val openPendingIntent = openIntent?.let {
+            PendingIntent.getActivity(this, 0, it, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        }
 
         val dismissIntent = Intent(this, AlarmService::class.java).apply { action = ACTION_DISMISS }
         val dismissPendingIntent = PendingIntent.getService(this, 1, dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+
+        // Same intent that launchFullScreen() uses, so the full-screen surface
+        // shows the correct time and verse even when the process was dead.
+        val fullScreenIntent = buildActivityIntent(sourceIntent)
+        val fullScreenPendingIntent = PendingIntent.getActivity(this, 2, fullScreenIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(title)
@@ -68,10 +103,10 @@ class AlarmService : Service() {
             .setOngoing(true)
             .setSilent(true)
             .setContentIntent(openPendingIntent)
-            .addAction(android.R.drawable.ic_lock_idle_alarm, "Dismiss", dismissPendingIntent)
+            .addAction(android.R.drawable.ic_lock_idle_alarm, getString(R.string.alarm_dismiss), dismissPendingIntent)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setPriority(NotificationCompat.PRIORITY_MAX)
-            .setFullScreenIntent(openPendingIntent, true)
+            .setFullScreenIntent(fullScreenPendingIntent, true)
             .build()
 
         startForeground(NOTIFICATION_ID, notification)
@@ -120,6 +155,7 @@ class AlarmService : Service() {
         }
         mediaPlayer = null
         releaseWakeLock()
+        sendBroadcast(Intent(ACTION_ALARM_FINISHED))
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
     }

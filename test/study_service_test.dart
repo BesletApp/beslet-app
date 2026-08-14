@@ -312,6 +312,61 @@ void main() {
       expect(result.sections, isEmpty);
     });
   });
+
+  group('StudyService cap / refresh', () {
+    test(
+        'a cap sentinel with knowledge layers yields a flagged offline note, '
+        'never cached', () async {
+      final cache = <String, String>{};
+      final service = StudyService(
+        backend: const _CapBackend(),
+        intros: loadTestIntros(),
+        crossRefs: loadTestCrossRefs(),
+        readCache: (k) async => null,
+        writeCache: (k, v) async => cache[k] = v,
+      );
+      final result = await service.study(psalmRequest());
+      expect(result.limitReached, isTrue);
+      expect(result.isAvailable, isTrue,
+          reason: 'offline material is still known to be available');
+      expect(result.source, StudySource.knowledge);
+      expect(cache, isEmpty,
+          reason: 'a limited/offline note must never be persisted');
+    });
+
+    test('a cap sentinel with no knowledge layers surfaces the prompt alone',
+        () async {
+      final service = StudyService(
+        backend: const _CapBackend(),
+        readCache: (k) async => null,
+        writeCache: (k, v) async {},
+      );
+      final result = await service.study(psalmRequest());
+      expect(result.limitReached, isTrue);
+      expect(result.isAvailable, isFalse);
+      expect(result.source, StudySource.limitReached);
+    });
+
+    test('refresh clears the in-memory limit note so adding a key re-resolves',
+        () async {
+      final backend = _SwitchableBackend();
+      final service = StudyService(
+        backend: backend,
+        readCache: (k) async => null,
+        writeCache: (k, v) async {},
+      );
+
+      final first = await service.study(psalmRequest());
+      expect(first.limitReached, isTrue);
+
+      // A personal key is now present and the app key quota no longer gates.
+      backend.mode = _SwitchableBackend.gemini;
+      final refreshed = await service.refresh(psalmRequest());
+      expect(refreshed.source, StudySource.gemini);
+      expect(refreshed.limitReached, isFalse);
+      expect(backend.calls, 2, reason: 'refresh must re-run the backend');
+    });
+  });
 }
 
 /// A backend whose calls can be started and completed by the test, so a
@@ -327,5 +382,41 @@ class _BlockingBackend implements StudyBackend {
     final result = await start();
     complete();
     return result;
+  }
+}
+
+/// Always reports that the app's free daily AI allowance was reached.
+class _CapBackend implements StudyBackend {
+  const _CapBackend();
+
+  @override
+  Future<StudyResult?> study(StudyRequest request) async =>
+      StudyResult.aiLimit(reference: request.reference);
+}
+
+/// A backend that can switch from "capped" to "AI available" mid-test, so the
+/// `refresh` path (after the reader adds their own key) can be observed.
+class _SwitchableBackend implements StudyBackend {
+  static const capped = 0;
+  static const gemini = 1;
+
+  int mode = capped;
+  int calls = 0;
+
+  _SwitchableBackend();
+
+  @override
+  Future<StudyResult?> study(StudyRequest request) async {
+    calls++;
+    if (mode == gemini) {
+      return StudyResult(
+        reference: request.reference,
+        source: StudySource.gemini,
+        sections: const [],
+        cachedAt: DateTime.now(),
+        isAvailable: true,
+      );
+    }
+    return StudyResult.aiLimit(reference: request.reference);
   }
 }

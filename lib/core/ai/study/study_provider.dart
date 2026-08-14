@@ -77,8 +77,15 @@ final studyServiceProvider = FutureProvider<StudyService>((ref) async {
         return false;
       }
     },
-    mayUseAi: () => StudyUsageGate.mayStudy(DateTime.now()),
-    recordAiUse: () => StudyUsageGate.record(DateTime.now()),
+    mayUseAi: () async =>
+        (await _hasUserKey(keyStore)) ||
+        (await StudyUsageGate.mayStudy(DateTime.now())),
+    recordAiUse: () async {
+      // A reader's own key is never counted against the app's free quota.
+      if (!(await _hasUserKey(keyStore))) {
+        await StudyUsageGate.record(DateTime.now());
+      }
+    },
   );
   return StudyService(
     backend: backend,
@@ -90,3 +97,14 @@ final studyServiceProvider = FutureProvider<StudyService>((ref) async {
         (await SharedPreferences.getInstance()).setString(key, value),
   );
 });
+
+/// Whether the reader has connected their own Gemini key. A personal key
+/// bypasses the app's free daily allowance entirely.
+Future<bool> _hasUserKey(AiKeyStore keyStore) async {
+  try {
+    final k = await keyStore.readUserKey();
+    return k != null && k.trim().isNotEmpty;
+  } catch (_) {
+    return false;
+  }
+}

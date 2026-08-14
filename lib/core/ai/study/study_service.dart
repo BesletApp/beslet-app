@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'study_backend.dart';
 import 'study_cross_refs.dart';
 import 'study_intro.dart';
@@ -59,13 +61,24 @@ class StudyService {
     }
   }
 
+  /// Re-runs a request bypassing the in-memory cache and in-flight dedup so a
+  /// fresh resolution happens. Used after the reader adds their own Gemini key
+  /// so a study continues in place — no reopened Bible, no restart.
+  Future<StudyResult> refresh(StudyRequest request) async {
+    final key = cacheKeyFor(request);
+    _memory.remove(key);
+    _inflight.remove(key);
+    return study(request);
+  }
+
   Future<StudyResult> _resolve(String key, StudyRequest request) async {
     try {
       final cached = await readCache(key);
       if (cached != null) {
         final result = StudyResult.tryParse(cached, request.reference);
-        if (result != null) {
+        if (result != null && result.isAvailable) {
           _memory[key] = result;
+          developer.log('study: disk cache hit', name: 'study');
           return result;
         }
       }
@@ -76,24 +89,49 @@ class StudyService {
     StudyResult? result;
     try {
       result = await backend.study(request);
-    } catch (_) {
+    } catch (e) {
+      developer.log('study: backend threw: $e', name: 'study');
       result = null;
     }
+
+    // The app's free daily AI allowance is exhausted: surface the guided flow
+    // (offline note marked limitReached, or the prompt alone) rather than
+    // silently presenting the offline assembly as a fresh AI study.
+    if (result != null && result.source == StudySource.limitReached) {
+      final assembled = _assembleOffline(request);
+      if (assembled != null) {
+        final flagged = assembled.copyWith(limitReached: true);
+        _memory[key] = flagged;
+        developer.log('study: limited -> offline note flagged', name: 'study');
+        return flagged;
+      }
+      _memory[key] = result;
+      developer.log('study: limited -> no offline note', name: 'study');
+      return result;
+    }
+
     if (result == null) {
       final assembled = _assembleOffline(request);
       if (assembled != null) {
         _memory[key] = assembled;
+        developer.log('study: offline assembly', name: 'study');
         return assembled;
       }
+      developer.log('study: unavailable', name: 'study');
       return StudyResult.unavailable(reference: request.reference);
     }
 
     _memory[key] = result;
-    try {
-      await writeCache(key, result.toJsonString());
-    } catch (_) {
-      // Persisting is optional.
+    // The offline/flagged/sentinel notes are never persisted here — only a
+    // real backend note (source gemini/localBank) may reach the disk cache.
+    if (result.isAvailable) {
+      try {
+        await writeCache(key, result.toJsonString());
+      } catch (_) {
+        // Persisting is optional.
+      }
     }
+    developer.log('study: backend result (${result.source.name})', name: 'study');
     return result;
   }
 

@@ -4,7 +4,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// surprise bill and the app stays offline-first. The curated bank is free and
 /// unlimited; only model-generated notes count against the gate.
 class StudyUsageGate {
-  static const int dailyCap = 5;
+  /// The daily cap applies only to the app's bundled free key. A reader who
+  /// connects their own Gemini key is never subject to it.
+  static const int dailyCap = 10;
   static const String _prefix = 'study_usage_';
 
   /// Local day used to bucket usage (same shape as AiBoundaryGate.dayKeyFor).

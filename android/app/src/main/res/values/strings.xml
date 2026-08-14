@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="alarm_time_to_pray">Time to pray</string>
+    <string name="alarm_verse_hold">May it stay with you today</string>
+    <string name="alarm_pray_now">Pray Now</string>
+    <string name="alarm_dismiss">Dismiss</string>
+    <string name="alarm_notification_title">Prayer alarm playing</string>
+</resources>

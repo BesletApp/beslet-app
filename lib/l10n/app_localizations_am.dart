@@ -1534,6 +1534,19 @@ class AppLocalizationsAm extends AppLocalizations {
       'የዚህ ጥቅስ ሙሉ የጥናት ማስታወሻ አሁን ግንኙነት ይፈልጋል። ጽሑፉ በራሱ ቆሞ ይበቃል — አንብበው፣ ቀና ብለው አስተንትኑት፣ ራሱ ይሥራ።';
 
   @override
+  String get studyLimitTitle => 'ዛሬ የ10 ነፃ AI የጥናት ክፍለ-ጊዜዎችን ተጠቅመዋል።';
+
+  @override
+  String get studyLimitBody =>
+      'የመስመር ውጭ ጥናት ሁልጊዜ ይገኛል። የራስዎን Gemini API ቁልፍ በማከል ያለ ዕለታዊ ገደብ AI ጥናትን ይቀጥሉ።';
+
+  @override
+  String get studyLimitOffline => 'በመስመር ውጭ ጥናት ይቀጥሉ';
+
+  @override
+  String get studyLimitAddKey => 'የራሴን Gemini API ቁልፍ አክል';
+
+  @override
   String get studyTakeaway => 'ጽሑፉ ራሱ ይላል';
 
   @override

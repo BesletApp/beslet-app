@@ -1551,6 +1551,20 @@ class AppLocalizationsEn extends AppLocalizations {
       'A full study note for this passage needs a connection right now. The passage stands on its own — read it, sit with it, and let it do its work.';
 
   @override
+  String get studyLimitTitle =>
+      'You\'ve used today\'s 10 free AI study sessions.';
+
+  @override
+  String get studyLimitBody =>
+      'Offline Study is always available. Add your own Gemini API key to continue AI study without the daily limit.';
+
+  @override
+  String get studyLimitOffline => 'Continue with Offline Study';
+
+  @override
+  String get studyLimitAddKey => 'Add my Gemini API key';
+
+  @override
   String get studyTakeaway => 'The passage itself says';
 
   @override

@@ -42,28 +42,10 @@ class PrayerTime {
 class PrayerReminderService {
   static const _timesKey = 'prayer_times';
   static const _lastUpdateKey = 'prayer_reminder_last_update';
-  static const _notificationIdBase = 100;
   static const _playbackRequestBase = 1000;
-  static const _alarmActiveKey = 'prayer_alarm_active';
   static const _channel = MethodChannel('beslet_app/notifications');
 
   static final MethodChannel _soundChannel = MethodChannel('beslet_app/sounds');
-
-  // ── Alarm-active state (the red "Stop alarm" button) ──────
-  static Future<bool> isAlarmActive() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_alarmActiveKey) ?? false;
-  }
-
-  static Future<void> _setAlarmActive(bool active) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_alarmActiveKey, active);
-  }
-
-  static Future<void> stopAlarmNow() async {
-    try { await _soundChannel.invokeMethod('stopAlarmNow'); } catch (_) {}
-    await _setAlarmActive(false);
-  }
 
   // ── Permissions ───────────────────────────────────────────
   static Future<PrayerAlarmPermissionStatus> ensurePermissions() async {
@@ -129,7 +111,6 @@ class PrayerReminderService {
     final removed = times.where((t) => t.id == id).toList();
     await _savePrayerTimes(times.where((t) => t.id != id).toList());
     for (final r in removed) {
-      try { await NotificationService.plugin.cancel(_notificationIdBase + r.id); } catch (_) {}
       try { await _cancelPlaybackAlarm(_playbackRequestBase + r.id); } catch (_) {}
     }
     await syncSchedules();
@@ -168,7 +149,6 @@ class PrayerReminderService {
     final times = await getPrayerTimes();
 
     for (final t in times) {
-      try { await NotificationService.plugin.cancel(_notificationIdBase + t.id); } catch (_) {}
       try { await _cancelPlaybackAlarm(_playbackRequestBase + t.id); } catch (_) {}
     }
     for (final t in times.where((t) => t.enabled)) {
@@ -180,7 +160,6 @@ class PrayerReminderService {
     AndroidNotificationSound sound;
     try {
       sound = await PrayerAlarmSoundService.resolveAndroidSound();
-      await PrayerAlarmSoundService.ensureChannel(sound);
     } catch (_) {
       return;
     }
@@ -192,62 +171,34 @@ class PrayerReminderService {
 
     final dayIndex = DateTime.now().difference(DateTime(2025, 1, 1)).inDays;
     final verse = PrayerVerseService.getPrayerVerse(dayIndex);
-    final title = 'Time to pray! 🙏';
+    final isAm = NotificationService.isAmharic;
+    final title = isAm ? 'የጸሎት ጊዜ! 🙏' : 'Time to pray! 🙏';
     final body = '${verse.textAm} — ${verse.reference}';
-    final channelId = PrayerAlarmSoundService.channelIdFor(sound);
 
-    try {
-      await NotificationService.plugin.zonedSchedule(
-        _notificationIdBase + t.id,
-        title,
-        body,
-        scheduledDate,
-        NotificationDetails(
-          android: AndroidNotificationDetails(
-            channelId, 'Prayer Reminder',
-            importance: Importance.max,
-            priority: Priority.max,
-            icon: '@mipmap/ic_launcher',
-            playSound: false,
-            enableVibration: false,
-            silent: true,
-            category: AndroidNotificationCategory.alarm,
-            visibility: NotificationVisibility.public,
-            fullScreenIntent: true,
-            actions: [
-              AndroidNotificationAction('dismiss_alarm', '🔕 Stop Alarm',
-                cancelNotification: true,
-                showsUserInterface: false,
-              ),
-            ],
-          ),
-          iOS: const DarwinNotificationDetails(
-            presentAlert: true, presentBadge: true, presentSound: true,
-            interruptionLevel: InterruptionLevel.timeSensitive,
-          ),
-        ),
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        matchDateTimeComponents: DateTimeComponents.time,
-        payload: '/prayer',
-        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-      );
-    } catch (_) {}
-
-    await _schedulePlaybackAlarm(scheduledDate, sound, title, body, t.id);
-  }
-
-  static Future<void> _schedulePlaybackAlarm(
-      tz.TZDateTime scheduledDate, AndroidNotificationSound sound, String title, String body, int id) async {
-    final soundUri = sound is UriAndroidNotificationSound ? sound.sound : null;
     try {
       await _soundChannel.invokeMethod('schedulePlaybackAlarm', {
         'timestamp': scheduledDate.millisecondsSinceEpoch,
-        'soundUri': soundUri,
+        'soundUri': _soundUriFor(sound),
         'title': title,
         'body': body,
-        'requestCode': _playbackRequestBase + id,
+        'hour': t.hour,
+        'minute': t.minute,
+        'verseText': verse.textAm,
+        'verseRef': verse.reference,
+        'dayIndex': dayIndex,
+        'lang': isAm ? 'am' : 'en',
+        'requestCode': _playbackRequestBase + t.id,
       });
     } catch (_) {}
+  }
+
+  /// A URI the native side understands for every sound flavour:
+  /// custom phone files come as `content://`, the system alarm ringtone as
+  /// `content://...`, and the bundled raw resource is marked resource://
+  /// so Kotlin maps it to `android.resource://…/raw/prayer_alarm`.
+  static String? _soundUriFor(AndroidNotificationSound sound) {
+    if (sound is UriAndroidNotificationSound) return sound.sound;
+    return 'resource://prayer_alarm';
   }
 
   static Future<void> _cancelPlaybackAlarm(int requestCode) async {

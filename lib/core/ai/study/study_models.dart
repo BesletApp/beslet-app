@@ -449,6 +449,12 @@ enum StudySource {
   /// intro + cross-reference index) when nothing else is reachable. Served
   /// only from memory; never persisted, so it can never shadow a richer note.
   knowledge,
+
+  /// The app's free daily AI allowance is exhausted (and the reader has not
+  /// connected their own Gemini key). A sentinel, never persisted — the panel
+  /// turns it into the "used today's free sessions / add your own key" prompt
+  /// instead of silently falling back to offline content.
+  limitReached,
 }
 
 /// Which passage is being studied. Contiguous verses within one chapter.
@@ -764,6 +770,12 @@ class StudyResult {
   final DateTime cachedAt;
   final bool isAvailable;
 
+  /// True when the note is the quiet offline assembly that also signals the
+  /// app's free daily AI allowance was exhausted. The panel uses this to show
+  /// the "used today's free sessions / add your own key" prompt. Transient —
+  /// never serialized to the cache (an offline note is memory-only anyway).
+  final bool limitReached;
+
   const StudyResult({
     required this.reference,
     required this.source,
@@ -771,6 +783,7 @@ class StudyResult {
     this.anchor,
     required this.cachedAt,
     required this.isAvailable,
+    this.limitReached = false,
   });
 
   factory StudyResult.unavailable({required StudyReference reference}) =>
@@ -780,6 +793,32 @@ class StudyResult {
         sections: const [],
         cachedAt: DateTime.now(),
         isAvailable: false,
+      );
+
+  /// The sentinel for "the app's free daily AI allowance is exhausted." The
+  /// service replaces it with the offline note (flagged [limitReached]) when
+  /// the bundled knowledge layers can produce one; otherwise this empty note
+  /// reaches the panel alone.
+  factory StudyResult.aiLimit({required StudyReference reference}) =>
+      StudyResult(
+        reference: reference,
+        source: StudySource.limitReached,
+        sections: const [],
+        cachedAt: DateTime.now(),
+        isAvailable: false,
+        limitReached: true,
+      );
+
+  /// A copy that may mark the note as the offline assembly surfaced after the
+  /// free AI limit was hit. Only the transient flag is overridable here.
+  StudyResult copyWith({bool? limitReached}) => StudyResult(
+        reference: reference,
+        source: source,
+        sections: sections,
+        anchor: anchor,
+        cachedAt: cachedAt,
+        isAvailable: isAvailable,
+        limitReached: limitReached ?? this.limitReached,
       );
 
   String toJsonString() {

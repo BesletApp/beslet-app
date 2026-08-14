@@ -16,9 +16,7 @@ import java.io.File
 
 class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
-        super.configureFlutterEngine(flutterEngine)
-
-        // Sound operations
+        super.configureFlutterEngine(flutterEngine)        // Sound operations
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "beslet_app/sounds")
             .setMethodCallHandler { call, result ->
                 when (call.method) {
@@ -62,13 +60,31 @@ class MainActivity : FlutterActivity() {
                         val title = call.argument<String>("title") ?: "Time to pray! \uD83D\uDE4F"
                         val body = call.argument<String>("body") ?: "Your prayer reminder"
                         val requestCode = call.argument<Int>("requestCode") ?: 1000
+                        val hour = call.argument<Int>("hour") ?: -1
+                        val minute = call.argument<Int>("minute") ?: -1
+                        val verseText = call.argument<String>("verseText")
+                        val verseRef = call.argument<String>("verseRef")
+                        val dayIndex = call.argument<Int>("dayIndex") ?: 0
+                        val lang = call.argument<String>("lang") ?: "en"
+
+                        val playableUri = if (soundUri == "resource://prayer_alarm") {
+                            "android.resource://$packageName/${R.raw.prayer_alarm}"
+                        } else {
+                            soundUri
+                        }
 
                         val intent = Intent(this, AlarmReceiver::class.java).apply {
-                            putExtra(AlarmService.EXTRA_SOUND_URI, soundUri)
+                            putExtra(AlarmService.EXTRA_SOUND_URI, playableUri)
                             putExtra(AlarmService.EXTRA_TITLE, title)
                             putExtra(AlarmService.EXTRA_BODY, body)
                             putExtra("requestCode", requestCode)
                             putExtra("timestamp", timestamp)
+                            putExtra("hour", hour)
+                            putExtra("minute", minute)
+                            putExtra("verseText", verseText)
+                            putExtra("verseRef", verseRef)
+                            putExtra("dayIndex", dayIndex)
+                            putExtra("lang", lang)
                         }
                         val pendingIntent = PendingIntent.getBroadcast(
                             this, requestCode, intent,
@@ -84,6 +100,22 @@ class MainActivity : FlutterActivity() {
                         } else {
                             alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timestamp, pendingIntent)
                         }
+
+                        PrayerAlarmMirror.upsert(
+                            this,
+                            PrayerAlarmMirror.Entry(
+                                requestCode = requestCode,
+                                hour = hour,
+                                minute = minute,
+                                soundUri = playableUri,
+                                title = title,
+                                body = body,
+                                verseText = verseText,
+                                verseRef = verseRef,
+                                dayIndex = dayIndex,
+                                lang = lang,
+                            )
+                        )
                         result.success(true)
                     }
                     "cancelPlaybackAlarm" -> {
@@ -96,6 +128,7 @@ class MainActivity : FlutterActivity() {
                         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
                         alarmManager.cancel(pendingIntent)
                         pendingIntent.cancel()
+                        PrayerAlarmMirror.remove(this, requestCode)
                         result.success(true)
                     }
                     "stopAlarmNow" -> {
@@ -112,6 +145,19 @@ class MainActivity : FlutterActivity() {
                     "isAlarmPlaying" -> {
                         // Simple check: service might be running
                         result.success(false)
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+
+        // Launch route: set by PrayerAlarmActivity ("Pray Now") so the warm
+        // start can open straight into the prayer screen.
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "beslet_app/launch")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "getLaunchRoute" -> {
+                        result.success(pendingLaunchRoute)
+                        pendingLaunchRoute = null
                     }
                     else -> result.notImplemented()
                 }
@@ -149,5 +195,26 @@ class MainActivity : FlutterActivity() {
                     else -> result.notImplemented()
                 }
             }
+    }
+
+    companion object {
+        @Volatile
+        var pendingLaunchRoute: String? = null
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        // Warm-start launch from the full-screen alarm: the Dart side only
+        // polls getLaunchRoute during _warmStart, so push it when the app is
+        // already running.
+        val route = pendingLaunchRoute
+        if (route != null) {
+            pendingLaunchRoute = null
+            flutterEngine?.dartExecutor?.binaryMessenger?.let { messenger ->
+                try {
+                    MethodChannel(messenger, "beslet_app/launch").invokeMethod("onLaunchRoute", route, null)
+                } catch (_: Exception) {}
+            }
+        }
     }
 }

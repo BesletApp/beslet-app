@@ -29,8 +29,6 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
   List<PrayerTime> _prayerTimes = [];
   String? _soundName;
   bool _usingCustomSound = false;
-  bool _alarmActive = false;
-  Timer? _alarmCheckTimer;
   Timer? _countdownTimer;
   final _topicsController = TextEditingController();
   Timer? _topicsSaveTimer;
@@ -41,13 +39,11 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
     WidgetsBinding.instance.addObserver(this);
     _loadReminder();
     _loadTopics();
-    _startAlarmCheck();
     _startCountdown();
   }
   @override void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _timer?.cancel();
-    _alarmCheckTimer?.cancel();
     _countdownTimer?.cancel();
     _topicsSaveTimer?.cancel();
     WakelockPlus.disable();
@@ -61,19 +57,6 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
     _countdownTimer = Timer.periodic(const Duration(seconds: 30), (_) {
       if (mounted) setState(() {});
     });
-  }
-
-  void _startAlarmCheck() {
-    _alarmCheckTimer?.cancel();
-    _checkAlarmActive();
-    _alarmCheckTimer = Timer.periodic(const Duration(seconds: 5), (_) => _checkAlarmActive());
-  }
-
-  Future<void> _checkAlarmActive() async {
-    final active = await PrayerReminderService.isAlarmActive();
-    if (mounted && active != _alarmActive) {
-      setState(() { _alarmActive = active; });
-    }
   }
 
   Future<void> _loadReminder() async {
@@ -107,7 +90,6 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
     if (state == AppLifecycleState.paused && _isRunning) {
       _timer?.cancel();
     } else if (state == AppLifecycleState.resumed) {
-      _checkAlarmActive();
       if (_isRunning && _startTime != null) {
         _timer = Timer.periodic(const Duration(seconds: 1), (_) { if (mounted) setState(() {}); });
       }
@@ -298,22 +280,6 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
             ),
         ]),
         const SizedBox(height: 8),
-        if (_alarmActive)
-          SizedBox(
-            width: double.infinity, height: 44,
-            child: ElevatedButton.icon(
-              onPressed: () async {
-                await PrayerReminderService.stopAlarmNow();
-                await _checkAlarmActive();
-              },
-              icon: const Icon(Icons.notifications_off, size: 18, color: Colors.white),
-              label: Text(isAm ? 'ማንቂያ አቁም' : 'Stop alarm', style: AppTextStyles.labelLarge.copyWith(color: Colors.white, fontSize: 13)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.error,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-            ),
-          ),
       ],
     );
   }

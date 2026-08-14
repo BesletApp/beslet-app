@@ -79,7 +79,8 @@ void main() {
       expect(recorded, 1);
     });
 
-    test('unbanked + over the daily cap refuses — AI is never called', () async {
+    test('unbanked + over the daily cap returns the limit sentinel — AI is never called',
+        () async {
       final ai = _FakeAi();
       final backend = StudyFallbackBackend(
         local: _unbanked(),
@@ -88,7 +89,12 @@ void main() {
         mayUseAi: () async => false,
         recordAiUse: () async {},
       );
-      expect(await backend.study(_request()), isNull);
+      final result = await backend.study(_request());
+      expect(result, isNotNull);
+      expect(result!.source, StudySource.limitReached,
+          reason: 'a reached quota must be distinguishable, never a silent null');
+      expect(result.isAvailable, isFalse);
+      expect(result.limitReached, isTrue);
       expect(ai.calls, 0);
     });
 

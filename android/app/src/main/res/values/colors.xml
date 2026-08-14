@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_launcher_background">#1A1A2E</color>
+    <color name="alarm_background">#07090E</color>
+    <color name="alarm_indigo">#1A1A2E</color>
+    <color name="alarm_gold">#D4AF37</color>
+    <color name="alarm_ivory">#F5EFE0</color>
+    <color name="alarm_dim">#A9A2B8</color>
+    <color name="alarm_button_gold">#B8942F</color>
 </resources>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="alarm_time_to_pray">የጸሎት ጊዜ</string>
+    <string name="alarm_verse_hold">ቁጥሩ በልብህ ይኖር</string>
+    <string name="alarm_pray_now">ይጸልዩ</string>
+    <string name="alarm_dismiss">አስወግድ</string>
+    <string name="alarm_notification_title">የጸሎት ማንቂያ እየተጫወተ ነው</string>
+</resources>

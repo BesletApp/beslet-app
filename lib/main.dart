@@ -65,6 +65,7 @@ void main() async {
 Future<void> _warmStart(ProviderContainer container) async {
   await _attempt(() => NotificationService.init());
   NotificationService.navigateTo = (route) => AppRouter.router.go(route);
+  await _attempt(_handleLaunchRoute);
   await _attempt(() async {
     final sound = await PrayerAlarmSoundService.resolveAndroidSound();
     await PrayerAlarmSoundService.ensureChannel(sound);
@@ -94,6 +95,23 @@ Future<void> _warmStart(ProviderContainer container) async {
   } catch (_) {}
   VineyardReminderService.configure(db, isAm: lang == 'am');
   await _attempt(() => VineyardReminderService.refresh());
+}
+
+/// Opens straight into a requested route (e.g. `/prayer`) when the native
+/// side launched the app from the full-screen prayer alarm screen. Also
+/// listens for warm-start launches (the app already running in the background).
+Future<void> _handleLaunchRoute() async {
+  const channel = MethodChannel('beslet_app/launch');
+  channel.setMethodCallHandler((call) async {
+    if (call.method == 'onLaunchRoute') {
+      final route = call.arguments as String?;
+      if (route != null && route.isNotEmpty) AppRouter.router.go(route);
+    }
+  });
+  try {
+    final route = await channel.invokeMethod<String>('getLaunchRoute');
+    if (route != null && route.isNotEmpty) AppRouter.router.go(route);
+  } catch (_) {}
 }
 
 /// Runs a startup step with a hard time box so a slow or hung platform call

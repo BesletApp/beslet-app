@@ -2912,6 +2912,30 @@ abstract class AppLocalizations {
   /// **'A full study note for this passage needs a connection right now. The passage stands on its own — read it, sit with it, and let it do its work.'**
   String get studyOfflineNote;
 
+  /// No description provided for @studyLimitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve used today\'s 10 free AI study sessions.'**
+  String get studyLimitTitle;
+
+  /// No description provided for @studyLimitBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline Study is always available. Add your own Gemini API key to continue AI study without the daily limit.'**
+  String get studyLimitBody;
+
+  /// No description provided for @studyLimitOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Offline Study'**
+  String get studyLimitOffline;
+
+  /// No description provided for @studyLimitAddKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Add my Gemini API key'**
+  String get studyLimitAddKey;
+
   /// No description provided for @studyTakeaway.
   ///
   /// In en, this message translates to:

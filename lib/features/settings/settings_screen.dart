@@ -2,8 +2,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../l10n/app_localizations.dart';
+import 'widgets/gemini_key_dialog.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/providers/theme_provider.dart';
@@ -56,70 +56,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   /// Quietly lets an advanced user connect their own Gemini key. Optional —
   /// the bundled free-tier key is the default. Never prominent.
   Future<void> _manageAiKey(BuildContext context) async {
-    final l = AppLocalizations.of(context)!;
-    final keyStore = ref.read(aiKeyStoreProvider);
-    final controller = TextEditingController();
-
-    final result = await showDialog<String>(
-      context: context,
-      builder: (ctx) {
-        final cc = AppColors.of(ctx);
-        return AlertDialog(
-          backgroundColor: cc.card,
-          title: Text(l.aiKeyDialogTitle, style: AppTextStyles.labelLarge),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(l.aiKeyDialogBody,
-                  style: AppTextStyles.bodySmall.copyWith(color: cc.textSecondary)),
-              const SizedBox(height: AppSpacing.sm),
-              TextField(
-                controller: controller,
-                obscureText: true,
-                decoration: InputDecoration(
-                  hintText: l.aiKeyPlaceholder,
-                  isDense: true,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              TextButton.icon(
-                onPressed: () =>
-                    launchUrl(Uri.parse('https://aistudio.google.com/apikey')),
-                icon: const Icon(Icons.open_in_new, size: 16),
-                label: Text(l.aiKeyOpenStudio,
-                    style: AppTextStyles.bodySmall),
-              ),
-            ],
-          ),
-          actions: [
-            if (_aiKeyConnected)
-              TextButton(
-                onPressed: () async {
-                  await keyStore.clearUserKey();
-                  if (ctx.mounted) Navigator.of(ctx).pop('removed');
-                },
-                child: Text(l.aiKeyRemove,
-                    style: TextStyle(color: AppColors.warning)),
-              ),
-            TextButton(
-              onPressed: () async {
-                if (controller.text.trim().isNotEmpty) {
-                  await keyStore.saveUserKey(controller.text);
-                }
-                if (ctx.mounted) Navigator.of(ctx).pop('saved');
-              },
-              child: Text(l.aiKeySave),
-            ),
-          ],
-        );
-      },
-    );
-    controller.dispose();
-
-    if (result == null || !context.mounted) return;
-    setState(() => _aiKeyConnected = result == 'saved');
     final l10n = AppLocalizations.of(context)!;
+    final result = await showGeminiKeyDialog(context);
+    if (result == null || !context.mounted) return;
+    await _loadAiKey();
+    if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(result == 'saved' ? l10n.aiKeySaved : l10n.aiKeyRemoved,
           style: const TextStyle(fontFamily: 'Inter')),

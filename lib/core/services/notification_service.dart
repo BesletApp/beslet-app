@@ -3,7 +3,6 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tzdata;
-import 'prayer_reminder_service.dart';
 import 'daily_verse_service.dart';
 import 'scripture_service.dart';
 
@@ -16,6 +15,8 @@ class NotificationService {
   static bool _isAmharicLang = true;
 
   static void setLanguage(bool isAm) => _isAmharicLang = isAm;
+
+  static bool get isAmharic => _isAmharicLang;
 
   // ── Helpers ────────────────────────────────────────────────
   static const _eveningPoolEn = [
@@ -124,13 +125,12 @@ const iosSettings = DarwinInitializationSettings(
       onDidReceiveNotificationResponse: _onNotificationTap,
     );
     await _createChannels();
+    final android = plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    try { await android?.requestFullScreenIntentPermission(); } catch (_) {}
     _initialized = true;
   }
 
   static void _onNotificationTap(NotificationResponse response) {
-    if (response.actionId == 'dismiss_alarm') {
-      PrayerReminderService.stopAlarmNow();
-    }
     final route = response.payload ?? '/prayer';
     navigateTo?.call(route);
   }

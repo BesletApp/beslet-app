@@ -8,6 +8,7 @@ import '../../../core/providers/scripture_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../features/settings/widgets/gemini_key_dialog.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// The near-full-screen study note. Opens on a verse (from the action sheet)
@@ -27,13 +28,18 @@ class StudyPanel extends ConsumerStatefulWidget {
 class _StudyPanelState extends ConsumerState<StudyPanel> {
   late Future<StudyResult> _future;
 
+  /// Whether the "free AI sessions used" banner is still shown. Once dismissed
+  /// (Continue with Offline Study) it stays hidden for this open; after the
+  /// reader adds their own key a fresh resolution replaces the note entirely.
+  bool _showLimitBanner = true;
+
   @override
   void initState() {
     super.initState();
     _future = _load();
   }
 
-  Future<StudyResult> _load() async {
+  Future<StudyResult> _load({bool force = false}) async {
     final service = await ref.read(studyServiceProvider.future);
     // The service provider resolves the intro library, so by this point the
     // genre is available (or the panel's test override left it untouched).
@@ -50,7 +56,9 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
             verseTexts: widget.request.verseTexts,
             genre: genre,
           );
-    return service.study(request);
+    // force = a fresh resolution (bypasses the in-memory cache) so adding a
+    // personal API key continues the study in place, not from a stale result.
+    return force ? service.refresh(request) : service.study(request);
   }
 
   @override
@@ -106,7 +114,13 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
                   return _buildLoading(c, l);
                 }
                 final result = snapshot.data;
-                if (result == null || !result.isAvailable) {
+                if (result == null) {
+                  return _buildOffline(c, l);
+                }
+                if (result.limitReached) {
+                  return _buildLimited(c, l, result, sources);
+                }
+                if (!result.isAvailable) {
                   return _buildOffline(c, l);
                 }
                 return _buildContent(c, l, result, sources);
@@ -155,6 +169,43 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
         ),
       ],
     );
+  }
+
+  /// Shown when the app's free daily AI allowance is reached: a calm
+  /// explanation with the choice to keep reading offline or add a personal
+  /// Gemini key, above whatever note is available (the offline assembly, or
+  /// the quiet empty view when there is no offline material).
+  Widget _buildLimited(ThemePalette c, AppLocalizations l, StudyResult result,
+      StudySourceRegistry? sources) {
+    final noteAvailable = result.isAvailable && result.sections.isNotEmpty;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (_showLimitBanner) ...[
+          _LimitBanner(
+            isAm: widget.isAm,
+            onContinueOffline: () => setState(() => _showLimitBanner = false),
+            onAddKey: _addApiKeyAndRetry,
+          ),
+          const SizedBox(height: 4),
+        ],
+        Expanded(
+          child: noteAvailable
+              ? _buildContent(c, l, result, sources)
+              : _buildOffline(c, l),
+        ),
+      ],
+    );
+  }
+
+  /// Opens the shared Gemini-key dialog; once a key is saved the study re-runs
+  /// through the service's `refresh` path so it continues in place.
+  Future<void> _addApiKeyAndRetry() async {
+    final action = await showGeminiKeyDialog(context);
+    if (!mounted) return;
+    if (action == 'saved') {
+      setState(() => _future = _load(force: true));
+    }
   }
 
   Widget _buildContent(ThemePalette c, AppLocalizations l, StudyResult result,
@@ -1131,6 +1182,82 @@ class _CrossReferenceViewer extends ConsumerWidget {
           textAlign: TextAlign.center,
           style: TextStyle(color: c.textSecondary, fontSize: 13, height: 1.5),
         ),
+      ),
+    );
+  }
+}
+
+/// The calm "free AI sessions used" card shown above the study note when the
+/// app's daily allowance is exhausted. Plainly distinguishes the two options —
+/// Offline Study (still available) vs. a personal Gemini API key (AI continues)
+/// — without guilt, pressure, or gamification.
+class _LimitBanner extends ConsumerWidget {
+  final bool isAm;
+  final VoidCallback onContinueOffline;
+  final VoidCallback onAddKey;
+
+  const _LimitBanner({
+    required this.isAm,
+    required this.onContinueOffline,
+    required this.onAddKey,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final c = AppColors.of(context);
+    final l = AppLocalizations.of(context)!;
+    return Container(
+      margin: const EdgeInsets.fromLTRB(
+          AppSpacing.md, AppSpacing.sm, AppSpacing.md, 0),
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: c.card,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: c.primary.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            Icon(Icons.auto_stories_outlined, size: 16, color: c.primary),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                l.studyLimitTitle,
+                style: AppTextStyles.labelLarge.copyWith(
+                    color: c.primary, fontSize: 13),
+              ),
+            ),
+          ]),
+          const SizedBox(height: 6),
+          Text(
+            l.studyLimitBody,
+            style: (isAm
+                    ? AppTextStyles.amharicBody
+                    : AppTextStyles.bodySmall)
+                .copyWith(color: c.textSecondary, height: 1.5),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: onContinueOffline,
+                  child: Text(l.studyLimitOffline,
+                      style: const TextStyle(fontSize: 12)),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: FilledButton(
+                  onPressed: onAddKey,
+                  child: Text(l.studyLimitAddKey,
+                      style: const TextStyle(fontSize: 12)),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
