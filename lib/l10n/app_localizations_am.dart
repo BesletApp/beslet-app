@@ -1442,6 +1442,60 @@ class AppLocalizationsAm extends AppLocalizations {
   String get studySectionReflection => 'አስተንትኑ';
 
   @override
+  String get studySectionPassageOverview => 'በአጭሩ';
+
+  @override
+  String get studySectionHistoricalBackground => 'ከጽሑፉ በስተጀርባ';
+
+  @override
+  String get studySectionLiteraryContext => 'ጽሑፉ የሚያስተላልፈው';
+
+  @override
+  String get studySectionVerseByVerse => 'በቁጥር በቁጥር';
+
+  @override
+  String get studySectionOriginalLanguage => 'ቃላትን በቅርበት መመልከት';
+
+  @override
+  String get studySectionScriptureInterconnections => 'ጽሑፍ ከጽሑፍ ጋር';
+
+  @override
+  String get studySectionExplicitTeachings => 'ግልጽ የሆነው / ጥንቃቄ የሚሻው';
+
+  @override
+  String get studySectionQuestionsToCarry => 'አስተንትኑ';
+
+  @override
+  String get studyAnchor => 'አስታውሱ';
+
+  @override
+  String get studyHistoryAuthor => 'ደራሲ';
+
+  @override
+  String get studyHistoryAudience => 'አድማጭ';
+
+  @override
+  String get studyHistoryDate => 'ጊዜ';
+
+  @override
+  String get studyHistoryPlace => 'ቦታ';
+
+  @override
+  String get studyHistoryOccasion => 'አጋጣሚ';
+
+  @override
+  String get studyHistoryCulturalSetting => 'ባህላዊ ዐውድ';
+
+  @override
+  String get studyHistoryEstablished => 'የተረጋገጠ';
+
+  @override
+  String get studyHistoryProbable => 'ሊሆን ይችላል';
+
+  @override
+  String get studyHistoryDebated => 'አከራካሪ';
+
+  @override
   String get studySectionSources => 'ምንጮች';
 
   @override

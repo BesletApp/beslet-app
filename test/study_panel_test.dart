@@ -27,7 +27,7 @@ StudyResult _result() => StudyResult(
       isAvailable: true,
       sections: [
         const StudySection(
-          kind: StudySectionKind.meaningBackground,
+          kind: StudySectionKind.originalLanguage,
           en: 'A shepherd leads, feeds, and protects the flock.',
           terms: [
             StudyTerm(
@@ -100,28 +100,29 @@ void main() {
       isAvailable: true,
       sections: const [
         StudySection(
-          kind: StudySectionKind.reflection,
+          kind: StudySectionKind.questionsToCarry,
           en: 'Where does the shepherd lead?',
         ),
         StudySection(
-          kind: StudySectionKind.setting,
+          kind: StudySectionKind.passageOverview,
           en: 'A psalm of David.',
         ),
         StudySection(
-          kind: StudySectionKind.whatTextSays,
+          kind: StudySectionKind.literaryContext,
           en: 'The LORD is my shepherd.',
         ),
       ],
     );
     await pump(tester, backend: _FakeBackend(outOfOrder));
 
-    final titles = tester.widgetList<Text>(find.byType(Text)).map((t) => t.data).toList();
-    final settingIndex = titles.indexOf('Setting');
-    final whatTextIndex = titles.indexOf('What the Text Communicates');
-    final reflectionIndex = titles.indexOf('Consider');
-    expect(settingIndex, lessThan(whatTextIndex),
-        reason: 'Setting must render before What the Text Communicates');
-    expect(whatTextIndex, lessThan(reflectionIndex),
+    final titles =
+        tester.widgetList<Text>(find.byType(Text)).map((t) => t.data).toList();
+    final overviewIndex = titles.indexOf('At a Glance');
+    final literaryIndex = titles.indexOf('What the Text Communicates');
+    final questionsIndex = titles.indexOf('Consider');
+    expect(overviewIndex, lessThan(literaryIndex),
+        reason: 'At a Glance must render before What the Text Communicates');
+    expect(literaryIndex, lessThan(questionsIndex),
         reason: 'What the Text Communicates must render before Consider');
   });
 
@@ -134,7 +135,7 @@ void main() {
       isAvailable: true,
       sections: const [
         StudySection(
-          kind: StudySectionKind.setting,
+          kind: StudySectionKind.passageOverview,
           en: 'A psalm of David.',
         ),
       ],
@@ -196,7 +197,7 @@ void main() {
       isAvailable: true,
       sections: const [
         StudySection(
-          kind: StudySectionKind.biblicalConnections,
+          kind: StudySectionKind.scriptureInterconnections,
           references: [
             StudyCrossReference(
               bookId: 'john',
@@ -227,7 +228,7 @@ void main() {
         isAvailable: true,
         sections: const [
           StudySection(
-            kind: StudySectionKind.whatTextSays,
+            kind: StudySectionKind.literaryContext,
             en: 'Step 1 — The LORD opens the psalm as the shepherd.\n'
                 'Step 2 — He leads through the darkest valley.',
           ),
@@ -249,7 +250,7 @@ void main() {
         isAvailable: true,
         sections: const [
           StudySection(
-            kind: StudySectionKind.meaningBackground,
+            kind: StudySectionKind.originalLanguage,
             en: '• The shepherd provides and restores.\n• He stays present.',
           ),
         ],
@@ -261,8 +262,8 @@ void main() {
     });
   });
 
-  group('takeaway rendering', () {
-    testWidgets('renders the neutral takeaway under the reflection question',
+  group('threads rendering', () {
+    testWidgets('renders the neutral threads line under the questions',
         (tester) async {
       final result = StudyResult(
         reference: _request().reference,
@@ -271,9 +272,9 @@ void main() {
         isAvailable: true,
         sections: const [
           StudySection(
-            kind: StudySectionKind.reflection,
+            kind: StudySectionKind.questionsToCarry,
             en: "Where do you need the Shepherd's presence?",
-            takeawayEn:
+            enSub:
                 'The LORD stays present as a shepherd, even in the darkest valley.',
           ),
         ],
@@ -287,7 +288,7 @@ void main() {
           findsOneWidget);
     });
 
-    testWidgets('renders no takeaway when the reflection carries none',
+    testWidgets('renders no threads when the questions carry none',
         (tester) async {
       await _pumpResult(tester, _noTermsResult());
       expect(find.text('The passage itself says'), findsNothing);
@@ -296,7 +297,7 @@ void main() {
 }
 
 /// Pumps the panel for a given [StudyResult] with real l10n, so hierarchy and
-/// takeaway rendering assertions can see the app's actual strings.
+/// threads rendering assertions can see the app's actual strings.
 Future<void> _pumpResult(WidgetTester tester, StudyResult result) async {
   await tester.pumpWidget(
     ProviderScope(
@@ -304,8 +305,7 @@ Future<void> _pumpResult(WidgetTester tester, StudyResult result) async {
         studySourcesProvider.overrideWith((ref) async =>
             StudySourceRegistry.fromJsonString(
                 File('assets/data/study_sources.json').readAsStringSync())),
-        studyCrossRefProvider
-            .overrideWith((ref) async => loadTestCrossRefs()),
+        studyCrossRefProvider.overrideWith((ref) async => loadTestCrossRefs()),
         studyServiceProvider.overrideWith((ref) async => StudyService(
               backend: _FakeBackend(result),
               readCache: (_) async => null,
@@ -329,7 +329,7 @@ StudyResult _noTermsResult() => StudyResult(
       isAvailable: true,
       sections: const [
         StudySection(
-          kind: StudySectionKind.meaningBackground,
+          kind: StudySectionKind.originalLanguage,
           en: 'A shepherd leads, feeds, and protects the flock.',
         ),
       ],

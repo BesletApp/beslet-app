@@ -9,15 +9,21 @@ import 'study_models.dart';
 /// a section that exceeds its ceiling by [hardRejectFactor]. A ceiling of 900
 /// therefore accepts prose up to ~1,800 words before it is considered runaway.
 class StudyLengthBudget {
-  static const int settingMax = 120;
-  static const int contextBehindMax = 300;
-  static const int contextInMax = 260;
-  static const int whatTextSaysMax = 420;
-  static const int meaningBackgroundMax = 760;
-  static const int reflectionMax = 140;
-  static const int takeawayMax = 40;
+  static const int passageOverviewMax = 120;
+  static const int historicalBackgroundMax = 300;
+  static const int literaryContextMax = 420;
+  static const int originalLanguageMax = 420;
+  static const int verseObservationMax = 200;
+  static const int questionsMax = 140;
+  static const int threadsMax = 40;
+  static const int historyEntryMax = 160;
+  static const int anchorImageMax = 12;
+  static const int anchorKeywordMax = 4;
+  static const int anchorSentenceMax = 40;
   static const int tierBlockMax = 180;
   static const int referenceReasonMax = 120;
+  static const int maxVerseObservations = 8;
+  static const int maxHistoryEntries = 6;
   static const int maxCrossReferences = 6;
   static const int maxTierBlocks = 4;
   static const int maxTerms = 6;
@@ -205,32 +211,28 @@ church.
 
 $genreVoice
 
-SETTING — Two to four sentences anchoring the passage in its book and moment
-(author, original audience, approximate date, place in the book, and the
-situation being addressed). Only what can be responsibly stated; mark guesses
-with "likely" / "tradition holds" / "debated".
+PASSAGE OVERVIEW — Three to five short bullet facts that orient the reader:
+the kind of writing, where the passage sits in its book, its place in the
+larger story of Scripture, and its key images. Write each as its own line
+beginning with "• " (a bullet, a space, then content). Only what the passage
+itself or responsible scholarship supports.
 
-HISTORICAL BACKGROUND ("behind the text") — Explain, where reliably known, the
-author, the original audience, the approximate date, the geographical and
-cultural setting, and the relevant historical circumstances, and why this
-background matters for understanding this passage. Do not speculate. Clearly
-distinguish established historical facts from scholarly uncertainty; if
-unknown, say "not known from the text".
+HISTORICAL BACKGROUND — The evidence behind the text: the author, the original
+audience, the approximate date, the place, the occasion, and the cultural
+setting, and why the background matters for understanding this passage. Do not
+speculate. Clearly distinguish established historical facts from scholarly
+reconstruction and from genuine dispute; if unknown, say "not known from the
+text". Where a reader needs to weigh a claim, give it as a labeled entry with a
+"label" (author, audience, date, place, occasion, culturalSetting), a
+"category" (established, probable, debated), and the text itself. At most
+${StudyLengthBudget.maxHistoryEntries} entries. You may also write a short
+"text" weaving the background together.
 
 IMMEDIATE & LITERARY CONTEXT ("in the text") — What comes immediately before,
 what follows, the argument or narrative or thought development, why this
 passage appears where it does, and how the surrounding verses affect its
 meaning. Never treat an isolated verse as though it existed independently from
 its context.
-
-LOOK CLOSELY AT THE WORDS — Identify only the most significant words, phrases,
-grammatical features, repetitions, contrasts, or literary structures. Where
-genuinely useful, explain relevant Hebrew, Aramaic, or Greek terms with the
-rules above; the purpose is to make the text clearer, not more complicated.
-Then list up to ${StudyLengthBudget.maxTerms} important terms or original-language
-words in "terms" — each with the word in its own script, its language, a
-transliteration when useful, and a short meaning in the reader's language that
-is anchored in this passage (never a bare lexicon entry).
 
 WHAT THE TEXT COMMUNICATES — The central section. Explain what the passage
 itself is communicating in its historical and literary context: the author's
@@ -249,6 +251,22 @@ paragraphs. You may also use bulleted lines beginning with "• " (a bullet, a
 space, then content) for a small supporting list — never for the main
 argument, never instead of steps. Never use markdown dashes or asterisks as
 bullets. The reader should be able to see the passage move through your note.
+
+VERSE BY VERSE — Verse-anchored observations: what each verse (or small group
+of up to three contiguous verses) says — its wording, imagery, repetition,
+structure. At most ${StudyLengthBudget.maxVerseObservations} observations,
+each covering 1–3 contiguous verses within the studied passage. Facts and
+observations only, never a running paraphrase of the whole passage.
+
+LOOK CLOSELY AT THE WORDS — Identify only the most significant words, phrases,
+grammatical features, repetitions, contrasts, or literary structures. Where
+genuinely useful, explain relevant Hebrew, Aramaic, or Greek terms with the
+rules above; the purpose is to make the text clearer, not more complicated.
+Then list up to ${StudyLengthBudget.maxTerms} important terms or
+original-language words in "terms" — each with the word in its own script, its
+language, a transliteration when useful, the verse number where it appears,
+and a short meaning in the reader's language that is anchored in this passage
+(never a bare lexicon entry).
 
 SCRIPTURE ALONGSIDE SCRIPTURE — Scripture interprets Scripture: prefer a
 genuinely related passage over explanation. Give three to six genuinely
@@ -283,23 +301,45 @@ deserves another reading?". Do NOT end with commands such as "You should",
 "God wants you to", "Here is what you need to do", or "Your lesson today is".
 Every question must end with a question mark.
 
-TAKEAWAY — Optionally add a single, quiet line that gathers what the passage
-itself said, phrased as an observation, not a command — for example "The
-passage itself shows the LORD as a shepherd who stays close, even in the dark
-valley." Write it in the reader's language, at most a few words, never in the
-second person ("you"), never as a directive, never as a question, never as
-"God is telling you". If nothing honest belongs here, omit it.
+THREADS — Optionally add a short line of where the study could continue: one
+quiet line that gathers what the passage itself said, phrased as an
+observation, not a command — for example "The passage itself shows the LORD as
+a shepherd who stays close, even in the dark valley." Write it in the reader's
+language, at most a few words, never in the second person ("you"), never as a
+directive, never as a question, never as "God is telling you". If nothing
+honest belongs here, omit it.
+
+MEMORY ANCHOR — A small card the reader can keep: a concrete "image" from the
+passage (a few words), a single powerful "keyword" (one or two words), and a
+"one-sentence" statement of the passage's central movement (under
+${StudyLengthBudget.anchorSentenceMax} words). All three in the reader's
+language, all observations — never a command, never a question, never a
+revelation.
+
+DEPTH — This is a ${request.depth.name} study. A "brief" study is a fast
+reading: include the passage overview, verse by verse, scripture alongside
+scripture, one consider question, the threads, and the memory anchor — omit
+the other sections and keep each field short. A "standard" study is the full
+workbook: every section above, at the length the passage honestly merits.
+Never pad a brief study into a standard one.
 
 WORD CEILINGS (the maximum you should write per field; reach toward them when
-the passage merits it, never pad): setting <= ${StudyLengthBudget.settingMax};
-historical background <= ${StudyLengthBudget.contextBehindMax}; immediate &
-literary context <= ${StudyLengthBudget.contextInMax};
-whatTheTextCommunicates <= ${StudyLengthBudget.whatTextSaysMax};
-meaningAndTerms <= ${StudyLengthBudget.meaningBackgroundMax};
-consider <= ${StudyLengthBudget.reflectionMax}; takeaway <=
-${StudyLengthBudget.takeawayMax} words; each tiered block <= ${StudyLengthBudget.tierBlockMax};
-each cross-reference reason <= ${StudyLengthBudget.referenceReasonMax}.
-Each term: word <= ${StudyLengthBudget.termMax} characters, meaning <= ${StudyLengthBudget.termMeaningMax} words.
+the passage merits it, never pad): passageOverview <=
+${StudyLengthBudget.passageOverviewMax}; historicalBackground text <=
+${StudyLengthBudget.historicalBackgroundMax} and each entry <=
+${StudyLengthBudget.historyEntryMax}; literaryContext & whatTheTextCommunicates
+<= ${StudyLengthBudget.literaryContextMax}; each verse observation <=
+${StudyLengthBudget.verseObservationMax};
+meaningAndTerms <= ${StudyLengthBudget.originalLanguageMax};
+questionsToCarry <= ${StudyLengthBudget.questionsMax}; threads <=
+${StudyLengthBudget.threadsMax} words; each tiered block <=
+${StudyLengthBudget.tierBlockMax}; each cross-reference reason <=
+${StudyLengthBudget.referenceReasonMax}; anchor image <=
+${StudyLengthBudget.anchorImageMax} words, keyword <=
+${StudyLengthBudget.anchorKeywordMax} words, sentence <=
+${StudyLengthBudget.anchorSentenceMax} words.
+Each term: word <= ${StudyLengthBudget.termMax} characters, meaning <=
+${StudyLengthBudget.termMeaningMax} words.
 At most ${StudyFormat.maxSteps} labeled movement steps in whatTheTextCommunicates.
 A section may be empty only when it has nothing honest to say. Never repeat the
 same point in two sections.
@@ -317,19 +357,33 @@ $_amharicHonestyMarkers
 OUTPUT — Reply with ONLY the JSON below; omit any field that should stay
 silent. Do not add commentary around the JSON.
 {
-  "setting":        {"text": "..."},
-  "context":        {"behindTheText": "...", "inTheText": "..."},
-  "whatTextSays":   {"text": "..."},
-  "meaningBackground": {"text": "...", "terms": [
-    {"term": "...", "language": "hebrew", "transliteration": "...", "meaning": "..."}
-  ]},
-  "biblicalConnections": {"items": [
+  "passageOverview":  {"text": "..."},
+  "historicalBackground": {
+    "text": "...",
+    "entries": [
+      {"label": "author", "category": "probable", "text": "..."}
+    ]
+  },
+  "literaryContext":   {"text": "..."},
+  "verseByVerse": {
+    "observations": [
+      {"startVerse": 1, "endVerse": 2, "text": "..."}
+    ]
+  },
+  "originalLanguage": {
+    "text": "...",
+    "terms": [
+      {"term": "...", "language": "hebrew", "transliteration": "...", "verseNumber": 1, "meaning": "..."}
+    ]
+  },
+  "scriptureInterconnections": {"items": [
     {"bookId": "romans", "chapter": 8, "startVerse": 28, "endVerse": 28, "priority": 0, "reason": "..."}
   ]},
-  "whatCanBeUnderstood": {"blocks": [
+  "explicitTeachings": {"blocks": [
     {"tier": "clearlyStated", "text": "..."}
   ]},
-  "reflection":     {"text": "...", "takeaway": "..."}
+  "questionsToCarry":  {"text": "...", "threads": "..."},
+  "anchor":            {"image": "...", "keyword": "...", "sentence": "..."}
 }
 ''';
   }

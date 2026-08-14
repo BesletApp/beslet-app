@@ -11,11 +11,14 @@ import 'study_prompt.dart';
 ///  - shape/type checks, hard length caps, and script consistency are applied
 ///    per section — a bloated or wrong-language section is dropped while the
 ///    honest rest of the note survives;
+///  - verse-by-verse observations must stay inside the studied passage;
+///  - historical entries must carry a known label and an honest confidence
+///    category;
 ///  - cross-references are checked against the deterministic canon; invalid,
 ///    reasonless, or out-of-canon ones are dropped, only canonical app-resolved
 ///    labels render;
-///  - interpretation is split into labeled tiers, and the reflection must be
-///    a single open-ended question, never a directive.
+///  - interpretation is split into labeled tiers, and the consider question
+///    must be an open-ended question, never a directive.
 ///
 /// A rejected (null) result becomes the quiet "unavailable" fallback; a note
 /// the validator cannot stand behind is never shown.
@@ -34,83 +37,102 @@ class StudyValidator {
     }
 
     final sections = <StudySection>[];
-final setting = _clean(_map(raw['setting'])?['text']);
-    if (_acceptProse(setting, isAm, StudyLengthBudget.settingMax,
+
+    // 1. Passage overview — three to five bullet facts.
+    final overview = _clean(_map(raw['passageOverview'])?['text']);
+    if (_acceptProse(overview, isAm, StudyLengthBudget.passageOverviewMax,
         allowSteps: false)) {
-      sections.add(_textSection(StudySectionKind.setting, setting, isAm));
+      sections.add(_textSection(StudySectionKind.passageOverview, overview, isAm));
     }
 
-    final context = _map(raw['context']);
-    if (context != null) {
-      final behind = _clean(context['behindTheText']);
-      final inText = _clean(context['inTheText']);
-      if (behind.isNotEmpty || inText.isNotEmpty) {
-        if (_acceptProse(behind, isAm, StudyLengthBudget.contextBehindMax,
-                allowSteps: false) &&
-            _acceptProse(inText, isAm, StudyLengthBudget.contextInMax,
-                allowSteps: false)) {
-          sections.add(StudySection(
-            kind: StudySectionKind.context,
-            en: isAm ? '' : behind,
-            am: isAm ? behind : '',
-            enSub: isAm ? null : (inText.isEmpty ? null : inText),
-            amSub: isAm ? (inText.isEmpty ? null : inText) : null,
-          ));
-        }
-      }
+    // 2. Historical background — prose plus evidence-categorized entries.
+    final history = _map(raw['historicalBackground']);
+    final historyText = _clean(history?['text']);
+    final historyEntries = _validatedHistoryEntries(history, isAm);
+    if (_acceptProse(historyText, isAm,
+        StudyLengthBudget.historicalBackgroundMax, allowSteps: false)) {
+      sections.add(StudySection(
+        kind: StudySectionKind.historicalBackground,
+        en: isAm ? '' : historyText,
+        am: isAm ? historyText : '',
+        historyEntries: historyEntries,
+      ));
+    } else if (historyEntries.isNotEmpty) {
+      // The prose was dropped (empty, wrong script, or over budget) but the
+      // labeled entries are still honest material; keep them alone.
+      sections.add(StudySection(
+        kind: StudySectionKind.historicalBackground,
+        historyEntries: historyEntries,
+      ));
     }
-    final whatTextSays = _clean(_map(raw['whatTextSays'])?['text']);
-    // The central section is allowed to trace the passage's movement in
-    // labeled steps, so its prose check permits steps.
-    if (_acceptProse(whatTextSays, isAm, StudyLengthBudget.whatTextSaysMax,
+
+    // 3. Literary context — what surrounds the passage and what it
+    // communicates, allowed to trace its movement in labeled steps.
+    final literary = _clean(_map(raw['literaryContext'])?['text']);
+    if (_acceptProse(literary, isAm, StudyLengthBudget.literaryContextMax,
         allowSteps: true)) {
       sections.add(
-          _textSection(StudySectionKind.whatTextSays, whatTextSays, isAm));
+          _textSection(StudySectionKind.literaryContext, literary, isAm));
     }
 
-    final meaningBackground = _clean(_map(raw['meaningBackground'])?['text']);
-    final terms = _validatedTerms(_map(raw['meaningBackground']), isAm);
-    if (_acceptProse(meaningBackground, isAm,
-        StudyLengthBudget.meaningBackgroundMax, allowSteps: false)) {
+    // 4. Verse by verse — observations anchored to verses inside the passage.
+    final observations = _validatedObservations(
+        _map(raw['verseByVerse']), isAm, request.reference);
+    if (observations.isNotEmpty) {
       sections.add(StudySection(
-        kind: StudySectionKind.meaningBackground,
-        en: isAm ? '' : meaningBackground,
-        am: isAm ? meaningBackground : '',
+        kind: StudySectionKind.verseByVerse,
+        verseObservations: observations,
+      ));
+    }
+
+    // 5. Original language — prose plus the important terms.
+    final language = _map(raw['originalLanguage']);
+    final languageText = _clean(language?['text']);
+    final terms = _validatedTerms(language, isAm);
+    if (_acceptProse(languageText, isAm,
+        StudyLengthBudget.originalLanguageMax, allowSteps: false)) {
+      sections.add(StudySection(
+        kind: StudySectionKind.originalLanguage,
+        en: isAm ? '' : languageText,
+        am: isAm ? languageText : '',
         terms: terms,
       ));
     } else if (terms.isNotEmpty) {
       // The text was dropped (empty, wrong script, or over budget) but the
       // terms are still honest material; keep them under the same section.
       sections.add(StudySection(
-        kind: StudySectionKind.meaningBackground,
+        kind: StudySectionKind.originalLanguage,
         terms: terms,
       ));
     }
 
-    final references = _validatedReferences(raw['biblicalConnections'], isAm);
+    // 6. Scripture alongside Scripture — canon-validated cross-references.
+    final references = _validatedReferences(raw['scriptureInterconnections'], isAm);
     if (references.isNotEmpty) {
-      sections.add(
-          StudySection(kind: StudySectionKind.biblicalConnections, references: references));
-    }
-
-    final blocks = _validatedBlocks(raw['whatCanBeUnderstood'], isAm);
-    if (blocks.isNotEmpty) {
-      sections.add(
-          StudySection(kind: StudySectionKind.whatCanBeUnderstood, blocks: blocks));
-    }
-
-    final reflectionMap = _map(raw['reflection']);
-    final reflection = _clean(reflectionMap?['text']);
-    if (_acceptText(reflection, isAm, StudyLengthBudget.reflectionMax) &&
-        _isConsider(reflection)) {
-      final takeaway = _validatedTakeaway(
-          _clean(reflectionMap?['takeaway']), isAm);
       sections.add(StudySection(
-        kind: StudySectionKind.reflection,
-        en: isAm ? '' : reflection,
-        am: isAm ? reflection : '',
-        takeawayEn: isAm ? null : takeaway,
-        takeawayAm: isAm ? takeaway : null,
+          kind: StudySectionKind.scriptureInterconnections,
+          references: references));
+    }
+
+    // 7. What is clear / what requires care — labeled tiers.
+    final blocks = _validatedBlocks(raw['explicitTeachings'], isAm);
+    if (blocks.isNotEmpty) {
+      sections.add(StudySection(
+          kind: StudySectionKind.explicitTeachings, blocks: blocks));
+    }
+
+    // 8. Questions to carry — one or two open questions plus optional threads.
+    final questionsMap = _map(raw['questionsToCarry']);
+    final questionText = _clean(questionsMap?['text']);
+    if (_acceptText(questionText, isAm, StudyLengthBudget.questionsMax) &&
+        _isConsider(questionText)) {
+      final threads = _validatedThreads(_clean(questionsMap?['threads']), isAm);
+      sections.add(StudySection(
+        kind: StudySectionKind.questionsToCarry,
+        en: isAm ? '' : questionText,
+        am: isAm ? questionText : '',
+        enSub: isAm ? null : threads,
+        amSub: isAm ? threads : null,
       ));
     }
 
@@ -120,6 +142,7 @@ final setting = _clean(_map(raw['setting'])?['text']);
       reference: request.reference,
       source: StudySource.gemini,
       sections: sections,
+      anchor: _validatedAnchor(_map(raw['anchor']), isAm),
       cachedAt: DateTime.now(),
       isAvailable: true,
     );
@@ -171,20 +194,21 @@ final setting = _clean(_map(raw['setting'])?['text']);
     return true;
   }
 
-  /// The optional neutral takeaway line nested on the reflection. When absent
-  /// it stays silent; when present it must be in the reader's script, under the
-  /// cap, and an observation — never a question and never a directive (the
+  /// The optional threads line nested on the consider questions. When absent
+  /// it stays silent; when present it must be in the reader's script, under
+  /// the cap, and an observation — never a question and never a directive (the
   /// global banned-phrase pass already rules out second-person commands).
-  String? _validatedTakeaway(String text, bool isAm) {
+  String? _validatedThreads(String text, bool isAm) {
     if (text.isEmpty) return null;
     if (_hasGeEz(text) != isAm) return null;
-    if (_wordCount(text) > StudyLengthBudget.takeawayMax) return null;
+    if (_wordCount(text) > StudyLengthBudget.threadsMax) return null;
     if (_isConsider(text)) return null;
     return text;
   }
 
-  /// The reflection must be one or two open-ended questions — a directive or a
-  /// run-on list would change the reader's posture toward the text.
+  /// The consider questions must be one or two open-ended questions — a
+  /// directive or a run-on list would change the reader's posture toward the
+  /// text.
   bool _isConsider(String text) {
     final t = text.trim();
     if (t.isEmpty) return false;
@@ -199,11 +223,81 @@ final setting = _clean(_map(raw['setting'])?['text']);
     return count >= 1 && count <= 2;
   }
 
-  /// Validates the tiered "what can be understood" blocks. A block needs a
-  /// recognized tier and in-script text under the per-block cap; invalid
-  /// blocks are dropped, and never more than [StudyLengthBudget.maxTierBlocks]
-  /// survive. The model never upgrades a claim to a stronger tier than it can
-  /// honestly hold.
+  /// Validates the evidence-categorized historical entries. An entry needs a
+  /// recognized label, a recognized confidence category, and in-script text
+  /// under the per-entry cap; invalid entries are dropped, and never more than
+  /// [StudyLengthBudget.maxHistoryEntries] survive. The model never presents a
+  /// reconstruction as an established fact.
+  List<StudyHistoryEntry> _validatedHistoryEntries(dynamic raw, bool isAm) {
+    final items = _list(_map(raw)?['entries']);
+    if (items.isEmpty) return const [];
+    final out = <StudyHistoryEntry>[];
+    for (final item in items) {
+      if (out.length >= StudyLengthBudget.maxHistoryEntries) break;
+      final m = _map(item);
+      if (m == null) continue;
+      final label = StudyHistoryLabel.values
+          .where((l) => l.name == m['label'])
+          .firstOrNull;
+      if (label == null) continue;
+      final category = StudyHistoryCategory.values
+          .where((c) => c.name == m['category'])
+          .firstOrNull;
+      if (category == null) continue;
+      final text = _clean(m['text']);
+      if (!_acceptProse(text, isAm, StudyLengthBudget.historyEntryMax,
+          allowSteps: false)) {
+        continue;
+      }
+      out.add(StudyHistoryEntry(
+        category: category,
+        label: label,
+        en: isAm ? '' : text,
+        am: isAm ? text : '',
+      ));
+    }
+    return out;
+  }
+
+  /// Validates the verse-anchored observations. An observation needs
+  /// start/end verses inside the studied passage covering 1–3 contiguous
+  /// verses, plus in-script text under the per-observation cap; invalid
+  /// observations are dropped, and never more than
+  /// [StudyLengthBudget.maxVerseObservations] survive.
+  List<StudyVerseObservation> _validatedObservations(
+      dynamic raw, bool isAm, StudyReference reference) {
+    final items = _list(_map(raw)?['observations']);
+    if (items.isEmpty) return const [];
+    final out = <StudyVerseObservation>[];
+    for (final item in items) {
+      if (out.length >= StudyLengthBudget.maxVerseObservations) break;
+      final m = _map(item);
+      if (m == null) continue;
+      final start = m['startVerse'];
+      final end = m['endVerse'];
+      if (start is! int || end is! int) continue;
+      if (start < reference.startVerse || end > reference.endVerse) continue;
+      if (end < start || end - start > 2) continue;
+      final text = _clean(m['text']);
+      if (!_acceptProse(text, isAm, StudyLengthBudget.verseObservationMax,
+          allowSteps: false)) {
+        continue;
+      }
+      out.add(StudyVerseObservation(
+        startVerse: start,
+        endVerse: end,
+        en: isAm ? '' : text,
+        am: isAm ? text : '',
+      ));
+    }
+    return out;
+  }
+
+  /// Validates the tiered "what is clear" blocks. A block needs a recognized
+  /// tier and in-script text under the per-block cap; invalid blocks are
+  /// dropped, and never more than [StudyLengthBudget.maxTierBlocks] survive.
+  /// The model never upgrades a claim to a stronger tier than it can honestly
+  /// hold.
   List<StudyTieredBlock> _validatedBlocks(dynamic raw, bool isAm) {
     final items = _list(_map(raw)?['blocks']);
     if (items.isEmpty) return const [];
@@ -230,12 +324,12 @@ final setting = _clean(_map(raw['setting'])?['text']);
     return out;
   }
 
-  /// Validates the important-terms / original-language list attached to
-  /// "meaning and background". A term needs a non-empty word within the hard
-  /// cap, a meaning in the reader's script under the per-term cap, and a
-  /// recognized language label; invalid terms are dropped, and never more than
-  /// [StudyLengthBudget.maxTerms] survive. The term's word stays in its own
-  /// script — it is not subject to the reader-script check.
+  /// Validates the important-terms / original-language list. A term needs a
+  /// non-empty word within the hard cap, a meaning in the reader's script
+  /// under the per-term cap, and a recognized language label; invalid terms
+  /// are dropped, and never more than [StudyLengthBudget.maxTerms] survive.
+  /// The term's word stays in its own script — it is not subject to the
+  /// reader-script check.
   List<StudyTerm> _validatedTerms(dynamic raw, bool isAm) {
     final items = _list(_map(raw)?['terms']);
     if (items.isEmpty) return const [];
@@ -261,6 +355,7 @@ final setting = _clean(_map(raw['setting'])?['text']);
         term: term,
         language: language,
         transliteration: transliteration.isEmpty ? null : transliteration,
+        verseNumber: m['verseNumber'] is int ? m['verseNumber'] as int : null,
         en: isAm ? '' : meaning,
         am: isAm ? meaning : '',
       );
@@ -320,10 +415,34 @@ final setting = _clean(_map(raw['setting'])?['text']);
     return out;
   }
 
-  /// Collects every text the model produced (all sections, both context
-  /// halves, tiered blocks, and cross-reference reasons) for the whole-result
-  /// banned-phrase guard. A banned phrase in any of them rejects the entire
-  /// note.
+  /// Validates the memory anchor. Each element must be in the reader's script,
+  /// under its cap, and an observation (never a question); anything invalid is
+  /// nulled, and an anchor with nothing left is omitted.
+  StudyAnchor? _validatedAnchor(dynamic raw, bool isAm) {
+    if (raw == null) return null;
+    String keep(String text, int cap) {
+      if (text.isEmpty) return '';
+      if (_hasGeEz(text) != isAm) return '';
+      if (_wordCount(text) > cap) return '';
+      if (_isConsider(text)) return '';
+      return text;
+    }
+
+    final anchor = StudyAnchor(
+      imageEn: isAm ? '' : keep(_clean(raw['image']), StudyLengthBudget.anchorImageMax),
+      imageAm: isAm ? keep(_clean(raw['image']), StudyLengthBudget.anchorImageMax) : '',
+      keywordEn: isAm ? '' : keep(_clean(raw['keyword']), StudyLengthBudget.anchorKeywordMax),
+      keywordAm: isAm ? keep(_clean(raw['keyword']), StudyLengthBudget.anchorKeywordMax) : '',
+      sentenceEn: isAm ? '' : keep(_clean(raw['sentence']), StudyLengthBudget.anchorSentenceMax),
+      sentenceAm: isAm ? keep(_clean(raw['sentence']), StudyLengthBudget.anchorSentenceMax) : '',
+    );
+    return anchor.isEmpty ? null : anchor;
+  }
+
+  /// Collects every text the model produced (all sections, historical entries,
+  /// verse observations, tiered blocks, terms, threads, anchor, and
+  /// cross-reference reasons) for the whole-result banned-phrase guard. A
+  /// banned phrase in any of them rejects the entire note.
   List<String> _collectAllTexts(Map<String, dynamic> raw) {
     final out = <String>[];
     void add(dynamic v) {
@@ -331,26 +450,43 @@ final setting = _clean(_map(raw['setting'])?['text']);
       if (t.isNotEmpty) out.add(t);
     }
 
-    add(_map(raw['setting'])?['text']);
-    add(_map(raw['whatTextSays'])?['text']);
-    final context = _map(raw['context']);
-    if (context != null) {
-      add(context['behindTheText']);
-      add(context['inTheText']);
+    add(_map(raw['passageOverview'])?['text']);
+    final history = _map(raw['historicalBackground']);
+    if (history != null) {
+      add(history['text']);
+      for (final item in _list(history['entries'])) {
+        add(_map(item)?['text']);
+      }
     }
-    add(_map(raw['meaningBackground'])?['text']);
-    for (final term in _list(_map(raw['meaningBackground'])?['terms'])) {
-      add(_map(term)?['meaning']);
-      add(_map(term)?['transliteration']);
+    add(_map(raw['literaryContext'])?['text']);
+    final verses = _map(raw['verseByVerse']);
+    if (verses != null) {
+      for (final item in _list(verses['observations'])) {
+        add(_map(item)?['text']);
+      }
     }
-    final reflectionMap = _map(raw['reflection']);
-    add(reflectionMap?['text']);
-    add(reflectionMap?['takeaway']);
-    for (final item in _list(_map(raw['biblicalConnections'])?['items'])) {
+    final language = _map(raw['originalLanguage']);
+    if (language != null) {
+      add(language['text']);
+      for (final term in _list(language['terms'])) {
+        add(_map(term)?['meaning']);
+        add(_map(term)?['transliteration']);
+      }
+    }
+    final questionsMap = _map(raw['questionsToCarry']);
+    add(questionsMap?['text']);
+    add(questionsMap?['threads']);
+    for (final item in _list(_map(raw['scriptureInterconnections'])?['items'])) {
       add(_map(item)?['reason']);
     }
-    for (final block in _list(_map(raw['whatCanBeUnderstood'])?['blocks'])) {
+    for (final block in _list(_map(raw['explicitTeachings'])?['blocks'])) {
       add(_map(block)?['text']);
+    }
+    final anchor = _map(raw['anchor']);
+    if (anchor != null) {
+      add(anchor['image']);
+      add(anchor['keyword']);
+      add(anchor['sentence']);
     }
     return out;
   }

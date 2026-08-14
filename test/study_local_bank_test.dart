@@ -31,20 +31,27 @@ const bannedPatterns = [
   'achievement',
 ];
 
-/// Every renderable English string in a bank entry (text + context halves +
-/// cross-reference reasons + tiered blocks), for the banned-pattern lint.
+/// Every renderable English string in a bank entry (text + sub-halves +
+/// cross-reference reasons + tiered blocks + term meanings), for the
+/// banned-pattern lint.
 List<String> englishStrings(StudyBankEntry entry) {
   final out = <String>[];
   for (final section in entry.sections) {
-    if (section.kind == StudySectionKind.biblicalConnections) {
+    if (section.kind == StudySectionKind.scriptureInterconnections) {
       for (final ref in section.references) {
         if (ref.en.isNotEmpty) out.add(ref.en);
       }
       continue;
     }
-    if (section.kind == StudySectionKind.whatCanBeUnderstood) {
+    if (section.kind == StudySectionKind.explicitTeachings) {
       for (final block in section.blocks) {
         if (block.en.isNotEmpty) out.add(block.en);
+      }
+      continue;
+    }
+    if (section.kind == StudySectionKind.verseByVerse) {
+      for (final observation in section.verseObservations) {
+        if (observation.en.isNotEmpty) out.add(observation.en);
       }
       continue;
     }
@@ -52,34 +59,52 @@ List<String> englishStrings(StudyBankEntry entry) {
     final sub = section.enSub;
     if (sub != null && sub.isNotEmpty) out.add(sub);
   }
+  final anchor = entry.anchor;
+  if (anchor != null) {
+    if (anchor.imageEn.isNotEmpty) out.add(anchor.imageEn);
+    if (anchor.keywordEn.isNotEmpty) out.add(anchor.keywordEn);
+    if (anchor.sentenceEn.isNotEmpty) out.add(anchor.sentenceEn);
+  }
   return out;
 }
 
-/// Every renderable Amharic string in a bank entry (text + context halves +
+/// Every renderable Amharic string in a bank entry (text + sub-halves +
 /// cross-reference reasons + tiered blocks + term meanings).
 List<String> amharicStrings(StudyBankEntry entry) {
   final out = <String>[];
   for (final section in entry.sections) {
-    if (section.kind == StudySectionKind.biblicalConnections) {
+    if (section.kind == StudySectionKind.scriptureInterconnections) {
       for (final ref in section.references) {
         if (ref.am.isNotEmpty) out.add(ref.am);
       }
       continue;
     }
-    if (section.kind == StudySectionKind.whatCanBeUnderstood) {
+    if (section.kind == StudySectionKind.explicitTeachings) {
       for (final block in section.blocks) {
         if (block.am.isNotEmpty) out.add(block.am);
+      }
+      continue;
+    }
+    if (section.kind == StudySectionKind.verseByVerse) {
+      for (final observation in section.verseObservations) {
+        if (observation.am.isNotEmpty) out.add(observation.am);
       }
       continue;
     }
     if (section.am.isNotEmpty) out.add(section.am);
     final sub = section.amSub;
     if (sub != null && sub.isNotEmpty) out.add(sub);
-    if (section.kind == StudySectionKind.meaningBackground) {
+    if (section.kind == StudySectionKind.originalLanguage) {
       for (final term in section.terms) {
         if (term.am.isNotEmpty) out.add(term.am);
       }
     }
+  }
+  final anchor = entry.anchor;
+  if (anchor != null) {
+    if (anchor.imageAm.isNotEmpty) out.add(anchor.imageAm);
+    if (anchor.keywordAm.isNotEmpty) out.add(anchor.keywordAm);
+    if (anchor.sentenceAm.isNotEmpty) out.add(anchor.sentenceAm);
   }
   return out;
 }
@@ -115,27 +140,32 @@ void main() {
       }
     });
 
-    test('every entry has all seven sections, both languages, both context halves',
-        () {
+    test('every entry is the full eight-section workbook with a memory anchor, '
+        'both languages', () {
       expect(bank.entries, isNotEmpty);
       for (final entry in bank.entries) {
-        expect(entry.sections.length, StudySectionKind.values.length,
-            reason: 'entry ${entry.id} must have all seven sections');
+        expect(entry.sections.length, 8,
+            reason:
+                'entry ${entry.id} must serve the eight workbook sections exactly once');
         for (final section in entry.sections) {
-          if (section.kind == StudySectionKind.biblicalConnections) {
+          if (section.kind == StudySectionKind.scriptureInterconnections) {
             expect(section.references, isNotEmpty,
-                reason: 'entry ${entry.id} biblicalConnections must not be empty');
+                reason:
+                    'entry ${entry.id} scriptureInterconnections must not be empty');
             for (final ref in section.references) {
               expect(ref.en.trim(), isNotEmpty,
-                  reason: 'entry ${entry.id} cross-reference needs an English reason');
+                  reason:
+                      'entry ${entry.id} cross-reference needs an English reason');
               expect(ref.am.trim(), isNotEmpty,
-                  reason: 'entry ${entry.id} cross-reference needs an Amharic reason');
+                  reason:
+                      'entry ${entry.id} cross-reference needs an Amharic reason');
             }
             continue;
           }
-          if (section.kind == StudySectionKind.whatCanBeUnderstood) {
+          if (section.kind == StudySectionKind.explicitTeachings) {
             expect(section.blocks, isNotEmpty,
-                reason: 'entry ${entry.id} whatCanBeUnderstood must not be empty');
+                reason:
+                    'entry ${entry.id} explicitTeachings must not be empty');
             for (final block in section.blocks) {
               expect(block.en.trim(), isNotEmpty,
                   reason: 'entry ${entry.id} tiered block needs English');
@@ -144,15 +174,46 @@ void main() {
             }
             continue;
           }
+          if (section.kind == StudySectionKind.verseByVerse) {
+            expect(section.verseObservations, isNotEmpty,
+                reason: 'entry ${entry.id} verseByVerse must not be empty');
+            for (final observation in section.verseObservations) {
+              expect(observation.en.trim(), isNotEmpty,
+                  reason:
+                      'entry ${entry.id} observation ${observation.startVerse}-${observation.endVerse} needs English');
+              expect(observation.am.trim(), isNotEmpty,
+                  reason:
+                      'entry ${entry.id} observation ${observation.startVerse}-${observation.endVerse} needs Amharic');
+            }
+            continue;
+          }
           expect(section.en.trim(), isNotEmpty,
               reason: 'entry ${entry.id} ${section.kind.name} needs English');
           expect(section.am.trim(), isNotEmpty,
               reason: 'entry ${entry.id} ${section.kind.name} needs Amharic');
-          if (section.kind == StudySectionKind.context) {
+          if (section.kind == StudySectionKind.questionsToCarry) {
             expect(section.enSub?.trim(), isNotEmpty,
-                reason: 'entry ${entry.id} context needs the "in the text" English part');
+                reason:
+                    'entry ${entry.id} questionsToCarry needs the English takeaway');
             expect(section.amSub?.trim(), isNotEmpty,
-                reason: 'entry ${entry.id} context needs the "in the text" Amharic part');
+                reason:
+                    'entry ${entry.id} questionsToCarry needs the Amharic takeaway');
+          }
+        }
+        final anchor = entry.anchor;
+        expect(anchor, isNotNull,
+            reason: 'entry ${entry.id} needs a memory anchor');
+        if (anchor != null) {
+          for (final field in [
+            anchor.imageEn,
+            anchor.imageAm,
+            anchor.keywordEn,
+            anchor.keywordAm,
+            anchor.sentenceEn,
+            anchor.sentenceAm,
+          ]) {
+            expect(field.trim(), isNotEmpty,
+                reason: 'entry ${entry.id} anchor field must not be empty');
           }
         }
       }
@@ -190,27 +251,29 @@ void main() {
             .where((w) => w.isNotEmpty)
             .length;
         expect(en, greaterThanOrEqualTo(200),
-            reason: 'entry ${entry.id} must be commentary depth in English, got $en words');
+            reason:
+                'entry ${entry.id} must be commentary depth in English, got $en words');
         expect(am, greaterThanOrEqualTo(200),
-            reason: 'entry ${entry.id} must be commentary depth in Amharic, got $am words');
+            reason:
+                'entry ${entry.id} must be commentary depth in Amharic, got $am words');
       }
     });
 
     test('rejects a bank with a wrong version (fail closed)', () {
       final issues = StudyLocalBank.fromJsonString(
-        '{"version":3,"entries":[{"id":"x","bookId":"psalms","chapter":23,'
+        '{"version":4,"entries":[{"id":"x","bookId":"psalms","chapter":23,'
         '"startVerse":1,"endVerse":1,"sections":['
-        '{"kind":"setting","en":"a","am":"a"},'
-        '{"kind":"context","en":"a","am":"a","enSub":"b","amSub":"b"},'
-        '{"kind":"whatTextSays","en":"a","am":"a"},'
-        '{"kind":"meaningBackground","en":"a","am":"a"},'
-        '{"kind":"biblicalConnections","references":['
+        '{"kind":"passageOverview","en":"a","am":"a"},'
+        '{"kind":"historicalBackground","en":"a","am":"a","enSub":"b","amSub":"b"},'
+        '{"kind":"literaryContext","en":"a","am":"a"},'
+        '{"kind":"originalLanguage","en":"a","am":"a"},'
+        '{"kind":"scriptureInterconnections","references":['
         '{"bookId":"john","chapter":10,"startVerse":11,"endVerse":11,"en":"r","am":"r"}]},'
-        '{"kind":"whatCanBeUnderstood","blocks":['
+        '{"kind":"explicitTeachings","blocks":['
         '{"tier":"clearlyStated","en":"a","am":"a"}]},'
-        '{"kind":"reflection","en":"a","am":"a"}]}]}',
+        '{"kind":"questionsToCarry","en":"a","am":"a","enSub":"b","amSub":"b"}]}]}',
       ).validate();
-      expect(issues.any((i) => i.contains('version must be 2')), isTrue,
+      expect(issues.any((i) => i.contains('version must be 3')), isTrue,
           reason: issues.join('\n'));
     });
 
@@ -218,16 +281,16 @@ void main() {
       final issues = StudyLocalBank.fromJsonString(
         '{"version":2,"entries":[{"id":"x","bookId":"psalms","chapter":23,'
         '"startVerse":1,"endVerse":1,"sections":['
-        '{"kind":"setting","en":"a","am":"a","sourceIds":["nope"]},'
-        '{"kind":"context","en":"a","am":"a","enSub":"b","amSub":"b","sourceIds":["scripture"]},'
-        '{"kind":"whatTextSays","en":"a","am":"a","sourceIds":["scripture"]},'
-        '{"kind":"meaningBackground","en":"a","am":"a","sourceIds":["scripture"]},'
-        '{"kind":"biblicalConnections","references":['
+        '{"kind":"passageOverview","en":"a","am":"a","sourceIds":["nope"]},'
+        '{"kind":"historicalBackground","en":"a","am":"a","enSub":"b","amSub":"b","sourceIds":["scripture"]},'
+        '{"kind":"literaryContext","en":"a","am":"a","sourceIds":["scripture"]},'
+        '{"kind":"originalLanguage","en":"a","am":"a","sourceIds":["scripture"]},'
+        '{"kind":"scriptureInterconnections","references":['
         '{"bookId":"john","chapter":10,"startVerse":11,"endVerse":11,"en":"r","am":"r"}],'
         '"sourceIds":["scripture"]},'
-        '{"kind":"whatCanBeUnderstood","blocks":['
+        '{"kind":"explicitTeachings","blocks":['
         '{"tier":"clearlyStated","en":"a","am":"a"}],"sourceIds":["scripture"]},'
-        '{"kind":"reflection","en":"a","am":"a","sourceIds":["scripture"]}]}]}',
+        '{"kind":"questionsToCarry","en":"a","am":"a","enSub":"b","amSub":"b","sourceIds":["scripture"]}]}]}',
       ).validate(sources: loadTestSources());
       expect(issues.any((i) => i.contains('unknown source id "nope"')), isTrue,
           reason: issues.join('\n'));
@@ -238,16 +301,16 @@ void main() {
       final issues = StudyLocalBank.fromJsonString(
         '{"version":2,"entries":[{"id":"x","bookId":"psalms","chapter":23,'
         '"startVerse":1,"endVerse":1,"sections":['
-        '{"kind":"setting","en":"a","am":"a"},'
-        '{"kind":"context","en":"a","am":"a","enSub":"b","amSub":"b","sourceIds":["scripture"]},'
-        '{"kind":"whatTextSays","en":"a","am":"a","sourceIds":["scripture"]},'
-        '{"kind":"meaningBackground","en":"a","am":"a","sourceIds":["scripture"]},'
-        '{"kind":"biblicalConnections","references":['
+        '{"kind":"passageOverview","en":"a","am":"a"},'
+        '{"kind":"historicalBackground","en":"a","am":"a","enSub":"b","amSub":"b","sourceIds":["scripture"]},'
+        '{"kind":"literaryContext","en":"a","am":"a","sourceIds":["scripture"]},'
+        '{"kind":"originalLanguage","en":"a","am":"a","sourceIds":["scripture"]},'
+        '{"kind":"scriptureInterconnections","references":['
         '{"bookId":"john","chapter":10,"startVerse":11,"endVerse":11,"en":"r","am":"r"}],'
         '"sourceIds":["scripture"]},'
-        '{"kind":"whatCanBeUnderstood","blocks":['
+        '{"kind":"explicitTeachings","blocks":['
         '{"tier":"clearlyStated","en":"a","am":"a"}],"sourceIds":["scripture"]},'
-        '{"kind":"reflection","en":"a","am":"a","sourceIds":["scripture"]}]}]}',
+        '{"kind":"questionsToCarry","en":"a","am":"a","enSub":"b","amSub":"b","sourceIds":["scripture"]}]}]}',
       ).validate(sources: loadTestSources());
       expect(issues.any((i) => i.contains('sourceIds required')), isTrue,
           reason: issues.join('\n'));
@@ -257,15 +320,15 @@ void main() {
       final issues = StudyLocalBank.fromJsonString(
         '{"version":2,"entries":[{"id":"x","bookId":"not_a_book","chapter":1,'
         '"startVerse":1,"endVerse":1,"sections":['
-        '{"kind":"setting","en":"a","am":"a"},'
-        '{"kind":"context","en":"a","am":"a","enSub":"b","amSub":"b"},'
-        '{"kind":"whatTextSays","en":"a","am":"a"},'
-        '{"kind":"meaningBackground","en":"a","am":"a"},'
-        '{"kind":"biblicalConnections","references":['
+        '{"kind":"passageOverview","en":"a","am":"a"},'
+        '{"kind":"historicalBackground","en":"a","am":"a","enSub":"b","amSub":"b"},'
+        '{"kind":"literaryContext","en":"a","am":"a"},'
+        '{"kind":"originalLanguage","en":"a","am":"a"},'
+        '{"kind":"scriptureInterconnections","references":['
         '{"bookId":"john","chapter":10,"startVerse":11,"endVerse":11,"en":"r","am":"r"}]},'
-        '{"kind":"whatCanBeUnderstood","blocks":['
+        '{"kind":"explicitTeachings","blocks":['
         '{"tier":"clearlyStated","en":"a","am":"a"}]},'
-        '{"kind":"reflection","en":"a","am":"a"}]}]}',
+        '{"kind":"questionsToCarry","en":"a","am":"a","enSub":"b","amSub":"b"}]}]}',
       ).validate();
       expect(issues.any((i) => i.contains('unknown book')), isTrue);
     });
@@ -275,35 +338,42 @@ void main() {
       final issues = StudyLocalBank.fromJsonString(
         '{"version":2,"entries":[{"id":"x","bookId":"psalms","chapter":23,'
         '"startVerse":1,"endVerse":1,"sections":['
-        '{"kind":"setting","en":"a","am":"a"},'
-        '{"kind":"context","en":"a","am":"a","enSub":"b","amSub":"b"},'
-        '{"kind":"whatTextSays","en":"a","am":"a"},'
-        '{"kind":"meaningBackground","en":"a","am":"a"},'
-        '{"kind":"biblicalConnections","references":['
+        '{"kind":"passageOverview","en":"a","am":"a"},'
+        '{"kind":"historicalBackground","en":"a","am":"a","enSub":"b","amSub":"b"},'
+        '{"kind":"literaryContext","en":"a","am":"a"},'
+        '{"kind":"originalLanguage","en":"a","am":"a"},'
+        '{"kind":"scriptureInterconnections","references":['
         '{"bookId":"psalms","chapter":999,"startVerse":1,"endVerse":1,"en":"r","am":"r"}]},'
-        '{"kind":"whatCanBeUnderstood","blocks":['
+        '{"kind":"explicitTeachings","blocks":['
         '{"tier":"clearlyStated","en":"a","am":"a"}]},'
-        '{"kind":"reflection","en":"a","am":"a"}]}]}',
+        '{"kind":"questionsToCarry","en":"a","am":"a","enSub":"b","amSub":"b"}]}]}',
       ).validate();
       expect(issues.any((i) => i.contains('out of range')), isTrue,
           reason: issues.join('\n'));
     });
 
-    test('rejects context missing the "in the text" part', () {
+    test('rejects a verseByVerse observation outside the passage (fail closed)',
+        () {
       final issues = StudyLocalBank.fromJsonString(
-        '{"version":2,"entries":[{"id":"x","bookId":"psalms","chapter":23,'
-        '"startVerse":1,"endVerse":1,"sections":['
-        '{"kind":"setting","en":"a","am":"a"},'
-        '{"kind":"context","en":"a","am":"a"},'
-        '{"kind":"whatTextSays","en":"a","am":"a"},'
-        '{"kind":"meaningBackground","en":"a","am":"a"},'
-        '{"kind":"biblicalConnections","references":['
+        '{"version":3,"entries":[{"id":"x","bookId":"psalms","chapter":23,'
+        '"startVerse":1,"endVerse":3,"anchor":'
+        '{"imageEn":"i","imageAm":"i","keywordEn":"k","keywordAm":"k",'
+        '"sentenceEn":"s","sentenceAm":"s"},'
+        '"sections":['
+        '{"kind":"passageOverview","en":"a","am":"a"},'
+        '{"kind":"historicalBackground","en":"a","am":"a"},'
+        '{"kind":"literaryContext","en":"a","am":"a"},'
+        '{"kind":"verseByVerse","verseObservations":['
+        '{"startVerse":1,"endVerse":1,"en":"a","am":"a"},'
+        '{"startVerse":5,"endVerse":5,"en":"a","am":"a"}]},'
+        '{"kind":"originalLanguage","en":"a","am":"a"},'
+        '{"kind":"scriptureInterconnections","references":['
         '{"bookId":"john","chapter":10,"startVerse":11,"endVerse":11,"en":"r","am":"r"}]},'
-        '{"kind":"whatCanBeUnderstood","blocks":['
+        '{"kind":"explicitTeachings","blocks":['
         '{"tier":"clearlyStated","en":"a","am":"a"}]},'
-        '{"kind":"reflection","en":"a","am":"a"}]}]}',
+        '{"kind":"questionsToCarry","en":"a","am":"a","enSub":"b","amSub":"b"}]}]}',
       ).validate();
-      expect(issues.any((i) => i.contains('in the text')), isTrue,
+      expect(issues.any((i) => i.contains('outside the passage')), isTrue,
           reason: issues.join('\n'));
     });
 
@@ -312,15 +382,15 @@ void main() {
       final issues = StudyLocalBank.fromJsonString(
         '{"version":2,"entries":[{"id":"x","bookId":"psalms","chapter":23,'
         '"startVerse":1,"endVerse":1,"sections":['
-        '{"kind":"setting","en":"a","am":"a"},'
-        '{"kind":"context","en":"a","am":"a","enSub":"b","amSub":"b"},'
-        '{"kind":"whatTextSays","en":"a","am":"a"},'
-        '{"kind":"meaningBackground","en":"a","am":"a"},'
-        '{"kind":"biblicalConnections","references":['
+        '{"kind":"passageOverview","en":"a","am":"a"},'
+        '{"kind":"historicalBackground","en":"a","am":"a","enSub":"b","amSub":"b"},'
+        '{"kind":"literaryContext","en":"a","am":"a"},'
+        '{"kind":"originalLanguage","en":"a","am":"a"},'
+        '{"kind":"scriptureInterconnections","references":['
         '{"bookId":"john","chapter":3,"startVerse":36,"endVerse":37,"en":"r","am":"r"}]},'
-        '{"kind":"whatCanBeUnderstood","blocks":['
+        '{"kind":"explicitTeachings","blocks":['
         '{"tier":"clearlyStated","en":"a","am":"a"}]},'
-        '{"kind":"reflection","en":"a","am":"a"}]}]}',
+        '{"kind":"questionsToCarry","en":"a","am":"a","enSub":"b","amSub":"b"}]}]}',
       ).validate(canon: loadTestCanon());
       expect(issues.any((i) => i.contains('outside the canon')), isTrue,
           reason: issues.join('\n'));

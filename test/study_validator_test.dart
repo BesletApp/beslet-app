@@ -16,22 +16,48 @@ StudyRequest _request({bool am = false}) => StudyRequest(
     );
 
 Map<String, dynamic> _enPayload() => {
-      'setting': {'text': 'A psalm of David, a song of trust in the LORD.'},
-      'context': {
-        'behindTheText': 'A psalm of David, a man who knew shepherding.',
-        'inTheText': 'The psalm moves from provision to presence in the valley.',
+      'passageOverview': {
+        'text': 'A psalm of David, a song of trust in the LORD.',
       },
-      'whatTextSays': {
-        'text': 'The LORD is a caring shepherd who provides and guides.',
-      },
-      'meaningBackground': {
-        'text': 'A shepherd leads, feeds, and protects the flock.',
-        'terms': [
-          {'term': 'רֹעִי', 'language': 'hebrew', 'transliteration': 'ro’i', 'meaning': 'shepherd'},
+      'historicalBackground': {
+        'text': 'A psalm of David, a man who knew shepherding.',
+        'entries': [
+          {
+            'label': 'author',
+            'category': 'probable',
+            'text': 'Tradition ascribes this psalm to David, a shepherd-king.',
+          },
         ],
       },
-      'reflection': {'text': "Where do you need the Shepherd's presence?"},
-      'biblicalConnections': {
+      'literaryContext': {
+        'text': 'The psalm moves from provision to presence in the valley.',
+      },
+      'verseByVerse': {
+        'observations': [
+          {
+            'startVerse': 1,
+            'endVerse': 1,
+            'text': "The LORD is named as the psalmist's shepherd.",
+          },
+          {
+            'startVerse': 2,
+            'endVerse': 3,
+            'text': 'He leads, feeds, and restores.',
+          },
+        ],
+      },
+      'originalLanguage': {
+        'text': 'A shepherd leads, feeds, and protects the flock.',
+        'terms': [
+          {
+            'term': 'רֹעִי',
+            'language': 'hebrew',
+            'transliteration': 'ro’i',
+            'meaning': 'shepherd',
+          },
+        ],
+      },
+      'scriptureInterconnections': {
         'items': [
           {
             'bookId': 'john',
@@ -51,7 +77,7 @@ Map<String, dynamic> _enPayload() => {
           },
         ],
       },
-      'whatCanBeUnderstood': {
+      'explicitTeachings': {
         'blocks': [
           {
             'tier': 'clearlyStated',
@@ -63,20 +89,38 @@ Map<String, dynamic> _enPayload() => {
           },
         ],
       },
+      'questionsToCarry': {
+        'text': "Where do you need the Shepherd's presence?",
+      },
+      'anchor': {
+        'image': 'a shepherd leading by still waters',
+        'keyword': 'shepherd',
+        'sentence':
+            'The LORD stays close as the psalm moves through the valley.',
+      },
     };
 
 Map<String, dynamic> _amPayload() => {
-      'setting': {'text': _am},
-      'context': {'behindTheText': _am2, 'inTheText': _am2},
-      'whatTextSays': {'text': _am},
-      'meaningBackground': {
+      'passageOverview': {'text': _am},
+      'historicalBackground': {
+        'text': _am2,
+        'entries': [
+          {'label': 'author', 'category': 'probable', 'text': _am2},
+        ],
+      },
+      'literaryContext': {'text': _am2},
+      'verseByVerse': {
+        'observations': [
+          {'startVerse': 1, 'endVerse': 1, 'text': _am},
+        ],
+      },
+      'originalLanguage': {
         'text': _am,
         'terms': [
           {'term': 'רֹעִי', 'language': 'hebrew', 'meaning': 'እረኛ'},
         ],
       },
-      'reflection': {'text': 'እረኛው የት ያስፈልገኛል?'},
-      'biblicalConnections': {
+      'scriptureInterconnections': {
         'items': [
           {
             'bookId': 'john',
@@ -88,11 +132,13 @@ Map<String, dynamic> _amPayload() => {
           },
         ],
       },
-      'whatCanBeUnderstood': {
+      'explicitTeachings': {
         'blocks': [
           {'tier': 'clearlyStated', 'text': _am},
         ],
       },
+      'questionsToCarry': {'text': 'እረኛው የት ያስፈልገኛል?'},
+      'anchor': {'image': _am2, 'keyword': _am, 'sentence': _am2},
     };
 
 void main() {
@@ -113,18 +159,70 @@ void main() {
       final result = validator.validate(raw: _enPayload(), request: _request())!;
       expect(
         result.sections.map((s) => s.kind).toList(),
-        StudySectionKind.values.where(
-          (k) => result.sections.any((s) => s.kind == k),
-        ),
-        reason: 'the note must follow Setting → Context → … → Reflection',
+        StudySectionKind.values
+            .where((k) => result.sections.any((s) => s.kind == k)),
+        reason:
+            'the note must follow Overview → Historical → Literary → Verse → '
+            'Language → Scripture → Teachings → Questions',
       );
     });
 
-    test('terms attach to meaningBackground and answer in the reader language',
+    test('historical entries keep their label, category, and reader language',
+        () {
+      final result = validator.validate(raw: _enPayload(), request: _request())!;
+      final history = result.sections
+          .firstWhere((s) => s.kind == StudySectionKind.historicalBackground);
+      expect(history.historyEntries, isNotEmpty);
+      final entry = history.historyEntries.single;
+      expect(entry.label, StudyHistoryLabel.author);
+      expect(entry.category, StudyHistoryCategory.probable);
+      expect(entry.textFor(false), contains('David'));
+    });
+
+    test('a historical entry with an unknown label or category is dropped', () {
+      final raw = _enPayload();
+      (raw['historicalBackground'] as Map)['entries'] = [
+        {
+          'label': 'author',
+          'category': 'probable',
+          'text': 'Tradition ascribes this psalm to David.',
+        },
+        {
+          'label': 'not_a_label',
+          'category': 'probable',
+          'text': 'This entry must be dropped.',
+        },
+        {
+          'label': 'author',
+          'category': 'not_a_category',
+          'text': 'This entry must be dropped too.',
+        },
+      ];
+      final result = validator.validate(raw: raw, request: _request())!;
+      final history = result.sections
+          .firstWhere((s) => s.kind == StudySectionKind.historicalBackground);
+      expect(history.historyEntries.length, 1);
+    });
+
+    test('verse-by-verse keeps only in-passage observations', () {
+      final raw = _enPayload();
+      (raw['verseByVerse'] as Map)['observations'] = [
+        {'startVerse': 1, 'endVerse': 1, 'text': 'Inside the passage.'},
+        {'startVerse': 5, 'endVerse': 5, 'text': 'Outside the passage.'},
+        {'startVerse': 1, 'endVerse': 5, 'text': 'Spans too many verses.'},
+      ];
+      final result = validator.validate(raw: raw, request: _request())!;
+      final verses = result.sections
+          .firstWhere((s) => s.kind == StudySectionKind.verseByVerse);
+      expect(verses.verseObservations.length, 1);
+      expect(verses.verseObservations.single.startVerse, 1);
+    });
+
+    test('terms attach to originalLanguage and answer in the reader language',
         () {
       final result = validator.validate(raw: _enPayload(), request: _request())!;
       final section = result.sections
-          .firstWhere((s) => s.kind == StudySectionKind.meaningBackground);
+          .firstWhere((s) => s.kind == StudySectionKind.originalLanguage);
       expect(section.terms, isNotEmpty);
       expect(section.terms.single.term, 'רֹעִי');
       expect(section.terms.single.meaningFor(false), 'shepherd');
@@ -132,26 +230,30 @@ void main() {
 
     test('an invalid term is dropped; a valid one survives', () {
       final raw = _enPayload();
-      raw['meaningBackground'] = {
+      raw['originalLanguage'] = {
         'text': 'A shepherd leads, feeds, and protects the flock.',
         'terms': [
           {'term': 'רֹעִי', 'language': 'hebrew', 'meaning': 'shepherd'},
           {'term': '', 'language': 'hebrew', 'meaning': 'empty term'},
           {'term': 'x' * 100, 'language': 'hebrew', 'meaning': 'too long'},
-          {'term': 'ΔΟΞΑ', 'language': 'madeuplang', 'meaning': 'unknown language'},
+          {
+            'term': 'ΔΟΞΑ',
+            'language': 'madeuplang',
+            'meaning': 'unknown language',
+          },
           {'term': 'λόγος', 'language': 'greek', 'meaning': 'የተሳሳተ ፊደል'},
         ],
       };
       final result = validator.validate(raw: raw, request: _request())!;
       final section = result.sections
-          .firstWhere((s) => s.kind == StudySectionKind.meaningBackground);
+          .firstWhere((s) => s.kind == StudySectionKind.originalLanguage);
       expect(section.terms.length, 1);
       expect(section.terms.single.term, 'רֹעִי');
     });
 
     test('terms are capped at maxTerms', () {
       final raw = _enPayload();
-      raw['meaningBackground'] = {
+      raw['originalLanguage'] = {
         'text': 'A shepherd leads, feeds, and protects the flock.',
         'terms': [
           for (var i = 0; i < StudyLengthBudget.maxTerms + 3; i++)
@@ -160,13 +262,13 @@ void main() {
       };
       final result = validator.validate(raw: raw, request: _request())!;
       final section = result.sections
-          .firstWhere((s) => s.kind == StudySectionKind.meaningBackground);
+          .firstWhere((s) => s.kind == StudySectionKind.originalLanguage);
       expect(section.terms.length, StudyLengthBudget.maxTerms);
     });
 
     test('a banned phrase inside a term meaning rejects the result', () {
       final raw = _enPayload();
-      raw['meaningBackground'] = {
+      raw['originalLanguage'] = {
         'text': 'A shepherd leads, feeds, and protects the flock.',
         'terms': [
           {'term': 'word', 'language': 'greek', 'meaning': 'God wants you to.'},
@@ -175,18 +277,11 @@ void main() {
       expect(validator.validate(raw: raw, request: _request()), isNull);
     });
 
-    test('context keeps both halves; in-the-text lands in enSub', () {
-      final result = validator.validate(raw: _enPayload(), request: _request())!;
-      final context = result.sections
-          .firstWhere((s) => s.kind == StudySectionKind.context);
-      expect(context.textFor(false), 'A psalm of David, a man who knew shepherding.');
-      expect(context.subTextFor(false), contains('moves from provision'));
-    });
-
     test('invalid cross-references are dropped, valid ones kept', () {
       final result = validator.validate(raw: _enPayload(), request: _request())!;
       final refs = result.sections
-          .firstWhere((s) => s.kind == StudySectionKind.biblicalConnections)
+          .firstWhere(
+              (s) => s.kind == StudySectionKind.scriptureInterconnections)
           .references;
       expect(refs.length, 1, reason: 'out-of-range chapter must be dropped');
       expect(refs.single.bookId, 'john');
@@ -196,7 +291,7 @@ void main() {
 
     test('USFM and abbreviated bookIds are resolved to canonical ids', () {
       final raw = _enPayload();
-      (raw['biblicalConnections'] as Map)['items'] = [
+      (raw['scriptureInterconnections'] as Map)['items'] = [
         {
           'bookId': 'JHN',
           'chapter': 10,
@@ -224,17 +319,17 @@ void main() {
       ];
       final result = validator.validate(raw: raw, request: _request())!;
       final refs = result.sections
-          .firstWhere((s) => s.kind == StudySectionKind.biblicalConnections)
+          .firstWhere(
+              (s) => s.kind == StudySectionKind.scriptureInterconnections)
           .references;
       expect(refs.map((r) => r.bookId).toSet(),
           {'john', 'psalms', '1corinthians'});
-      expect(refs.any(
-          (r) => r.referenceFor(false) == 'John 10:11'), isTrue);
+      expect(refs.any((r) => r.referenceFor(false) == 'John 10:11'), isTrue);
     });
 
     test('an unknown bookId is dropped, valid ones survive', () {
       final raw = _enPayload();
-      (raw['biblicalConnections'] as Map)['items'] = [
+      (raw['scriptureInterconnections'] as Map)['items'] = [
         {
           'bookId': 'john',
           'chapter': 10,
@@ -254,34 +349,35 @@ void main() {
       ];
       final result = validator.validate(raw: raw, request: _request())!;
       final refs = result.sections
-          .firstWhere((s) => s.kind == StudySectionKind.biblicalConnections)
+          .firstWhere(
+              (s) => s.kind == StudySectionKind.scriptureInterconnections)
           .references;
       expect(refs.length, 1);
       expect(refs.single.bookId, 'john');
     });
 
-    test('a section over the hard cap is dropped; honest sections survive',
-        () {
+    test('a section over the hard cap is dropped; honest sections survive', () {
       final raw = _enPayload();
-      raw['whatTextSays'] = {
-        'text': 'word ' * (StudyLengthBudget.whatTextSaysMax * 3),
+      raw['literaryContext'] = {
+        'text': 'word ' * (StudyLengthBudget.literaryContextMax * 3),
       };
       final result = validator.validate(raw: raw, request: _request());
       expect(result, isNotNull);
       expect(
-        result!.sections.any((s) => s.kind == StudySectionKind.whatTextSays),
+        result!.sections
+            .any((s) => s.kind == StudySectionKind.literaryContext),
         isFalse,
         reason: 'the over-budget section must be dropped',
       );
       expect(
-        result.sections.any((s) => s.kind == StudySectionKind.meaningBackground),
+        result.sections.any((s) => s.kind == StudySectionKind.originalLanguage),
         isTrue,
       );
     });
 
     test('a banned authority phrase rejects the result', () {
       final raw = _enPayload();
-      raw['whatCanBeUnderstood'] = {
+      raw['explicitTeachings'] = {
         'blocks': [
           {'tier': 'clearlyStated', 'text': 'God wants you to do this.'},
         ],
@@ -293,8 +389,8 @@ void main() {
       expect(
         validator.validate(
           raw: {
-            'whatTextSays': {'text': ''},
-            'biblicalConnections': {'items': []},
+            'passageOverview': {'text': ''},
+            'scriptureInterconnections': {'items': []},
           },
           request: _request(),
         ),
@@ -304,18 +400,18 @@ void main() {
 
     test('a cross-reference with a missing reason is dropped', () {
       final raw = _enPayload();
-      (raw['biblicalConnections'] as Map)['items'] = [
+      (raw['scriptureInterconnections'] as Map)['items'] = [
         {'bookId': 'john', 'chapter': 10, 'startVerse': 11, 'endVerse': 11},
       ];
       final result = validator.validate(raw: raw, request: _request())!;
       final refs = result.sections
-          .where((s) => s.kind == StudySectionKind.biblicalConnections);
+          .where((s) => s.kind == StudySectionKind.scriptureInterconnections);
       expect(refs.isEmpty, isTrue);
     });
 
     test('a cross-reference whose verse is outside the canon is dropped', () {
       final raw = _enPayload();
-      (raw['biblicalConnections'] as Map)['items'] = [
+      (raw['scriptureInterconnections'] as Map)['items'] = [
         {
           'bookId': 'john',
           'chapter': 3,
@@ -327,14 +423,14 @@ void main() {
       ];
       final result = validator.validate(raw: raw, request: _request())!;
       final refs = result.sections
-          .where((s) => s.kind == StudySectionKind.biblicalConnections);
+          .where((s) => s.kind == StudySectionKind.scriptureInterconnections);
       expect(refs.isEmpty, isTrue,
           reason: 'a verse outside the canon must never render');
     });
 
     test('a cross-reference with an out-of-range priority is dropped', () {
       final raw = _enPayload();
-      (raw['biblicalConnections'] as Map)['items'] = [
+      (raw['scriptureInterconnections'] as Map)['items'] = [
         {
           'bookId': 'john',
           'chapter': 10,
@@ -346,41 +442,43 @@ void main() {
       ];
       final result = validator.validate(raw: raw, request: _request())!;
       final refs = result.sections
-          .where((s) => s.kind == StudySectionKind.biblicalConnections);
+          .where((s) => s.kind == StudySectionKind.scriptureInterconnections);
       expect(refs.isEmpty, isTrue);
     });
 
-    test('a reflection that is not a question is dropped', () {
+    test('a questionsToCarry that is not a question is dropped', () {
       final raw = _enPayload();
-      raw['reflection'] = {'text': 'Rest in the shepherd.'};
+      raw['questionsToCarry'] = {'text': 'Rest in the shepherd.'};
       final result = validator.validate(raw: raw, request: _request())!;
       expect(
-        result.sections.any((s) => s.kind == StudySectionKind.reflection),
+        result.sections
+            .any((s) => s.kind == StudySectionKind.questionsToCarry),
         isFalse,
-        reason: 'the reflection must be a question, never a directive',
+        reason: 'the question must be open-ended, never a directive',
       );
     });
 
-    test('a reflection with two questions is kept', () {
+    test('a questionsToCarry with two questions is kept', () {
       final raw = _enPayload();
-      raw['reflection'] = {
+      raw['questionsToCarry'] = {
         'text':
             'Where do you need the Shepherd’s presence? What would change if you remembered He walks with you?'
       };
       final result = validator.validate(raw: raw, request: _request())!;
-      final reflection = result.sections
-          .firstWhere((s) => s.kind == StudySectionKind.reflection);
-      expect(reflection.en, contains('What would change'));
+      final questions = result.sections
+          .firstWhere((s) => s.kind == StudySectionKind.questionsToCarry);
+      expect(questions.en, contains('What would change'));
     });
 
-    test('a reflection with three questions is dropped', () {
+    test('a questionsToCarry with three questions is dropped', () {
       final raw = _enPayload();
-      raw['reflection'] = {
+      raw['questionsToCarry'] = {
         'text': 'Where are you? What do you see? Why does it matter?'
       };
       final result = validator.validate(raw: raw, request: _request())!;
       expect(
-        result.sections.any((s) => s.kind == StudySectionKind.reflection),
+        result.sections
+            .any((s) => s.kind == StudySectionKind.questionsToCarry),
         isFalse,
         reason: 'a run-on list of questions changes the reader\'s posture',
       );
@@ -388,13 +486,13 @@ void main() {
 
     test('tiered blocks: invalid tiers are dropped, valid ones kept', () {
       final raw = _enPayload();
-      (raw['whatCanBeUnderstood'] as Map)['blocks'] = [
+      (raw['explicitTeachings'] as Map)['blocks'] = [
         {'tier': 'clearlyStated', 'text': 'A clear claim from the text itself.'},
         {'tier': 'not_a_tier', 'text': 'This must be dropped.'},
       ];
       final result = validator.validate(raw: raw, request: _request())!;
       final blocks = result.sections
-          .firstWhere((s) => s.kind == StudySectionKind.whatCanBeUnderstood)
+          .firstWhere((s) => s.kind == StudySectionKind.explicitTeachings)
           .blocks;
       expect(blocks.length, 1);
       expect(blocks.single.tier, StudyTier.clearlyStated);
@@ -402,75 +500,105 @@ void main() {
 
     test('tiered blocks: an empty block list is omitted', () {
       final raw = _enPayload();
-      raw['whatCanBeUnderstood'] = {'blocks': []};
+      raw['explicitTeachings'] = {'blocks': []};
       final result = validator.validate(raw: raw, request: _request())!;
       expect(
-        result.sections.any((s) => s.kind == StudySectionKind.whatCanBeUnderstood),
+        result.sections
+            .any((s) => s.kind == StudySectionKind.explicitTeachings),
         isFalse,
       );
+    });
+
+    test('a valid memory anchor is kept', () {
+      final result = validator.validate(raw: _enPayload(), request: _request())!;
+      expect(result.anchor, isNotNull);
+      expect(result.anchor!.imageFor(false), contains('shepherd'));
+      expect(result.anchor!.keywordFor(false), 'shepherd');
+    });
+
+    test('an anchor whose fields are all empty is omitted', () {
+      final raw = _enPayload();
+      raw['anchor'] = {'image': '', 'keyword': '', 'sentence': ''};
+      final result = validator.validate(raw: raw, request: _request())!;
+      expect(result.anchor, isNull);
+    });
+
+    test('an anchor whose sentence is a question keeps only the honest fields',
+        () {
+      final raw = _enPayload();
+      raw['anchor'] = {
+        'image': 'a shepherd by still waters',
+        'keyword': 'presence',
+        'sentence': 'Is the LORD your shepherd?',
+      };
+      final result = validator.validate(raw: raw, request: _request())!;
+      expect(result.anchor, isNotNull);
+      expect(result.anchor!.sentenceFor(false), isEmpty,
+          reason: 'the anchor is an observation, never a question');
+      expect(result.anchor!.keywordFor(false), 'presence');
     });
   });
 
   group('StudyValidator (Amharic)', () {
     test("a Ge'ez payload fills only the Amharic side", () {
-      final result = validator.validate(raw: _amPayload(), request: _request(am: true));
+      final result =
+          validator.validate(raw: _amPayload(), request: _request(am: true));
       expect(result, isNotNull);
-      final summary = result!.sections
-          .firstWhere((s) => s.kind == StudySectionKind.whatTextSays);
-      expect(summary.en.trim(), isEmpty);
-      expect(summary.am.trim(), isNotEmpty);
+      final literary = result!.sections
+          .firstWhere((s) => s.kind == StudySectionKind.literaryContext);
+      expect(literary.en.trim(), isEmpty);
+      expect(literary.am.trim(), isNotEmpty);
     });
 
     test('Latin text in an Amharic request is dropped per section', () {
       final raw = _amPayload();
-      raw['whatTextSays'] = {'text': 'The Lord is my shepherd.'};
+      raw['literaryContext'] = {'text': 'The Lord is my shepherd.'};
       final result = validator.validate(raw: raw, request: _request(am: true));
       expect(result, isNotNull);
       expect(
-        result!.sections.any((s) => s.kind == StudySectionKind.whatTextSays),
+        result!.sections
+            .any((s) => s.kind == StudySectionKind.literaryContext),
         isFalse,
-        reason: 'the Latin summary must be dropped from an Amharic note',
+        reason: 'the Latin section must be dropped from an Amharic note',
       );
       expect(
-        result.sections.any((s) => s.kind == StudySectionKind.meaningBackground),
+        result.sections.any((s) => s.kind == StudySectionKind.originalLanguage),
         isTrue,
       );
     });
 
     test("Ge'ez text in an English request is rejected", () {
-      expect(
-        validator.validate(raw: _amPayload(), request: _request()),
-        isNull,
-      );
+      expect(validator.validate(raw: _amPayload(), request: _request()), isNull);
     });
 
     test('an Amharic banned phrase rejects the result', () {
       final raw = _amPayload();
-      raw['whatTextSays'] = {'text': 'እግዚአብሔር ይነግርሃል ይህን ልታደርግ።'};
+      raw['literaryContext'] = {'text': 'እግዚአብሔር ይነግርሃል ይህን ልታደርግ።'};
       expect(validator.validate(raw: raw, request: _request(am: true)), isNull);
     });
   });
 
-  group('movement steps, bullets & takeaway', () {
-    test('labeled movement steps are kept in whatTextSays', () {
+  group('movement steps, bullets & threads', () {
+    test('labeled movement steps are kept in literaryContext', () {
       final raw = _enPayload();
-      raw['whatTextSays'] = {
+      raw['literaryContext'] = {
         'text': 'Step 1 — The psalm opens with the LORD as shepherd.\n'
             'Step 2 — It moves through the valley without fear.\n'
             'Step 3 — It ends in the house of the LORD.',
       };
       final result = validator.validate(raw: raw, request: _request())!;
       final kept = result.sections
-          .firstWhere((s) => s.kind == StudySectionKind.whatTextSays);
+          .firstWhere((s) => s.kind == StudySectionKind.literaryContext);
       expect(kept.textFor(false), contains('Step 3 —'));
     });
 
     test('a step heading without a body is rejected, dropping the section', () {
       final raw = _enPayload();
-      raw['whatTextSays'] = {'text': 'Step — let us trace the movement.'};
+      raw['literaryContext'] = {'text': 'Step — let us trace the movement.'};
       final result = validator.validate(raw: raw, request: _request())!;
       expect(
-        result.sections.any((s) => s.kind == StudySectionKind.whatTextSays),
+        result.sections
+            .any((s) => s.kind == StudySectionKind.literaryContext),
         isFalse,
         reason: 'a malformed step heading must not reach the reader',
       );
@@ -478,13 +606,14 @@ void main() {
 
     test('more than five steps drops the section', () {
       final raw = _enPayload();
-      raw['whatTextSays'] = {
+      raw['literaryContext'] = {
         'text': List.generate(6, (i) => 'Step ${i + 1} — one sentence.')
             .join('\n'),
       };
       final result = validator.validate(raw: raw, request: _request())!;
       expect(
-        result.sections.any((s) => s.kind == StudySectionKind.whatTextSays),
+        result.sections
+            .any((s) => s.kind == StudySectionKind.literaryContext),
         isFalse,
         reason: 'a runaway step list is a violation, not a style slip',
       );
@@ -492,7 +621,7 @@ void main() {
 
     test('real bullet rows are kept; a dash is plain prose', () {
       final raw = _enPayload();
-      raw['whatTextSays'] = {
+      raw['literaryContext'] = {
         'text': '• The shepherd provides and restores.\n• He stays present.',
       };
       final result = validator.validate(raw: raw, request: _request())!;
@@ -502,69 +631,71 @@ void main() {
     test('a malformed bullet row (no space after the bullet) drops the section',
         () {
       final raw = _enPayload();
-      raw['whatTextSays'] = {'text': '•First point\nSecond paragraph.'};
+      raw['literaryContext'] = {'text': '•First point\nSecond paragraph.'};
       final result = validator.validate(raw: raw, request: _request())!;
       expect(
-        result.sections.any((s) => s.kind == StudySectionKind.whatTextSays),
+        result.sections
+            .any((s) => s.kind == StudySectionKind.literaryContext),
         isFalse,
       );
     });
 
-    test('a well-formed optional takeaway is kept on the reflection', () {
+    test('a well-formed optional threads line is kept on questionsToCarry', () {
       final raw = _enPayload();
-      raw['reflection'] = {
+      raw['questionsToCarry'] = {
         'text': "Where do you need the Shepherd's presence?",
-        'takeaway': 'The passage itself presents the LORD as a personal shepherd.',
+        'threads':
+            'The passage itself presents the LORD as a personal shepherd.',
       };
       final result = validator.validate(raw: raw, request: _request())!;
-      final reflection = result.sections
-          .firstWhere((s) => s.kind == StudySectionKind.reflection);
-      expect(reflection.takeawayFor(false),
+      final questions = result.sections
+          .firstWhere((s) => s.kind == StudySectionKind.questionsToCarry);
+      expect(questions.subTextFor(false),
           'The passage itself presents the LORD as a personal shepherd.');
     });
 
-    test('a question-shaped takeaway is dropped, reflection is kept', () {
+    test('a question-shaped threads line is dropped, questions kept', () {
       final raw = _enPayload();
-      raw['reflection'] = {
+      raw['questionsToCarry'] = {
         'text': "Where do you need the Shepherd's presence?",
-        'takeaway': 'Is the LORD your shepherd?',
+        'threads': 'Is the LORD your shepherd?',
       };
       final result = validator.validate(raw: raw, request: _request())!;
-      final reflection = result.sections
-          .firstWhere((s) => s.kind == StudySectionKind.reflection);
-      expect(reflection.takeawayFor(false), isNull);
+      final questions = result.sections
+          .firstWhere((s) => s.kind == StudySectionKind.questionsToCarry);
+      expect(questions.subTextFor(false), isNull);
     });
 
-    test('an over-long takeaway is dropped, reflection is kept', () {
+    test('an over-long threads line is dropped, questions kept', () {
       final raw = _enPayload();
-      raw['reflection'] = {
+      raw['questionsToCarry'] = {
         'text': "Where do you need the Shepherd's presence?",
-        'takeaway': List.filled(45, 'word').join(' '),
+        'threads': List.filled(45, 'word').join(' '),
       };
       final result = validator.validate(raw: raw, request: _request())!;
-      final reflection = result.sections
-          .firstWhere((s) => s.kind == StudySectionKind.reflection);
-      expect(reflection.takeawayFor(false), isNull);
+      final questions = result.sections
+          .firstWhere((s) => s.kind == StudySectionKind.questionsToCarry);
+      expect(questions.subTextFor(false), isNull);
     });
 
-    test('a takeaway in the wrong script is dropped, reflection is kept', () {
+    test('a threads line in the wrong script is dropped, questions kept', () {
       final raw = _amPayload();
-      raw['reflection'] = {
+      raw['questionsToCarry'] = {
         'text': 'በዚህ መዝሙር ውስጥ ምን ትመለከታለህ?',
-        'takeaway': 'The passage itself presents the LORD as a shepherd.',
+        'threads': 'The passage itself presents the LORD as a shepherd.',
       };
       final result = validator.validate(raw: raw, request: _request(am: true))!;
-      final reflection = result.sections
-          .firstWhere((s) => s.kind == StudySectionKind.reflection);
-      expect(reflection.takeawayFor(true), isNull);
-      expect(reflection.textFor(true), contains('ትመለከታለህ'));
+      final questions = result.sections
+          .firstWhere((s) => s.kind == StudySectionKind.questionsToCarry);
+      expect(questions.subTextFor(true), isNull);
+      expect(questions.textFor(true), contains('ትመለከታለህ'));
     });
 
-    test('a directive takeaway rejects the entire note', () {
+    test('a directive threads line rejects the entire note', () {
       final raw = _enPayload();
-      raw['reflection'] = {
+      raw['questionsToCarry'] = {
         'text': "Where do you need the Shepherd's presence?",
-        'takeaway': 'God wants you to trust Him today.',
+        'threads': 'God wants you to trust Him today.',
       };
       expect(validator.validate(raw: raw, request: _request()), isNull);
     });
@@ -573,7 +704,7 @@ void main() {
   group('voice boundaries', () {
     test('promotional hype rejects the entire note', () {
       final raw = _enPayload();
-      raw['whatTextSays'] = {
+      raw['literaryContext'] = {
         'text': 'This is a life-changing promise for every reader.',
       };
       expect(validator.validate(raw: raw, request: _request()), isNull);
@@ -581,16 +712,15 @@ void main() {
 
     test('denominational posturing rejects the entire note', () {
       final raw = _enPayload();
-      raw['context'] = {
-        'behindTheText': 'The Catholic Church teaches otherwise.',
-        'inTheText': 'The text itself is clear.',
+      raw['historicalBackground'] = {
+        'text': 'The Catholic Church teaches otherwise.',
       };
       expect(validator.validate(raw: raw, request: _request()), isNull);
     });
 
     test('a second-person directive rejects the entire note', () {
       final raw = _enPayload();
-      raw['setting'] = {'text': 'You should read this psalm slowly.'};
+      raw['passageOverview'] = {'text': 'You should read this psalm slowly.'};
       expect(validator.validate(raw: raw, request: _request()), isNull);
     });
   });

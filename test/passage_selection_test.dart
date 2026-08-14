@@ -280,6 +280,8 @@ void main() {
 
     await tester.scrollUntilVisible(find.text('John 10:11'), 200,
         scrollable: find.byType(Scrollable).first);
+    await tester.ensureVisible(find.text('John 10:11'));
+    await tester.pump();
     await tester.tap(find.text('John 10:11'));
     await pumpPanel(tester);
 

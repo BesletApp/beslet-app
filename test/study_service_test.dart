@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'dart:io';
 
 import 'package:beslet_app/core/ai/study/study_backend.dart';
@@ -59,11 +59,11 @@ void main() {
       );
 
   group('StudyService.study', () {
-    test('resolves a banked passage to all seven sections', () async {
+    test('resolves a banked passage to all eight sections', () async {
       final result = await serviceWith().study(psalmRequest());
       expect(result.isAvailable, isTrue);
       expect(result.source, StudySource.localBank);
-      expect(result.sections.length, 7);
+      expect(result.sections.length, 8);
       expect(result.reference.referenceFor(false), 'Psalms 23:1–3');
     });
 
@@ -83,10 +83,10 @@ void main() {
     test('sections carry both languages and answer in the reader language',
         () async {
       final result = await serviceWith().study(psalmRequest());
-      final summary = result.sections
-          .firstWhere((s) => s.kind == StudySectionKind.whatTextSays);
-      expect(summary.textFor(false), summary.en);
-      expect(summary.textFor(true), summary.am);
+      final literary = result.sections
+          .firstWhere((s) => s.kind == StudySectionKind.literaryContext);
+      expect(literary.textFor(false), literary.en);
+      expect(literary.textFor(true), literary.am);
     });
 
     test('writes the cache and serves the second call from it', () async {
@@ -104,9 +104,11 @@ void main() {
 
       final second = await service.study(psalmRequest());
       expect(second.isAvailable, isTrue);
-      expect(second.sections.length, 7);
+      expect(second.sections.length, 8);
       expect(backendCalls, 1, reason: 'second call must come from the cache');
-      expect(cache.containsKey('study_v${studyPromptVersion}_psalms_23_1_3_en'),
+      expect(
+          cache.containsKey(
+              'study_v${studyPromptVersion}_psalms_23_1_3_en_standard'),
           isTrue);
     });
 
@@ -118,23 +120,25 @@ void main() {
         writeCache: (k, v) async => cache[k] = v,
       );
       await service.study(psalmRequest(am: true));
-      expect(cache.containsKey('study_v${studyPromptVersion}_psalms_23_1_3_am'),
+      expect(
+          cache.containsKey(
+              'study_v${studyPromptVersion}_psalms_23_1_3_am_standard'),
           isTrue);
     });
 
-    test('cache key embeds the prompt version', () {
+    test('cache key embeds the prompt version and the depth', () {
       final service = serviceWith();
       expect(service.cacheKeyFor(psalmRequest()),
-          'study_v${studyPromptVersion}_psalms_23_1_3_en');
+          'study_v${studyPromptVersion}_psalms_23_1_3_en_standard');
     });
 
     test('a corrupt cache entry falls through to the backend', () async {
       final cache = <String, String>{
-        'study_v${studyPromptVersion}_psalms_23_1_3_en': 'not-json',
+        'study_v${studyPromptVersion}_psalms_23_1_3_en_standard': 'not-json',
       };
       final result = await serviceWith(cache: cache).study(psalmRequest());
       expect(result.isAvailable, isTrue);
-      expect(result.sections.length, 7);
+      expect(result.sections.length, 8);
     });
 
     test('a repeated open within a session is served from memory', () async {
@@ -156,7 +160,7 @@ void main() {
       // the answer.
       final second = await service.study(psalmRequest());
       expect(second.isAvailable, isTrue);
-      expect(second.sections.length, 7);
+      expect(second.sections.length, 8);
       expect(backendCalls, 1, reason: 'memo must serve the second open');
     });
 
@@ -228,10 +232,10 @@ void main() {
       expect(result.source, StudySource.knowledge);
       expect(result.sections, isNotEmpty);
       final kinds = result.sections.map((s) => s.kind).toSet();
-      expect(kinds.contains(StudySectionKind.setting), isTrue,
-          reason: 'the book background must render as setting');
-      expect(kinds.contains(StudySectionKind.whatTextSays), isTrue);
-      expect(kinds.contains(StudySectionKind.meaningBackground), isTrue);
+      expect(kinds.contains(StudySectionKind.passageOverview), isTrue,
+          reason: 'the book background must render as the passage overview');
+      expect(kinds.contains(StudySectionKind.literaryContext), isTrue);
+      expect(kinds.contains(StudySectionKind.originalLanguage), isTrue);
     });
 
     test('an unbanked passage with curated cross-references includes them',
@@ -246,7 +250,8 @@ void main() {
       );
       expect(result.isAvailable, isTrue);
       final refs = result.sections
-          .where((s) => s.kind == StudySectionKind.biblicalConnections)
+          .where((s) =>
+              s.kind == StudySectionKind.scriptureInterconnections)
           .expand((s) => s.references)
           .toList();
       expect(refs, isNotEmpty,
@@ -265,11 +270,11 @@ void main() {
           verseTexts: const ['x'],
         ),
       );
-      final setting = result.sections
-          .firstWhere((s) => s.kind == StudySectionKind.setting);
-      expect(setting.textFor(true), setting.am,
+      final overview = result.sections
+          .firstWhere((s) => s.kind == StudySectionKind.passageOverview);
+      expect(overview.textFor(true), overview.am,
           reason: 'an Amharic reader must get the Amharic text');
-      expect(setting.textFor(true), isNotEmpty);
+      expect(overview.textFor(true), isNotEmpty);
     });
 
     test('an assembled note is never persisted to the disk cache', () async {

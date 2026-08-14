@@ -1,6 +1,6 @@
 {
-  "version": "1.28.0",
-  "versionCode": 52,
-  "downloadUrl": "https://github.com/BesletApp/beslet-app/releases/download/v1.28.0/app-release.apk",
-  "releaseNotes": "The Epigraph doorway: first launch now opens on John 15:5 resolved from the bundled Bible, with a quiet identity line and — beside it — the two languages that go all the way into the life. You can read a full study note for almost any passage even without a connection, cross-references fold in from an offline index, and the daily verse always reads word-for-word from the same Bible the reader shows."
+  "version": "1.29.0",
+  "versionCode": 53,
+  "downloadUrl": "https://github.com/BesletApp/beslet-app/releases/download/v1.29.0/app-release.apk",
+  "releaseNotes": "Study notes grow into a full eight-section workbook: every curated passage now carries its overview, historical background, literary context, verse-by-verse observations, original-language terms, Scripture cross-references, clearly-present teachings, and questions to carry — each with native Amharic. Each note opens with a memory anchor card, and the bundled study bank was migrated to the new workbook schema with validation that treats any drift as a release-blocking failure."
 }

@@ -1456,6 +1456,62 @@ class AppLocalizationsEn extends AppLocalizations {
   String get studySectionReflection => 'Consider';
 
   @override
+  String get studySectionPassageOverview => 'At a Glance';
+
+  @override
+  String get studySectionHistoricalBackground => 'Behind the Text';
+
+  @override
+  String get studySectionLiteraryContext => 'What the Text Communicates';
+
+  @override
+  String get studySectionVerseByVerse => 'Verse by Verse';
+
+  @override
+  String get studySectionOriginalLanguage => 'Looking Closely at the Words';
+
+  @override
+  String get studySectionScriptureInterconnections =>
+      'Scripture Alongside Scripture';
+
+  @override
+  String get studySectionExplicitTeachings =>
+      'What Is Clear / What Requires Care';
+
+  @override
+  String get studySectionQuestionsToCarry => 'Consider';
+
+  @override
+  String get studyAnchor => 'Keep This in Mind';
+
+  @override
+  String get studyHistoryAuthor => 'Author';
+
+  @override
+  String get studyHistoryAudience => 'Audience';
+
+  @override
+  String get studyHistoryDate => 'Date';
+
+  @override
+  String get studyHistoryPlace => 'Place';
+
+  @override
+  String get studyHistoryOccasion => 'Occasion';
+
+  @override
+  String get studyHistoryCulturalSetting => 'Cultural setting';
+
+  @override
+  String get studyHistoryEstablished => 'Established';
+
+  @override
+  String get studyHistoryProbable => 'Probable';
+
+  @override
+  String get studyHistoryDebated => 'Debated';
+
+  @override
   String get studySectionSources => 'Sources';
 
   @override

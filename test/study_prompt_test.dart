@@ -60,7 +60,8 @@ void main() {
 
     test('the takeaway contract is present and bans the second person', () {
       final prompt = builder.build(_request());
-      expect(prompt, contains('TAKEAWAY'));
+      expect(prompt, contains('MEMORY ANCHOR'));
+      expect(prompt, contains('one-sentence'));
       expect(prompt, contains('second person'));
       expect(prompt, contains('never as a question'));
     });

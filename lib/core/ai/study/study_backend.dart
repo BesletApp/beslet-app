@@ -28,6 +28,7 @@ class LocalStudyBackend implements StudyBackend {
       reference: reference,
       source: StudySource.localBank,
       sections: entry.sections,
+      anchor: entry.anchor,
       cachedAt: DateTime.now(),
       isAvailable: true,
     );

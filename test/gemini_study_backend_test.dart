@@ -21,19 +21,33 @@ GeminiStudyBackend _backend(Future<String> Function(String) transport) =>
     );
 
 String _goodJson() => jsonEncode({
-      'setting': {'text': 'A psalm of David, a song of trust.'},
-      'context': {
-        'behindTheText': 'A psalm of David, a man who knew shepherding.',
-        'inTheText': 'The psalm moves from provision to presence in the valley.',
+      'passageOverview': {'text': 'A psalm of David, a song of trust.'},
+      'historicalBackground': {
+        'text': 'A psalm of David, a man who knew shepherding.',
+        'entries': [
+          {
+            'label': 'author',
+            'category': 'probable',
+            'text': 'Tradition ascribes this psalm to David.',
+          },
+        ],
       },
-      'whatTextSays': {
-        'text': 'The Lord is a caring shepherd who provides and guides.',
+      'literaryContext': {
+        'text': 'The psalm moves from provision to presence in the valley.',
       },
-      'meaningBackground': {
+      'verseByVerse': {
+        'observations': [
+          {
+            'startVerse': 1,
+            'endVerse': 1,
+            'text': 'The LORD is named as the shepherd.',
+          },
+        ],
+      },
+      'originalLanguage': {
         'text': 'A shepherd leads, feeds, and protects the flock.',
       },
-      'reflection': {'text': 'Where do you need his presence?'},
-      'biblicalConnections': {
+      'scriptureInterconnections': {
         'items': [
           {
             'bookId': 'john',
@@ -45,16 +59,23 @@ String _goodJson() => jsonEncode({
           },
         ],
       },
-      'whatCanBeUnderstood': {
+      'explicitTeachings': {
         'blocks': [
           {'tier': 'clearlyStated', 'text': 'God is a personal keeper.'},
         ],
+      },
+      'questionsToCarry': {'text': 'Where do you need His presence?'},
+      'anchor': {
+        'image': 'a shepherd by still waters',
+        'keyword': 'shepherd',
+        'sentence': 'The LORD stays close through the valley.',
       },
     });
 
 void main() {
   group('GeminiStudyBackend', () {
-    test('a valid transport payload becomes an available gemini result', () async {
+    test('a valid transport payload becomes an available gemini result',
+        () async {
       final backend = _backend((_) async => _goodJson());
       final result = await backend.study(_request());
       expect(result, isNotNull);
@@ -93,21 +114,21 @@ void main() {
       expect(seen, contains('እግዚአብሔር'));
     });
 
-    test('the prompt demands depth, accuracy, teaching, and terms', () async {
+    test('the prompt demands a faithful study aid with honest boundaries',
+        () async {
       String? seen;
       final backend = _backend((prompt) async {
         seen = prompt;
         return _goodJson();
       });
       await backend.study(_request());
-      expect(seen, contains('Accuracy over impressiveness'));
-      expect(seen, contains('continue studying on their own'));
-      expect(seen, contains('The AI provides understanding'));
-      expect(seen, contains('dictionary-style list'));
+      expect(seen, contains('a faithful study aid'));
+      expect(seen, contains('NEUTRAL TO ALL TRADITIONS'));
+      expect(seen, contains('MEMORY ANCHOR'));
       expect(seen, contains('"terms"'));
     });
 
-    test('the prompt structures the note around the A-G section vocabulary',
+    test('the prompt structures the note around the eight-section vocabulary',
         () async {
       String? seen;
       final backend = _backend((prompt) async {
@@ -117,6 +138,7 @@ void main() {
       await backend.study(_request());
       expect(seen, contains('LOOK CLOSELY AT THE WORDS'));
       expect(seen, contains('WHAT THE TEXT COMMUNICATES'));
+      expect(seen, contains('VERSE BY VERSE'));
       expect(seen, contains('SCRIPTURE ALONGSIDE SCRIPTURE'));
       expect(seen, contains('WHAT IS CLEAR / WHAT REQUIRES CARE'));
       expect(seen, contains('CONSIDER'));
@@ -129,14 +151,14 @@ void main() {
         return _goodJson();
       });
       await backend.study(_request());
-      expect(seen, contains('LENGTH —'));
+      expect(seen, contains('LENGTH \u2014'));
       expect(seen, contains('words (a "'));
     });
 
     test('invalid content (banned phrase) fails validation and yields null',
         () async {
       final backend = _backend((_) async => jsonEncode({
-            'whatTextSays': {'text': 'God is telling you to do this.'},
+            'literaryContext': {'text': 'God is telling you to do this.'},
           }));
       expect(await backend.study(_request()), isNull);
     });

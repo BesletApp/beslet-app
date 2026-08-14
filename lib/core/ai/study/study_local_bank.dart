@@ -16,6 +16,9 @@ class StudyBankEntry {
   final int endVerse;
   final List<StudySection> sections;
 
+  /// The entry's memory anchor, when the curated note carries one.
+  final StudyAnchor? anchor;
+
   const StudyBankEntry({
     required this.id,
     required this.bookId,
@@ -23,6 +26,7 @@ class StudyBankEntry {
     required this.startVerse,
     required this.endVerse,
     required this.sections,
+    this.anchor,
   });
 
   /// The entry anchors on a start verse: a request matches when it starts at
@@ -72,6 +76,7 @@ class StudyLocalBank {
         startVerse: entry['startVerse'] as int,
         endVerse: entry['endVerse'] as int,
         sections: sections,
+        anchor: StudyAnchor.tryParse(entry['anchor']),
       );
     }).toList();
     return StudyLocalBank(version: version, entries: entries);
@@ -80,6 +85,11 @@ class StudyLocalBank {
   /// Returns a list of content problems (empty when the bank is clean).
   /// Called at load and asserted in tests so a bad edit cannot ship.
   ///
+  /// The bundled bank is the full eight-section workbook: each entry must
+  /// carry every one of the eight sections exactly once, and a verseByVerse
+  /// section must hold at least one observation in both languages. A curated
+  /// entry should also carry a memory anchor.
+  ///
   /// When [canon] is provided, every passage and cross-reference must also
   /// exist in both languages' actual texts — the strongest fail-closed gate.
   /// When [sources] is provided, every `sourceIds` referenced by a section
@@ -87,8 +97,18 @@ class StudyLocalBank {
   /// fails closed.
   List<String> validate({StudyCanon? canon, StudySourceRegistry? sources}) {
     final issues = <String>[];
-    if (version != 2) issues.add('bank version must be 2, found $version');
+    if (version != 3) issues.add('bank version must be 3, found $version');
     final seen = <String>{};
+    const writableKinds = {
+      StudySectionKind.passageOverview,
+      StudySectionKind.historicalBackground,
+      StudySectionKind.literaryContext,
+      StudySectionKind.verseByVerse,
+      StudySectionKind.originalLanguage,
+      StudySectionKind.scriptureInterconnections,
+      StudySectionKind.explicitTeachings,
+      StudySectionKind.questionsToCarry,
+    };
     for (final entry in entries) {
       if (!seen.add(entry.id)) issues.add('duplicate entry id ${entry.id}');
       final book = ScriptureService.bookMap[entry.bookId];
@@ -119,13 +139,42 @@ class StudyLocalBank {
         }
       }
       final kinds = entry.sections.map((s) => s.kind).toSet();
-      if (entry.sections.length != StudySectionKind.values.length ||
-          kinds.length != StudySectionKind.values.length) {
+      if (entry.sections.length != 8 || kinds.length != 8) {
         issues.add(
-            'entry ${entry.id}: must contain all seven sections exactly once, got ${entry.sections.length}');
+            'entry ${entry.id}: must contain the eight workbook sections exactly once, got ${entry.sections.length}');
+      } else {
+        final missing = writableKinds.difference(kinds);
+        if (missing.isNotEmpty) {
+          issues.add(
+              'entry ${entry.id}: missing sections ${missing.map((k) => k.name).join(', ')}');
+        }
+        final unexpected = kinds.difference(writableKinds);
+        if (unexpected.isNotEmpty) {
+          issues.add(
+              'entry ${entry.id}: unexpected sections ${unexpected.map((k) => k.name).join(', ')}');
+        }
       }
       for (final section in entry.sections) {
-        _validateSection(entry.id, section, issues, canon, sources);
+        _validateSection(
+            entry.id, section, issues, canon, sources,
+            entryStartVerse: entry.startVerse, entryEndVerse: entry.endVerse);
+      }
+      final anchor = entry.anchor;
+      if (anchor == null) {
+        issues.add('entry ${entry.id}: a memory anchor is required');
+      } else {
+        final fields = [
+          anchor.imageEn,
+          anchor.imageAm,
+          anchor.keywordEn,
+          anchor.keywordAm,
+          anchor.sentenceEn,
+          anchor.sentenceAm,
+        ];
+        if (fields.any((f) => f.trim().isEmpty)) {
+          issues.add(
+              'entry ${entry.id}: the memory anchor needs both languages for image, keyword, and sentence');
+        }
       }
     }
     if (entries.isEmpty) issues.add('bank must contain at least one entry');
@@ -133,7 +182,8 @@ class StudyLocalBank {
   }
 
   void _validateSection(String entryId, StudySection section,
-      List<String> issues, StudyCanon? canon, StudySourceRegistry? sources) {
+      List<String> issues, StudyCanon? canon, StudySourceRegistry? sources,
+      {required int entryStartVerse, required int entryEndVerse}) {
     if (sources != null) {
       if (section.sourceIds.isEmpty) {
         issues.add('entry $entryId ${section.kind.name}: sourceIds required');
@@ -144,28 +194,28 @@ class StudyLocalBank {
             'entry $entryId ${section.kind.name}: unknown source id "$id"');
       }
     }
-    if (section.kind == StudySectionKind.biblicalConnections) {
+    if (section.kind == StudySectionKind.scriptureInterconnections) {
       if (section.references.isEmpty) {
-        issues.add('entry $entryId biblicalConnections: at least one reference required');
+        issues.add('entry $entryId scriptureInterconnections: at least one reference required');
       }
       for (final ref in section.references) {
         if (ref.en.trim().isEmpty || ref.am.trim().isEmpty) {
           issues.add(
-              'entry $entryId biblicalConnections ${ref.referenceFor(false)}: reason needs both languages');
+              'entry $entryId scriptureInterconnections ${ref.referenceFor(false)}: reason needs both languages');
         }
         final book = ScriptureService.bookMap[ref.bookId];
         if (book == null) {
-          issues.add('entry $entryId biblicalConnections: unknown book ${ref.bookId}');
+          issues.add('entry $entryId scriptureInterconnections: unknown book ${ref.bookId}');
         } else {
           if (ref.chapter < 1 || ref.chapter > book.chapters) {
-            issues.add('entry $entryId biblicalConnections ${ref.bookId}: chapter ${ref.chapter} out of range (${book.chapters})');
+            issues.add('entry $entryId scriptureInterconnections ${ref.bookId}: chapter ${ref.chapter} out of range (${book.chapters})');
           }
         }
         if (ref.startVerse < 1) {
-          issues.add('entry $entryId biblicalConnections: startVerse must be >= 1');
+          issues.add('entry $entryId scriptureInterconnections: startVerse must be >= 1');
         }
         if (ref.endVerse < ref.startVerse) {
-          issues.add('entry $entryId biblicalConnections: endVerse before startVerse');
+          issues.add('entry $entryId scriptureInterconnections: endVerse before startVerse');
         }
         if (canon != null) {
           for (final isAm in [false, true]) {
@@ -177,7 +227,7 @@ class StudyLocalBank {
               isAmharic: isAm,
             )) {
               issues.add(
-                  'entry $entryId biblicalConnections ${ref.referenceFor(false)}: outside the canon');
+                  'entry $entryId scriptureInterconnections ${ref.referenceFor(false)}: outside the canon');
             }
           }
         }
@@ -185,13 +235,40 @@ class StudyLocalBank {
       return;
     }
 
-    if (section.kind == StudySectionKind.whatCanBeUnderstood) {
+    if (section.kind == StudySectionKind.explicitTeachings) {
       if (section.blocks.isEmpty) {
-        issues.add('entry $entryId whatCanBeUnderstood: at least one tiered block required');
+        issues.add('entry $entryId explicitTeachings: at least one tiered block required');
       }
       for (final block in section.blocks) {
         if (block.en.trim().isEmpty || block.am.trim().isEmpty) {
-          issues.add('entry $entryId whatCanBeUnderstood ${block.tier.name}: both languages required');
+          issues.add('entry $entryId explicitTeachings ${block.tier.name}: both languages required');
+        }
+      }
+      return;
+    }
+
+    if (section.kind == StudySectionKind.originalLanguage) {
+      for (final term in section.terms) {
+        if (term.en.trim().isEmpty || term.am.trim().isEmpty) {
+          issues.add('entry $entryId originalLanguage term ${term.term}: meaning needs both languages');
+        }
+      }
+    }
+
+    if (section.kind == StudySectionKind.verseByVerse) {
+      if (section.verseObservations.isEmpty) {
+        issues.add(
+            'entry $entryId verseByVerse: at least one observation required');
+      }
+      for (final observation in section.verseObservations) {
+        if (observation.en.trim().isEmpty || observation.am.trim().isEmpty) {
+          issues.add(
+              'entry $entryId verseByVerse observation ${observation.startVerse}-${observation.endVerse}: both languages required');
+        }
+        if (observation.startVerse < entryStartVerse ||
+            observation.endVerse > entryEndVerse) {
+          issues.add(
+              'entry $entryId verseByVerse observation ${observation.startVerse}-${observation.endVerse}: outside the passage ${entryStartVerse}-$entryEndVerse');
         }
       }
       return;
@@ -200,19 +277,12 @@ class StudyLocalBank {
     if (section.en.trim().isEmpty || section.am.trim().isEmpty) {
       issues.add('entry $entryId ${section.kind.name}: both languages required');
     }
-    if (section.kind == StudySectionKind.context) {
-      final subEn = section.enSub?.trim() ?? '';
-      final subAm = section.amSub?.trim() ?? '';
-      if (subEn.isEmpty || subAm.isEmpty) {
-        issues.add('entry $entryId context: both "in the text" parts required');
-      }
-    }
-    if (section.kind == StudySectionKind.reflection) {
-      final takeawayEn = section.takeawayEn?.trim() ?? '';
-      final takeawayAm = section.takeawayAm?.trim() ?? '';
-      if (takeawayEn.isEmpty || takeawayAm.isEmpty) {
+    if (section.kind == StudySectionKind.questionsToCarry) {
+      final threadsEn = section.enSub?.trim() ?? '';
+      final threadsAm = section.amSub?.trim() ?? '';
+      if (threadsEn.isEmpty || threadsAm.isEmpty) {
         issues.add(
-            'entry $entryId reflection: both-language takeaway required');
+            'entry $entryId questionsToCarry: both-language takeaway required');
       }
     }
   }

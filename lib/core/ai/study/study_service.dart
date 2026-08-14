@@ -36,10 +36,10 @@ class StudyService {
     this.crossRefs,
   });
 
-  /// The key includes the prompt version so a note generated under an older
-  /// prompt or schema is never served from cache.
+  /// The key includes the prompt version and the depth so a note generated
+  /// under an older prompt, schema, or depth is never served from cache.
   String cacheKeyFor(StudyRequest request) =>
-      'study_v${studyPromptVersion}_${request.reference.cacheKey}_${request.isAmharic ? 'am' : 'en'}';
+      'study_v${studyPromptVersion}_${request.reference.cacheKey}_${request.isAmharic ? 'am' : 'en'}_${request.depth.name}';
 
   Future<StudyResult> study(StudyRequest request) async {
     final key = cacheKeyFor(request);
@@ -119,21 +119,21 @@ class StudyService {
     if (intro != null) {
       if (intro.backgroundEn.trim().isNotEmpty) {
         sections.add(StudySection(
-          kind: StudySectionKind.setting,
+          kind: StudySectionKind.passageOverview,
           en: intro.backgroundEn,
           am: intro.backgroundAm,
         ));
       }
       if (intro.flowEn.trim().isNotEmpty) {
         sections.add(StudySection(
-          kind: StudySectionKind.whatTextSays,
+          kind: StudySectionKind.literaryContext,
           en: intro.flowEn,
           am: intro.flowAm,
         ));
       }
       if (intro.keyThemesEn.trim().isNotEmpty) {
         sections.add(StudySection(
-          kind: StudySectionKind.meaningBackground,
+          kind: StudySectionKind.originalLanguage,
           en: intro.keyThemesEn,
           am: intro.keyThemesAm,
         ));
@@ -141,7 +141,7 @@ class StudyService {
     }
     if (refs.isNotEmpty) {
       sections.add(StudySection(
-        kind: StudySectionKind.biblicalConnections,
+        kind: StudySectionKind.scriptureInterconnections,
         references: refs,
       ));
     }

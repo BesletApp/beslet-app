@@ -164,6 +164,10 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
       padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.lg),
       children: [
         _buildPassage(c),
+        if (result.anchor != null) ...[
+          const SizedBox(height: AppSpacing.lg),
+          _buildAnchorCard(c, l, result.anchor!),
+        ],
         const SizedBox(height: AppSpacing.lg),
         for (final section in sections) ...[
           _StudySectionCard(
@@ -183,19 +187,67 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
     );
   }
 
-  /// The panel's canonical 8-step scaffold: the passage is step one, then the
-  /// seven sections in the order the app guarantees. Whatever order the
-  /// backend returned, the panel always renders the sections in this fixed
-  /// order — a backend that misorders a note cannot scramble the reader's path
-  /// through it.
+  /// The memory anchor card: a key image, a key word, and a one-sentence
+  /// statement of the passage's central movement. All observations — the panel
+  /// never renders an anchor the validator did not stand behind.
+  Widget _buildAnchorCard(
+      ThemePalette c, AppLocalizations l, StudyAnchor anchor) {
+    final style = (widget.isAm
+            ? AppTextStyles.amharicBody
+            : AppTextStyles.bodyMedium)
+        .copyWith(color: c.textPrimary, height: 1.6);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: c.card,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: c.border.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            Icon(Icons.tips_and_updates_outlined, size: 16, color: c.primary),
+            const SizedBox(width: 6),
+            Text(
+              l.studyAnchor,
+              style: AppTextStyles.labelLarge.copyWith(
+                  color: c.primary, fontSize: 12),
+            ),
+          ]),
+          const SizedBox(height: 8),
+          if (anchor.imageFor(widget.isAm).isNotEmpty)
+            Text(anchor.imageFor(widget.isAm),
+                style: style.copyWith(fontWeight: FontWeight.w600)),
+          if (anchor.keywordFor(widget.isAm).isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(anchor.keywordFor(widget.isAm),
+                style: style.copyWith(fontStyle: FontStyle.italic)),
+          ],
+          if (anchor.sentenceFor(widget.isAm).isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(anchor.sentenceFor(widget.isAm), style: style),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// The panel's canonical scaffold: the passage is step one, then the eight
+  /// sections in the order the app guarantees. Whatever order the backend
+  /// returned, the panel always renders the sections in this fixed order — a
+  /// backend that misorders a note cannot scramble the reader's path through
+  /// it.
   static const List<StudySectionKind> _canonicalSectionOrder = [
-    StudySectionKind.setting,
-    StudySectionKind.context,
-    StudySectionKind.whatTextSays,
-    StudySectionKind.meaningBackground,
-    StudySectionKind.biblicalConnections,
-    StudySectionKind.whatCanBeUnderstood,
-    StudySectionKind.reflection,
+    StudySectionKind.passageOverview,
+    StudySectionKind.historicalBackground,
+    StudySectionKind.literaryContext,
+    StudySectionKind.verseByVerse,
+    StudySectionKind.originalLanguage,
+    StudySectionKind.scriptureInterconnections,
+    StudySectionKind.explicitTeachings,
+    StudySectionKind.questionsToCarry,
   ];
 
   /// Merges the backend's sections with the panel's own canonical order and
@@ -203,17 +255,17 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
   ///
   /// The canonical merge is done here, panel-side, so the reader sees one
   /// stable note regardless of which backend produced it: the offline index's
-  /// validated connections are folded into `biblicalConnections` whenever they
-  /// add something the backend did not already supply, and everything renders
-  /// in the app's canonical sequence. Empty sections preserve silence — no
-  /// section is padded to fit a slot.
+  /// validated connections are folded into `scriptureInterconnections`
+  /// whenever they add something the backend did not already supply, and
+  /// everything renders in the app's canonical sequence. Empty sections
+  /// preserve silence — no section is padded to fit a slot.
   List<StudySection> _canonicalSections(StudyResult result) {
     final byKind = <StudySectionKind, StudySection>{
       for (final s in result.sections) s.kind: s,
     };
     final scaffold = <StudySection>[];
     for (final kind in _canonicalSectionOrder) {
-      if (kind == StudySectionKind.biblicalConnections) {
+      if (kind == StudySectionKind.scriptureInterconnections) {
         final merged = _connectionsSection(byKind[kind]);
         if (merged != null && !merged.isEmpty) scaffold.add(merged);
         continue;
@@ -259,7 +311,7 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
     }
     merged.sort((a, b) => a.priority.compareTo(b.priority));
     return StudySection(
-      kind: StudySectionKind.biblicalConnections,
+      kind: StudySectionKind.scriptureInterconnections,
       references: merged,
       sourceIds: backendSection?.sourceIds ?? const [],
     );
@@ -353,17 +405,20 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
   /// the title). Long prose is split into short paragraphs for breathing room.
   Widget _buildSectionBody(
       ThemePalette c, AppLocalizations l, StudySection section) {
-    if (section.kind == StudySectionKind.context) {
-      return _buildContextBody(c, l, section);
+    if (section.kind == StudySectionKind.historicalBackground) {
+      return _buildHistoryBody(c, l, section);
     }
-    if (section.kind == StudySectionKind.biblicalConnections) {
+    if (section.kind == StudySectionKind.verseByVerse) {
+      return _buildVerseByVerseBody(c, section);
+    }
+    if (section.kind == StudySectionKind.scriptureInterconnections) {
       return _buildReferencesBody(c, section);
     }
-    if (section.kind == StudySectionKind.whatCanBeUnderstood) {
+    if (section.kind == StudySectionKind.explicitTeachings) {
       return _buildTieredBody(c, l, section);
     }
-    if (section.kind == StudySectionKind.reflection) {
-      return _buildReflectionBody(c, l, section);
+    if (section.kind == StudySectionKind.questionsToCarry) {
+      return _buildConsiderBody(c, l, section);
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -375,13 +430,13 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
     );
   }
 
-  /// The reflection: one or two open questions, then — when the note carries
-  /// one — the quiet "the passage itself says" line that anchors what was read.
-  /// Both are observations; neither ever tells the reader what to do.
-  Widget _buildReflectionBody(
+  /// The questions to carry: one or two open questions, then — when the note
+  /// carries one — the quiet "the passage itself says" line that anchors what
+  /// was read. Both are observations; neither ever tells the reader what to do.
+  Widget _buildConsiderBody(
       ThemePalette c, AppLocalizations l, StudySection section) {
     final text = section.textFor(widget.isAm);
-    final takeaway = section.takeawayFor(widget.isAm);
+    final threads = section.subTextFor(widget.isAm);
     final style = (widget.isAm
             ? AppTextStyles.amharicBody
             : AppTextStyles.bodyMedium)
@@ -390,7 +445,7 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (text.isNotEmpty) _buildArticle(c, text),
-        if (takeaway != null && takeaway.isNotEmpty) ...[
+        if (threads != null && threads.isNotEmpty) ...[
           const SizedBox(height: 12),
           Text(
             l.studyTakeaway,
@@ -403,7 +458,7 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
           ),
           const SizedBox(height: 4),
           Text(
-            takeaway,
+            threads,
             style: style.copyWith(fontStyle: FontStyle.italic),
           ),
         ],
@@ -609,27 +664,32 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
     );
   }
 
-  Widget _buildContextBody(
+  Widget _buildHistoryBody(
       ThemePalette c, AppLocalizations l, StudySection section) {
-    final behind = section.textFor(widget.isAm);
-    final inText = section.subTextFor(widget.isAm);
+    final prose = section.textFor(widget.isAm);
+    final inTheText = section.subTextFor(widget.isAm);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (behind.isNotEmpty) ...[
-          Text(
-            l.studyContextBehind,
-            style: TextStyle(
-              fontFamily: 'Inter',
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: c.textMuted,
+        if (prose.isNotEmpty) _buildArticle(c, prose),
+        if (section.historyEntries.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          for (final entry in section.historyEntries) ...[
+            Text(
+              '${_historyLabel(l, entry.label)} — ${_historyCategory(l, entry.category)}',
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: c.primary,
+              ),
             ),
-          ),
-          const SizedBox(height: 4),
-          _buildArticle(c, behind),
+            const SizedBox(height: 4),
+            _buildArticle(c, entry.textFor(widget.isAm)),
+            const SizedBox(height: 10),
+          ],
         ],
-        if (inText != null) ...[
+        if (inTheText != null) ...[
           const SizedBox(height: 10),
           Text(
             l.studyContextInText,
@@ -641,10 +701,43 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
             ),
           ),
           const SizedBox(height: 4),
-          _buildArticle(c, inText),
+          _buildArticle(c, inTheText),
         ],
       ],
     );
+  }
+
+  Widget _buildVerseByVerseBody(ThemePalette c, StudySection section) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final observation in section.verseObservations) ...[
+          Text(
+            _verseLabel(observation),
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: c.primary,
+            ),
+          ),
+          const SizedBox(height: 4),
+          _buildArticle(c, observation.textFor(widget.isAm)),
+          const SizedBox(height: 10),
+        ],
+      ],
+    );
+  }
+
+  String _verseLabel(StudyVerseObservation observation) {
+    if (observation.startVerse == observation.endVerse) {
+      return widget.isAm
+          ? 'ቁ. ${observation.startVerse}'
+          : 'v. ${observation.startVerse}';
+    }
+    return widget.isAm
+        ? 'ቁ. ${observation.startVerse}–${observation.endVerse}'
+        : 'v. ${observation.startVerse}–${observation.endVerse}';
   }
 
   Widget _buildReferencesBody(ThemePalette c, StudySection section) {
@@ -717,20 +810,50 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
 
   String _titleFor(AppLocalizations l, StudySectionKind kind) {
     switch (kind) {
-      case StudySectionKind.setting:
-        return l.studySectionSetting;
-      case StudySectionKind.context:
-        return l.studySectionContext;
-      case StudySectionKind.whatTextSays:
-        return l.studySectionWhatTextSays;
-      case StudySectionKind.meaningBackground:
-        return l.studySectionMeaningBackground;
-      case StudySectionKind.biblicalConnections:
-        return l.studySectionBiblicalConnections;
-      case StudySectionKind.whatCanBeUnderstood:
-        return l.studySectionWhatCanBeUnderstood;
-      case StudySectionKind.reflection:
-        return l.studySectionReflection;
+      case StudySectionKind.passageOverview:
+        return l.studySectionPassageOverview;
+      case StudySectionKind.historicalBackground:
+        return l.studySectionHistoricalBackground;
+      case StudySectionKind.literaryContext:
+        return l.studySectionLiteraryContext;
+      case StudySectionKind.verseByVerse:
+        return l.studySectionVerseByVerse;
+      case StudySectionKind.originalLanguage:
+        return l.studySectionOriginalLanguage;
+      case StudySectionKind.scriptureInterconnections:
+        return l.studySectionScriptureInterconnections;
+      case StudySectionKind.explicitTeachings:
+        return l.studySectionExplicitTeachings;
+      case StudySectionKind.questionsToCarry:
+        return l.studySectionQuestionsToCarry;
+    }
+  }
+
+  String _historyLabel(AppLocalizations l, StudyHistoryLabel label) {
+    switch (label) {
+      case StudyHistoryLabel.author:
+        return l.studyHistoryAuthor;
+      case StudyHistoryLabel.audience:
+        return l.studyHistoryAudience;
+      case StudyHistoryLabel.date:
+        return l.studyHistoryDate;
+      case StudyHistoryLabel.place:
+        return l.studyHistoryPlace;
+      case StudyHistoryLabel.occasion:
+        return l.studyHistoryOccasion;
+      case StudyHistoryLabel.culturalSetting:
+        return l.studyHistoryCulturalSetting;
+    }
+  }
+
+  String _historyCategory(AppLocalizations l, StudyHistoryCategory category) {
+    switch (category) {
+      case StudyHistoryCategory.established:
+        return l.studyHistoryEstablished;
+      case StudyHistoryCategory.probable:
+        return l.studyHistoryProbable;
+      case StudyHistoryCategory.debated:
+        return l.studyHistoryDebated;
     }
   }
 

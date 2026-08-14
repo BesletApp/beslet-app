@@ -2732,6 +2732,114 @@ abstract class AppLocalizations {
   /// **'Consider'**
   String get studySectionReflection;
 
+  /// No description provided for @studySectionPassageOverview.
+  ///
+  /// In en, this message translates to:
+  /// **'At a Glance'**
+  String get studySectionPassageOverview;
+
+  /// No description provided for @studySectionHistoricalBackground.
+  ///
+  /// In en, this message translates to:
+  /// **'Behind the Text'**
+  String get studySectionHistoricalBackground;
+
+  /// No description provided for @studySectionLiteraryContext.
+  ///
+  /// In en, this message translates to:
+  /// **'What the Text Communicates'**
+  String get studySectionLiteraryContext;
+
+  /// No description provided for @studySectionVerseByVerse.
+  ///
+  /// In en, this message translates to:
+  /// **'Verse by Verse'**
+  String get studySectionVerseByVerse;
+
+  /// No description provided for @studySectionOriginalLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking Closely at the Words'**
+  String get studySectionOriginalLanguage;
+
+  /// No description provided for @studySectionScriptureInterconnections.
+  ///
+  /// In en, this message translates to:
+  /// **'Scripture Alongside Scripture'**
+  String get studySectionScriptureInterconnections;
+
+  /// No description provided for @studySectionExplicitTeachings.
+  ///
+  /// In en, this message translates to:
+  /// **'What Is Clear / What Requires Care'**
+  String get studySectionExplicitTeachings;
+
+  /// No description provided for @studySectionQuestionsToCarry.
+  ///
+  /// In en, this message translates to:
+  /// **'Consider'**
+  String get studySectionQuestionsToCarry;
+
+  /// No description provided for @studyAnchor.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep This in Mind'**
+  String get studyAnchor;
+
+  /// No description provided for @studyHistoryAuthor.
+  ///
+  /// In en, this message translates to:
+  /// **'Author'**
+  String get studyHistoryAuthor;
+
+  /// No description provided for @studyHistoryAudience.
+  ///
+  /// In en, this message translates to:
+  /// **'Audience'**
+  String get studyHistoryAudience;
+
+  /// No description provided for @studyHistoryDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get studyHistoryDate;
+
+  /// No description provided for @studyHistoryPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'Place'**
+  String get studyHistoryPlace;
+
+  /// No description provided for @studyHistoryOccasion.
+  ///
+  /// In en, this message translates to:
+  /// **'Occasion'**
+  String get studyHistoryOccasion;
+
+  /// No description provided for @studyHistoryCulturalSetting.
+  ///
+  /// In en, this message translates to:
+  /// **'Cultural setting'**
+  String get studyHistoryCulturalSetting;
+
+  /// No description provided for @studyHistoryEstablished.
+  ///
+  /// In en, this message translates to:
+  /// **'Established'**
+  String get studyHistoryEstablished;
+
+  /// No description provided for @studyHistoryProbable.
+  ///
+  /// In en, this message translates to:
+  /// **'Probable'**
+  String get studyHistoryProbable;
+
+  /// No description provided for @studyHistoryDebated.
+  ///
+  /// In en, this message translates to:
+  /// **'Debated'**
+  String get studyHistoryDebated;
+
   /// No description provided for @studySectionSources.
   ///
   /// In en, this message translates to:

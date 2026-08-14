@@ -58,19 +58,41 @@ Future<String> Function(String prompt) buildGeminiTransport({
     final model = GenerativeModel(model: modelName, apiKey: key);
     final schema = Schema.object(
       properties: {
-        'setting': Schema.object(properties: {
-          'text': Schema.string(description: 'One or two sentences anchoring the passage.'),
-        }),
-        'context': Schema.object(properties: {
-          'behindTheText': Schema.string(description: 'Author, audience, setting.'),
-          'inTheText': Schema.string(description: 'Immediate context and argument.'),
-        }),
-        'whatTextSays': Schema.object(properties: {
-          'text': Schema.string(description: 'A plain tracing of what the passage says.'),
-        }),
-        'meaningBackground': Schema.object(properties: {
+        'passageOverview': Schema.object(properties: {
           'text': Schema.string(
-              description: 'Meaning, key terms, and historical/cultural/theological background, with textual observations.'),
+              description: 'Three to five bullet facts (kind of writing, place in the book, place in the larger story, key images), each on its own "• " line.'),
+        }),
+        'historicalBackground': Schema.object(properties: {
+          'text': Schema.string(
+              description: 'Short prose weaving the background of the passage.'),
+          'entries': Schema.array(
+            items: Schema.object(properties: {
+              'label': Schema.string(
+                  description: 'author | audience | date | place | occasion | culturalSetting'),
+              'category': Schema.string(
+                  description: 'established | probable | debated'),
+              'text': Schema.string(
+                  description: 'The evidence-labeled historical statement.'),
+            }),
+          ),
+        }),
+        'literaryContext': Schema.object(properties: {
+          'text': Schema.string(
+              description: 'What comes before and after, why the passage sits here, what the passage itself communicates, with "Step N — " lines for its movement.'),
+        }),
+        'verseByVerse': Schema.object(properties: {
+          'observations': Schema.array(
+            items: Schema.object(properties: {
+              'startVerse': Schema.integer(),
+              'endVerse': Schema.integer(),
+              'text': Schema.string(
+                  description: 'What the verse or small group says — wording, imagery, repetition, structure.'),
+            }),
+          ),
+        }),
+        'originalLanguage': Schema.object(properties: {
+          'text': Schema.string(
+              description: 'Meaning, key terms, and textual observations, with the reader\'s language.'),
           'terms': Schema.array(
             items: Schema.object(properties: {
               'term': Schema.string(
@@ -79,12 +101,14 @@ Future<String> Function(String prompt) buildGeminiTransport({
                   description: 'e.g. hebrew, aramaic, greek, amharic, english.'),
               'transliteration': Schema.string(
                   description: 'Pronunciation guide, when useful.'),
+              'verseNumber': Schema.integer(
+                  description: 'The verse in the studied passage where the term appears.'),
               'meaning': Schema.string(
                   description: 'Short meaning in the reader\'s language, anchored in this passage.'),
             }),
           ),
         }),
-        'biblicalConnections': Schema.object(properties: {
+        'scriptureInterconnections': Schema.object(properties: {
           'items': Schema.array(
             items: Schema.object(properties: {
               'bookId': Schema.string(
@@ -97,7 +121,7 @@ Future<String> Function(String prompt) buildGeminiTransport({
             }),
           ),
         }),
-        'whatCanBeUnderstood': Schema.object(properties: {
+        'explicitTeachings': Schema.object(properties: {
           'blocks': Schema.array(
             items: Schema.object(properties: {
               'tier': Schema.string(description: 'clearlyStated | supportedUnderstanding | disputed'),
@@ -105,10 +129,19 @@ Future<String> Function(String prompt) buildGeminiTransport({
             }),
           ),
         }),
-        'reflection': Schema.object(properties: {
-          'text': Schema.string(description: 'One open-ended question ending with "?".'),
-          'takeaway': Schema.string(
+        'questionsToCarry': Schema.object(properties: {
+          'text': Schema.string(
+              description: 'One or two open-ended questions ending with "?".'),
+          'threads': Schema.string(
               description: 'Optional. A single, quiet, neutral line gathering what the passage itself said. Never a directive, never "you", never a question, under 40 words. Omit if nothing honest belongs.'),
+        }),
+        'anchor': Schema.object(properties: {
+          'image': Schema.string(
+              description: 'A concrete image from the passage, a few words.'),
+          'keyword': Schema.string(
+              description: 'A single powerful keyword, one or two words.'),
+          'sentence': Schema.string(
+              description: 'One sentence stating the passage\'s central movement, under 40 words.'),
         }),
       },
     );
