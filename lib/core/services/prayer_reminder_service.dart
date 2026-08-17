@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -41,10 +42,17 @@ class PrayerTime {
 class PrayerReminderService {
   static const _timesKey = 'prayer_times';
   static const _lastUpdateKey = 'prayer_reminder_last_update';
+  static const _lastArmKey = 'prayer_reminder_last_arm';
+  static const _reliabilityHintKey = 'prayer_reliability_hint_shown';
   static const _playbackRequestBase = 1000;
+  static const _pluginAlarmBase = 2000;
   static const _channel = MethodChannel('beslet_app/notifications');
 
   static final MethodChannel _soundChannel = MethodChannel('beslet_app/sounds');
+
+  static void _log(String message) {
+    debugPrint('[BesletAlarm] $message');
+  }
 
   // ── Permissions ───────────────────────────────────────────
   static Future<PrayerAlarmPermissionStatus> ensurePermissions() async {
@@ -67,6 +75,10 @@ class PrayerReminderService {
 
   static Future<void> openExactAlarmSettings() async {
     try { await _channel.invokeMethod('openExactAlarmSettings'); } catch (_) {}
+  }
+
+  static Future<void> openBatteryExemptSettings() async {
+    try { await _channel.invokeMethod('openBatteryExemptSettings'); } catch (_) {}
   }
 
   // ── Prayer times (a rhythm of daily appointments) ─────────
@@ -111,6 +123,7 @@ class PrayerReminderService {
     await _savePrayerTimes(times.where((t) => t.id != id).toList());
     for (final r in removed) {
       try { await _cancelPlaybackAlarm(_playbackRequestBase + r.id); } catch (_) {}
+      await _cancelPluginAlarm(r.id);
     }
     await syncSchedules();
   }
@@ -170,6 +183,7 @@ class PrayerReminderService {
 
     for (final t in times) {
       try { await _cancelPlaybackAlarm(_playbackRequestBase + t.id); } catch (_) {}
+      await _cancelPluginAlarm(t.id);
     }
     for (final t in times.where((t) => t.enabled)) {
       await _scheduleOne(t);
@@ -177,18 +191,19 @@ class PrayerReminderService {
   }
 
   static Future<void> _scheduleOne(PrayerTime t) async {
-    AndroidNotificationSound sound;
-    try {
-      sound = await PrayerAlarmSoundService.resolveAndroidSound();
-    } catch (_) {
-      return;
-    }
-
     // The fire moment follows the device's local clock — the same clock the
     // prayer screen's countdown reads — so the scheduled alarm and the shown
     // countdown can never disagree, regardless of the device's timezone.
     final now = DateTime.now();
     final scheduledDate = nextLocalMoment(t.hour, t.minute, now);
+
+    AndroidNotificationSound sound;
+    try {
+      sound = await PrayerAlarmSoundService.resolveAndroidSound();
+    } catch (e) {
+      _log('sound resolve failed (pid=${t.id}): $e');
+      return;
+    }
 
     final dayIndex = now.difference(DateTime(2025, 1, 1)).inDays;
     final verse = PrayerVerseService.getPrayerVerse(dayIndex);
@@ -196,21 +211,46 @@ class PrayerReminderService {
     final title = isAm ? 'የጸሎት ጊዜ! 🙏' : 'Time to pray! 🙏';
     final body = '${verse.textAm} — ${verse.reference}';
 
+    // Native leg: AlarmManager → AlarmReceiver → foreground service →
+    // full-screen alarm with the looping playback.
     try {
-      await _soundChannel.invokeMethod('schedulePlaybackAlarm', {
-        'timestamp': scheduledDate.millisecondsSinceEpoch,
-        'soundUri': _soundUriFor(sound),
-        'title': title,
-        'body': body,
-        'hour': t.hour,
-        'minute': t.minute,
-        'verseText': verse.textAm,
-        'verseRef': verse.reference,
-        'dayIndex': dayIndex,
-        'lang': isAm ? 'am' : 'en',
-        'requestCode': _playbackRequestBase + t.id,
-      });
-    } catch (_) {}
+      final res = await _soundChannel.invokeMethod<Map<Object?, Object?>>(
+        'schedulePlaybackAlarm',
+        {
+          'timestamp': scheduledDate.millisecondsSinceEpoch,
+          'soundUri': _soundUriFor(sound),
+          'title': title,
+          'body': body,
+          'hour': t.hour,
+          'minute': t.minute,
+          'verseText': verse.textAm,
+          'verseRef': verse.reference,
+          'dayIndex': dayIndex,
+          'lang': isAm ? 'am' : 'en',
+          'requestCode': _playbackRequestBase + t.id,
+        },
+      );
+      final exact = res?['exact'] == true;
+      _log('native armed pid=${t.id} at ${scheduledDate.toIso8601String()} '
+          '(${exact ? 'exact' : 'inexact'})');
+    } catch (e) {
+      _log('native schedule FAILED pid=${t.id}: $e');
+    }
+
+    // Plugin leg: an independent daily zonedSchedule with its own sound. If an
+    // OEM battery manager or frozen process swallows one path, the other still
+    // rings — this is the trigger that worked before v1.30.0.
+    try {
+      await NotificationService.schedulePrayerAlarm(
+        id: _pluginAlarmBase + t.id,
+        title: title,
+        body: body,
+        fire: scheduledDate,
+      );
+      _log('plugin armed pid=${t.id} at ${scheduledDate.toIso8601String()}');
+    } catch (e) {
+      _log('plugin schedule FAILED pid=${t.id}: $e');
+    }
   }
 
   /// A URI the native side understands for every sound flavour:
@@ -227,7 +267,77 @@ class PrayerReminderService {
       await _soundChannel.invokeMethod('cancelPlaybackAlarm', {
         'requestCode': requestCode,
       });
+    } catch (e) {
+      _log('native cancel failed TC=$requestCode: $e');
+    }
+  }
+
+  static Future<void> _cancelPluginAlarm(int prayerId) async {
+    try {
+      await NotificationService.plugin.cancel(_pluginAlarmBase + prayerId);
+    } catch (e) {
+      _log('plugin cancel failed pid=$prayerId: $e');
+    }
+  }
+
+  /// Stops the looping native alarm sound immediately (used by the plugin
+  /// alarm's dismiss action so either trigger can silence the other).
+  static Future<void> stopAlarmNow() async {
+    try {
+      await _soundChannel.invokeMethod('stopAlarmNow');
+    } catch (e) {
+      _log('stopAlarmNow failed: $e');
+    }
+  }
+
+  /// Whether Android (12+) currently permits exact alarms for this app.
+  static Future<bool> canScheduleExactAlarms() async {
+    try {
+      return await _soundChannel.invokeMethod<bool>('getExactAlarmStatus') ?? true;
+    } catch (_) {
+      return true;
+    }
+  }
+
+  /// One-time reliability guidance (battery exemption + exact alarms), shown
+  /// only while the user actually has a prayer time armed.
+  static Future<bool> needsReliabilityHint() async {
+    if (!Platform.isAndroid) return false;
+    try {
+      final times = await getPrayerTimes();
+      if (times.every((t) => !t.enabled)) return false;
+      final prefs = await SharedPreferences.getInstance();
+      return !(prefs.getBool(_reliabilityHintKey) ?? false);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  static Future<void> markReliabilityHintShown() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_reliabilityHintKey, true);
     } catch (_) {}
+  }
+
+  /// Re-arms everything when the last arm is stale (≥12h). Catches devices
+  /// that lost a schedule or had a wonky timer while the user is watching.
+  static Future<void> rearmIfStale() async {
+    if (!Platform.isAndroid) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final last = prefs.getString(_lastArmKey);
+      final now = DateTime.now();
+      if (last != null) {
+        final lastTime = DateTime.tryParse(last);
+        if (lastTime != null && now.difference(lastTime).inHours < 12) return;
+      }
+      await syncSchedules();
+      await prefs.setString(_lastArmKey, now.toIso8601String());
+      _log('re-armed all schedules');
+    } catch (e) {
+      _log('rearmIfStale failed: $e');
+    }
   }
 
   // ── Housekeeping ──────────────────────────────────────────

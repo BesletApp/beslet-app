@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tzdata;
 import 'daily_verse_service.dart';
+import 'prayer_alarm_sound_service.dart';
+import 'prayer_reminder_service.dart';
 import 'scripture_service.dart';
 
 class NotificationService {
@@ -131,8 +133,58 @@ const iosSettings = DarwinInitializationSettings(
   }
 
   static void _onNotificationTap(NotificationResponse response) {
+    if (response.actionId == 'dismiss_alarm') {
+      PrayerReminderService.stopAlarmNow();
+      return;
+    }
     final route = response.payload ?? '/prayer';
     navigateTo?.call(route);
+  }
+
+  // ── Prayer alarm (plugin leg of the dual trigger) ──────────
+  /// The independent duplicate of the native prayer alarm: a daily exact
+  /// zonedSchedule with its own audible channel. When an OEM battery manager
+  /// or a frozen process swallows the native AlarmManager chain, this leg
+  /// still rings — and vice versa. The fire instant is taken from the
+  /// device-local [fire] moment, so it can never drift from the countdown.
+  static Future<void> schedulePrayerAlarm({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime fire,
+    String payload = '/prayer',
+  }) async {
+    tzdata.initializeTimeZones();
+    final sound = await PrayerAlarmSoundService.resolveAndroidSound();
+    await PrayerAlarmSoundService.ensureChannel(sound);
+    final details = AndroidNotificationDetails(
+      PrayerAlarmSoundService.channelIdFor(sound),
+      'Prayer Reminder',
+      channelDescription: 'Daily prayer alarm with scripture',
+      importance: Importance.max,
+      priority: Priority.high,
+      category: AndroidNotificationCategory.alarm,
+      audioAttributesUsage: AudioAttributesUsage.alarm,
+      fullScreenIntent: true,
+      actions: [
+        AndroidNotificationAction(
+          'dismiss_alarm',
+          _isAmharicLang ? 'ማቆም' : 'Dismiss',
+          cancelNotification: true,
+          showsUserInterface: false,
+        ),
+      ],
+    );
+    final when = tz.TZDateTime.from(fire, tz.local);
+    await plugin.zonedSchedule(
+      id, title, body, when,
+      NotificationDetails(android: details),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      matchDateTimeComponents: DateTimeComponents.time,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      payload: payload,
+    );
   }
 
   static Future<void> _createChannels() async {

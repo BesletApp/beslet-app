@@ -8,6 +8,7 @@ import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import android.util.Log
 import androidx.core.content.FileProvider
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -91,15 +92,45 @@ class MainActivity : FlutterActivity() {
                             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                         )
                         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                            if (alarmManager.canScheduleExactAlarms()) {
-                                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timestamp, pendingIntent)
+                        var exact = false
+                        try {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                exact = alarmManager.canScheduleExactAlarms()
+                                if (exact) {
+                                    alarmManager.setExactAndAllowWhileIdle(
+                                        AlarmManager.RTC_WAKEUP, timestamp, pendingIntent
+                                    )
+                                } else {
+                                    alarmManager.setAndAllowWhileIdle(
+                                        AlarmManager.RTC_WAKEUP, timestamp, pendingIntent
+                                    )
+                                }
                             } else {
-                                alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timestamp, pendingIntent)
+                                exact = true
+                                alarmManager.setExactAndAllowWhileIdle(
+                                    AlarmManager.RTC_WAKEUP, timestamp, pendingIntent
+                                )
                             }
-                        } else {
-                            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timestamp, pendingIntent)
+                        } catch (e: SecurityException) {
+                            // Some OEMs (ColorOS etc.) claim exact-alarm support
+                            // and then refuse at set-time; degrade to inexact
+                            // instead of silently dropping the alarm.
+                            Log.e(TAG, "Exact alarm blocked for TC=$requestCode; falling back", e)
+                            try {
+                                alarmManager.setAndAllowWhileIdle(
+                                    AlarmManager.RTC_WAKEUP, timestamp, pendingIntent
+                                )
+                            } catch (e2: Exception) {
+                                Log.e(TAG, "Alarm scheduling failed for TC=$requestCode", e2)
+                                result.error("ALARM_SCHEDULE_FAILED", e2.message, null)
+                                return@setMethodCallHandler
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Alarm scheduling failed for TC=$requestCode", e)
+                            result.error("ALARM_SCHEDULE_FAILED", e.message, null)
+                            return@setMethodCallHandler
                         }
+                        Log.i(TAG, "Armed prayer alarm TC=$requestCode at $timestamp (exact=$exact)")
 
                         PrayerAlarmMirror.upsert(
                             this,
@@ -116,7 +147,12 @@ class MainActivity : FlutterActivity() {
                                 lang = lang,
                             )
                         )
-                        result.success(true)
+                        result.success(mapOf("scheduled" to true, "exact" to exact))
+                    }
+                    "getExactAlarmStatus" -> {
+                        val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                        val canExact = Build.VERSION.SDK_INT < Build.VERSION_CODES.S || am.canScheduleExactAlarms()
+                        result.success(canExact)
                     }
                     "cancelPlaybackAlarm" -> {
                         val requestCode = call.argument<Int>("requestCode") ?: 1000
@@ -192,6 +228,18 @@ class MainActivity : FlutterActivity() {
                         startActivity(intent)
                         result.success(true)
                     }
+                    "openBatteryExemptSettings" -> {
+                        try {
+                            startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                                data = Uri.parse("package:$packageName")
+                            })
+                        } catch (_: Exception) {
+                            startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                data = Uri.parse("package:$packageName")
+                            })
+                        }
+                        result.success(true)
+                    }
                     else -> result.notImplemented()
                 }
             }
@@ -200,6 +248,7 @@ class MainActivity : FlutterActivity() {
     companion object {
         @Volatile
         var pendingLaunchRoute: String? = null
+        private const val TAG = "BesletAlarm"
     }
 
     override fun onNewIntent(intent: Intent) {

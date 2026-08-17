@@ -40,6 +40,7 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
     _loadReminder();
     _loadTopics();
     _startCountdown();
+    _maybeShowReliabilityHint();
   }
   @override void dispose() {
     WidgetsBinding.instance.removeObserver(this);
@@ -102,7 +103,47 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
   /// a day rollover is reflected immediately instead of on the next 30s tick.
   void _onResumed() {
     _loadReminder();
+    PrayerReminderService.rearmIfStale();
     if (mounted) setState(() {});
+  }
+
+  /// One-time, per install: gently teach the battery/exact-alarm exemption so
+  /// OEM battery managers (Oppo/ColorOS, Xiaomi, Samsung…) can't starve the
+  /// prayer alarm. Only offered while a prayer time is actually armed.
+  Future<void> _maybeShowReliabilityHint() async {
+    if (!await PrayerReminderService.needsReliabilityHint()) return;
+    await PrayerReminderService.markReliabilityHintShown();
+    if (!mounted) return;
+    final isAm = Localizations.localeOf(context).languageCode == 'am';
+    final exactOk = await PrayerReminderService.canScheduleExactAlarms();
+    if (!mounted) return;
+    final body = exactOk
+        ? (isAm
+            ? 'ለተሻለ የማንቃት አስተማማኝነት፣ Beslet ወደ ዳራ ሳይቋረጥ እንዲሠራ ያድርጉ (battery መገደብ አያግድ)።'
+            : 'For the most reliable alarms, let Beslet run without battery limits.')
+        : (isAm
+            ? 'በ Android ቅንብሮች «Alarms & reminders» ያንቁ፤ እንዲሁም Beslet ወደ ዳራ ሳይቋረጥ እንዲሠራ ያድርጉ።'
+            : 'Turn on "Alarms & reminders" in Android settings and let Beslet run without battery limits.');
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.of(context).card,
+        title: Text(isAm ? 'ማንቃት አስተማማኝ ያድርጉ' : 'Reliable alarms',
+            style: AppTextStyles.labelLarge),
+        content: Text(body,
+            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.of(context).textSecondary)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(isAm ? 'ይቅር' : 'Later')),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              PrayerReminderService.openBatteryExemptSettings();
+            },
+            child: Text(isAm ? 'አሁን' : 'Open Settings', style: const TextStyle(color: AppColors.primary)),
+          ),
+        ],
+      ),
+    );
   }
 
   int get _elapsedSeconds => _startTime != null ? DateTime.now().difference(_startTime!).inSeconds : 0;
@@ -193,6 +234,37 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
     final l = AppLocalizations.of(context)!;
     final time = await showTimePicker(context: context, initialTime: TimeOfDay.now());
     if (time == null || !mounted) return;
+
+    // A time that already passed today silently moves to tomorrow — say so
+    // before adding, so "set it and nothing happened" can never be a puzzle.
+    final now = DateTime.now();
+    final pickedToday =
+        DateTime(now.year, now.month, now.day, time.hour, time.minute);
+    if (!pickedToday.isAfter(now)) {
+      final isAm = Localizations.localeOf(context).languageCode == 'am';
+      final label = _formatPrayerTime(time.hour, time.minute);
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: AppColors.of(context).card,
+          title: Text(isAm ? 'ነገ ይደውላል' : 'Rings tomorrow',
+              style: AppTextStyles.labelLarge),
+          content: Text(
+            isAm ? '$label ማለት ነገ ይደውላል። ለማከል ይቀጥሉ?' : '$label has passed today — Beslet will ring tomorrow at $label. Add anyway?',
+            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.of(context).textSecondary),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(isAm ? 'ይቅር' : 'Cancel')),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(isAm ? 'አክል' : 'Add', style: const TextStyle(color: AppColors.primary)),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true || !mounted) return;
+    }
+
     final permission = await PrayerReminderService.ensurePermissions();
     if (permission != PrayerAlarmPermissionStatus.granted) {
       await _handlePermissionDenied(permission);

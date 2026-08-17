@@ -1,7 +1,7 @@
 name: beslet_app
 description: Beslet (ብስለት) - Spiritual Growth & Life Discipline System
 publish_to: 'none'
-version: 1.31.0+55
+version: 1.32.0+56
 
 environment:
   sdk: ^3.12.0
