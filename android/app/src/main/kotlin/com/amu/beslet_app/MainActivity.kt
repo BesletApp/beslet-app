@@ -178,6 +178,27 @@ class MainActivity : FlutterActivity() {
                         }
                         result.success(true)
                     }
+                    "testPlaybackNow" -> {
+                        // Rings through the exact fire path a real alarm uses
+                        // (foreground service + looping player), with a short
+                        // auto-stop and no full-screen surface.
+                        val autoStopMs = call.argument<Int>("autoStopMs") ?: 8000
+                        val intent = Intent(this, AlarmService::class.java).apply {
+                            action = AlarmService.ACTION_PLAY
+                            putExtra(AlarmService.EXTRA_SOUND_URI,
+                                "android.resource://$packageName/${R.raw.prayer_alarm}")
+                            putExtra(AlarmService.EXTRA_TITLE, "Test alarm")
+                            putExtra(AlarmService.EXTRA_BODY, "Test alarm")
+                            putExtra("autoStopMs", autoStopMs)
+                            putExtra("isTest", true)
+                        }
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            startForegroundService(intent)
+                        } else {
+                            startService(intent)
+                        }
+                        result.success(true)
+                    }
                     "isAlarmPlaying" -> {
                         // Simple check: service might be running
                         result.success(false)
@@ -226,18 +247,6 @@ class MainActivity : FlutterActivity() {
                             }
                         }
                         startActivity(intent)
-                        result.success(true)
-                    }
-                    "openBatteryExemptSettings" -> {
-                        try {
-                            startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
-                                data = Uri.parse("package:$packageName")
-                            })
-                        } catch (_: Exception) {
-                            startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                                data = Uri.parse("package:$packageName")
-                            })
-                        }
                         result.success(true)
                     }
                     else -> result.notImplemented()

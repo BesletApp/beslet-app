@@ -40,7 +40,6 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
     _loadReminder();
     _loadTopics();
     _startCountdown();
-    _maybeShowReliabilityHint();
   }
   @override void dispose() {
     WidgetsBinding.instance.removeObserver(this);
@@ -105,45 +104,6 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
     _loadReminder();
     PrayerReminderService.rearmIfStale();
     if (mounted) setState(() {});
-  }
-
-  /// One-time, per install: gently teach the battery/exact-alarm exemption so
-  /// OEM battery managers (Oppo/ColorOS, Xiaomi, Samsung…) can't starve the
-  /// prayer alarm. Only offered while a prayer time is actually armed.
-  Future<void> _maybeShowReliabilityHint() async {
-    if (!await PrayerReminderService.needsReliabilityHint()) return;
-    await PrayerReminderService.markReliabilityHintShown();
-    if (!mounted) return;
-    final isAm = Localizations.localeOf(context).languageCode == 'am';
-    final exactOk = await PrayerReminderService.canScheduleExactAlarms();
-    if (!mounted) return;
-    final body = exactOk
-        ? (isAm
-            ? 'ለተሻለ የማንቃት አስተማማኝነት፣ Beslet ወደ ዳራ ሳይቋረጥ እንዲሠራ ያድርጉ (battery መገደብ አያግድ)።'
-            : 'For the most reliable alarms, let Beslet run without battery limits.')
-        : (isAm
-            ? 'በ Android ቅንብሮች «Alarms & reminders» ያንቁ፤ እንዲሁም Beslet ወደ ዳራ ሳይቋረጥ እንዲሠራ ያድርጉ።'
-            : 'Turn on "Alarms & reminders" in Android settings and let Beslet run without battery limits.');
-    await showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.of(context).card,
-        title: Text(isAm ? 'ማንቃት አስተማማኝ ያድርጉ' : 'Reliable alarms',
-            style: AppTextStyles.labelLarge),
-        content: Text(body,
-            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.of(context).textSecondary)),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(isAm ? 'ይቅር' : 'Later')),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              PrayerReminderService.openBatteryExemptSettings();
-            },
-            child: Text(isAm ? 'አሁን' : 'Open Settings', style: const TextStyle(color: AppColors.primary)),
-          ),
-        ],
-      ),
-    );
   }
 
   int get _elapsedSeconds => _startTime != null ? DateTime.now().difference(_startTime!).inSeconds : 0;
@@ -236,34 +196,13 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
     if (time == null || !mounted) return;
 
     // A time that already passed today silently moves to tomorrow — say so
-    // before adding, so "set it and nothing happened" can never be a puzzle.
+    // (quietly) before adding, so "set it and nothing happened" can never be
+    // a puzzle.
     final now = DateTime.now();
     final pickedToday =
         DateTime(now.year, now.month, now.day, time.hour, time.minute);
-    if (!pickedToday.isAfter(now)) {
-      final isAm = Localizations.localeOf(context).languageCode == 'am';
-      final label = _formatPrayerTime(time.hour, time.minute);
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          backgroundColor: AppColors.of(context).card,
-          title: Text(isAm ? 'ነገ ይደውላል' : 'Rings tomorrow',
-              style: AppTextStyles.labelLarge),
-          content: Text(
-            isAm ? '$label ማለት ነገ ይደውላል። ለማከል ይቀጥሉ?' : '$label has passed today — Beslet will ring tomorrow at $label. Add anyway?',
-            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.of(context).textSecondary),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(isAm ? 'ይቅር' : 'Cancel')),
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: Text(isAm ? 'አክል' : 'Add', style: const TextStyle(color: AppColors.primary)),
-            ),
-          ],
-        ),
-      );
-      if (confirmed != true || !mounted) return;
-    }
+    final ringsTomorrow = !pickedToday.isAfter(now);
+    final isAm = Localizations.localeOf(context).languageCode == 'am';
 
     final permission = await PrayerReminderService.ensurePermissions();
     if (permission != PrayerAlarmPermissionStatus.granted) {
@@ -272,11 +211,36 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
     }
     try {
       await PrayerReminderService.addPrayerTime(time.hour, time.minute);
-      if (mounted) _showSnack(l.timeAdded);
+      if (mounted) {
+        if (ringsTomorrow) {
+          final label = _formatPrayerTime(time.hour, time.minute);
+          _showSnack(isAm ? '$label ማለት ነገ ይደውላል' : '$label has passed today — rings tomorrow at $label');
+        } else {
+          _showSnack(l.timeAdded);
+        }
+      }
     } catch (e) {
       if (mounted) _showSnack('Failed: $e', isError: true);
     }
     await _loadReminder();
+  }
+
+  Future<void> _testAlarm() async {
+    final isAm = Localizations.localeOf(context).languageCode == 'am';
+    await PrayerReminderService.testRing();
+    if (mounted) {
+      _showSnack(isAm ? 'የማንቂያ ሙከራ ተላከ — ድምፅ ተሰምቷል?' : 'Test alarm sent — did you hear it?');
+      setState(() {});
+    }
+  }
+
+  Future<void> _retryArm() async {
+    final isAm = Localizations.localeOf(context).languageCode == 'am';
+    await PrayerReminderService.syncSchedules();
+    if (mounted) {
+      _showSnack(isAm ? 'እንደገና ተስተካክሏል' : 'Re-armed — check the status above');
+      setState(() {});
+    }
   }
 
   Future<void> _togglePrayerTime(PrayerTime t, bool enabled) async {
@@ -689,6 +653,8 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
           if (next == null) return const <Widget>[];
           final remaining = _remainingUntilNow(next.when);
           if (remaining == null) return const <Widget>[];
+          final isAm = Localizations.localeOf(context).languageCode == 'am';
+          final status = PrayerReminderService.armStatus(next.time.id);
           return <Widget>[
             Container(
               width: double.infinity,
@@ -698,14 +664,49 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
               ),
-              child: Text(
-                l.nextAlarmRings(
-                  remaining,
-                  _formatPrayerTime(next.time.hour, next.time.minute),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(
+                  l.nextAlarmRings(
+                    remaining,
+                    _formatPrayerTime(next.time.hour, next.time.minute),
+                  ),
+                  style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.primary, fontWeight: FontWeight.w600),
                 ),
-                style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.primary, fontWeight: FontWeight.w600),
-              ),
+                if (status != null) ...[
+                  const SizedBox(height: 6),
+                  Row(children: [
+                    Icon(
+                      status.ok ? Icons.verified_outlined : Icons.error_outline,
+                      size: 14,
+                      color: status.ok ? AppColors.success : AppColors.error,
+                    ),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        status.ok
+                            ? (isAm
+                                ? 'በስርዓቱ ተረጋግጧል (${status.exact ? 'ትክክለኛ' : 'ተስማሚ'})'
+                                : 'Verified in system (${status.exact ? 'exact' : 'adaptive'})')
+                            : (isAm ? 'ማስተካከል አልተሳካም — ዳግም ይሞክሩ' : 'Failed to arm — tap to retry'),
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: status.ok ? AppColors.success : AppColors.error,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    if (!status.ok)
+                      InkWell(
+                        onTap: _retryArm,
+                        child: Text(
+                          isAm ? 'ደግሞ ሞክር' : 'Retry',
+                          style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.primary, fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                  ]),
+                ],
+              ]),
             ),
             const SizedBox(height: 12),
           ];
@@ -742,6 +743,23 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
                 style: AppTextStyles.labelLarge.copyWith(color: const Color(0xFF07090E), fontSize: 13)),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          width: double.infinity, height: 44,
+          child: OutlinedButton.icon(
+            onPressed: _testAlarm,
+            icon: const Icon(Icons.volume_up, size: 18, color: AppColors.primary),
+            label: Text(
+              Localizations.localeOf(context).languageCode == 'am' ? 'የማንቂያ ሙከራ' : 'Test alarm',
+              style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary, fontSize: 13),
+            ),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.primary,
+              side: BorderSide(color: c.border),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),

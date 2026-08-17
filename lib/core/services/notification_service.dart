@@ -3,9 +3,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tzdata;
-import 'package:url_launcher/url_launcher.dart';
 import 'daily_verse_service.dart';
-import 'prayer_alarm_sound_service.dart';
 import 'prayer_reminder_service.dart';
 import 'scripture_service.dart';
 
@@ -134,16 +132,11 @@ const iosSettings = DarwinInitializationSettings(
   }
 
   static void _onNotificationTap(NotificationResponse response) {
-    final payload = response.payload;
-    if (payload != null && (payload.startsWith('http://') || payload.startsWith('https://'))) {
-      launchUrl(Uri.parse(payload), mode: LaunchMode.externalApplication);
-      return;
-    }
     if (response.actionId == 'dismiss_alarm') {
       PrayerReminderService.stopAlarmNow();
       return;
     }
-    final route = payload ?? '/prayer';
+    final route = response.payload ?? '/prayer';
     navigateTo?.call(route);
   }
 
@@ -153,6 +146,8 @@ const iosSettings = DarwinInitializationSettings(
   /// or a frozen process swallows the native AlarmManager chain, this leg
   /// still rings — and vice versa. The fire instant is taken from the
   /// device-local [fire] moment, so it can never drift from the countdown.
+  /// Always uses the bundled raw sound on its own dedicated channel so the
+  /// leg never depends on a user-picked tone that may not resolve.
   static Future<void> schedulePrayerAlarm({
     required int id,
     required String title,
@@ -161,11 +156,9 @@ const iosSettings = DarwinInitializationSettings(
     String payload = '/prayer',
   }) async {
     tzdata.initializeTimeZones();
-    final sound = await PrayerAlarmSoundService.resolveAndroidSound();
-    await PrayerAlarmSoundService.ensureChannel(sound);
     final details = AndroidNotificationDetails(
-      PrayerAlarmSoundService.channelIdFor(sound),
-      'Prayer Reminder',
+      'prayer_alarm_system',
+      'Prayer Alarm',
       channelDescription: 'Daily prayer alarm with scripture',
       importance: Importance.max,
       priority: Priority.high,
@@ -212,9 +205,14 @@ const iosSettings = DarwinInitializationSettings(
       'streak_reminder', 'Streak Reminder',
       description: 'Grace-based encouragement after missed days', importance: Importance.high,
     ));
-    await android.createNotificationChannel(const AndroidNotificationChannel(
-      'app_update', 'App Updates',
-      description: 'New Beslet version announcements', importance: Importance.defaultImportance,
+    await android.createNotificationChannel(AndroidNotificationChannel(
+      'prayer_alarm_system', 'Prayer Alarm',
+      description: 'Daily prayer alarm with scripture',
+      importance: Importance.max,
+      playSound: true,
+      enableVibration: true,
+      sound: const RawResourceAndroidNotificationSound('prayer_alarm'),
+      audioAttributesUsage: AudioAttributesUsage.alarm,
     ));
   }
 

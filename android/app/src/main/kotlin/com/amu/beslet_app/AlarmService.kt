@@ -53,8 +53,15 @@ class AlarmService : Service() {
                 // supersedes it: reset the auto-stop and wake period so the
                 // earlier run can never end the newer alarm early.
                 renewWakeLock()
-                scheduleAutoStop()
-                launchFullScreen(intent)
+                // Tests ring a few seconds; real alarms get the full window.
+                val autoStopMs = intent.getIntExtra("autoStopMs", 0)
+                scheduleAutoStop(
+                    if (autoStopMs > 0) autoStopMs.toLong() else ALARM_DURATION_MINUTES * 60_000L
+                )
+                // In-app sound tests skip the full-screen alarm surface.
+                if (!intent.getBooleanExtra("isTest", false)) {
+                    launchFullScreen(intent)
+                }
             }
             ACTION_DISMISS -> stopAlarm()
         }
@@ -149,10 +156,9 @@ class AlarmService : Service() {
         }
     }
 
-    private fun scheduleAutoStop() {
+    private fun scheduleAutoStop(delayMs: Long = ALARM_DURATION_MINUTES * 60_000L) {
         stopFuture?.cancel(false)
-        stopFuture = autoStopExecutor.schedule({ stopAlarm() },
-            ALARM_DURATION_MINUTES, TimeUnit.MINUTES)
+        stopFuture = autoStopExecutor.schedule({ stopAlarm() }, delayMs, TimeUnit.MILLISECONDS)
     }
 
     private fun stopAlarm() {

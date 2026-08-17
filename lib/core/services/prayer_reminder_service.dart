@@ -43,7 +43,6 @@ class PrayerReminderService {
   static const _timesKey = 'prayer_times';
   static const _lastUpdateKey = 'prayer_reminder_last_update';
   static const _lastArmKey = 'prayer_reminder_last_arm';
-  static const _reliabilityHintKey = 'prayer_reliability_hint_shown';
   static const _playbackRequestBase = 1000;
   static const _pluginAlarmBase = 2000;
   static const _channel = MethodChannel('beslet_app/notifications');
@@ -75,10 +74,6 @@ class PrayerReminderService {
 
   static Future<void> openExactAlarmSettings() async {
     try { await _channel.invokeMethod('openExactAlarmSettings'); } catch (_) {}
-  }
-
-  static Future<void> openBatteryExemptSettings() async {
-    try { await _channel.invokeMethod('openBatteryExemptSettings'); } catch (_) {}
   }
 
   // ── Prayer times (a rhythm of daily appointments) ─────────
@@ -213,6 +208,8 @@ class PrayerReminderService {
 
     // Native leg: AlarmManager → AlarmReceiver → foreground service →
     // full-screen alarm with the looping playback.
+    var ok = false;
+    var exact = false;
     try {
       final res = await _soundChannel.invokeMethod<Map<Object?, Object?>>(
         'schedulePlaybackAlarm',
@@ -230,7 +227,8 @@ class PrayerReminderService {
           'requestCode': _playbackRequestBase + t.id,
         },
       );
-      final exact = res?['exact'] == true;
+      ok = true;
+      exact = res?['exact'] == true;
       _log('native armed pid=${t.id} at ${scheduledDate.toIso8601String()} '
           '(${exact ? 'exact' : 'inexact'})');
     } catch (e) {
@@ -250,8 +248,17 @@ class PrayerReminderService {
       _log('plugin armed pid=${t.id} at ${scheduledDate.toIso8601String()}');
     } catch (e) {
       _log('plugin schedule FAILED pid=${t.id}: $e');
+      ok = false;
     }
+    _armResults[t.id] = (ok: ok, exact: exact);
   }
+
+  /// Live verification of the last arm per prayer id, surfaced on the prayer
+  /// screen so an unarmed alarm is always visible instead of silent.
+  static final Map<int, ({bool ok, bool exact})> _armResults = {};
+
+  static ({bool ok, bool exact})? armStatus(int prayerId) =>
+      _armResults[prayerId];
 
   /// A URI the native side understands for every sound flavour:
   /// custom phone files come as `content://`, the system alarm ringtone as
@@ -299,25 +306,38 @@ class PrayerReminderService {
     }
   }
 
-  /// One-time reliability guidance (battery exemption + exact alarms), shown
-  /// only while the user actually has a prayer time armed.
-  static Future<bool> needsReliabilityHint() async {
-    if (!Platform.isAndroid) return false;
+  /// Rings the prayer sound through BOTH trigger paths for a few seconds —
+  /// the same foreground service and the same notification a real alarm uses.
+  /// A silent test pinpoints exactly which leg a phone blocks.
+  static Future<void> testRing() async {
     try {
-      final times = await getPrayerTimes();
-      if (times.every((t) => !t.enabled)) return false;
-      final prefs = await SharedPreferences.getInstance();
-      return !(prefs.getBool(_reliabilityHintKey) ?? false);
-    } catch (_) {
-      return false;
+      await _soundChannel.invokeMethod('testPlaybackNow', {'autoStopMs': 8000});
+      _log('test ring: native leg started');
+    } catch (e) {
+      _log('test ring: native leg FAILED: $e');
     }
-  }
-
-  static Future<void> markReliabilityHintShown() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool(_reliabilityHintKey, true);
-    } catch (_) {}
+      await NotificationService.plugin.show(
+        3008,
+        NotificationService.isAmharic ? 'የጸሎት ማንቂያ ሙከራ 🎵' : 'Prayer alarm test 🎵',
+        NotificationService.isAmharic ? 'ድምፁን ለማቆም ይንኩ' : 'Tap to dismiss the sound',
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'prayer_alarm_system',
+            'Prayer Alarm',
+            channelDescription: 'Daily prayer alarm with scripture',
+            importance: Importance.max,
+            priority: Priority.high,
+            category: AndroidNotificationCategory.alarm,
+            audioAttributesUsage: AudioAttributesUsage.alarm,
+          ),
+        ),
+        payload: 'test_alarm',
+      );
+      _log('test ring: plugin leg posted');
+    } catch (e) {
+      _log('test ring: plugin leg FAILED: $e');
+    }
   }
 
   /// Re-arms everything when the last arm is stale (≥12h). Catches devices

@@ -9,7 +9,6 @@ import 'package:timezone/timezone.dart' as tz;
 import 'app.dart';
 import 'core/router/app_router.dart';
 import 'core/services/notification_service.dart';
-import 'core/services/update_check_service.dart';
 import 'core/services/widget_service.dart';
 import 'core/services/prayer_reminder_service.dart';
 import 'core/services/prayer_alarm_sound_service.dart';
@@ -85,8 +84,6 @@ Future<void> _warmStart(ProviderContainer container) async {
 
   await _attempt(() => WidgetService.updateWidgetData());
   await _attempt(() => PrayerReminderService.updatePrayerNotificationContent());
-  await _attempt(() => UpdateCheckService.checkForUpdate(),
-      timeout: const Duration(seconds: 10));
   await _attempt(() => BibleSeedService.seedIfNeeded(),
       timeout: const Duration(seconds: 60));
 

@@ -1,6 +1,6 @@
 {
-  "version": "1.29.0",
-  "versionCode": 53,
-  "downloadUrl": "https://github.com/BesletApp/beslet-app/releases/download/v1.29.0/app-release.apk",
-  "releaseNotes": "Study notes grow into a full eight-section workbook: every curated passage now carries its overview, historical background, literary context, verse-by-verse observations, original-language terms, Scripture cross-references, clearly-present teachings, and questions to carry — each with native Amharic. Each note opens with a memory anchor card, and the bundled study bank was migrated to the new workbook schema with validation that treats any drift as a release-blocking failure."
+  "version": "1.33.0",
+  "versionCode": 57,
+  "downloadUrl": "https://github.com/BesletApp/beslet-app/releases/download/v1.33.0/app-release.apk",
+  "releaseNotes": "Prayer alarm: dual-trigger (native exact alarm + an independent Android notification alarm that plays its own sound), a one-tap ring test on the Prayer screen, and live on-screen verification that the alarm was armed in the system. Setting an alarm is now a single tap, and any failure is visible instead of silent. Also re-enables the in-app update prompt."
 }
