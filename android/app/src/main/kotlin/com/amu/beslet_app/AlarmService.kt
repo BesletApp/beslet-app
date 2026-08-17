@@ -14,11 +14,14 @@ import android.os.IBinder
 import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
 class AlarmService : Service() {
     private var mediaPlayer: MediaPlayer? = null
     private var wakeLock: PowerManager.WakeLock? = null
+    private var stopFuture: ScheduledFuture<*>? = null
+    private val autoStopExecutor = Executors.newSingleThreadScheduledExecutor()
 
     companion object {
         const val CHANNEL_ID = "prayer_alarm_playing"
@@ -46,6 +49,10 @@ class AlarmService : Service() {
                 val body = intent.getStringExtra(EXTRA_BODY) ?: "Your prayer reminder"
                 startForegroundWithNotification(title, body, soundUri, intent)
                 startPlaying(soundUri)
+                // A neighbouring slot firing while one is still ringing fully
+                // supersedes it: reset the auto-stop and wake period so the
+                // earlier run can never end the newer alarm early.
+                renewWakeLock()
                 scheduleAutoStop()
                 launchFullScreen(intent)
             }
@@ -143,12 +150,14 @@ class AlarmService : Service() {
     }
 
     private fun scheduleAutoStop() {
-        Executors.newSingleThreadScheduledExecutor().schedule({
-            stopAlarm()
-        }, ALARM_DURATION_MINUTES, TimeUnit.MINUTES)
+        stopFuture?.cancel(false)
+        stopFuture = autoStopExecutor.schedule({ stopAlarm() },
+            ALARM_DURATION_MINUTES, TimeUnit.MINUTES)
     }
 
     private fun stopAlarm() {
+        stopFuture?.cancel(false)
+        stopFuture = null
         mediaPlayer?.apply {
             if (isPlaying) stop()
             release()
@@ -164,6 +173,11 @@ class AlarmService : Service() {
         val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
         wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP, "Beslet:AlarmWakeLock")
         wakeLock?.acquire(TimeUnit.MINUTES.toMillis(ALARM_DURATION_MINUTES + 1))
+    }
+
+    private fun renewWakeLock() {
+        releaseWakeLock()
+        acquireWakeLock()
     }
 
     private fun releaseWakeLock() {
@@ -186,6 +200,9 @@ class AlarmService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onDestroy() {
+        stopFuture?.cancel(false)
+        stopFuture = null
+        autoStopExecutor.shutdownNow()
         stopAlarm()
         super.onDestroy()
     }

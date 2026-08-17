@@ -93,7 +93,16 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
       if (_isRunning && _startTime != null) {
         _timer = Timer.periodic(const Duration(seconds: 1), (_) { if (mounted) setState(() {}); });
       }
+      _onResumed();
     }
+  }
+
+  /// The countdown froze while the app was suspended; recompute it now and
+  /// reload the prayer list so a time changed elsewhere, an alarm firing, or
+  /// a day rollover is reflected immediately instead of on the next 30s tick.
+  void _onResumed() {
+    _loadReminder();
+    if (mounted) setState(() {});
   }
 
   int get _elapsedSeconds => _startTime != null ? DateTime.now().difference(_startTime!).inSeconds : 0;

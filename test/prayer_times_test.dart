@@ -128,5 +128,46 @@ void main() {
               [PrayerTime(id: 1, hour: 6, minute: 0, enabled: false)], now),
           isNull);
     });
+
+    test('nextPrayerOccurrence keeps adjacent slots in order across midnight',
+        () {
+      final times = [
+        PrayerTime(id: 1, hour: 23, minute: 55),
+        PrayerTime(id: 2, hour: 0, minute: 5),
+      ];
+      final now = DateTime(2026, 8, 7, 23, 58);
+      final next = PrayerReminderService.nextPrayerOccurrence(times, now)!;
+      expect(next.time.hour, 0, reason: '00:05 is the next slot, not 23:55');
+      expect(next.when, DateTime(2026, 8, 8, 0, 5));
+    });
+
+    test('nextLocalMoment stays today while upcoming and rolls tomorrow after',
+        () {
+      final now = DateTime(2026, 8, 7, 10, 30);
+      expect(PrayerReminderService.nextLocalMoment(18, 0, now),
+          DateTime(2026, 8, 7, 18, 0));
+      expect(PrayerReminderService.nextLocalMoment(6, 0, now),
+          DateTime(2026, 8, 8, 6, 0));
+      expect(PrayerReminderService.nextLocalMoment(10, 30, now),
+          DateTime(2026, 8, 8, 10, 30),
+          reason: 'exactly now counts as reached, matching the countdown');
+    });
+
+    test('scheduled epoch matches the countdown moment (single source of time)',
+        () {
+      final times = [PrayerTime(id: 1, hour: 5, minute: 30)];
+      final now = DateTime(2026, 8, 7, 2, 0);
+      final next = PrayerReminderService.nextPrayerOccurrence(times, now)!;
+      // _scheduleOne arms at nextLocalMoment(...), which must equal the
+      // countdown's next.when — a regression here means the alarm fires at a
+      // wall-clock time different from what the screen promised.
+      expect(
+          PrayerReminderService.nextLocalMoment(next.time.hour, next.time.minute, now),
+          next.when);
+      expect(
+          PrayerReminderService.nextLocalMoment(next.time.hour, next.time.minute, now)
+              .millisecondsSinceEpoch,
+          next.when.millisecondsSinceEpoch);
+    });
   });
 }

@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:timezone/timezone.dart' as tz;
 import 'notification_service.dart';
 import 'prayer_alarm_sound_service.dart';
 import 'prayer_verse_service.dart';
@@ -143,7 +142,28 @@ class PrayerReminderService {
   }
 
   // ── Scheduling: cancel everything, then arm every enabled time ──
-  static Future<void> syncSchedules() async {
+  /// The next device-local clock moment at [hour]:[minute] (today while it is
+  /// still upcoming, otherwise tomorrow) — the same wall-clock basis the
+  /// prayer screen's countdown reads, so scheduled and shown times can never
+  /// diverge regardless of the device's timezone.
+  static DateTime nextLocalMoment(int hour, int minute, DateTime now) {
+    var when = DateTime(now.year, now.month, now.day, hour, minute);
+    if (!when.isAfter(now)) when = when.add(const Duration(days: 1));
+    return when;
+  }
+
+  /// Chains concurrent scheduling requests so cancel-before-arm can never
+  /// interleave (e.g. a time change racing the once-a-day content refresh).
+  static Future<void> _pendingSync = Future.value();
+
+  static Future<void> syncSchedules() {
+    final queued =
+        _pendingSync.then((_) => _syncSchedulesInner()).catchError((_) {});
+    _pendingSync = queued;
+    return queued;
+  }
+
+  static Future<void> _syncSchedulesInner() async {
     if (!Platform.isAndroid) return;
     try { await NotificationService.init(); } catch (_) {}
     final times = await getPrayerTimes();
@@ -164,12 +184,13 @@ class PrayerReminderService {
       return;
     }
 
-    final now = tz.TZDateTime.now(tz.local);
-    var scheduledDate =
-        tz.TZDateTime(tz.local, now.year, now.month, now.day, t.hour, t.minute);
-    if (scheduledDate.isBefore(now)) scheduledDate = scheduledDate.add(const Duration(days: 1));
+    // The fire moment follows the device's local clock — the same clock the
+    // prayer screen's countdown reads — so the scheduled alarm and the shown
+    // countdown can never disagree, regardless of the device's timezone.
+    final now = DateTime.now();
+    final scheduledDate = nextLocalMoment(t.hour, t.minute, now);
 
-    final dayIndex = DateTime.now().difference(DateTime(2025, 1, 1)).inDays;
+    final dayIndex = now.difference(DateTime(2025, 1, 1)).inDays;
     final verse = PrayerVerseService.getPrayerVerse(dayIndex);
     final isAm = NotificationService.isAmharic;
     final title = isAm ? 'የጸሎት ጊዜ! 🙏' : 'Time to pray! 🙏';
