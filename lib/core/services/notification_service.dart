@@ -3,6 +3,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tzdata;
+import 'package:url_launcher/url_launcher.dart';
 import 'daily_verse_service.dart';
 import 'prayer_alarm_sound_service.dart';
 import 'prayer_reminder_service.dart';
@@ -133,11 +134,16 @@ const iosSettings = DarwinInitializationSettings(
   }
 
   static void _onNotificationTap(NotificationResponse response) {
+    final payload = response.payload;
+    if (payload != null && (payload.startsWith('http://') || payload.startsWith('https://'))) {
+      launchUrl(Uri.parse(payload), mode: LaunchMode.externalApplication);
+      return;
+    }
     if (response.actionId == 'dismiss_alarm') {
       PrayerReminderService.stopAlarmNow();
       return;
     }
-    final route = response.payload ?? '/prayer';
+    final route = payload ?? '/prayer';
     navigateTo?.call(route);
   }
 
@@ -205,6 +211,10 @@ const iosSettings = DarwinInitializationSettings(
     await android.createNotificationChannel(const AndroidNotificationChannel(
       'streak_reminder', 'Streak Reminder',
       description: 'Grace-based encouragement after missed days', importance: Importance.high,
+    ));
+    await android.createNotificationChannel(const AndroidNotificationChannel(
+      'app_update', 'App Updates',
+      description: 'New Beslet version announcements', importance: Importance.defaultImportance,
     ));
   }
 
