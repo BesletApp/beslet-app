@@ -75,6 +75,12 @@ class ReminderAlarmService {
     final alarm = ReminderAlarm(id: id, fireAt: fireAt, note: note.trim());
     await _save([...alarms, alarm]);
 
+    // Enabling a reminder is the moment to surface the notification
+    // permission prompt on Android 13+ (no-op when already granted).
+    try {
+      await NotificationService.requestPermissions();
+    } catch (_) {}
+
     try {
       await _soundChannel.invokeMethod('scheduleOnceReminder', {
         'requestCode': _nativeBase + id,

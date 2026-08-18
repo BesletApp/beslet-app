@@ -215,10 +215,18 @@ class MainActivity : FlutterActivity() {
                         val stopIntent = Intent(this, AlarmService::class.java).apply {
                             action = AlarmService.ACTION_DISMISS
                         }
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            startForegroundService(stopIntent)
-                        } else {
-                            startService(stopIntent)
+                        try {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                startForegroundService(stopIntent)
+                            } else {
+                                startService(stopIntent)
+                            }
+                        } catch (e: Exception) {
+                            // Back in background with no exemption (e.g. the
+                            // plugin-leg dismiss arrives while the app is
+                            // closed); the service will be rearmed or die on
+                            // its own auto-stop.
+                            Log.w(TAG, "stopAlarmNow FGS start blocked", e)
                         }
                         result.success(true)
                     }

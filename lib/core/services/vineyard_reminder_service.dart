@@ -41,6 +41,13 @@ class VineyardReminderService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_enabledKey, enabled);
     if (!enabled) await prefs.remove(_nextFireKey);
+    // Turning Vineyard visits on is the moment to surface the notification
+    // permission prompt on Android 13+ (no-op when already granted).
+    if (enabled) {
+      try {
+        await NotificationService.requestPermissions();
+      } catch (_) {}
+    }
     await refresh();
   }
 

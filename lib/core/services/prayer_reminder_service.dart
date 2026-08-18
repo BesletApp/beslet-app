@@ -76,6 +76,19 @@ class PrayerReminderService {
     try { await _channel.invokeMethod('openExactAlarmSettings'); } catch (_) {}
   }
 
+  /// The plugin leg must mirror the native guard: exact when the system
+  /// allows it, inexact otherwise. Otherwise flutter_local_notifications
+  /// throws when exact scheduling is not permitted and the second trigger
+  /// silently disappears (a real outage whenever SCHEDULE_EXACT_ALARM is
+  /// denied or revoked).
+  static Future<AndroidScheduleMode> resolveScheduleMode() async {
+    try {
+      final exact = await _soundChannel.invokeMethod<bool>('getExactAlarmStatus');
+      if (exact == true) return AndroidScheduleMode.exactAllowWhileIdle;
+    } catch (_) {}
+    return AndroidScheduleMode.inexactAllowWhileIdle;
+  }
+
   // ── Prayer times (a rhythm of daily appointments) ─────────
   static Future<List<PrayerTime>> getPrayerTimes() async {
     final prefs = await SharedPreferences.getInstance();

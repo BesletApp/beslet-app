@@ -6,13 +6,15 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import java.util.Calendar
 
 class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
             Intent.ACTION_BOOT_COMPLETED,
-            Intent.ACTION_MY_PACKAGE_REPLACED -> {
+            Intent.ACTION_MY_PACKAGE_REPLACED,
+            AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED -> {
                 reArmFromMirror(context)
                 return
             }
@@ -33,10 +35,18 @@ class AlarmReceiver : BroadcastReceiver() {
             putExtra("dayIndex", intent.getIntExtra("dayIndex", 0))
             putExtra("lang", intent.getStringExtra("lang"))
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            context.startForegroundService(serviceIntent)
-        } else {
-            context.startService(serviceIntent)
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(serviceIntent)
+            } else {
+                context.startService(serviceIntent)
+            }
+        } catch (e: Exception) {
+            // Fired via an inexact (fallback) alarm, the receiver is in the
+            // background and Android 12+ forbids starting a foreground
+            // service there. The independent plugin notification leg still
+            // rings, so the alarm is not lost.
+            Log.w(TAG, "FGS start blocked for TC=$requestCode; plugin leg covers", e)
         }
 
         // Re-arm this appointment for the next day. The next fire is derived
@@ -96,6 +106,10 @@ class AlarmReceiver : BroadcastReceiver() {
         } else {
             alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, fireAt, pendingIntent)
         }
+    }
+
+    companion object {
+        private const val TAG = "BesletAlarm"
     }
 
     /** Re-arms every prayer stored in the mirror after a reboot. */

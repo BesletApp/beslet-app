@@ -135,13 +135,21 @@ class PrayerAlarmActivity : Activity() {
             } else {
                 startService(dismissIntent)
             }
-        } catch (_: Exception) {}
+        } catch (e: Exception) {
+            // The activity is foreground, so this is only defensive; nothing
+            // left ringing either way.
+            android.util.Log.w(TAG, "stopPlayback FGS start blocked", e)
+        }
     }
 
     override fun onBackPressed() {
         // Backing out should not leave the alarm ringing silently forever —
         // treat it like Dismiss so the user is not trapped.
         dismiss(openPrayer = false)
+    }
+
+    companion object {
+        private const val TAG = "BesletAlarm"
     }
 
     override fun onDestroy() {

@@ -203,7 +203,7 @@ const iosSettings = DarwinInitializationSettings(
     await plugin.zonedSchedule(
       id, title, body, when,
       NotificationDetails(android: details),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: await PrayerReminderService.resolveScheduleMode(),
       matchDateTimeComponents: DateTimeComponents.time,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
@@ -286,7 +286,7 @@ const iosSettings = DarwinInitializationSettings(
       note,
       when,
       NotificationDetails(android: details),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: await PrayerReminderService.resolveScheduleMode(),
       matchDateTimeComponents: null,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
@@ -339,12 +339,15 @@ const iosSettings = DarwinInitializationSettings(
   }
 
   // ── Permissions ────────────────────────────────────────────
+  /// Requests the notification permission at the moment a notification-based
+  /// feature is switched on (Android 13+). No-op when already granted, and a
+  /// silent success on Android 12 and below where no runtime prompt exists.
   static Future<bool> requestPermissions() async {
     final android = plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
-    if (android != null) {
-      await android.requestNotificationsPermission();
-      return true;
+    if (android == null) return false;
+    if ((await android.areNotificationsEnabled()) == false) {
+      return await android.requestNotificationsPermission() ?? false;
     }
-    return false;
+    return true;
   }
 }

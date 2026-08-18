@@ -297,7 +297,7 @@ void main() {
 
   testWidgets('a cross-reference with no local passage text stays quiet',
       (tester) async {
-    tester.view.physicalSize = const Size(800, 3200);
+    tester.view.physicalSize = const Size(800, 3600);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
     await pumpBible(tester, bookId: 'psalms', chapter: 23, verses: 6);
@@ -312,6 +312,7 @@ void main() {
 
     await tester.scrollUntilVisible(find.text('Revelation 7:17'), 200,
         scrollable: find.byType(Scrollable).first);
+    await tester.ensureVisible(find.text('Revelation 7:17'));
     await tester.tap(find.text('Revelation 7:17'));
     await pumpPanel(tester);
 

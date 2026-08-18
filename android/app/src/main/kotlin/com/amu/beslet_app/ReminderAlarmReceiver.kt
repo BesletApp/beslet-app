@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 
 class ReminderAlarmReceiver : BroadcastReceiver() {
 
@@ -14,7 +15,8 @@ class ReminderAlarmReceiver : BroadcastReceiver() {
             Intent.ACTION_BOOT_COMPLETED,
             Intent.ACTION_MY_PACKAGE_REPLACED,
             "android.intent.action.QUICKBOOT_POWERON",
-            "com.htc.intent.action.QUICKBOOT_POWERON" -> {
+            "com.htc.intent.action.QUICKBOOT_POWERON",
+            AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED -> {
                 reArmFromMirror(context)
                 return
             }
@@ -60,7 +62,14 @@ class ReminderAlarmReceiver : BroadcastReceiver() {
             putExtra("note", note)
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            context.startForegroundService(serviceIntent)
+            try {
+                context.startForegroundService(serviceIntent)
+            } catch (e: Exception) {
+                // Inexact (fallback) alarms fire this receiver in the
+                // background, where Android 12+ forbids foreground services.
+                // The plugin notification leg still rings.
+                Log.w(TAG, "Reminder FGS start blocked for TC=$requestCode; plugin leg covers", e)
+            }
         } else {
             context.startService(serviceIntent)
         }
@@ -71,7 +80,12 @@ class ReminderAlarmReceiver : BroadcastReceiver() {
             action = ReminderAlarmService.ACTION_DISMISS
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            context.startForegroundService(stopIntent)
+            try {
+                context.startForegroundService(stopIntent)
+            } catch (e: Exception) {
+                // Same background constraint as above; nothing is left ringing.
+                Log.w(TAG, "Reminder stop FGS blocked; already cleared", e)
+            }
         } else {
             context.startService(stopIntent)
         }
@@ -81,6 +95,7 @@ class ReminderAlarmReceiver : BroadcastReceiver() {
         const val ACTION_FIRE = "com.amu.beslet_app.REMINDER_FIRE"
         const val ACTION_SNOOZE = "com.amu.beslet_app.REMINDER_SNOOZE"
         const val ACTION_DISMISS = "com.amu.beslet_app.REMINDER_DISMISS"
+        private const val TAG = "BesletReminder"
 
         fun scheduleOnce(context: Context, requestCode: Int, fireAt: Long, note: String) {
             val intent = Intent(context, ReminderAlarmReceiver::class.java).apply {
