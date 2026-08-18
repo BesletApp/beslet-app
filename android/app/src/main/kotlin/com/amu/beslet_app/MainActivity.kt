@@ -167,6 +167,50 @@ class MainActivity : FlutterActivity() {
                         PrayerAlarmMirror.remove(this, requestCode)
                         result.success(true)
                     }
+                    "scheduleOnceReminder" -> {
+                        val requestCode = call.argument<Int>("requestCode") ?: 4000
+                        val timestamp = call.argument<Long>("timestamp") ?: 0L
+                        val note = call.argument<String>("note") ?: "Reminder"
+                        ReminderAlarmMirror.upsert(
+                            this,
+                            ReminderAlarmMirror.Entry(
+                                requestCode = requestCode,
+                                fireAt = timestamp,
+                                note = note,
+                            )
+                        )
+                        val exact = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                            am.canScheduleExactAlarms()
+                        } else {
+                            true
+                        }
+                        try {
+                            ReminderAlarmReceiver.scheduleOnce(this, requestCode, timestamp, note)
+                            result.success(mapOf("scheduled" to true, "exact" to exact))
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Reminder schedule failed for TC=$requestCode", e)
+                            result.error("REMINDER_SCHEDULE_FAILED", e.message, null)
+                        }
+                    }
+                    "cancelOnceReminder" -> {
+                        val requestCode = call.argument<Int>("requestCode") ?: 4000
+                        ReminderAlarmReceiver.cancelOnce(this, requestCode)
+                        result.success(true)
+                    }
+                    "snoozeReminder" -> {
+                        val requestCode = call.argument<Int>("requestCode") ?: 4000
+                        val entry = ReminderAlarmMirror.entry(this, requestCode)
+                        if (entry != null) {
+                            val fireAt = System.currentTimeMillis() + 9L * 60 * 1000
+                            ReminderAlarmMirror.upsert(
+                                this,
+                                ReminderAlarmMirror.Entry(entry.requestCode, fireAt, entry.note)
+                            )
+                            ReminderAlarmReceiver.scheduleOnce(this, entry.requestCode, fireAt, entry.note)
+                        }
+                        result.success(true)
+                    }
                     "stopAlarmNow" -> {
                         val stopIntent = Intent(this, AlarmService::class.java).apply {
                             action = AlarmService.ACTION_DISMISS
@@ -175,27 +219,6 @@ class MainActivity : FlutterActivity() {
                             startForegroundService(stopIntent)
                         } else {
                             startService(stopIntent)
-                        }
-                        result.success(true)
-                    }
-                    "testPlaybackNow" -> {
-                        // Rings through the exact fire path a real alarm uses
-                        // (foreground service + looping player), with a short
-                        // auto-stop and no full-screen surface.
-                        val autoStopMs = call.argument<Int>("autoStopMs") ?: 8000
-                        val intent = Intent(this, AlarmService::class.java).apply {
-                            action = AlarmService.ACTION_PLAY
-                            putExtra(AlarmService.EXTRA_SOUND_URI,
-                                "android.resource://$packageName/${R.raw.prayer_alarm}")
-                            putExtra(AlarmService.EXTRA_TITLE, "Test alarm")
-                            putExtra(AlarmService.EXTRA_BODY, "Test alarm")
-                            putExtra("autoStopMs", autoStopMs)
-                            putExtra("isTest", true)
-                        }
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            startForegroundService(intent)
-                        } else {
-                            startService(intent)
                         }
                         result.success(true)
                     }

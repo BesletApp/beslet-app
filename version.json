@@ -1,6 +1,6 @@
 {
-  "version": "1.33.0",
-  "versionCode": 57,
-  "downloadUrl": "https://github.com/BesletApp/beslet-app/releases/download/v1.33.0/app-release.apk",
-  "releaseNotes": "Prayer alarm: dual-trigger (native exact alarm + an independent Android notification alarm that plays its own sound), a one-tap ring test on the Prayer screen, and live on-screen verification that the alarm was armed in the system. Setting an alarm is now a single tap, and any failure is visible instead of silent. Also re-enables the in-app update prompt."
+  "version": "1.34.0",
+  "versionCode": 58,
+  "downloadUrl": "https://github.com/BesletApp/beslet-app/releases/download/v1.34.0/app-release.apk",
+  "releaseNotes": "Prayer alarm simplifications plus a new one-off Reminders feature. The Prayer screen no longer shows the test button or the mechanical 'verified in system' status line — the alarm just works. The Daily reading reminder tile is now a proper Reminders screen: set one-off alarms at any date and time with your own note, get a gentle chime + the note on screen, snooze 9 minutes, or delete. Reminders ring reliably with the same dual-trigger engine as the prayer alarm and survive reboots."
 }

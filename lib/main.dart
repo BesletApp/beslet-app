@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
@@ -66,21 +65,10 @@ Future<void> _warmStart(ProviderContainer container) async {
   await _attempt(() => NotificationService.init());
   NotificationService.navigateTo = (route) => AppRouter.router.go(route);
   await _attempt(_handleLaunchRoute);
-  await _attempt(() async {
+await _attempt(() async {
     final sound = await PrayerAlarmSoundService.resolveAndroidSound();
     await PrayerAlarmSoundService.ensureChannel(sound);
   });
-
-  try {
-    final prefs = await SharedPreferences.getInstance().timeout(const Duration(seconds: 2));
-    final reminderTime = prefs.getString('reminderTime');
-    if (reminderTime != null) {
-      final parts = reminderTime.split(':');
-      final hour = int.tryParse(parts[0]) ?? 20;
-      final minute = parts.length > 1 ? (int.tryParse(parts[1]) ?? 0) : 0;
-      await _attempt(() => NotificationService.scheduleDailyReminder(hour, minute));
-    }
-  } catch (_) {}
 
   await _attempt(() => WidgetService.updateWidgetData());
   await _attempt(() => PrayerReminderService.updatePrayerNotificationContent());

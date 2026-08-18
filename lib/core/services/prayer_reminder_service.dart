@@ -208,8 +208,6 @@ class PrayerReminderService {
 
     // Native leg: AlarmManager → AlarmReceiver → foreground service →
     // full-screen alarm with the looping playback.
-    var ok = false;
-    var exact = false;
     try {
       final res = await _soundChannel.invokeMethod<Map<Object?, Object?>>(
         'schedulePlaybackAlarm',
@@ -227,8 +225,7 @@ class PrayerReminderService {
           'requestCode': _playbackRequestBase + t.id,
         },
       );
-      ok = true;
-      exact = res?['exact'] == true;
+      final exact = res?['exact'] == true;
       _log('native armed pid=${t.id} at ${scheduledDate.toIso8601String()} '
           '(${exact ? 'exact' : 'inexact'})');
     } catch (e) {
@@ -248,17 +245,8 @@ class PrayerReminderService {
       _log('plugin armed pid=${t.id} at ${scheduledDate.toIso8601String()}');
     } catch (e) {
       _log('plugin schedule FAILED pid=${t.id}: $e');
-      ok = false;
     }
-    _armResults[t.id] = (ok: ok, exact: exact);
   }
-
-  /// Live verification of the last arm per prayer id, surfaced on the prayer
-  /// screen so an unarmed alarm is always visible instead of silent.
-  static final Map<int, ({bool ok, bool exact})> _armResults = {};
-
-  static ({bool ok, bool exact})? armStatus(int prayerId) =>
-      _armResults[prayerId];
 
   /// A URI the native side understands for every sound flavour:
   /// custom phone files come as `content://`, the system alarm ringtone as
@@ -294,49 +282,6 @@ class PrayerReminderService {
       await _soundChannel.invokeMethod('stopAlarmNow');
     } catch (e) {
       _log('stopAlarmNow failed: $e');
-    }
-  }
-
-  /// Whether Android (12+) currently permits exact alarms for this app.
-  static Future<bool> canScheduleExactAlarms() async {
-    try {
-      return await _soundChannel.invokeMethod<bool>('getExactAlarmStatus') ?? true;
-    } catch (_) {
-      return true;
-    }
-  }
-
-  /// Rings the prayer sound through BOTH trigger paths for a few seconds —
-  /// the same foreground service and the same notification a real alarm uses.
-  /// A silent test pinpoints exactly which leg a phone blocks.
-  static Future<void> testRing() async {
-    try {
-      await _soundChannel.invokeMethod('testPlaybackNow', {'autoStopMs': 8000});
-      _log('test ring: native leg started');
-    } catch (e) {
-      _log('test ring: native leg FAILED: $e');
-    }
-    try {
-      await NotificationService.plugin.show(
-        3008,
-        NotificationService.isAmharic ? 'የጸሎት ማንቂያ ሙከራ 🎵' : 'Prayer alarm test 🎵',
-        NotificationService.isAmharic ? 'ድምፁን ለማቆም ይንኩ' : 'Tap to dismiss the sound',
-        const NotificationDetails(
-          android: AndroidNotificationDetails(
-            'prayer_alarm_system',
-            'Prayer Alarm',
-            channelDescription: 'Daily prayer alarm with scripture',
-            importance: Importance.max,
-            priority: Priority.high,
-            category: AndroidNotificationCategory.alarm,
-            audioAttributesUsage: AudioAttributesUsage.alarm,
-          ),
-        ),
-        payload: 'test_alarm',
-      );
-      _log('test ring: plugin leg posted');
-    } catch (e) {
-      _log('test ring: plugin leg FAILED: $e');
     }
   }
 

@@ -225,24 +225,6 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
     await _loadReminder();
   }
 
-  Future<void> _testAlarm() async {
-    final isAm = Localizations.localeOf(context).languageCode == 'am';
-    await PrayerReminderService.testRing();
-    if (mounted) {
-      _showSnack(isAm ? 'የማንቂያ ሙከራ ተላከ — ድምፅ ተሰምቷል?' : 'Test alarm sent — did you hear it?');
-      setState(() {});
-    }
-  }
-
-  Future<void> _retryArm() async {
-    final isAm = Localizations.localeOf(context).languageCode == 'am';
-    await PrayerReminderService.syncSchedules();
-    if (mounted) {
-      _showSnack(isAm ? 'እንደገና ተስተካክሏል' : 'Re-armed — check the status above');
-      setState(() {});
-    }
-  }
-
   Future<void> _togglePrayerTime(PrayerTime t, bool enabled) async {
     await PrayerReminderService.setPrayerTimeEnabled(t.id, enabled);
     await _loadReminder();
@@ -653,8 +635,6 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
           if (next == null) return const <Widget>[];
           final remaining = _remainingUntilNow(next.when);
           if (remaining == null) return const <Widget>[];
-          final isAm = Localizations.localeOf(context).languageCode == 'am';
-          final status = PrayerReminderService.armStatus(next.time.id);
           return <Widget>[
             Container(
               width: double.infinity,
@@ -664,49 +644,14 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
               ),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(
-                  l.nextAlarmRings(
-                    remaining,
-                    _formatPrayerTime(next.time.hour, next.time.minute),
-                  ),
-                  style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.primary, fontWeight: FontWeight.w600),
+              child: Text(
+                l.nextAlarmRings(
+                  remaining,
+                  _formatPrayerTime(next.time.hour, next.time.minute),
                 ),
-                if (status != null) ...[
-                  const SizedBox(height: 6),
-                  Row(children: [
-                    Icon(
-                      status.ok ? Icons.verified_outlined : Icons.error_outline,
-                      size: 14,
-                      color: status.ok ? AppColors.success : AppColors.error,
-                    ),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        status.ok
-                            ? (isAm
-                                ? 'በስርዓቱ ተረጋግጧል (${status.exact ? 'ትክክለኛ' : 'ተስማሚ'})'
-                                : 'Verified in system (${status.exact ? 'exact' : 'adaptive'})')
-                            : (isAm ? 'ማስተካከል አልተሳካም — ዳግም ይሞክሩ' : 'Failed to arm — tap to retry'),
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: status.ok ? AppColors.success : AppColors.error,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    if (!status.ok)
-                      InkWell(
-                        onTap: _retryArm,
-                        child: Text(
-                          isAm ? 'ደግሞ ሞክር' : 'Retry',
-                          style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.primary, fontWeight: FontWeight.w700),
-                        ),
-                      ),
-                  ]),
-                ],
-              ]),
+                style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.primary, fontWeight: FontWeight.w600),
+              ),
             ),
             const SizedBox(height: 12),
           ];
@@ -743,23 +688,6 @@ class _PrayerScreenState extends ConsumerState<PrayerScreen> with WidgetsBinding
                 style: AppTextStyles.labelLarge.copyWith(color: const Color(0xFF07090E), fontSize: 13)),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-          ),
-        ),
-        const SizedBox(height: 8),
-        SizedBox(
-          width: double.infinity, height: 44,
-          child: OutlinedButton.icon(
-            onPressed: _testAlarm,
-            icon: const Icon(Icons.volume_up, size: 18, color: AppColors.primary),
-            label: Text(
-              Localizations.localeOf(context).languageCode == 'am' ? 'የማንቂያ ሙከራ' : 'Test alarm',
-              style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary, fontSize: 13),
-            ),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.primary,
-              side: BorderSide(color: c.border),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),

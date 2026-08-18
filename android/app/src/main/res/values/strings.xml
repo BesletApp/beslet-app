@@ -5,4 +5,7 @@
     <string name="alarm_pray_now">Pray Now</string>
     <string name="alarm_dismiss">Dismiss</string>
     <string name="alarm_notification_title">Prayer alarm playing</string>
+    <string name="reminder_snooze">Snooze</string>
+    <string name="reminder_dismiss">Dismiss</string>
+    <string name="reminder_notification_title">Reminder</string>
 </resources>

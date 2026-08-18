@@ -1278,6 +1278,48 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get reminderNoAlarms => 'No reminders yet';
+
+  @override
+  String get reminderAdd => 'Add reminder';
+
+  @override
+  String get reminderNoteLabel => 'Note';
+
+  @override
+  String get reminderNoteHint => 'What would you like to remember?';
+
+  @override
+  String reminderRingsToday(Object time) {
+    return 'Rings today at $time';
+  }
+
+  @override
+  String reminderRingsTomorrow(Object time) {
+    return 'Rings tomorrow at $time';
+  }
+
+  @override
+  String reminderRingsAt(Object date) {
+    return 'Rings at $date';
+  }
+
+  @override
+  String get reminderAdded => 'Reminder set';
+
+  @override
+  String get reminderDeleted => 'Reminder removed';
+
+  @override
+  String get reminderSnoozed => 'Snoozed for 9 minutes';
+
+  @override
+  String get reminderDelete => 'Delete reminder';
+
+  @override
+  String get reminderNotSet => 'No reminder set';
+
+  @override
   String get commentSuggestions => 'Comment & Suggestions';
 
   @override

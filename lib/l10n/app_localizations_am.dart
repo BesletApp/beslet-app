@@ -1265,6 +1265,48 @@ class AppLocalizationsAm extends AppLocalizations {
   }
 
   @override
+  String get reminderNoAlarms => 'እስካሁን ማስታወሻ የለም';
+
+  @override
+  String get reminderAdd => 'አዲስ ማስታወሻ ጨምር';
+
+  @override
+  String get reminderNoteLabel => 'ማስታወሻ';
+
+  @override
+  String get reminderNoteHint => 'ምን ማስታወስ ትፈልጋለህ?';
+
+  @override
+  String reminderRingsToday(Object time) {
+    return 'ዛሬ በ $time ይደውላል';
+  }
+
+  @override
+  String reminderRingsTomorrow(Object time) {
+    return 'ነገ በ $time ይደውላል';
+  }
+
+  @override
+  String reminderRingsAt(Object date) {
+    return 'በ $date ይደውላል';
+  }
+
+  @override
+  String get reminderAdded => 'ማስታወሻ ተቀናብሯል';
+
+  @override
+  String get reminderDeleted => 'ማስታወሻ ተወግዷል';
+
+  @override
+  String get reminderSnoozed => 'ለ9 ደቂቃ ተቆይቷል';
+
+  @override
+  String get reminderDelete => 'ማስታወሻ አጥፋ';
+
+  @override
+  String get reminderNotSet => 'ምንም ማስታወሻ አልተቀናበረም';
+
+  @override
   String get commentSuggestions => 'አስተያየት እና ሃሳብ';
 
   @override

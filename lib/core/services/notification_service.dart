@@ -3,9 +3,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tzdata;
-import 'daily_verse_service.dart';
 import 'prayer_reminder_service.dart';
-import 'scripture_service.dart';
+import 'reminder_alarm_service.dart';
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin plugin = FlutterLocalNotificationsPlugin();
@@ -69,8 +68,8 @@ class NotificationService {
   ];
 
   static const _eveningReviewId = 1001;
-  static const _dailyReminderId = 1004;
   static const _streakBrokenId = 1003;
+  static const _pluginReminderBase = 5000;
 
   // ── Helpers ────────────────────────────────────────────────
   static Future<int> _nextIndex(String key, int poolSize) async {
@@ -136,8 +135,34 @@ const iosSettings = DarwinInitializationSettings(
       PrayerReminderService.stopAlarmNow();
       return;
     }
+    if (response.actionId == 'reminder_snooze') {
+      final pluginId = _reminderIdFromPayload(response.payload);
+      if (pluginId != null) {
+        final realId = pluginId - _pluginReminderBase;
+        plugin.cancel(pluginId);
+        ReminderAlarmService.snooze(realId);
+      }
+      return;
+    }
+    if (response.actionId == 'reminder_dismiss') {
+      final pluginId = _reminderIdFromPayload(response.payload);
+      if (pluginId != null) {
+        final realId = pluginId - _pluginReminderBase;
+        plugin.cancel(pluginId);
+        ReminderAlarmService.remove(realId);
+      }
+      return;
+    }
     final route = response.payload ?? '/prayer';
     navigateTo?.call(route);
+  }
+
+  static int? _reminderIdFromPayload(String? payload) {
+    const prefix = 'reminder-off:';
+    if (payload != null && payload.startsWith(prefix)) {
+      return int.tryParse(payload.substring(prefix.length));
+    }
+    return null;
   }
 
   // ── Prayer alarm (plugin leg of the dual trigger) ──────────
@@ -190,10 +215,6 @@ const iosSettings = DarwinInitializationSettings(
     final android = plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
     if (android == null) return;
     await android.createNotificationChannel(const AndroidNotificationChannel(
-      'morning_reminder', 'Morning Reminder',
-      description: 'Daily morning habit reminder', importance: Importance.high,
-    ));
-    await android.createNotificationChannel(const AndroidNotificationChannel(
       'evening_reminder', 'Evening Reminder',
       description: 'Evening check-in reminder', importance: Importance.high,
     ));
@@ -214,25 +235,63 @@ const iosSettings = DarwinInitializationSettings(
       sound: const RawResourceAndroidNotificationSound('prayer_alarm'),
       audioAttributesUsage: AudioAttributesUsage.alarm,
     ));
+    await android.createNotificationChannel(AndroidNotificationChannel(
+      'reminder_alarm', 'Reminders',
+      description: 'One-off reminders with your note',
+      importance: Importance.high,
+      playSound: true,
+      enableVibration: true,
+      sound: const RawResourceAndroidNotificationSound('prayer_alarm'),
+      audioAttributesUsage: AudioAttributesUsage.alarm,
+    ));
   }
 
-  // ── Morning / Dawn Reminder ────────────────────────────────
-  static Future<void> scheduleDailyReminder(int hour, int minute) async {
-    await cancelDailyReminder();
-    final now = tz.TZDateTime.now(tz.local);
-    final verse = await DailyVerseService.resolveDay(now);
-    final title = _isAmharicLang ? ScriptureService.amharicReference(verse.reference) : verse.reference;
-    final body = _isAmharicLang ? (verse.textAm ?? verse.text) : verse.text;
-    await _schedule(
-      id: _dailyReminderId, channelId: 'morning_reminder', channelName: 'Morning Reminder',
-      channelDesc: 'Daily morning habit reminder',
-      title: title, body: body, hour: hour, minute: minute,
-      payload: '/threshold',
+  // ── One-off Reminders (plugin leg of the dual trigger) ─────
+  /// The independent duplicate of the native one-off reminder: an exact
+  /// one-shot zonedSchedule on its own gentle channel. It never repeats and
+  /// carries the note with Snooze / Dismiss actions.
+  static Future<void> scheduleReminderAlarm({
+    required int id,
+    required String note,
+    required DateTime fire,
+  }) async {
+    tzdata.initializeTimeZones();
+    final details = AndroidNotificationDetails(
+      'reminder_alarm',
+      'Reminders',
+      channelDescription: 'One-off reminders with your note',
+      importance: Importance.high,
+      priority: Priority.high,
+      category: AndroidNotificationCategory.reminder,
+      audioAttributesUsage: AudioAttributesUsage.alarm,
+      actions: [
+        AndroidNotificationAction(
+          'reminder_snooze',
+          _isAmharicLang ? 'አስቆይ' : 'Snooze',
+          cancelNotification: true,
+          showsUserInterface: false,
+        ),
+        AndroidNotificationAction(
+          'reminder_dismiss',
+          _isAmharicLang ? 'አስወግድ' : 'Dismiss',
+          cancelNotification: true,
+          showsUserInterface: false,
+        ),
+      ],
     );
-  }
-
-  static Future<void> cancelDailyReminder() async {
-    await plugin.cancel(_dailyReminderId);
+    final when = tz.TZDateTime.from(fire, tz.local);
+    await plugin.zonedSchedule(
+      id,
+      _isAmharicLang ? 'ማስታወሻ' : 'Reminder',
+      note,
+      when,
+      NotificationDetails(android: details),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      matchDateTimeComponents: null,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      payload: 'reminder-off:$id',
+    );
   }
 
   // ── Evening Review ─────────────────────────────────────────

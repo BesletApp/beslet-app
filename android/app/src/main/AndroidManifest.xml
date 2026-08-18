@@ -65,6 +65,13 @@
             android:name=".AlarmService"
             android:foregroundServiceType="mediaPlayback"
             android:exported="false" />
+        <service
+            android:name=".ReminderAlarmService"
+            android:foregroundServiceType="mediaPlayback"
+            android:exported="false" />
+        <receiver
+            android:name=".ReminderAlarmReceiver"
+            android:exported="false" />
         <receiver
             android:name=".AlarmReceiver"
             android:exported="false">

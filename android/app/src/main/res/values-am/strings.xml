@@ -5,4 +5,7 @@
     <string name="alarm_pray_now">ይጸልዩ</string>
     <string name="alarm_dismiss">አስወግድ</string>
     <string name="alarm_notification_title">የጸሎት ማንቂያ እየተጫወተ ነው</string>
+    <string name="reminder_snooze">አስቆይ</string>
+    <string name="reminder_dismiss">አስወግድ</string>
+    <string name="reminder_notification_title">ማስታወሻ</string>
 </resources>

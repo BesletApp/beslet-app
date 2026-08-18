@@ -2408,6 +2408,78 @@ abstract class AppLocalizations {
   /// **'Reminder set at {time}'**
   String reminderSetAt(Object time);
 
+  /// No description provided for @reminderNoAlarms.
+  ///
+  /// In en, this message translates to:
+  /// **'No reminders yet'**
+  String get reminderNoAlarms;
+
+  /// No description provided for @reminderAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add reminder'**
+  String get reminderAdd;
+
+  /// No description provided for @reminderNoteLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get reminderNoteLabel;
+
+  /// No description provided for @reminderNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What would you like to remember?'**
+  String get reminderNoteHint;
+
+  /// No description provided for @reminderRingsToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Rings today at {time}'**
+  String reminderRingsToday(Object time);
+
+  /// No description provided for @reminderRingsTomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Rings tomorrow at {time}'**
+  String reminderRingsTomorrow(Object time);
+
+  /// No description provided for @reminderRingsAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Rings at {date}'**
+  String reminderRingsAt(Object date);
+
+  /// No description provided for @reminderAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder set'**
+  String get reminderAdded;
+
+  /// No description provided for @reminderDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder removed'**
+  String get reminderDeleted;
+
+  /// No description provided for @reminderSnoozed.
+  ///
+  /// In en, this message translates to:
+  /// **'Snoozed for 9 minutes'**
+  String get reminderSnoozed;
+
+  /// No description provided for @reminderDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete reminder'**
+  String get reminderDelete;
+
+  /// No description provided for @reminderNotSet.
+  ///
+  /// In en, this message translates to:
+  /// **'No reminder set'**
+  String get reminderNotSet;
+
   /// No description provided for @commentSuggestions.
   ///
   /// In en, this message translates to:

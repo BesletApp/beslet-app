@@ -12,6 +12,7 @@ import '../../core/providers/database_provider.dart';
 import '../../core/providers/ai_provider.dart';
 import '../../core/database/app_database.dart';
 import '../../core/services/notification_service.dart';
+import '../../core/services/reminder_alarm_service.dart';
 import '../../core/services/vineyard_reminder_service.dart';
 import '../../core/services/vineyard_reminder_content.dart';
 import '../../core/providers/streak_provider.dart';
@@ -31,7 +32,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final _appearanceKey = GlobalKey();
   final _languageKey = GlobalKey();
   final _remindersKey = GlobalKey();
-  String _reminderTime = '20:00';
+  List<ReminderAlarm> _reminderAlarms = [];
   bool _visitsEnabled = false;
   String _visitsFrequency = 'gentle';
   String _visitsWindow = 'evening';
@@ -40,7 +41,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   void initState() {
     super.initState();
-    _loadReminderTime();
+    _loadReminderAlarms();
     _loadVisits();
     _loadAiKey();
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSection());
@@ -70,9 +71,225 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     ));
   }
 
-  Future<void> _loadReminderTime() async {
-    final prefs = await SharedPreferences.getInstance();
-    if (mounted) setState(() => _reminderTime = prefs.getString('reminderTime') ?? '20:00');
+  Future<void> _loadReminderAlarms() async {
+    final alarms = await ReminderAlarmService.load();
+    if (!mounted) return;
+    setState(() => _reminderAlarms = alarms);
+  }
+
+  String _reminderAlarmSummary(AppLocalizations l, List<ReminderAlarm> alarms) {
+    if (alarms.length == 1) {
+      return _reminderScheduleLabel(l, alarms.first);
+    }
+    return '${alarms.length}';
+  }
+
+  String _reminderScheduleLabel(AppLocalizations l, ReminderAlarm alarm) {
+    final now = DateTime.now();
+    final local = alarm.fireAt.toLocal();
+    final sameDay = local.year == now.year && local.month == now.month && local.day == now.day;
+    final tomorrow = now.add(const Duration(days: 1));
+    final nextDay = local.year == tomorrow.year &&
+        local.month == tomorrow.month &&
+        local.day == tomorrow.day;
+    final timeStr = _formatMilitary(local.hour, local.minute, l);
+    if (sameDay) return l.reminderRingsToday(timeStr);
+    if (nextDay) return l.reminderRingsTomorrow(timeStr);
+    final dayNames = [l.dayMonday, l.dayTuesday, l.dayWednesday, l.dayThursday, l.dayFriday, l.daySaturday, l.daySunday];
+    final dayName = dayNames[local.weekday - 1];
+    final dateStr = '$dayName $timeStr';
+    return l.reminderRingsAt(dateStr);
+  }
+
+  String _formatMilitary(int hour, int minute, AppLocalizations l) {
+    final mm = minute.toString().padLeft(2, '0');
+    final period = hour >= 12 ? l.eveningAbbr : l.morningAbbr;
+    final h12 = hour % 12 == 0 ? 12 : hour % 12;
+    return '$h12:$mm $period';
+  }
+
+  Future<void> _openReminderSheet(AppLocalizations l) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.of(context).card,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (sheetContext, setSheetState) {
+            return SafeArea(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: 20,
+                  right: 20,
+                  top: 20,
+                  bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 20,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(l.dailyReadingReminder,
+                        style: AppTextStyles.bodyLarge
+                            .copyWith(color: AppColors.of(context).textPrimary)),
+                    const SizedBox(height: 4),
+                    Text(l.remindsToReadDaily,
+                        style: AppTextStyles.bodySmall
+                            .copyWith(color: AppColors.of(context).textMuted)),
+                    const SizedBox(height: 16),
+                    if (_reminderAlarms.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 24),
+                        child: Text(l.reminderNoAlarms,
+                            textAlign: TextAlign.center,
+                            style: AppTextStyles.bodyMedium
+                                .copyWith(color: AppColors.of(context).textMuted)),
+                      )
+                    else
+                      ..._reminderAlarms.map((alarm) => Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                              decoration: BoxDecoration(
+                                color: AppColors.of(context).surface,
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: AppColors.of(context).border),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.alarm, size: 20, color: AppColors.primary),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(_reminderScheduleLabel(l, alarm),
+                                            style: AppTextStyles.bodySmall.copyWith(
+                                                color: AppColors.primary,
+                                                fontWeight: FontWeight.w600)),
+                                        if (alarm.note.isNotEmpty) ...[
+                                          const SizedBox(height: 2),
+                                          Text(alarm.note,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: AppTextStyles.bodySmall
+                                                  .copyWith(color: AppColors.of(context).textSecondary)),
+                                        ],
+                                      ],
+                                    ),
+                                  ),
+                                  IconButton(
+                                    tooltip: l.reminderDelete,
+                                    icon: const Icon(Icons.delete_outline, size: 20),
+                                    color: AppColors.error,
+                                    onPressed: () async {
+                                      await ReminderAlarmService.remove(alarm.id);
+                                      final alarms = await ReminderAlarmService.load();
+                                      setSheetState(() => _reminderAlarms = alarms);
+                                      if (sheetContext.mounted) {
+                                        ScaffoldMessenger.of(sheetContext).showSnackBar(SnackBar(
+                                          content: Text(l.reminderDeleted),
+                                          backgroundColor: AppColors.success,
+                                          behavior: SnackBarBehavior.floating,
+                                          duration: const Duration(seconds: 2),
+                                        ));
+                                      }
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )),
+                    const SizedBox(height: 8),
+                    FilledButton.icon(
+                      onPressed: () => _addReminder(l, () async {
+                        final alarms = await ReminderAlarmService.load();
+                        if (sheetContext.mounted) {
+                          setSheetState(() => _reminderAlarms = alarms);
+                        }
+                      }),
+                      icon: const Icon(Icons.add_alarm, size: 18),
+                      label: Text(l.reminderAdd),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: const Color(0xFF07090E),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+    if (!mounted) return;
+    await _loadReminderAlarms();
+  }
+
+  Future<void> _addReminder(AppLocalizations l, Future<void> Function() afterAdd) async {
+    final now = DateTime.now();
+    final date = await showDatePicker(
+      context: context,
+      initialDate: now,
+      firstDate: now,
+      lastDate: now.add(const Duration(days: 365)),
+      helpText: l.reminderAdd,
+    );
+    if (date == null || !mounted) return;
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay(hour: now.hour, minute: now.minute),
+      helpText: l.reminderAdd,
+    );
+    if (time == null || !mounted) return;
+    final noteController = TextEditingController();
+    final note = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l.reminderNoteLabel),
+        content: TextField(
+          controller: noteController,
+          autofocus: true,
+          maxLines: 3,
+          decoration: InputDecoration(hintText: l.reminderNoteHint),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(l.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(noteController.text.trim()),
+            child: Text(l.save),
+          ),
+        ],
+      ),
+    );
+    if (note == null || !mounted) return;
+
+    final fireAt = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+    if (!fireAt.isAfter(DateTime.now())) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(l.reminderSetAt('${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}')),
+        backgroundColor: Theme.of(context).colorScheme.error,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+      ));
+      return;
+    }
+    await ReminderAlarmService.add(fireAt: fireAt, note: note);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(l.reminderAdded),
+      backgroundColor: AppColors.success,
+      behavior: SnackBarBehavior.floating,
+      duration: const Duration(seconds: 2),
+    ));
+    await afterAdd();
   }
 
   Future<void> _loadVisits() async {
@@ -282,27 +499,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ListTile(
                     leading: const Icon(Icons.access_time, color: AppColors.primary),
                     title: Text(l.dailyReadingReminder, style: AppTextStyles.bodyMedium),
-                    subtitle: Text(l.remindsToReadDaily, style: AppTextStyles.bodySmall),
-                    trailing: Text(_reminderTime, style: const TextStyle(fontFamily: 'Inter', fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.primary)),
+                    subtitle: Text(
+                      _reminderAlarms.isEmpty
+                          ? l.reminderNotSet
+                          : _reminderAlarmSummary(l, _reminderAlarms),
+                      style: AppTextStyles.bodySmall.copyWith(color: c.textSecondary),
+                    ),
+                    trailing: const Icon(Icons.chevron_right, color: AppColors.primary, size: 18),
                     contentPadding: EdgeInsets.zero,
-                    onTap: () async {
-                      final parts = _reminderTime.split(':');
-                      final initial = TimeOfDay(hour: int.tryParse(parts[0]) ?? 20, minute: int.tryParse(parts[1]) ?? 0);
-                      final time = await showTimePicker(context: context, initialTime: initial);
-                      if (time != null) {
-                        final formatted = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
-                        final prefs = await SharedPreferences.getInstance();
-                        await prefs.setString('reminderTime', formatted);
-                        await NotificationService.scheduleDailyReminder(time.hour, time.minute);
-                        if (context.mounted) {
-                          setState(() => _reminderTime = formatted);
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content: Text(l.reminderSetAt(formatted)),
-                            backgroundColor: AppColors.success, behavior: SnackBarBehavior.floating, duration: Duration(seconds: 2),
-                          ));
-                        }
-                      }
-                    },
+                    onTap: () => _openReminderSheet(l),
                   ),
                   const Divider(height: 24),
                   ListTile(
