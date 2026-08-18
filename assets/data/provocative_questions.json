@@ -1,0 +1,545 @@
+{
+  "version": 1,
+  "questions": [
+    {
+      "id": "return-01",
+      "category": "return",
+      "questionEn": "Is He your hope today?",
+      "questionAm": "ዛሬ ተስፋህ እርሱ ነው?",
+      "verses": ["1 Peter 1:13", "1 John 3:3"],
+      "reflectionEn": "Set your hope fully on the grace that is coming when He appears.",
+      "reflectionAm": "ክብሩ በሚገለጥበት ጊዜ ተስፋህን በእርሱ ላይ አድርግ።"
+    },
+    {
+      "id": "return-03",
+      "category": "return",
+      "questionEn": "Are you awake to His coming?",
+      "questionAm": "ለመምጣቱ ንቁ ነህ?",
+      "verses": ["Mark 13:33", "Romans 13:11"],
+      "reflectionEn": "Watchfulness is love, not fear, so stay alert in peace.",
+      "reflectionAm": "ንቃት ፍቅር እንጂ ፍርሃት አይደለም፤ በሰላም ንቁ ሁን።"
+    },
+    {
+      "id": "return-04",
+      "category": "return",
+      "questionEn": "What if He came today?",
+      "questionAm": "ዛሬ ቢመጣስ?",
+      "verses": ["Luke 12:40", "1 John 2:28"],
+      "reflectionEn": "Be ready, not anxious, because His coming is a homecoming.",
+      "reflectionAm": "ተዘጋጅ እንጂ አትጨነቅ፤ መምጣቱ ወደ ቤት መመለስ ነው።"
+    },
+    {
+      "id": "return-07",
+      "category": "return",
+      "questionEn": "Who are you waiting for?",
+      "questionAm": "ማንን እየጠበክህ ነው?",
+      "verses": ["John 14:3", "1 Peter 4:7"],
+      "reflectionEn": "He promised to return for you, so rest in the promise without fear.",
+      "reflectionAm": "ሊመልስህ ቃል ገብቷል፤ ያለ ፍርሃት በቃሉ ዕረፍ።"
+    },
+    {
+      "id": "return-08",
+      "category": "return",
+      "questionEn": "What will you be found doing?",
+      "questionAm": "በምን ላይ ተገኝቶ ትኖራለህ?",
+      "verses": ["Luke 21:36", "1 John 3:2"],
+      "reflectionEn": "Stay ready in the simple obedience of the day, for faithfulness prepares the heart.",
+      "reflectionAm": "የዕለቱን ታዛዥነት ቀጥል፤ ታማኝነት ልብን ያዘጋጃል።"
+    },
+    {
+      "id": "return-09",
+      "category": "return",
+      "questionEn": "Is your lamp trimmed and lit?",
+      "questionAm": "መብራትህ ተዘጋጅቶ ተቀጣጥሏል?",
+      "verses": ["Matthew 25:13", "Luke 12:40"],
+      "reflectionEn": "Keep watch in love, for readiness grows quietly in everyday habits.",
+      "reflectionAm": "በፍቅር ተጠብቅ፤ ዝግጁነት በዕለታዊ ልማድ በፀጥታ ያድጋል።"
+    },
+    {
+      "id": "return-11",
+      "category": "return",
+      "questionEn": "How will you greet His return?",
+      "questionAm": "መመለሱን እንዴት ትቀበላለህ?",
+      "verses": ["1 John 2:28", "Mark 13:33"],
+      "reflectionEn": "Confidence at His coming grows from a friendship kept ordinary and daily.",
+      "reflectionAm": "በፊቱ በድፍረት መቆም በዕለታዊ ወዳጅነት ያድጋል።"
+    },
+    {
+      "id": "return-13",
+      "category": "return",
+      "questionEn": "Is your heart ready for Home?",
+      "questionAm": "ልብህ ለቤት ዝግጁ ነው?",
+      "verses": ["John 14:3", "1 John 3:2"],
+      "reflectionEn": "Home is where He waits, and every quiet day prepares the way.",
+      "reflectionAm": "ቤት ያለበት እርሱ የሚጠብቅበት ነው፤ ጸጥ ያለ ቀን መንገድን ያዘጋጃል።"
+    },
+    {
+      "id": "return-14",
+      "category": "return",
+      "questionEn": "Who will stand with you then?",
+      "questionAm": "ያኔ ከአንተ ጋር ማን ይቆማል?",
+      "verses": ["1 John 3:3", "Romans 13:12"],
+      "reflectionEn": "Purity is peace in His presence, and He is not ashamed of His own.",
+      "reflectionAm": "ንጽሕና በፊቱ ሰላም ነው፤ የራሱን አያፍርም።"
+    },
+    {
+      "id": "prayer-01",
+      "category": "prayer",
+      "questionEn": "Have you talked to Him today?",
+      "questionAm": "ዛሬ ከእርሱ ጋር ተነጋግረሃል?",
+      "verses": ["Psalm 5:3", "1 John 5:14"],
+      "reflectionEn": "He inclines His ear, and no need is too small for Him.",
+      "reflectionAm": "ጆሮውን ያዘነብላል፤ ለእርሱ ምንም ነገር አይትንስም።"
+    },
+    {
+      "id": "prayer-02",
+      "category": "prayer",
+      "questionEn": "What weighs on your heart?",
+      "questionAm": "በልብህ ላይ ያለው ሸክም ምንድን ነው?",
+      "verses": ["Psalm 62:8", "1 Peter 5:7"],
+      "reflectionEn": "Pour out what you carry, for His care is wide enough for all of it.",
+      "reflectionAm": "የምትሸከመውን አፍስስ፤ እንክብካቤው ለሁሉም ይበቃል።"
+    },
+    {
+      "id": "prayer-04",
+      "category": "prayer",
+      "questionEn": "Does prayer feel like waiting?",
+      "questionAm": "ጸሎት እንደ መጠበቅ ይሰማሃል?",
+      "verses": ["Luke 18:1", "Romans 12:12"],
+      "reflectionEn": "Persist with hope, for faithful prayer keeps the heart awake, not weary.",
+      "reflectionAm": "በተስፋ ቀጥል፤ ታማኝ ጸሎት ልብን ነቅቶ ያስቀምጣል እንጂ አያድክምም።"
+    },
+    {
+      "id": "prayer-06",
+      "category": "prayer",
+      "questionEn": "How near do you come?",
+      "questionAm": "ወደ ዙፋኑ እንዴት ትቀርባለህ?",
+      "verses": ["Hebrews 4:16", "Psalm 27:8"],
+      "reflectionEn": "Come with boldness and awe, for mercy invites rather than intimidates.",
+      "reflectionAm": "በድፍረትና በመደነቅ ቅረብ፤ ምሕረት ይጋብዛል እንጂ አያስፈራም።"
+    },
+    {
+      "id": "prayer-07",
+      "category": "prayer",
+      "questionEn": "Is praise part of your prayer?",
+      "questionAm": "ምስጋና በጸሎትህ ውስጥ አለ?",
+      "verses": ["Psalm 141:2", "Psalm 34:17"],
+      "reflectionEn": "Worship before asking settles the heart in what is already true.",
+      "reflectionAm": "ከመጠየቅ በፊት ማምለክ ልብን በእውነት ያረጋዋል።"
+    },
+    {
+      "id": "prayer-10",
+      "category": "prayer",
+      "questionEn": "Does your heart pray always?",
+      "questionAm": "ልብህ ሳይቋረጥ ይጸልያል?",
+      "verses": ["Romans 12:12", "Psalm 5:3"],
+      "reflectionEn": "Joyful hope prays as it breathes, staying near from morning to evening.",
+      "reflectionAm": "የተስፋ ደስታ እንደ እስትንፋስ ይጸልያል፤ ከንጋት እስከ ማታ ቅርብ ነው።"
+    },
+    {
+      "id": "bible-01",
+      "category": "bible",
+      "questionEn": "What did the Word say today?",
+      "questionAm": "ቃሉ ዛሬ ምን አለ?",
+      "verses": ["Psalm 119:105", "Romans 15:4"],
+      "reflectionEn": "Scripture lights the path and plants endurance, all in order to carry hope.",
+      "reflectionAm": "ቃሉ መንገድን ያበራል፣ ጽናትን ይተክላል፣ ተስፋን ይሸከማል።"
+    },
+    {
+      "id": "bible-02",
+      "category": "bible",
+      "questionEn": "Reading or living the Word?",
+      "questionAm": "እያነበብክ ነው ወይስ የምታነበበውን እየኖርክ?",
+      "verses": ["James 1:22", "Matthew 4:4"],
+      "reflectionEn": "The Word is bread to be eaten and done, so hear it and obey.",
+      "reflectionAm": "ቃሉ የሚበላም የሚተገበርም ነው፤ ለመፈጸም ስማው።"
+    },
+    {
+      "id": "bible-03",
+      "category": "bible",
+      "questionEn": "Do you love the Book?",
+      "questionAm": "መጽሐፉን ትወዳለህ?",
+      "verses": ["Psalm 1:2", "Psalm 19:7"],
+      "reflectionEn": "Delight in it day and night; it revives the soul and clears the way.",
+      "reflectionAm": "በቀንና በሌሊት ውደድ፤ ነፍስን ያድሳል፣ መንገድን ያቀልላል።"
+    },
+    {
+      "id": "bible-06",
+      "category": "bible",
+      "questionEn": "Are His words abiding in you?",
+      "questionAm": "ቃሎቹ በአንተ ውስጥ ይቀመጣሉ?",
+      "verses": ["John 8:31-32", "1 John 2:5"],
+      "reflectionEn": "Hold to His word, for the truth that stays sets the heart free.",
+      "reflectionAm": "ቃሉን ያዝ፤ የቆየ እውነት ልብን ነጻ ያደርጋል።"
+    },
+    {
+      "id": "bible-08",
+      "category": "bible",
+      "questionEn": "Hungry for more than milk?",
+      "questionAm": "ከወተት በላይ የሚራብህ ነገር አለ?",
+      "verses": ["1 Peter 2:2", "Psalm 119:11"],
+      "reflectionEn": "Crave the Word like newborn milk, and hide it in the heart.",
+      "reflectionAm": "እንደ ወተት ቃሉን ተናፍቅ፤ መንገድን ለመጠበቅ በልብ ተደበቀ።"
+    },
+    {
+      "id": "bible-09",
+      "category": "bible",
+      "questionEn": "Why do you open the Book?",
+      "questionAm": "መጽሐፉን የምትከፍተው ለምን ነው?",
+      "verses": ["John 5:39", "Romans 15:4"],
+      "reflectionEn": "It testifies of Him rather than mere knowledge, so seek the life it speaks of.",
+      "reflectionAm": "ስለ እርሱ ይመሰክራል እንጂ ለእውቀት ብቻ አይደለም፤ የሚናገረውን ሕይወት ፈልግ።"
+    },
+    {
+      "id": "growth-01",
+      "category": "growth",
+      "questionEn": "Where is your heart rooted?",
+      "questionAm": "ልብህ ሥር የሚያደርገው የት ነው?",
+      "verses": ["Psalm 1:3", "Matthew 13:23"],
+      "reflectionEn": "Deep roots bear quiet fruit, and a life planted in Him grows unseen yet steady.",
+      "reflectionAm": "ጥልቅ ሥር ጸጥ ያለ ፍሬ ያፈራል፤ በእርሱ የተተከለ ሕይወት በስውር ግን በጽናት ያድጋል።"
+    },
+    {
+      "id": "growth-02",
+      "category": "growth",
+      "questionEn": "Growing into what image?",
+      "questionAm": "ወደ ምን መልክ እያደግክ ነው?",
+      "verses": ["Romans 12:2", "1 Peter 3:15"],
+      "reflectionEn": "Day by day the mind renews, and growth makes you ready with a gentle answer.",
+      "reflectionAm": "አዕምሮው በየቀኑ ይታደሳል፤ እድገት ገር መልስ ተዘጋጅቶ እንድትሆን ያደርጋል።"
+    },
+    {
+      "id": "growth-06",
+      "category": "growth",
+      "questionEn": "Nearer or drifting from Him?",
+      "questionAm": "ወደ እርሱ እየቀረብክ ነው ወይስ እየራቅክ?",
+      "verses": ["James 4:8", "Psalm 63:8"],
+      "reflectionEn": "Draw near and the nearness is mutual, for the soul that clings does not slip.",
+      "reflectionAm": "ቅረብ፣ ቅርበቱ የሁለት ነው፤ የተጣበቀች ነፍስ አይንሸራተትም።"
+    },
+    {
+      "id": "growth-07",
+      "category": "growth",
+      "questionEn": "What does the fire refine?",
+      "questionAm": "እሳቱ የሚያጣራው ምንድን ነው?",
+      "verses": ["Proverbs 17:3", "1 Peter 1:7"],
+      "reflectionEn": "Precious things are tested, and gold in the fire comes out more genuine.",
+      "reflectionAm": "ውድ ነገር ይፈተናል፤ ወርቅ በእሳት የበለጠ ትክክለኛ ሆኖ ይወጣል።"
+    },
+    {
+      "id": "growth-08",
+      "category": "growth",
+      "questionEn": "Thirsty for God or just busy?",
+      "questionAm": "እግዚአብሔርን ትናፍቃለህ ወይስ ተጠምደሃል?",
+      "verses": ["Psalm 63:1-2", "John 15:5"],
+      "reflectionEn": "The thirsting soul finds its home in Him, for apart from Him nothing truly grows.",
+      "reflectionAm": "የተናፈቀች ነፍስ ማረፊያዋን በእርሱ ታገኛለች፤ ያለ እርሱ የሚያድግ የለም።"
+    },
+    {
+      "id": "growth-11",
+      "category": "growth",
+      "questionEn": "Good soil or hard ground?",
+      "questionAm": "መልካም አፈር ነህ ወይስ ደረቅ ምድር?",
+      "verses": ["Mark 4:8", "Luke 8:15"],
+      "reflectionEn": "Noble hearts hold the word and keep it, and receptive soil bears manifold fruit.",
+      "reflectionAm": "ቃሉን የሚያዙ ልቦች ያፈራሉ፤ የተቀበለ አፈር ብዙ ፍሬ ያበቅላል።"
+    },
+    {
+      "id": "growth-12",
+      "category": "growth",
+      "questionEn": "What renews your strength?",
+      "questionAm": "ጉልበትህን የሚያድሰው ምንድን ነው?",
+      "verses": ["Psalm 84:5", "Psalm 92:13"],
+      "reflectionEn": "Strength grows as the heart leans upward and is planted well in His courts.",
+      "reflectionAm": "ልብ ወደ ላይ ሲያዘነብልና በግቢው ሲተከል ጉልበቱ ያድጋል።"
+    },
+    {
+      "id": "growth-13",
+      "category": "growth",
+      "questionEn": "Fruit or only leaves?",
+      "questionAm": "ፍሬ እያፈራህ ነው ወይስ ቅጠል ብቻ?",
+      "verses": ["Mark 4:8", "Psalm 92:14"],
+      "reflectionEn": "Fruit shows what the roots believe, and bearing continues long after if abiding does.",
+      "reflectionAm": "ፍሬ ሥር ያመነውን ያሳያል፤ ተጣብቀህ ካለህ ለረጅም ጊዜ ትፈራለህ።"
+    },
+    {
+      "id": "growth-14",
+      "category": "growth",
+      "questionEn": "Are you being transformed?",
+      "questionAm": "እየተለወጥክ ነው?",
+      "verses": ["Romans 12:2", "Matthew 6:33"],
+      "reflectionEn": "A renewed mind begins by seeking one kingdom, and transformation follows the seeking.",
+      "reflectionAm": "የታደሰ አዕምሮ አንዲትን መንግሥት በመፈለግ ይጀምራል፤ ለውጥ ፍለጋውን ይከተላል።"
+    },
+    {
+      "id": "repent-01",
+      "category": "repentance",
+      "questionEn": "Does turning back feel safe?",
+      "questionAm": "ወደ ኋላ መመለስ ደህና ነው ይሰማሃል?",
+      "verses": ["1 John 1:9", "Luke 15:20"],
+      "reflectionEn": "He is faithful to forgive, and the father runs, so the welcome is real.",
+      "reflectionAm": "ይቅር ለማለት ታማኝ ነው፤ አባት ይሮጣል፣ አቀባበሉ እውነተኛ ነው።"
+    },
+    {
+      "id": "repent-02",
+      "category": "repentance",
+      "questionEn": "What are you holding back?",
+      "questionAm": "የምትደብቀው ምንድን ነው?",
+      "verses": ["Proverbs 28:13", "Psalm 32:5"],
+      "reflectionEn": "Buried sorrow becomes confessed mercy, and dropping the cover leaves no room for shame.",
+      "reflectionAm": "ከመሸፈን ይልቅ መናዘዝ ምሕረትን ያመጣል፤ ሽፋኑን መጣል ለሐፍረት ቦታ አይተውም።"
+    },
+    {
+      "id": "repent-03",
+      "category": "repentance",
+      "questionEn": "Wanting change or only relief?",
+      "questionAm": "ለውጥ ትፈልጋለህ ወይስ እፎይታ ብቻ?",
+      "verses": ["Matthew 3:8", "Psalm 51:10"],
+      "reflectionEn": "Fruit proves the turn, and a clean heart is a created gift, not a resolution.",
+      "reflectionAm": "ፍሬ መመለስን ያረጋግጣል፤ የንጹህ ልብ ስጦታ እንጂ ውሳኔ አይደለም።"
+    },
+    {
+      "id": "repent-05",
+      "category": "repentance",
+      "questionEn": "Confessed, or just aware?",
+      "questionAm": "ተናዝዘሃል ወይስ ታውቃለህ ብቻ?",
+      "verses": ["Psalm 34:18", "1 John 1:7"],
+      "reflectionEn": "God stays near the broken, and walking in the light, His Son keeps washing sins.",
+      "reflectionAm": "እግዚአብሔር ከተሰበረ ጋር ቅርብ ነው፤ በብርሃን ሲሄዱ የልጁ ደም ያነጻል።"
+    },
+    {
+      "id": "repent-09",
+      "category": "repentance",
+      "questionEn": "Returning or just regretting?",
+      "questionAm": "እየተመለስክ ነው ወይስ እየተጸጸትክ ብቻ?",
+      "verses": ["Matthew 3:8", "Psalm 51:1-2"],
+      "reflectionEn": "Regret looks back, but repentance turns and bears the fruit of a changed step.",
+      "reflectionAm": "ጸጸት ወደ ኋላ ይመለከታል፤ ንስሐ ያዞራልና የለውጥ ፍሬ ያፈራል።"
+    },
+    {
+      "id": "repent-10",
+      "category": "repentance",
+      "questionEn": "Clean heart, or patched heart?",
+      "questionAm": "ንጹህ ልብ ወይስ የተጣራ ልብ?",
+      "verses": ["Psalm 51:10", "Psalm 51:17"],
+      "reflectionEn": "Ask for a clean heart rather than a cover, and brokenness before Him becomes worship.",
+      "reflectionAm": "ሽፋን ሳይሆን ንጹህ ልብን ጠይቅ፤ በፊቱ መሰበር ወደ አምልኮ ይሆናል።"
+    },
+    {
+      "id": "love-01",
+      "category": "love",
+      "questionEn": "Who will receive your love?",
+      "questionAm": "ዛሬ ፍቅርህን ማን ይቀበላል?",
+      "verses": ["John 13:34", "1 John 4:19"],
+      "reflectionEn": "Loved first, you love, and the new command stays close to everyday faces.",
+      "reflectionAm": "ቀድሞ ተወድደህ ትወዳለህ፤ አዲሱ ትዕዛዝ ከዕለት ተዕለት ፊቶች ጋር ይቀርባል።"
+    },
+    {
+      "id": "love-02",
+      "category": "love",
+      "questionEn": "Words or deeds of love?",
+      "questionAm": "የፍቅር ቃላት ወይስ ተግባር?",
+      "verses": ["1 John 3:18", "Romans 12:9"],
+      "reflectionEn": "Love with actions and truth, not speech alone; sincere love hates nothing it can mend.",
+      "reflectionAm": "በቃል ብቻ ሳይሆን በተግባርና በእውነት ውደድ፤ ቅን ፍቅር ያልጠገነውን አይተውም።"
+    },
+    {
+      "id": "love-06",
+      "category": "love",
+      "questionEn": "Loving the difficult person?",
+      "questionAm": "አስቸጋሪውን ሰው ትወዳለህ?",
+      "verses": ["Matthew 22:39", "Luke 6:35"],
+      "reflectionEn": "Love your neighbor and even the enemy, for grace in the hard place is love.",
+      "reflectionAm": "ባልንጀራን ውደድ፣ ጠላትን እንኳን፤ በአስቸጋሪ ቦታ ጸጋ እውነተኛ ፍቅር ነው።"
+    },
+    {
+      "id": "love-07",
+      "category": "love",
+      "questionEn": "Does love keep no record?",
+      "questionAm": "ፍቅር ቆጠራ አያስቀምጥም?",
+      "verses": ["Romans 13:10", "Proverbs 17:9"],
+      "reflectionEn": "Love does no harm and covers offenses, and choosing peace does not lose the truth.",
+      "reflectionAm": "ፍቅር አይጎዳም፣ ጥፋትን ይሸፍናል፤ ሰላም መምረጥ እውነትን አያስጠፋም።"
+    },
+    {
+      "id": "love-09",
+      "category": "love",
+      "questionEn": "Is your love sincere?",
+      "questionAm": "ፍቅርህ ቅን ነው?",
+      "verses": ["Romans 12:9", "1 Peter 1:22"],
+      "reflectionEn": "Sincere love detests the fake, and a purified heart loves one another deeply.",
+      "reflectionAm": "ቅን ፍቅር ግብዝነትን ይጠላል፤ የነጻ ልብ በጥልቀት ይወዳል።"
+    },
+    {
+      "id": "love-10",
+      "category": "love",
+      "questionEn": "Loved enough to love?",
+      "questionAm": "ተወድደህ ለመውደድ በቃህ?",
+      "verses": ["John 15:9", "1 John 4:19"],
+      "reflectionEn": "Remain in His love to spill it; the love received becomes what you give.",
+      "reflectionAm": "በፍቅሩ ቆይ እንድታፈስ፤ የተቀበልከው ፍቅር የምትሰጠው ይሆናል።"
+    },
+    {
+      "id": "faith-01",
+      "category": "faith",
+      "questionEn": "What anchors your faith?",
+      "questionAm": "እምነትህ የተመሠረተው በምን ላይ ነው?",
+      "verses": ["Hebrews 11:1", "Hebrews 12:2"],
+      "reflectionEn": "Faith sees the unseen, and your gaze settles on the author who completes it.",
+      "reflectionAm": "እምነት የማይታየውን ያያል፤ ዓይንህ በሚያጠናቅቀው ጀማሪው ላይ ያርፋል።"
+    },
+    {
+      "id": "faith-02",
+      "category": "faith",
+      "questionEn": "Tiny like a mustard seed?",
+      "questionAm": "እንደ ሰናፍጭ ትንሽ ይመስላል?",
+      "verses": ["Matthew 17:20", "Luke 17:6"],
+      "reflectionEn": "Small faith under a great God moves what seems immovable; size is not the point.",
+      "reflectionAm": "ትንሽ እምነት በታላቅ እግዚአብሔር ሥር የማይነሳውን ያነሳል፤ መጠኑ ዋናው አይደለም።"
+    },
+    {
+      "id": "faith-03",
+      "category": "faith",
+      "questionEn": "Believing without seeing?",
+      "questionAm": "ሳታይ ታምናለህ?",
+      "verses": ["John 20:29", "1 Peter 1:8"],
+      "reflectionEn": "Blessed are those who believe without seeing, and loving Him unseen is real faith.",
+      "reflectionAm": "ሳያዩ የሚያምኑ ብፁዓን ናቸው፤ ሳታየው መውደድ እውነተኛ እምነት ነው።"
+    },
+    {
+      "id": "faith-04",
+      "category": "faith",
+      "questionEn": "Trust or plan only?",
+      "questionAm": "መታመን ነው ወይስ ማቀድ ብቻ?",
+      "verses": ["Proverbs 3:5-6", "Psalm 56:3"],
+      "reflectionEn": "Trust Him with the whole road, not just the map; fear fades when trust speaks.",
+      "reflectionAm": "መንገዱን ሙሉ አደራ ስጠው እንጂ ካርታውን ብቻ ሳይሆን፤ መታመን ሲናገር ስጋት ይጠፋል።"
+    },
+    {
+      "id": "faith-05",
+      "category": "faith",
+      "questionEn": "What do you do with fear?",
+      "questionAm": "ስጋትን ምን ታደርጋለህ?",
+      "verses": ["Psalm 56:3", "Mark 9:24"],
+      "reflectionEn": "Say honestly what you need, and help my unbelief is a faithful prayer.",
+      "reflectionAm": "የሚፈልጉትን በቅንነት ተናገር፤ የእምነት ማጣቴን እርዳኝ ታማኝ ጸሎት ነው።"
+    },
+    {
+      "id": "faith-07",
+      "category": "faith",
+      "questionEn": "Doubting what God promised?",
+      "questionAm": "እግዚአብሔር የገባውን ቃል ትጠራጠራለህ?",
+      "verses": ["Psalm 27:13", "Mark 11:22"],
+      "reflectionEn": "Still believe you will see His goodness; have faith in God, not in fear.",
+      "reflectionAm": "በርኅራኄው እንደምታይ እመን፤ በፍርሃት ሳይሆን በእግዚአብሔር እመን።"
+    },
+    {
+      "id": "disc-01",
+      "category": "discipleship",
+      "questionEn": "What does following Him cost?",
+      "questionAm": "እርሱን መከተል የሚያስከፍለው ምንድን ነው?",
+      "verses": ["Matthew 16:24", "Luke 9:23"],
+      "reflectionEn": "Following Him is walked daily, one quiet step of trust at a time.",
+      "reflectionAm": "መከተል በየቀኑ ከእርሱ ጋር በእርጋታ መራመድ ነው።"
+    },
+    {
+      "id": "disc-02",
+      "category": "discipleship",
+      "questionEn": "Coming, or following Him?",
+      "questionAm": "መምጣት ነው ወይስ መከተል?",
+      "verses": ["Matthew 4:19", "Mark 8:34"],
+      "reflectionEn": "He calls you to follow, not just come near; the way is walked beside Him.",
+      "reflectionAm": "ቅርብ እንድትሆን ሳይሆን እንድትከተል ይጠራሃል፤ መንገዱ ከእርሱ ጋር ይራመዳል።"
+    },
+    {
+      "id": "disc-03",
+      "category": "discipleship",
+      "questionEn": "Fisher of what?",
+      "questionAm": "የምን ዓሣ አጥማጅ?",
+      "verses": ["Matthew 4:19", "John 12:26"],
+      "reflectionEn": "He makes fishers of people, and following Him means serving where He serves.",
+      "reflectionAm": "የሰዎች አጥማጆች ያደርጋል፤ እርሱ በሚያገለግልበት መሆን መከተል ነው።"
+    },
+    {
+      "id": "disc-06",
+      "category": "discipleship",
+      "questionEn": "Ready to disciple another?",
+      "questionAm": "ሌላውን ለማሳደግ ዝግጁ?",
+      "verses": ["Matthew 28:19-20", "James 2:18"],
+      "reflectionEn": "Make disciples as you walk with Him; faith is seen in the doing.",
+      "reflectionAm": "ከእርሱ ጋር ስትሄድ ደቀ መዝሙር ፍጠር፤ ማስተማር ይታያል፣ እምነት በተግባር ይሰማል።"
+    },
+    {
+      "id": "disc-08",
+      "category": "discipleship",
+      "questionEn": "What is the cross you carry?",
+      "questionAm": "የምትሸከመው ቍርባን ምንድን ነው?",
+      "verses": ["Luke 14:27", "Mark 8:34"],
+      "reflectionEn": "The follower counts what it costs, and the cross is the shape love takes daily.",
+      "reflectionAm": "ተከታዩ ዋጋውን ይቆጥራል፤ ቍርባን የዕለት ፍቅር ቅርጽ ነው።"
+    },
+    {
+      "id": "disc-10",
+      "category": "discipleship",
+      "questionEn": "Where is He leading you?",
+      "questionAm": "ወዴት እየመራህ ነው?",
+      "verses": ["John 12:26", "1 Peter 2:21"],
+      "reflectionEn": "Where He leads His followers go, and His example is the way of life.",
+      "reflectionAm": "ወደ ሚመራበት ተከታዮቹ ይሄዳሉ፤ የምሳሌው መንገድ የሕይወት መንገድ ነው።"
+    },
+    {
+      "id": "etern-01",
+      "category": "eternity",
+      "questionEn": "What is eternal life?",
+      "questionAm": "ዘላለማዊ ሕይወት ምንድን ነው?",
+      "verses": ["John 17:3", "1 John 5:11"],
+      "reflectionEn": "It is knowing Him, and eternal life begins in friendship rather than only after death.",
+      "reflectionAm": "እርሱን ማወቅ ነው፤ ዘላለማዊ ሕይወት የሚጀምረው ከሞት በኋላ ሳይሆን በወዳጅነት ነው።"
+    },
+    {
+      "id": "etern-03",
+      "category": "eternity",
+      "questionEn": "Fearing death or hoping?",
+      "questionAm": "ሞትን ትፈራለህ ወይስ በእርሱ ተስፋ አለህ?",
+      "verses": ["Hebrews 9:27", "1 Peter 1:3"],
+      "reflectionEn": "Death is appointed once and then what follows, and His mercy births a living hope.",
+      "reflectionAm": "ሞት አንዴ የተወሰነ ነው፣ ከዚያም የሚከተለው አለ፤ ምሕረቱ ሕያው ተስፋ ያወልዳል።"
+    },
+    {
+      "id": "etern-05",
+      "category": "eternity",
+      "questionEn": "Given the gift, or earning it?",
+      "questionAm": "ስጦታውን ተቀብለሃል ወይስ እያተረፍክ?",
+      "verses": ["John 3:16", "John 5:24"],
+      "reflectionEn": "It is given in love and received in faith, and believing has crossed into life.",
+      "reflectionAm": "በፍቅር ተሰጥቷል፣ በእምነት ይቀበላል፤ ያመነ ቀድሞ ወደ ሕይወት አልፏል።"
+    },
+    {
+      "id": "etern-08",
+      "category": "eternity",
+      "questionEn": "Could anything separate you?",
+      "questionAm": "የሚለይህ ነገር ይኖራል?",
+      "verses": ["Romans 8:38-39", "1 John 5:12"],
+      "reflectionEn": "Nothing in all creation can separate, and having the Son already means having life.",
+      "reflectionAm": "በፍጥረት ሁሉ የሚለይ የለም፤ ልጁን ማግኘት ሕይወትን ማግኘት ነው።"
+    },
+    {
+      "id": "etern-09",
+      "category": "eternity",
+      "questionEn": "Living today for forever?",
+      "questionAm": "ዛሬ ስትኖር ዘላለሙን ታስባለህ?",
+      "verses": ["Psalm 90:12", "Matthew 6:20"],
+      "reflectionEn": "A wise heart counts days and stores what heaven keeps, and each moment holds eternity.",
+      "reflectionAm": "ጥበበኛ ልብ ቀኖችን ይቆጥራል፣ ሰማይ የሚጠብቀውን ያከማቻል፤ እያንዳንዱ ቅጽበት ዘላለምን ይይዛል።"
+    },
+    {
+      "id": "etern-10",
+      "category": "eternity",
+      "questionEn": "Where is your citizenship?",
+      "questionAm": "ዜግነትህ የት ነው?",
+      "verses": ["Hebrews 11:16", "John 18:36"],
+      "reflectionEn": "Longing for the heavenly city shapes how home is lived; His kingdom is not here.",
+      "reflectionAm": "የሰማይ ከተማ መናፈቅ ቤትን እንዴት እንደምትኖር ይቀርጻል፤ መንግሥቱ ከዚህ ዓለም አይደለም።"
+    }
+  ]
+}

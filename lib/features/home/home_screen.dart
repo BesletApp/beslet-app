@@ -32,6 +32,7 @@ import '../../shared/widgets/error_card.dart';
 import '../../core/widgets/zone_layout.dart';
 import '../../core/widgets/brand_mark.dart';
 import '../word_challenge/verse_builder_loop.dart';
+import 'widgets/today_heart_check_card.dart';
 
 
 class _FlowStep {
@@ -391,6 +392,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        const TodayHeartCheckCard(),
+        SizedBox(height: _h(AppSpacing.md)),
         Row(children: [
           const Spacer(),
           BrandMark(size: 30, color: AppColors.of(context).primary),
