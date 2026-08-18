@@ -339,6 +339,19 @@ const iosSettings = DarwinInitializationSettings(
   }
 
   // ── Permissions ────────────────────────────────────────────
+  static const _startupPermissionAskedKey = 'startup_notif_permission_asked';
+
+  /// One-time startup ask so users upgrading to a version that needs the
+  /// runtime prompt on Android 13+ actually receive it (a system upgrade never
+  /// re-prompts on its own). Records the ask in prefs so it never re-nags
+  /// after the first decision, and stays a no-op once granted.
+  static Future<void> requestPermissionsAtStartup() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool(_startupPermissionAskedKey) ?? false) return;
+    await prefs.setBool(_startupPermissionAskedKey, true);
+    await requestPermissions();
+  }
+
   /// Requests the notification permission at the moment a notification-based
   /// feature is switched on (Android 13+). No-op when already granted, and a
   /// silent success on Android 12 and below where no runtime prompt exists.

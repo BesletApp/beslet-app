@@ -64,6 +64,7 @@ void main() async {
 Future<void> _warmStart(ProviderContainer container) async {
   await _attempt(() => NotificationService.init());
   NotificationService.navigateTo = (route) => AppRouter.router.go(route);
+  await _attempt(() => NotificationService.requestPermissionsAtStartup());
   await _attempt(_handleLaunchRoute);
 await _attempt(() async {
     final sound = await PrayerAlarmSoundService.resolveAndroidSound();
