@@ -392,21 +392,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const TodayHeartCheckCard(),
-        SizedBox(height: _h(AppSpacing.md)),
-        Row(children: [
-          const Spacer(),
-          BrandMark(size: 30, color: AppColors.of(context).primary),
-        ]),
-        SizedBox(height: _h(AppSpacing.sm)),
-        Text(
-          seasonLine,
-          style: AppTextStyles.bodySmall.copyWith(
-            color: c.textSecondary.withValues(alpha: 0.45),
-            fontSize: 11,
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                seasonLine,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: c.textSecondary.withValues(alpha: 0.45),
+                  fontSize: 11,
+                ),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            BrandMark(size: 30, color: AppColors.of(context).primary),
+          ],
         ),
         SizedBox(height: _h(AppSpacing.sm)),
+        const TodayHeartCheckCard(),
+        SizedBox(height: _h(AppSpacing.md)),
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [

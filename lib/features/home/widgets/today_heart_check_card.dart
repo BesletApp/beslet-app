@@ -59,11 +59,11 @@ class _TodayHeartCheckCardState extends ConsumerState<TodayHeartCheckCard> {
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Text(
         '❝ ${question.questionFor(isAm)}',
-        style: AppTextStyles.of(context).bodySmall.copyWith(
-              fontSize: 13,
-              fontStyle: FontStyle.italic,
-              color: c.primary.withValues(alpha: 0.75),
-              height: 1.4,
+        style: AppTextStyles.of(context).bodyMedium.copyWith(
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              color: c.primary,
+              height: 1.35,
             ),
       ),
     );
@@ -77,11 +77,11 @@ class _TodayHeartCheckCardState extends ConsumerState<TodayHeartCheckCard> {
         children: [
           Text(
             '❝ ${question.questionFor(isAm)}',
-            style: AppTextStyles.of(context).bodySmall.copyWith(
-                  fontSize: 13,
-                  fontStyle: FontStyle.italic,
-                  color: c.primary.withValues(alpha: 0.75),
-                  height: 1.4,
+            style: AppTextStyles.of(context).bodyMedium.copyWith(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: c.primary,
+                  height: 1.35,
                 ),
           ),
           const SizedBox(height: 6),
@@ -93,8 +93,9 @@ class _TodayHeartCheckCardState extends ConsumerState<TodayHeartCheckCard> {
                     ? '— ${ScriptureService.amharicReference(question.verses[i])}'
                     : '— ${question.verses[i]}',
                 style: AppTextStyles.of(context).bodySmall.copyWith(
-                      fontSize: 12,
-                      color: c.textSecondary.withValues(alpha: 0.85),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: c.textSecondary.withValues(alpha: 0.9),
                       height: 1.4,
                     ),
               ),
@@ -107,8 +108,8 @@ class _TodayHeartCheckCardState extends ConsumerState<TodayHeartCheckCard> {
             child: Text(
               question.reflectionFor(isAm),
               style: AppTextStyles.of(context).bodySmall.copyWith(
-                    fontSize: 12,
-                    color: c.textPrimary.withValues(alpha: 0.85),
+                    fontSize: 13,
+                    color: c.textPrimary.withValues(alpha: 0.9),
                     height: 1.4,
                   ),
             ),

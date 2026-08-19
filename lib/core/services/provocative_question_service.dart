@@ -35,7 +35,7 @@ class ProvocativeQuestion {
 /// The bundled library of daily questions. Loaded once and shared. Every entry
 /// is validated at load and asserted in tests so a bad edit cannot ship.
 class ProvocativeQuestionService {
-  static const int expectedVersion = 1;
+  static const int expectedVersion = 2;
   static const int expectedTotal = 60;
 
   static const Map<String, int> expectedCategoryCounts = {
@@ -50,19 +50,10 @@ class ProvocativeQuestionService {
     'eternity': 6,
   };
 
-  static const Set<String> allowedBooks = {
-    'matthew',
-    'mark',
-    'luke',
-    'john',
-    'psalms',
-    'proverbs',
-    'romans',
-    'james',
-    '1peter',
-    'hebrews',
-    '1john',
-  };
+  /// The whole bundled canon. The reference must still parse, be in-bounds,
+  /// and form a distinct pair; the whitelist simply no longer limits which
+  /// book may be cited.
+  static final Set<String> allowedBooks = ScriptureService.bookMap.keys.toSet();
 
   static final DateTime epoch = DateTime(2026, 1, 1);
 

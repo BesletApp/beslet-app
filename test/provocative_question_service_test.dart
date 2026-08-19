@@ -88,7 +88,7 @@ void main() {
             category: 'return',
             questionEn: 'too many words in this question sentence here',
             questionAm: 'አህ',
-            verses: ['Genesis 1:1', 'Revelation 22:13'],
+            verses: ['Genesis 1:1', 'Genesis 1:1'],
             reflectionEn: 'Is this a question?',
             reflectionAm: 'ጽሑፍ',
           ),
@@ -97,7 +97,7 @@ void main() {
       final issues = bad.validate();
       expect(issues, isNotEmpty);
       expect(issues.where((i) => i.contains('3-6 words')).isNotEmpty, isTrue);
-      expect(issues.where((i) => i.contains('two references must differ') || i.contains('outside allowed books')).isNotEmpty, isTrue);
+      expect(issues.where((i) => i.contains('two references must differ')).isNotEmpty, isTrue);
     });
   });
 }
