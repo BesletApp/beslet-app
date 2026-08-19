@@ -2744,6 +2744,12 @@ abstract class AppLocalizations {
   /// **'This key couldn\'t be verified. Check that you copied the whole key.'**
   String get aiKeyInvalid;
 
+  /// No description provided for @aiKeyStoreFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Key verified and saved, but the secure store had trouble — a backup copy is kept on this device, so AI study will still work.'**
+  String get aiKeyStoreFallback;
+
   /// No description provided for @previousChapter.
   ///
   /// In en, this message translates to:

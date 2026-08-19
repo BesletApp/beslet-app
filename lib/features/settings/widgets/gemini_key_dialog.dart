@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/ai/ai_key_store.dart';
 import '../../../core/ai/study/gemini_study_backend.dart';
 import '../../../core/ai/study/study_models.dart';
 import '../../../core/providers/ai_provider.dart';
@@ -67,12 +68,13 @@ class _GeminiKeyDialogState extends ConsumerState<_GeminiKeyDialog> {
       _verifying = true;
       _error = null;
     });
-    var saved = false;
+
+    // Step 1 — prove the key works before anything is stored.
+    bool verified = true;
     try {
       await verifyGeminiKey(value);
-      await ref.read(aiKeyStoreProvider).saveUserKey(value);
-      saved = true;
     } catch (e) {
+      verified = false;
       final reason = e is StudyGeminiException
           ? e.reason
           : StudyUnavailability.server;
@@ -81,10 +83,31 @@ class _GeminiKeyDialogState extends ConsumerState<_GeminiKeyDialog> {
       }
     }
     if (!mounted) return;
-    setState(() => _verifying = false);
+
+    // Step 2 — persist it. A storage-save problem is NOT a verification
+    // problem: the key is usable through the mirror, so the panel must still
+    // refresh and the reader is told the truth, not "invalid key".
+    var saved = verified;
+    String? storageWarning;
+    if (verified) {
+      try {
+        await ref.read(aiKeyStoreProvider).saveUserKey(value);
+      } on KeyStorageException catch (e) {
+        saved = true;
+        storageWarning = e.detail;
+      }
+    }
+
+    setState(() {
+      _verifying = false;
+      if (storageWarning != null) {
+        _error = AppLocalizations.of(context)!.aiKeyStoreFallback;
+      }
+    });
+    if (!mounted) return;
     if (saved) {
-      // Show the brief "verified" confirmation, then close so the panel can
-      // immediately retry the study with the verified key.
+      // Show the brief confirmation, then close so the panel can immediately
+      // retry the study with the verified key.
       await Future<void>.delayed(const Duration(milliseconds: 650));
       if (mounted) Navigator.of(context).pop('saved');
     }

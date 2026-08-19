@@ -442,6 +442,7 @@
   "aiKeyVerifying": "በማረጋገጥ ላይ…",
   "aiKeyInvalidEmpty": "በመጀመሪያ የAPI ቁልፍህን ለጥፍ።",
   "aiKeyInvalid": "ቁልፉ ማረጋገጥ አልተቻለም። ሙሉውን ቁልፍ እንደቀዱ አረጋግጥ።",
+  "aiKeyStoreFallback": "ቁልፉ ተረጋግጦ ተቀምጧል፣ ግን ደህንነቱ የተጠበቀ ማከማቻ ችግር አጋጥሞታል — ምትኬ ቅጂ በዚህ መሣሪያ ላይ ተቀምጧል፣ ስለዚህ የAI ጥናት አሁንም ይሰራል።",
   "previousChapter": "ቀዳሚ ምዕራፍ",
   "nextChapter": "ቀጣይ ምዕራፍ",
   "chapter": "ምዕራፍ",

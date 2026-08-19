@@ -2,6 +2,7 @@ import 'dart:developer' as developer;
 
 import 'study_backend.dart';
 import 'study_cross_refs.dart';
+import 'study_diagnostics.dart';
 import 'study_intro.dart';
 import 'study_models.dart';
 
@@ -101,6 +102,7 @@ class StudyService {
         final result = StudyResult.tryParse(cached, request.reference);
         if (result != null && result.isAvailable) {
           _memory[key] = result;
+          StudyDiagnostics.instance.recordCacheHit(true);
           developer.log('study: disk cache hit', name: 'study');
           return result;
         }

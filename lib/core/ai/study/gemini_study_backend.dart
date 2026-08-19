@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 
 import '../../secrets.dart';
 import 'study_backend.dart';
+import 'study_diagnostics.dart';
 import 'study_models.dart';
 import 'study_prompt.dart';
 import 'study_validator.dart';
@@ -58,12 +59,29 @@ class GeminiStudyBackend implements StudyBackend {
       }
       final validated = validator.validate(raw: decoded, request: request);
       if (validated == null) {
-        throw const StudyGeminiException(
-            StudyUnavailability.contentRejected,
-            'reply failed the study validator');
+        final detail = 'reply failed the study validator';
+        StudyDiagnostics.instance.record(
+          failureReason: StudyUnavailability.contentRejected,
+          failureDetail: detail,
+          payloadSnippet: raw.trim().length <= 160
+              ? raw.trim()
+              : '${raw.trim().substring(0, 160)}…',
+        );
+        developer.log('study: validator rejected reply', name: 'study');
+        throw StudyGeminiException(
+            StudyUnavailability.contentRejected, detail);
       }
+      StudyDiagnostics.instance.record(failureReason: null);
       return StudyAttempt.available(validated);
     } on StudyGeminiException catch (e) {
+      if (e.reason == StudyUnavailability.contentRejected &&
+          (StudyDiagnostics.instance.failureReason != e.reason ||
+              StudyDiagnostics.instance.payloadSnippet == null)) {
+        StudyDiagnostics.instance.record(
+          failureReason: e.reason,
+          failureDetail: e.detail,
+        );
+      }
       developer.log('study: AI ${e.reason.name}: ${e.detail}', name: 'study');
       return StudyAttempt.unavailable(e.reason);
     } catch (e) {
@@ -147,7 +165,23 @@ Future<String> Function(String prompt) buildGeminiTransport({
 }) {
   return (prompt) async {
     final key = await _effectiveKey(bundledKey, userKeyProvider);
-    if (key == null) throw StateError('no API key');
+    if (key == null) {
+      StudyDiagnostics.instance.record(keySource: 'none', keyLength: null);
+      throw StateError('no API key');
+    }
+    String? userKey;
+    try {
+      userKey = await userKeyProvider();
+    } catch (_) {}
+    final source = (userKey != null && userKey.trim().isNotEmpty)
+        ? 'user'
+        : 'bundled';
+    StudyDiagnostics.instance.record(
+      keySource: source,
+      keyLength: key.length,
+    );
+    developer.log('study: request with $source key (${key.length} chars)',
+        name: 'study');
     final model = GenerativeModel(model: modelName, apiKey: key);
     final schema = Schema.object(
       properties: {
@@ -238,19 +272,55 @@ Future<String> Function(String prompt) buildGeminiTransport({
         }),
       },
     );
-    final response = await model.generateContent(
-      [Content.text(prompt)],
-      generationConfig: GenerationConfig(
-        responseMimeType: 'application/json',
-        responseSchema: schema,
-      ),
-    ).timeout(timeout);
-    final text = response.text;
-    if (text == null || text.trim().isEmpty) {
-      throw StateError('empty model response');
+    final startedAt = DateTime.now();
+    var status = '';
+    try {
+      final response = await model.generateContent(
+        [Content.text(prompt)],
+        generationConfig: GenerationConfig(
+          responseMimeType: 'application/json',
+          responseSchema: schema,
+        ),
+      ).timeout(timeout);
+      final text = response.text;
+      if (text == null || text.trim().isEmpty) {
+        throw StateError('empty model response');
+      }
+      StudyDiagnostics.instance.record(
+        keySource: source,
+        keyLength: key.length,
+        httpStatus: '200',
+      );
+      developer.log(
+          'study: ok in ${DateTime.now().difference(startedAt).inMilliseconds}ms '
+          '(${text.length} bytes)',
+          name: 'study');
+      return text;
+    } catch (e) {
+      status = _httpStatusFor(error: e);
+      StudyDiagnostics.instance.record(
+        keySource: source,
+        keyLength: key.length,
+        httpStatus: status,
+        failureDetail: e.toString(),
+      );
+      developer.log('study: transport failed ($status): $e', name: 'study');
+      rethrow;
     }
-    return text;
   };
+}
+
+String _httpStatusFor({Object? error, String message = ''}) {
+  if (error is TimeoutException) return 'timeout';
+  if (error is ServerException) {
+    final m = '${error.message} $message'.toLowerCase();
+    if (m.contains('400')) return '400';
+    if (m.contains('401')) return '401';
+    if (m.contains('403')) return '403';
+    if (m.contains('429')) return '429';
+    return 'server';
+  }
+  return 'unknown';
 }
 
 Future<String?> _noUserKey() async => null;

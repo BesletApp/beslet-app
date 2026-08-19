@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/ai/study/study_models.dart';
 import '../../../core/ai/study/study_provider.dart';
 import '../../../core/ai/study/study_sources.dart';
+import '../../../core/providers/ai_provider.dart';
 import '../../../core/providers/scripture_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -188,6 +189,7 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
   Widget _buildLimited(ThemePalette c, AppLocalizations l, StudyResult result,
       StudySourceRegistry? sources) {
     final noteAvailable = result.isAvailable && result.sections.isNotEmpty;
+    final hasKey = ref.read(userKeyPresentProvider).valueOrNull ?? false;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -195,7 +197,7 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
           _LimitBanner(
             isAm: widget.isAm,
             onContinueOffline: () => setState(() => _showLimitBanner = false),
-            onAddKey: _addApiKeyAndRetry,
+            onAddKey: hasKey ? null : _addApiKeyAndRetry,
           ),
           const SizedBox(height: 4),
         ],
@@ -228,16 +230,23 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
   Widget _buildUnavailable(ThemePalette c, AppLocalizations l,
       StudyResult result, StudySourceRegistry? sources) {
     final noteAvailable = result.isAvailable && result.sections.isNotEmpty;
+    final hasKey = ref.read(userKeyPresentProvider).valueOrNull ?? false;
+    final reason = result.unavailability;
+    // A personal key can help with throttled/rejected credentials/server
+    // errors — never with content the validator refused (a key cannot fix that)
+    // and never when one is already connected (that would be the failed loop
+    // this feature exists to end).
+    final showAddKey = !hasKey && _keyWouldHelp(reason);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (_showUnavailable) ...[
           _UnavailableBanner(
             isAm: widget.isAm,
-            reason: result.unavailability,
+            reason: reason,
             onContinueOffline: () =>
                 setState(() => _showUnavailable = false),
-            onAddKey: _addApiKeyAndRetry,
+            onAddKey: showAddKey ? _addApiKeyAndRetry : null,
           ),
           const SizedBox(height: 4),
         ],
@@ -249,6 +258,12 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
       ],
     );
   }
+
+  static bool _keyWouldHelp(StudyUnavailability reason) =>
+      reason == StudyUnavailability.rateLimited ||
+      reason == StudyUnavailability.authInvalid ||
+      reason == StudyUnavailability.server ||
+      reason == StudyUnavailability.timeout;
 
   Widget _buildContent(ThemePalette c, AppLocalizations l, StudyResult result,
       StudySourceRegistry? sources) {
@@ -1277,7 +1292,7 @@ class _CrossReferenceViewer extends ConsumerWidget {
 class _LimitBanner extends ConsumerWidget {
   final bool isAm;
   final VoidCallback onContinueOffline;
-  final VoidCallback onAddKey;
+  final VoidCallback? onAddKey;
 
   const _LimitBanner({
     required this.isAm,
@@ -1324,20 +1339,23 @@ class _LimitBanner extends ConsumerWidget {
           Row(
             children: [
               Expanded(
+                flex: onAddKey == null ? 2 : 1,
                 child: OutlinedButton(
                   onPressed: onContinueOffline,
                   child: Text(l.studyLimitOffline,
                       style: const TextStyle(fontSize: 12)),
                 ),
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: FilledButton(
-                  onPressed: onAddKey,
-                  child: Text(l.studyLimitAddKey,
-                      style: const TextStyle(fontSize: 12)),
+              if (onAddKey != null) ...[
+                const SizedBox(width: 8),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: onAddKey,
+                    child: Text(l.studyLimitAddKey,
+                        style: const TextStyle(fontSize: 12)),
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
         ],
@@ -1355,7 +1373,7 @@ class _UnavailableBanner extends ConsumerWidget {
   final bool isAm;
   final StudyUnavailability reason;
   final VoidCallback onContinueOffline;
-  final VoidCallback onAddKey;
+  final VoidCallback? onAddKey;
 
   const _UnavailableBanner({
     required this.isAm,
@@ -1363,14 +1381,6 @@ class _UnavailableBanner extends ConsumerWidget {
     required this.onContinueOffline,
     required this.onAddKey,
   });
-
-  /// Whether a personal Gemini key could plausibly resolve this failure.
-  static bool _keyWouldHelp(StudyUnavailability reason) =>
-      reason == StudyUnavailability.rateLimited ||
-      reason == StudyUnavailability.authInvalid ||
-      reason == StudyUnavailability.server ||
-      reason == StudyUnavailability.timeout ||
-      reason == StudyUnavailability.contentRejected;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1412,13 +1422,14 @@ class _UnavailableBanner extends ConsumerWidget {
           Row(
             children: [
               Expanded(
+                flex: onAddKey == null ? 2 : 1,
                 child: OutlinedButton(
                   onPressed: onContinueOffline,
                   child: Text(l.studyLimitOffline,
                       style: const TextStyle(fontSize: 12)),
                 ),
               ),
-              if (_keyWouldHelp(reason)) ...[
+              if (onAddKey != null) ...[
                 const SizedBox(width: 8),
                 Expanded(
                   child: FilledButton(

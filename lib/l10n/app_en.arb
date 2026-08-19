@@ -442,6 +442,7 @@
   "aiKeyVerifying": "Verifying…",
   "aiKeyInvalidEmpty": "Paste your API key first.",
   "aiKeyInvalid": "This key couldn't be verified. Check that you copied the whole key.",
+  "aiKeyStoreFallback": "Key verified and saved, but the secure store had trouble — a backup copy is kept on this device, so AI study will still work.",
   "previousChapter": "Previous chapter",
   "nextChapter": "Next chapter",
   "chapter": "Chapter",

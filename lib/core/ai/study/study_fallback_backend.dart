@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer' as developer;
 
 import 'study_backend.dart';
+import 'study_diagnostics.dart';
 import 'study_models.dart';
 
 /// Composes the chain the reader asked for — AI first, offline only as the
@@ -57,11 +58,15 @@ class StudyFallbackBackend implements StudyBackend {
     final online = await isOnline();
     if (!online) {
       developer.log('study: offline, no network interface', name: 'study');
+      StudyDiagnostics.instance.record(
+          failureReason: StudyUnavailability.offline);
       return const StudyAttempt.unavailable(StudyUnavailability.offline);
     }
 
     if (!await mayUseAi()) {
       developer.log('study: free daily AI cap reached', name: 'study');
+      StudyDiagnostics.instance.record(
+          failureReason: StudyUnavailability.capped);
       return StudyAttempt.available(
           StudyResult.aiLimit(reference: request.reference));
     }
@@ -72,10 +77,12 @@ class StudyFallbackBackend implements StudyBackend {
       final result = attempt.result;
       if (result != null) {
         developer.log('study: AI generated note', name: 'study');
+        StudyDiagnostics.instance.record(failureReason: null);
         await recordAiUse();
         return StudyAttempt.available(result);
       }
       lastReason = attempt.unavailability;
+      StudyDiagnostics.instance.record(failureReason: lastReason);
       if (attemptNo == 0 && _retryable(lastReason)) {
         developer.log('study: AI ${lastReason.name} — retrying once',
             name: 'study');

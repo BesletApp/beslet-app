@@ -1460,6 +1460,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'This key couldn\'t be verified. Check that you copied the whole key.';
 
   @override
+  String get aiKeyStoreFallback =>
+      'Key verified and saved, but the secure store had trouble — a backup copy is kept on this device, so AI study will still work.';
+
+  @override
   String get previousChapter => 'Previous chapter';
 
   @override

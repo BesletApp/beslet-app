@@ -1446,6 +1446,10 @@ class AppLocalizationsAm extends AppLocalizations {
   String get aiKeyInvalid => 'ቁልፉ ማረጋገጥ አልተቻለም። ሙሉውን ቁልፍ እንደቀዱ አረጋግጥ።';
 
   @override
+  String get aiKeyStoreFallback =>
+      'ቁልፉ ተረጋግጦ ተቀምጧል፣ ግን ደህንነቱ የተጠበቀ ማከማቻ ችግር አጋጥሞታል — ምትኬ ቅጂ በዚህ መሣሪያ ላይ ተቀምጧል፣ ስለዚህ የAI ጥናት አሁንም ይሰራል።';
+
+  @override
   String get previousChapter => 'ቀዳሚ ምዕራፍ';
 
   @override
