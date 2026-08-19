@@ -281,6 +281,13 @@ void main() {
       );
       await _pumpResult(tester, result);
 
+      // A tall viewport so the lazy ListView actually builds the takeaway row
+      // (the provenance pill above it pushes content below a 600px frame).
+      tester.view.physicalSize = const Size(800, 2000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+      await tester.pump();
+
       expect(find.text('The passage itself says'), findsOneWidget);
       expect(
           find.text(
@@ -292,6 +299,130 @@ void main() {
         (tester) async {
       await _pumpResult(tester, _noTermsResult());
       expect(find.text('The passage itself says'), findsNothing);
+    });
+  });
+
+  group('non-silent unavailability', () {
+    testWidgets('an offline assembly shows the reason banner plus the note',
+        (tester) async {
+      final offlineNote = StudyResult(
+        reference: _request().reference,
+        source: StudySource.knowledge,
+        cachedAt: DateTime.now(),
+        isAvailable: true,
+        unavailability: StudyUnavailability.offline,
+        sections: const [
+          StudySection(
+            kind: StudySectionKind.passageOverview,
+            en: 'The book background for this passage.',
+          ),
+        ],
+      );
+      await _pumpResult(tester, offlineNote);
+
+      expect(find.text('AI study is temporarily unavailable'), findsOneWidget,
+          reason: 'the reader must always be told why AI was unavailable');
+      expect(find.textContaining("You're offline"), findsOneWidget);
+      expect(find.text('Offline note'), findsOneWidget,
+          reason: 'the fallback must be labeled, never silent');
+      expect(find.text('Continue with Offline Study'), findsOneWidget);
+      // No "Add my Gemini API key" for a pure offline failure.
+      expect(find.text('Add my Gemini API key'), findsNothing);
+    });
+
+    testWidgets('dismissing the unavailable banner keeps the note readable',
+        (tester) async {
+      final offlineNote = StudyResult(
+        reference: _request().reference,
+        source: StudySource.knowledge,
+        cachedAt: DateTime.now(),
+        isAvailable: true,
+        unavailability: StudyUnavailability.timeout,
+        sections: const [
+          StudySection(
+            kind: StudySectionKind.passageOverview,
+            en: 'The book background for this passage.',
+          ),
+        ],
+      );
+      await _pumpResult(tester, offlineNote);
+      await tester.tap(find.text('Continue with Offline Study'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('AI study is temporarily unavailable'), findsNothing,
+          reason: 'dismissing hides the banner for this open');
+      expect(find.text('The book background for this passage.'), findsOneWidget,
+          reason: 'the note underneath stays readable');
+    });
+
+    testWidgets('a rate-limit failure offers adding a personal key',
+        (tester) async {
+      final limited = StudyResult(
+        reference: _request().reference,
+        source: StudySource.knowledge,
+        cachedAt: DateTime.now(),
+        isAvailable: true,
+        unavailability: StudyUnavailability.rateLimited,
+        sections: const [
+          StudySection(
+            kind: StudySectionKind.passageOverview,
+            en: 'The book background for this passage.',
+          ),
+        ],
+      );
+      await _pumpResult(tester, limited);
+      expect(find.text('Add my Gemini API key'), findsOneWidget,
+          reason: 'a personal key can bypass a shared-key rate limit');
+    });
+  });
+
+  group('provenance label', () {
+    testWidgets('an AI note is labeled as generated with AI', (tester) async {
+      await _pumpResult(tester, _result());
+      expect(find.text('Generated with AI'), findsOneWidget);
+      expect(find.text('Offline note'), findsNothing);
+    });
+
+    testWidgets('a curated bank note is labeled as an offline note',
+        (tester) async {
+      final banked = StudyResult(
+        reference: _request().reference,
+        source: StudySource.localBank,
+        cachedAt: DateTime.now(),
+        isAvailable: true,
+        sections: const [
+          StudySection(
+            kind: StudySectionKind.passageOverview,
+            en: 'A curated note.',
+          ),
+        ],
+      );
+      await _pumpResult(tester, banked);
+      expect(find.text('Offline note'), findsOneWidget);
+      expect(find.text('Generated with AI'), findsNothing);
+    });
+  });
+
+  group('daily limit', () {
+    testWidgets('the limit banner uses the exact required copy', (tester) async {
+      final limited = StudyResult(
+        reference: _request().reference,
+        source: StudySource.knowledge,
+        cachedAt: DateTime.now(),
+        isAvailable: true,
+        limitReached: true,
+        sections: const [
+          StudySection(
+            kind: StudySectionKind.passageOverview,
+            en: 'The book background for this passage.',
+          ),
+        ],
+      );
+      await _pumpResult(tester, limited);
+      expect(find.text("You've reached today's AI study limit."),
+          findsOneWidget);
+      expect(find.text('Continue with Offline Study'), findsOneWidget);
+      expect(find.text('Add my Gemini API key'), findsOneWidget);
     });
   });
 }
@@ -340,7 +471,8 @@ class _FakeBackend implements StudyBackend {
   _FakeBackend(this.result);
 
   @override
-  Future<StudyResult?> study(StudyRequest request) async => result;
+  Future<StudyAttempt> study(StudyRequest request) async =>
+      StudyAttempt.available(result);
 }
 
 /// A backend that answers after a real time delay, so the test can assert the
@@ -351,9 +483,9 @@ class _DelayedBackend implements StudyBackend {
   _DelayedBackend(this.build, {required this.calls});
 
   @override
-  Future<StudyResult?> study(StudyRequest request) async {
+  Future<StudyAttempt> study(StudyRequest request) async {
     calls();
     await Future<void>.delayed(const Duration(milliseconds: 300));
-    return build();
+    return StudyAttempt.available(build());
   }
 }

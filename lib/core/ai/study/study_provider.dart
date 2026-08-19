@@ -70,11 +70,16 @@ final studyServiceProvider = FutureProvider<StudyService>((ref) async {
     local: LocalStudyBackend(bank),
     ai: gemini,
     isOnline: () async {
+      // The probe reports *interfaces*, not reachability. An empty result is a
+      // plugin flake, not proof of being offline — treat it as unknown and let
+      // the transport classify the real outcome. Only a definitive
+      // "no interface" skips the attempt.
       try {
         final result = await Connectivity().checkConnectivity();
-        return result.isNotEmpty;
+        if (result.isEmpty) return true;
+        return result.any((c) => c != ConnectivityResult.none);
       } catch (_) {
-        return false;
+        return true;
       }
     },
     mayUseAi: () async =>
@@ -95,6 +100,8 @@ final studyServiceProvider = FutureProvider<StudyService>((ref) async {
         (await SharedPreferences.getInstance()).getString(key),
     writeCache: (key, value) async =>
         (await SharedPreferences.getInstance()).setString(key, value),
+    removeCache: (key) async =>
+        (await SharedPreferences.getInstance()).remove(key),
   );
 });
 

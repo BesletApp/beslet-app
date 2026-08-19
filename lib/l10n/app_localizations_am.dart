@@ -1434,6 +1434,18 @@ class AppLocalizationsAm extends AppLocalizations {
   String get aiKeyRemoved => 'ቁልፍ ተወግዷል።';
 
   @override
+  String get aiKeyVerify => 'አረጋግጥ እና አስቀምጥ';
+
+  @override
+  String get aiKeyVerifying => 'በማረጋገጥ ላይ…';
+
+  @override
+  String get aiKeyInvalidEmpty => 'በመጀመሪያ የAPI ቁልፍህን ለጥፍ።';
+
+  @override
+  String get aiKeyInvalid => 'ቁልፉ ማረጋገጥ አልተቻለም። ሙሉውን ቁልፍ እንደቀዱ አረጋግጥ።';
+
+  @override
   String get previousChapter => 'ቀዳሚ ምዕራፍ';
 
   @override
@@ -1576,7 +1588,7 @@ class AppLocalizationsAm extends AppLocalizations {
       'የዚህ ጥቅስ ሙሉ የጥናት ማስታወሻ አሁን ግንኙነት ይፈልጋል። ጽሑፉ በራሱ ቆሞ ይበቃል — አንብበው፣ ቀና ብለው አስተንትኑት፣ ራሱ ይሥራ።';
 
   @override
-  String get studyLimitTitle => 'ዛሬ የ10 ነፃ AI የጥናት ክፍለ-ጊዜዎችን ተጠቅመዋል።';
+  String get studyLimitTitle => 'የዛሬን የAI ጥናት ገደብ ደርሰዋል።';
 
   @override
   String get studyLimitBody =>
@@ -1587,6 +1599,36 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get studyLimitAddKey => 'የራሴን Gemini API ቁልፍ አክል';
+
+  @override
+  String get studyUnavailableTitle => 'የAI ጥናት ለጊዜው አይገኝም';
+
+  @override
+  String get studyReasonOffline => 'ከመስመር ውጭ ነህ። የAI ጥናትን ለመጠቀም ግንኙነት አብራ።';
+
+  @override
+  String get studyReasonRateLimited =>
+      'ነጻው የAI አገልግሎት አሁን በዝቶበታል። ትንሽ ቆይቶ ይሞክሩ።';
+
+  @override
+  String get studyReasonTimeout => 'የAI ጥናት ምላሽ ለመስጠት ብዙ ጊዜ ወሰደ። እንደገና ይሞክሩ።';
+
+  @override
+  String get studyReasonAuthInvalid =>
+      'የAI አገልግሎት መዳረሻውን አልተቀበለም። የAPI ቁልፍህን አረጋግጥ።';
+
+  @override
+  String get studyReasonServer => 'የAI አገልግሎት ስህተት ገጥሞታል። ትንሽ ቆይቶ ይሞክሩ።';
+
+  @override
+  String get studyReasonContentRejected =>
+      'የAI ምላሹ የብስለትን የይዘት ደረጃ አላሟላም። እንደገና ይሞክሩ።';
+
+  @override
+  String get studySourceAi => 'በAI የተዘጋጀ';
+
+  @override
+  String get studySourceOffline => 'ከመስመር ውጭ ማስታወሻ';
 
   @override
   String get studyTakeaway => 'ጽሑፉ ራሱ ይላል';

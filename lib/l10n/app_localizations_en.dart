@@ -1447,6 +1447,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiKeyRemoved => 'Key removed.';
 
   @override
+  String get aiKeyVerify => 'Verify and Save';
+
+  @override
+  String get aiKeyVerifying => 'Verifying…';
+
+  @override
+  String get aiKeyInvalidEmpty => 'Paste your API key first.';
+
+  @override
+  String get aiKeyInvalid =>
+      'This key couldn\'t be verified. Check that you copied the whole key.';
+
+  @override
   String get previousChapter => 'Previous chapter';
 
   @override
@@ -1593,8 +1606,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'A full study note for this passage needs a connection right now. The passage stands on its own — read it, sit with it, and let it do its work.';
 
   @override
-  String get studyLimitTitle =>
-      'You\'ve used today\'s 10 free AI study sessions.';
+  String get studyLimitTitle => 'You\'ve reached today\'s AI study limit.';
 
   @override
   String get studyLimitBody =>
@@ -1605,6 +1617,39 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get studyLimitAddKey => 'Add my Gemini API key';
+
+  @override
+  String get studyUnavailableTitle => 'AI study is temporarily unavailable';
+
+  @override
+  String get studyReasonOffline =>
+      'You\'re offline. Turn on a connection to use AI study.';
+
+  @override
+  String get studyReasonRateLimited =>
+      'The free AI service is busy right now. Try again in a moment.';
+
+  @override
+  String get studyReasonTimeout =>
+      'The AI study took too long to respond. Try again.';
+
+  @override
+  String get studyReasonAuthInvalid =>
+      'The AI service rejected access. Check your API key.';
+
+  @override
+  String get studyReasonServer =>
+      'The AI service had an error. Try again in a moment.';
+
+  @override
+  String get studyReasonContentRejected =>
+      'The AI reply didn\'t meet Beslet\'s content standards. Try again.';
+
+  @override
+  String get studySourceAi => 'Generated with AI';
+
+  @override
+  String get studySourceOffline => 'Offline note';
 
   @override
   String get studyTakeaway => 'The passage itself says';

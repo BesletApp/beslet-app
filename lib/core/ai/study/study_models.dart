@@ -457,6 +457,38 @@ enum StudySource {
   limitReached,
 }
 
+/// Why a study request could not be answered by the intended producer (the AI,
+/// then the offline fallbacks). `none` means no reason — the attempt carried a
+/// real note (or the chain simply had nothing more to try). Every other value
+/// is a *visible, reader-facing* reason: the panel must always explain why AI
+/// study is unavailable rather than silently presenting offline content.
+enum StudyUnavailability {
+  /// No reason to surface — either a real note was produced or the chain
+  /// legitimately has nothing more to offer.
+  none,
+
+  /// The device has no usable network connection.
+  offline,
+
+  /// The AI provider throttled the request (429) — transient, worth a retry.
+  rateLimited,
+
+  /// The AI call took too long and was abandoned.
+  timeout,
+
+  /// The AI provider rejected the credentials (invalid/revoked key, 401/403).
+  authInvalid,
+
+  /// The AI provider failed for another reason (bad model, 4xx/5xx, generic).
+  server,
+
+  /// The model replied, but the strict content/honesty validator refused it.
+  contentRejected,
+
+  /// The app's free daily AI allowance is exhausted (and no personal key).
+  capped,
+}
+
 /// Which passage is being studied. Contiguous verses within one chapter.
 class StudyReference {
   final String bookId;
@@ -776,6 +808,12 @@ class StudyResult {
   /// never serialized to the cache (an offline note is memory-only anyway).
   final bool limitReached;
 
+  /// Why AI study was unavailable for this note, when it was. `none` for real
+  /// AI/bank notes and for notes served with no attached reason. Attached to
+  /// offline/limited assemblies so the panel can always say why AI wasn't
+  /// used. Transient — never serialized to the cache.
+  final StudyUnavailability unavailability;
+
   const StudyResult({
     required this.reference,
     required this.source,
@@ -784,6 +822,7 @@ class StudyResult {
     required this.cachedAt,
     required this.isAvailable,
     this.limitReached = false,
+    this.unavailability = StudyUnavailability.none,
   });
 
   factory StudyResult.unavailable({required StudyReference reference}) =>
@@ -809,9 +848,14 @@ class StudyResult {
         limitReached: true,
       );
 
-  /// A copy that may mark the note as the offline assembly surfaced after the
-  /// free AI limit was hit. Only the transient flag is overridable here.
-  StudyResult copyWith({bool? limitReached}) => StudyResult(
+  /// A copy that may mark the note as an offline assembly surfaced after the
+  /// free AI limit was hit and/or attach the reason AI was unavailable. Only
+  /// the transient flags are overridable here.
+  StudyResult copyWith({
+    bool? limitReached,
+    StudyUnavailability? unavailability,
+  }) =>
+      StudyResult(
         reference: reference,
         source: source,
         sections: sections,
@@ -819,6 +863,7 @@ class StudyResult {
         cachedAt: cachedAt,
         isAvailable: isAvailable,
         limitReached: limitReached ?? this.limitReached,
+        unavailability: unavailability ?? this.unavailability,
       );
 
   String toJsonString() {
@@ -855,4 +900,33 @@ class StudyResult {
       return null;
     }
   }
+}
+
+/// The outcome of a single backend attempt: either a usable [result] or a
+/// concrete [unavailability] reason why nothing came back. A backend that
+/// produced nothing **must** say why (or explicitly [StudyAttempt.nothing] to
+/// let the next layer of the chain try) — silent `null` collapse is what hid
+/// real failures, so the attempt type makes the reason first-class.
+class StudyAttempt {
+  final StudyResult? result;
+  final StudyUnavailability unavailability;
+
+  const StudyAttempt._(this.result, this.unavailability)
+      : assert(result == null || unavailability == StudyUnavailability.none,
+            'an available result never carries an unavailability reason');
+
+  /// A real, usable note.
+  const StudyAttempt.available(StudyResult result)
+      : this._(result, StudyUnavailability.none);
+
+  /// Nothing produced, and nothing more to say — the composer moves on to the
+  /// next layer of its chain (a bank miss, for example).
+  const StudyAttempt.nothing()
+      : this._(null, StudyUnavailability.none);
+
+  /// Nothing produced, with the reason the reader must be told.
+  const StudyAttempt.unavailable(StudyUnavailability reason)
+      : this._(null, reason);
+
+  bool get isAvailable => result != null;
 }

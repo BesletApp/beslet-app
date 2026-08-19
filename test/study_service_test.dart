@@ -18,21 +18,21 @@ class _CountingBackend implements StudyBackend {
   _CountingBackend(this.bank, this.onCall);
 
   @override
-  Future<StudyResult?> study(StudyRequest request) async {
+  Future<StudyAttempt> study(StudyRequest request) async {
     onCall();
     final entry = bank.entryFor(
       request.reference.bookId,
       request.reference.chapter,
       request.reference.startVerse,
     );
-    if (entry == null) return null;
-    return StudyResult(
+    if (entry == null) return const StudyAttempt.nothing();
+    return StudyAttempt.available(StudyResult(
       reference: request.reference,
       source: StudySource.localBank,
       sections: entry.sections,
       cachedAt: DateTime.now(),
       isAvailable: true,
-    );
+    ));
   }
 }
 
@@ -167,7 +167,7 @@ void main() {
     test('concurrent opens are deduplicated (single flight)', () async {
       var started = 0;
       var completed = 0;
-      final completer = Completer<StudyResult?>();
+      final completer = Completer<StudyAttempt>();
       final backend = _BlockingBackend(() {
         started++;
         return completer.future;
@@ -185,13 +185,13 @@ void main() {
       await Future<void>.delayed(Duration.zero);
       expect(started, 1, reason: 'the backend must be called exactly once');
 
-      completer.complete(StudyResult(
+      completer.complete(StudyAttempt.available(StudyResult(
         reference: psalmRequest().reference,
         source: StudySource.localBank,
         sections: bank.entryFor('psalms', 23, 1)!.sections,
         cachedAt: DateTime.now(),
         isAvailable: true,
-      ));
+      )));
       final a = await first;
       final b = await second;
       expect(a.isAvailable, isTrue);
@@ -366,19 +366,170 @@ void main() {
       expect(refreshed.limitReached, isFalse);
       expect(backend.calls, 2, reason: 'refresh must re-run the backend');
     });
+
+    test('refresh with bypassDisk ignores a stale persisted note', () async {
+      final cache = <String, String>{};
+      final backend = _SwitchableBackend();
+      final service = StudyService(
+        backend: backend,
+        readCache: (k) async => cache[k],
+        writeCache: (k, v) async => cache[k] = v,
+      );
+      final key = service.cacheKeyFor(psalmRequest());
+
+      // A stale AI note from a previous session sits on disk.
+      cache[key] = 'stale-from-before';
+      backend.mode = _SwitchableBackend.gemini;
+
+      final refreshed = await service.refresh(psalmRequest(),
+          bypassDisk: true);
+      expect(refreshed.source, StudySource.gemini);
+      expect(backend.calls, 1,
+          reason: 'bypassDisk must drop the stale note so the backend runs');
+      expect(cache.containsKey(key), isTrue,
+          reason: 'the fresh gemini note replaces the stale one on disk');
+      expect(cache[key], isNot('stale-from-before'));
+    });
   });
+
+  group('StudyService reliability (failures are never silent or sticky)', () {
+    StudyRequest genesisRequest() => StudyRequest(
+          reference: const StudyReference(
+              bookId: 'genesis', chapter: 1, startVerse: 1, endVerse: 1),
+          isAmharic: false,
+          verseTexts: const ['x'],
+        );
+
+    test('an unavailable resolution is NOT memoized — a re-open re-attempts',
+        () async {
+      var calls = 0;
+      final backend = _FlakyBackend(() => calls++ < 1
+          ? const StudyAttempt.unavailable(StudyUnavailability.timeout)
+          : StudyAttempt.available(StudyResult(
+              reference: genesisRequest().reference,
+              source: StudySource.gemini,
+              sections: const [],
+              cachedAt: DateTime.now(),
+              isAvailable: true,
+            )));
+      final service = StudyService(
+        backend: backend,
+        intros: loadTestIntros(),
+        crossRefs: loadTestCrossRefs(),
+        readCache: (k) async => null,
+        writeCache: (k, v) async {},
+      );
+
+      final first = await service.study(genesisRequest());
+      expect(first.isAvailable, isTrue,
+          reason: 'the offline assembly keeps the passage readable');
+      expect(first.unavailability, StudyUnavailability.timeout,
+          reason: 'the panel must know why AI was unavailable');
+      expect(calls, 1);
+
+      // A re-open must NOT be served the previous offline assembly from memory.
+      final second = await service.study(genesisRequest());
+      expect(second.source, StudySource.gemini,
+          reason: 'a re-open must re-attempt AI, not replay the stale failure');
+      expect(calls, 2);
+    });
+
+    test('an offline assembly with a reason is never persisted', () async {
+      final cache = <String, String>{};
+      final service = StudyService(
+        backend: const _ReasonBackend(StudyUnavailability.offline),
+        intros: loadTestIntros(),
+        crossRefs: loadTestCrossRefs(),
+        readCache: (k) async => null,
+        writeCache: (k, v) async => cache[k] = v,
+      );
+      final result = await service.study(genesisRequest());
+      expect(result.isAvailable, isTrue);
+      expect(result.unavailability, StudyUnavailability.offline);
+      expect(cache, isEmpty,
+          reason: 'a failure-backed note must never shadow a future AI note');
+    });
+
+    test('a bank note served after an AI failure keeps the reason attached '
+        'and is not cached as a fresh answer', () async {
+      final cache = <String, String>{};
+      final service = StudyService(
+        backend: _BankAfterFailureBackend(bank),
+        intros: loadTestIntros(),
+        crossRefs: loadTestCrossRefs(),
+        readCache: (k) async => null,
+        writeCache: (k, v) async => cache[k] = v,
+      );
+      final result = await service.study(psalmRequest());
+      expect(result.isAvailable, isTrue);
+      expect(result.source, StudySource.localBank);
+      expect(result.unavailability, StudyUnavailability.rateLimited,
+          reason: 'the offline fallback must stay non-silent');
+      expect(cache, isEmpty);
+    });
+  });
+}
+
+/// Returns a backend that reports a failure while the study has no knowledge
+/// layers, so the service falls back to the quiet unavailable note.
+class _ReasonBackend implements StudyBackend {
+  final StudyUnavailability reason;
+
+  const _ReasonBackend(this.reason);
+
+  @override
+  Future<StudyAttempt> study(StudyRequest request) async =>
+      StudyAttempt.unavailable(reason);
+}
+
+/// A backend whose result can change between calls (first failure, then a real
+/// note) so "re-open re-attempts" can be observed.
+class _FlakyBackend implements StudyBackend {
+  final StudyAttempt Function() next;
+
+  _FlakyBackend(this.next);
+
+  @override
+  Future<StudyAttempt> study(StudyRequest request) async => next();
+}
+
+/// A backend that answers with the curated bank only *after* AI would have
+/// failed — mirroring the fallback composer — and attaches the failure reason
+/// to the banked note.
+class _BankAfterFailureBackend implements StudyBackend {
+  final StudyLocalBank bank;
+
+  _BankAfterFailureBackend(this.bank);
+
+  @override
+  Future<StudyAttempt> study(StudyRequest request) async {
+    final entry = bank.entryFor(
+      request.reference.bookId,
+      request.reference.chapter,
+      request.reference.startVerse,
+    );
+    if (entry == null) return const StudyAttempt.nothing();
+    return StudyAttempt.available(StudyResult(
+      reference: request.reference,
+      source: StudySource.localBank,
+      sections: entry.sections,
+      cachedAt: DateTime.now(),
+      isAvailable: true,
+      unavailability: StudyUnavailability.rateLimited,
+    ));
+  }
 }
 
 /// A backend whose calls can be started and completed by the test, so a
 /// concurrent dedup can be observed mid-flight.
 class _BlockingBackend implements StudyBackend {
-  final Future<StudyResult?> Function() start;
+  final Future<StudyAttempt> Function() start;
   final void Function() complete;
 
   _BlockingBackend(this.start, this.complete);
 
   @override
-  Future<StudyResult?> study(StudyRequest request) async {
+  Future<StudyAttempt> study(StudyRequest request) async {
     final result = await start();
     complete();
     return result;
@@ -390,8 +541,8 @@ class _CapBackend implements StudyBackend {
   const _CapBackend();
 
   @override
-  Future<StudyResult?> study(StudyRequest request) async =>
-      StudyResult.aiLimit(reference: request.reference);
+  Future<StudyAttempt> study(StudyRequest request) async =>
+      StudyAttempt.available(StudyResult.aiLimit(reference: request.reference));
 }
 
 /// A backend that can switch from "capped" to "AI available" mid-test, so the
@@ -406,17 +557,17 @@ class _SwitchableBackend implements StudyBackend {
   _SwitchableBackend();
 
   @override
-  Future<StudyResult?> study(StudyRequest request) async {
+  Future<StudyAttempt> study(StudyRequest request) async {
     calls++;
     if (mode == gemini) {
-      return StudyResult(
+      return StudyAttempt.available(StudyResult(
         reference: request.reference,
         source: StudySource.gemini,
         sections: const [],
         cachedAt: DateTime.now(),
         isAvailable: true,
-      );
+      ));
     }
-    return StudyResult.aiLimit(reference: request.reference);
+    return StudyAttempt.available(StudyResult.aiLimit(reference: request.reference));
   }
 }

@@ -1,6 +1,6 @@
 {
-  "version": "1.35.0",
-  "versionCode": 60,
-  "downloadUrl": "https://github.com/BesletApp/beslet-app/releases/download/v1.35.0/app-release.apk",
-  "releaseNotes": "Today's Heart Check v2: all 60 daily questions refreshed with stronger, more searching language in both English and Amharic, paired with full-canon scripture references. The question card is now bolder and larger, and the top of the Today screen is filled with the season line and brand mark. Android 12-15 reliability fixes from v1.34.1 are included."
+  "version": "1.35.1",
+  "versionCode": 61,
+  "downloadUrl": "https://github.com/BesletApp/beslet-app/releases/download/v1.35.1/app-release.apk",
+  "releaseNotes": "AI Study reliability fix: every passage you select now triggers a fresh AI request, and AI keeps working across many passages in one session. If AI can't answer, the app tells you exactly why (offline, rate-limited, timeout, invalid key, or a server error) instead of silently switching to an offline note — and every note is labeled so you always know whether it came from AI or the offline library. Reaching the daily AI limit now shows clear options: continue offline or add your own Gemini API key, with live key verification and an instant retry."
 }

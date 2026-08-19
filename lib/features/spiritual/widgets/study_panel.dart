@@ -33,13 +33,17 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
   /// reader adds their own key a fresh resolution replaces the note entirely.
   bool _showLimitBanner = true;
 
+  /// Whether the "AI study is unavailable — reason" banner is still shown. Same
+  /// dismiss-one-open behavior as the limit banner.
+  bool _showUnavailable = true;
+
   @override
   void initState() {
     super.initState();
     _future = _load();
   }
 
-  Future<StudyResult> _load({bool force = false}) async {
+  Future<StudyResult> _load({bool force = false, bool bypassDisk = false}) async {
     final service = await ref.read(studyServiceProvider.future);
     // The service provider resolves the intro library, so by this point the
     // genre is available (or the panel's test override left it untouched).
@@ -58,7 +62,11 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
           );
     // force = a fresh resolution (bypasses the in-memory cache) so adding a
     // personal API key continues the study in place, not from a stale result.
-    return force ? service.refresh(request) : service.study(request);
+    // bypassDisk also clears any persisted note so the fresh user-key run is
+    // never shadowed by old content.
+    return force
+        ? service.refresh(request, bypassDisk: bypassDisk)
+        : service.study(request);
   }
 
   @override
@@ -117,11 +125,13 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
                 if (result == null) {
                   return _buildOffline(c, l);
                 }
-                if (result.limitReached) {
+                if (result.limitReached ||
+                    result.unavailability == StudyUnavailability.capped) {
                   return _buildLimited(c, l, result, sources);
                 }
-                if (!result.isAvailable) {
-                  return _buildOffline(c, l);
+                if (result.unavailability != StudyUnavailability.none ||
+                    !result.isAvailable) {
+                  return _buildUnavailable(c, l, result, sources);
                 }
                 return _buildContent(c, l, result, sources);
               },
@@ -198,14 +208,46 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
     );
   }
 
-  /// Opens the shared Gemini-key dialog; once a key is saved the study re-runs
-  /// through the service's `refresh` path so it continues in place.
+  /// Opens the shared Gemini-key dialog; once a key is verified and saved the
+  /// study re-runs through the service's `refresh` path (bypassing memory AND
+  /// the disk cache) so it continues in place — no reopen, no restart.
   Future<void> _addApiKeyAndRetry() async {
     final action = await showGeminiKeyDialog(context);
     if (!mounted) return;
     if (action == 'saved') {
-      setState(() => _future = _load(force: true));
+      setState(() => _future = _load(force: true, bypassDisk: true));
     }
+  }
+
+  /// Shown whenever AI study was unavailable for a reason other than the daily
+  /// cap: a clear "why" banner above whatever offline content exists. The
+  /// reason is never hidden and the offline note is always labeled, so a
+  /// fallback can never masquerade as a generated AI study. `_showUnavailable`
+  /// lets the reader dismiss the banner once (Continue with Offline Study)
+  /// without losing the note underneath.
+  Widget _buildUnavailable(ThemePalette c, AppLocalizations l,
+      StudyResult result, StudySourceRegistry? sources) {
+    final noteAvailable = result.isAvailable && result.sections.isNotEmpty;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (_showUnavailable) ...[
+          _UnavailableBanner(
+            isAm: widget.isAm,
+            reason: result.unavailability,
+            onContinueOffline: () =>
+                setState(() => _showUnavailable = false),
+            onAddKey: _addApiKeyAndRetry,
+          ),
+          const SizedBox(height: 4),
+        ],
+        Expanded(
+          child: noteAvailable
+              ? _buildContent(c, l, result, sources)
+              : _buildOffline(c, l),
+        ),
+      ],
+    );
   }
 
   Widget _buildContent(ThemePalette c, AppLocalizations l, StudyResult result,
@@ -215,6 +257,8 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
       padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.lg),
       children: [
         _buildPassage(c),
+        const SizedBox(height: 8),
+        _buildSourceLabel(c, l, result.source),
         if (result.anchor != null) ...[
           const SizedBox(height: AppSpacing.lg),
           _buildAnchorCard(c, l, result.anchor!),
@@ -448,6 +492,45 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  /// A quiet, always-visible provenance pill: readers can always tell an
+  /// AI-generated note from an offline note, so a fallback is never silent.
+  Widget _buildSourceLabel(
+      ThemePalette c, AppLocalizations l, StudySource source) {
+    final isAi = source == StudySource.gemini;
+    final label = isAi ? l.studySourceAi : l.studySourceOffline;
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        decoration: BoxDecoration(
+          color: c.card,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: c.border.withValues(alpha: 0.4)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isAi ? Icons.auto_awesome : Icons.book_outlined,
+              size: 12,
+              color: c.textMuted,
+            ),
+            const SizedBox(width: 5),
+            Text(
+              label,
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: c.textMuted,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1260,5 +1343,115 @@ class _LimitBanner extends ConsumerWidget {
         ],
       ),
     );
+  }
+}
+
+/// The calm "AI study is unavailable — reason" card shown above the offline
+/// note whenever a study failed for any reason other than the daily cap. This
+/// is the non-silent fallback: the reader is always told *why* AI was
+/// unavailable and can continue with the clearly-labeled offline note, or add
+/// their own Gemini key when that would help.
+class _UnavailableBanner extends ConsumerWidget {
+  final bool isAm;
+  final StudyUnavailability reason;
+  final VoidCallback onContinueOffline;
+  final VoidCallback onAddKey;
+
+  const _UnavailableBanner({
+    required this.isAm,
+    required this.reason,
+    required this.onContinueOffline,
+    required this.onAddKey,
+  });
+
+  /// Whether a personal Gemini key could plausibly resolve this failure.
+  static bool _keyWouldHelp(StudyUnavailability reason) =>
+      reason == StudyUnavailability.rateLimited ||
+      reason == StudyUnavailability.authInvalid ||
+      reason == StudyUnavailability.server ||
+      reason == StudyUnavailability.timeout ||
+      reason == StudyUnavailability.contentRejected;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final c = AppColors.of(context);
+    final l = AppLocalizations.of(context)!;
+    final text = _reasonText(l, reason);
+    return Container(
+      margin: const EdgeInsets.fromLTRB(
+          AppSpacing.md, AppSpacing.sm, AppSpacing.md, 0),
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: c.card,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: c.border.withValues(alpha: 0.6)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            Icon(Icons.info_outline, size: 16, color: c.textSecondary),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                l.studyUnavailableTitle,
+                style: AppTextStyles.labelLarge.copyWith(
+                    color: c.textPrimary, fontSize: 13),
+              ),
+            ),
+          ]),
+          const SizedBox(height: 6),
+          Text(
+            text,
+            style: (isAm
+                    ? AppTextStyles.amharicBody
+                    : AppTextStyles.bodySmall)
+                .copyWith(color: c.textSecondary, height: 1.5),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: onContinueOffline,
+                  child: Text(l.studyLimitOffline,
+                      style: const TextStyle(fontSize: 12)),
+                ),
+              ),
+              if (_keyWouldHelp(reason)) ...[
+                const SizedBox(width: 8),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: onAddKey,
+                    child: Text(l.studyLimitAddKey,
+                        style: const TextStyle(fontSize: 12)),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  static String _reasonText(AppLocalizations l, StudyUnavailability reason) {
+    switch (reason) {
+      case StudyUnavailability.offline:
+        return l.studyReasonOffline;
+      case StudyUnavailability.rateLimited:
+        return l.studyReasonRateLimited;
+      case StudyUnavailability.timeout:
+        return l.studyReasonTimeout;
+      case StudyUnavailability.authInvalid:
+        return l.studyReasonAuthInvalid;
+      case StudyUnavailability.server:
+        return l.studyReasonServer;
+      case StudyUnavailability.contentRejected:
+        return l.studyReasonContentRejected;
+      case StudyUnavailability.none:
+      case StudyUnavailability.capped:
+        return l.studyUnavailableTitle;
+    }
   }
 }

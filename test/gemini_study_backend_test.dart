@@ -1,8 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:beslet_app/core/ai/study/gemini_study_backend.dart';
 import 'package:beslet_app/core/ai/study/study_models.dart';
 import 'package:beslet_app/core/ai/study/study_validator.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'study_test_utils.dart';
@@ -76,40 +79,47 @@ void main() {
   group('GeminiStudyBackend', () {
     test('a valid transport payload becomes an available gemini result',
         () async {
-      final backend = _backend((_) async => _goodJson());
-      final result = await backend.study(_request());
-      expect(result, isNotNull);
-      expect(result!.isAvailable, isTrue);
-      expect(result.source, StudySource.gemini);
+      final attempt = await _backend((_) async => _goodJson()).study(_request());
+      expect(attempt.isAvailable, isTrue);
+      expect(attempt.result!.source, StudySource.gemini);
     });
 
-    test('a throwing transport yields null (never raises)', () async {
-      final backend = _backend((_) async => throw Exception('offline'));
-      expect(await backend.study(_request()), isNull);
+    test('a throwing transport yields a classified reason (never raises)',
+        () async {
+      final attempt =
+          await _backend((_) async => throw Exception('boom')).study(_request());
+      expect(attempt.isAvailable, isFalse);
+      expect(attempt.unavailability, StudyUnavailability.server);
     });
 
-    test('a malformed transport reply yields null', () async {
-      final backend = _backend((_) async => 'not json at all');
-      expect(await backend.study(_request()), isNull);
+    test('a malformed transport reply is contentRejected', () async {
+      final attempt =
+          await _backend((_) async => 'not json at all').study(_request());
+      expect(attempt.isAvailable, isFalse);
+      expect(attempt.unavailability, StudyUnavailability.contentRejected);
     });
 
-    test('a non-map JSON reply yields null', () async {
-      final backend = _backend((_) async => '[1,2,3]');
-      expect(await backend.study(_request()), isNull);
+    test('a non-map JSON reply is contentRejected', () async {
+      final attempt =
+          await _backend((_) async => '[1,2,3]').study(_request());
+      expect(attempt.isAvailable, isFalse);
+      expect(attempt.unavailability, StudyUnavailability.contentRejected);
     });
 
-    test('an empty reply yields null', () async {
-      final backend = _backend((_) async => '   ');
-      expect(await backend.study(_request()), isNull);
+    test('an empty reply is contentRejected', () async {
+      final attempt = await _backend((_) async => '   ').study(_request());
+      expect(attempt.isAvailable, isFalse);
+      expect(attempt.unavailability, StudyUnavailability.contentRejected);
     });
 
     test("the prompt asks for the reader's language", () async {
       String? seen;
-      final backend = _backend((prompt) async {
+      // The payload here is English, so the note itself would be rejected for
+      // an Amharic reader — this test only checks the *prompt*, not the note.
+      await _backend((prompt) async {
         seen = prompt;
         return _goodJson();
-      });
-      await backend.study(_request(am: true));
+      }).study(_request(am: true));
       expect(seen, contains('Write in: amharic'));
       expect(seen, contains('እግዚአብሔር'));
     });
@@ -117,11 +127,11 @@ void main() {
     test('the prompt demands a faithful study aid with honest boundaries',
         () async {
       String? seen;
-      final backend = _backend((prompt) async {
+      final attempt = await _backend((prompt) async {
         seen = prompt;
         return _goodJson();
-      });
-      await backend.study(_request());
+      }).study(_request());
+      expect(attempt.isAvailable, isTrue);
       expect(seen, contains('a faithful study aid'));
       expect(seen, contains('NEUTRAL TO ALL TRADITIONS'));
       expect(seen, contains('MEMORY ANCHOR'));
@@ -131,11 +141,11 @@ void main() {
     test('the prompt structures the note around the eight-section vocabulary',
         () async {
       String? seen;
-      final backend = _backend((prompt) async {
+      final attempt = await _backend((prompt) async {
         seen = prompt;
         return _goodJson();
-      });
-      await backend.study(_request());
+      }).study(_request());
+      expect(attempt.isAvailable, isTrue);
       expect(seen, contains('LOOK CLOSELY AT THE WORDS'));
       expect(seen, contains('WHAT THE TEXT COMMUNICATES'));
       expect(seen, contains('VERSE BY VERSE'));
@@ -146,21 +156,61 @@ void main() {
 
     test('the prompt names the length band for the passage', () async {
       String? seen;
-      final backend = _backend((prompt) async {
+      final attempt = await _backend((prompt) async {
         seen = prompt;
         return _goodJson();
-      });
-      await backend.study(_request());
+      }).study(_request());
+      expect(attempt.isAvailable, isTrue);
       expect(seen, contains('LENGTH \u2014'));
       expect(seen, contains('words (a "'));
     });
 
-    test('invalid content (banned phrase) fails validation and yields null',
-        () async {
-      final backend = _backend((_) async => jsonEncode({
+    test('invalid content (banned phrase) is contentRejected', () async {
+      final attempt = await _backend((_) async => jsonEncode({
             'literaryContext': {'text': 'God is telling you to do this.'},
-          }));
-      expect(await backend.study(_request()), isNull);
+          })).study(_request());
+      expect(attempt.isAvailable, isFalse);
+      expect(attempt.unavailability, StudyUnavailability.contentRejected);
+    });
+  });
+
+  group('GeminiStudyBackend failure classification', () {
+    Future<StudyUnavailability> reasonFor(
+            Future<String> Function(String) transport) async {
+      final attempt = await _backend(transport).study(_request());
+      expect(attempt.isAvailable, isFalse);
+      return attempt.unavailability;
+    }
+
+    test('a timeout becomes timeout', () async {
+      expect(await reasonFor((_) async => throw TimeoutException('late')),
+          StudyUnavailability.timeout);
+    });
+
+    test('a socket error becomes offline', () async {
+      expect(await reasonFor((_) async => throw const SocketException('no net')),
+          StudyUnavailability.offline);
+    });
+
+    test('an invalid API key becomes authInvalid', () async {
+      expect(
+          await reasonFor(
+              (_) async => throw InvalidApiKey('API_KEY_INVALID')),
+          StudyUnavailability.authInvalid);
+    });
+
+    test('a 429 server reply becomes rateLimited', () async {
+      expect(
+          await reasonFor(
+              (_) async => throw ServerException('429 RESOURCE_EXHAUSTED')),
+          StudyUnavailability.rateLimited);
+    });
+
+    test('a generic server reply becomes server', () async {
+      expect(
+          await reasonFor(
+              (_) async => throw ServerException('500 Internal Server Error')),
+          StudyUnavailability.server);
     });
   });
 
@@ -171,6 +221,16 @@ void main() {
         userKeyProvider: () async => null,
       );
       await expectLater(transport('prompt'), throwsStateError);
+    });
+  });
+
+  group('verifyGeminiKey', () {
+    test('an empty key is rejected without a network call', () async {
+      await expectLater(
+        verifyGeminiKey('   '),
+        throwsA(isA<StudyGeminiException>()
+            .having((e) => e.reason, 'reason', StudyUnavailability.authInvalid)),
+      );
     });
   });
 }

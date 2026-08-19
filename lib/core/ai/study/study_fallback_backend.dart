@@ -1,25 +1,33 @@
+import 'dart:async';
 import 'dart:developer' as developer;
 
 import 'study_backend.dart';
 import 'study_models.dart';
 
-/// Composes the smarter chain: curated offline bank first (free, unlimited,
-/// canon-verified), then — only for passages the bank does not cover, when
-/// online, and within the daily AI cap — the model. A banked passage never
-/// touches the network.
+/// Composes the chain the reader asked for — AI first, offline only as the
+/// honest fallback:
 ///
-/// The outcomes are deliberately distinguishable so a failed AI request can
-/// never silently stand in for a generated one:
-///  - offline (no network)        -> null (the service assembles the offline note)
-///  - free daily AI cap reached   -> [StudyResult.aiLimit] (a clear, guided prompt)
-///  - AI success                  -> the model's note
-///  - AI failure (quota/auth/timeout/validator) -> null + a log (offline note shown)
+///   1. AI model — every passage, when online and within the AI allowance. A
+///      reader's own key bypasses the app's free daily cap entirely.
+///   2. Transient AI failures (offline/timeout/rate-limit/server) get one retry
+///      before the chain gives up.
+///   3. Only when AI cannot answer does the curated offline bank serve — and it
+///      carries the *reason* AI was unavailable so the panel can explain.
+///   4. Still nothing → the reason alone (the service assembles the book intro).
+///
+/// Nothing here is silent: a failed AI request is never returned as a plain
+/// note. The outcomes are deliberately distinguishable:
+///  - no network interface     -> unavailable(offline)
+///  - free daily AI cap reached -> the aiLimit sentinel (a clear, guided prompt)
+///  - AI success               -> the model's note (quota counted when app key)
+///  - AI failure               -> offline note/bank carrying the failure reason
 class StudyFallbackBackend implements StudyBackend {
   final LocalStudyBackend local;
   final StudyBackend? ai;
   final Future<bool> Function() isOnline;
   final Future<bool> Function() mayUseAi;
   final Future<void> Function() recordAiUse;
+  final Duration retryDelay;
 
   StudyFallbackBackend({
     required this.local,
@@ -27,45 +35,93 @@ class StudyFallbackBackend implements StudyBackend {
     required this.isOnline,
     required this.mayUseAi,
     required this.recordAiUse,
+    this.retryDelay = const Duration(milliseconds: 1500),
   });
 
+  /// Whether a failure is worth a single retry — transient conditions that can
+  /// clear in a second, never policy/content errors.
+  static bool _retryable(StudyUnavailability reason) =>
+      reason == StudyUnavailability.offline ||
+      reason == StudyUnavailability.timeout ||
+      reason == StudyUnavailability.rateLimited ||
+      reason == StudyUnavailability.server;
+
   @override
-  Future<StudyResult?> study(StudyRequest request) async {
+  Future<StudyAttempt> study(StudyRequest request) async {
+    final aiBackend = ai;
+    if (aiBackend == null) {
+      // No AI configured (tests/offline build) — the bank is the answer.
+      return _bankFallback(request);
+    }
+
+    final online = await isOnline();
+    if (!online) {
+      developer.log('study: offline, no network interface', name: 'study');
+      return const StudyAttempt.unavailable(StudyUnavailability.offline);
+    }
+
+    if (!await mayUseAi()) {
+      developer.log('study: free daily AI cap reached', name: 'study');
+      return StudyAttempt.available(
+          StudyResult.aiLimit(reference: request.reference));
+    }
+
+    StudyUnavailability lastReason = StudyUnavailability.none;
+    for (var attemptNo = 0; attemptNo < 2; attemptNo++) {
+      final attempt = await _safeAi(request, aiBackend);
+      final result = attempt.result;
+      if (result != null) {
+        developer.log('study: AI generated note', name: 'study');
+        await recordAiUse();
+        return StudyAttempt.available(result);
+      }
+      lastReason = attempt.unavailability;
+      if (attemptNo == 0 && _retryable(lastReason)) {
+        developer.log('study: AI ${lastReason.name} — retrying once',
+            name: 'study');
+        await Future.delayed(retryDelay);
+        continue;
+      }
+      break;
+    }
+
+    developer.log('study: AI unavailable (${lastReason.name}) -> offline note',
+        name: 'study');
+    return _bankFallback(request, reason: lastReason);
+  }
+
+  Future<StudyAttempt> _safeAi(
+      StudyRequest request, StudyBackend aiBackend) async {
+    try {
+      return await aiBackend.study(request);
+    } catch (e) {
+      developer.log('study: AI reached exception: $e', name: 'study');
+      return const StudyAttempt.unavailable(StudyUnavailability.server);
+    }
+  }
+
+  /// The curated bank — only ever reached after AI has failed. The banked note
+  /// keeps the failure [reason] attached so the panel can still explain why AI
+  /// wasn't used (never a silent swap).
+  Future<StudyAttempt> _bankFallback(
+    StudyRequest request, {
+    StudyUnavailability reason = StudyUnavailability.none,
+  }) async {
     try {
       final curated = await local.study(request);
-      if (curated != null) {
-        developer.log('study: curated bank', name: 'study');
-        return curated;
+      final note = curated.result;
+      if (note != null) {
+        final withReason = reason == StudyUnavailability.none
+            ? note
+            : note.copyWith(unavailability: reason);
+        return StudyAttempt.available(withReason);
       }
     } catch (_) {
       // A corrupted bank must never block reading Scripture.
     }
-
-    final aiBackend = ai;
-    if (aiBackend == null) return null;
-    try {
-      final online = await isOnline();
-      if (!online) {
-        developer.log('study: offline, no network', name: 'study');
-        return null;
-      }
-
-      if (!await mayUseAi()) {
-        developer.log('study: free daily AI cap reached', name: 'study');
-        return StudyResult.aiLimit(reference: request.reference);
-      }
-
-      final result = await aiBackend.study(request);
-      if (result != null) {
-        developer.log('study: AI generated note', name: 'study');
-        await recordAiUse();
-      } else {
-        developer.log('study: AI call failed/empty', name: 'study');
-      }
-      return result;
-    } catch (e) {
-      developer.log('study: AI reached exception: $e', name: 'study');
-      return null;
+    if (reason == StudyUnavailability.none) {
+      return const StudyAttempt.nothing();
     }
+    return StudyAttempt.unavailable(reason);
   }
 }

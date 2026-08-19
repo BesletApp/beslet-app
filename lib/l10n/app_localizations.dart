@@ -2720,6 +2720,30 @@ abstract class AppLocalizations {
   /// **'Key removed.'**
   String get aiKeyRemoved;
 
+  /// No description provided for @aiKeyVerify.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify and Save'**
+  String get aiKeyVerify;
+
+  /// No description provided for @aiKeyVerifying.
+  ///
+  /// In en, this message translates to:
+  /// **'Verifying…'**
+  String get aiKeyVerifying;
+
+  /// No description provided for @aiKeyInvalidEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste your API key first.'**
+  String get aiKeyInvalidEmpty;
+
+  /// No description provided for @aiKeyInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'This key couldn\'t be verified. Check that you copied the whole key.'**
+  String get aiKeyInvalid;
+
   /// No description provided for @previousChapter.
   ///
   /// In en, this message translates to:
@@ -2987,7 +3011,7 @@ abstract class AppLocalizations {
   /// No description provided for @studyLimitTitle.
   ///
   /// In en, this message translates to:
-  /// **'You\'ve used today\'s 10 free AI study sessions.'**
+  /// **'You\'ve reached today\'s AI study limit.'**
   String get studyLimitTitle;
 
   /// No description provided for @studyLimitBody.
@@ -3007,6 +3031,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add my Gemini API key'**
   String get studyLimitAddKey;
+
+  /// No description provided for @studyUnavailableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AI study is temporarily unavailable'**
+  String get studyUnavailableTitle;
+
+  /// No description provided for @studyReasonOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re offline. Turn on a connection to use AI study.'**
+  String get studyReasonOffline;
+
+  /// No description provided for @studyReasonRateLimited.
+  ///
+  /// In en, this message translates to:
+  /// **'The free AI service is busy right now. Try again in a moment.'**
+  String get studyReasonRateLimited;
+
+  /// No description provided for @studyReasonTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI study took too long to respond. Try again.'**
+  String get studyReasonTimeout;
+
+  /// No description provided for @studyReasonAuthInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI service rejected access. Check your API key.'**
+  String get studyReasonAuthInvalid;
+
+  /// No description provided for @studyReasonServer.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI service had an error. Try again in a moment.'**
+  String get studyReasonServer;
+
+  /// No description provided for @studyReasonContentRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI reply didn\'t meet Beslet\'s content standards. Try again.'**
+  String get studyReasonContentRejected;
+
+  /// No description provided for @studySourceAi.
+  ///
+  /// In en, this message translates to:
+  /// **'Generated with AI'**
+  String get studySourceAi;
+
+  /// No description provided for @studySourceOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline note'**
+  String get studySourceOffline;
 
   /// No description provided for @studyTakeaway.
   ///
