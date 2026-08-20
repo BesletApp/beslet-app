@@ -1826,4 +1826,97 @@ class AppLocalizationsAm extends AppLocalizations {
   @override
   String get voiceJournalOfflineBody =>
       'ማደራጀት ኢንተርኔት ይፈልጋል። ቃላትህን አሁን እንደ ረቂቅ አስቀምጥ፣ በኋላ ማደራጀት ትችላለህ።';
+
+  @override
+  String get voicePermissionRequesting => 'የማይክሮፎን መዳረሻ እየተጠየቀ ነው...';
+
+  @override
+  String get voiceTranscribing => 'እየገለበጠ ነው...';
+
+  @override
+  String get voiceTranslating => 'እየተረጎመ ነው...';
+
+  @override
+  String get voiceStopRecording => 'አቁም';
+
+  @override
+  String get voiceCancelRecording => 'ሰርዝ';
+
+  @override
+  String get voiceRecordingUnavailable => 'ቀረጻ እዚህ ላይ ሊጀመር አልቻለም።';
+
+  @override
+  String get voiceMicrophoneUnavailable => 'ማይክሮፎን በዚህ መሣሪያ ላይ አልተገኘም።';
+
+  @override
+  String get voiceMicrophoneInUse =>
+      'ማይክሮፎኑ በሌላ መተግበሪያ እየተጠቀመ ነው። ዝጋውና እንደገና ይሞክሩ።';
+
+  @override
+  String get voiceInsecureContext => 'ድምጽ ለመሥራት ደህንነቱ የተጠበቀ ግንኙነት ያስፈልጋል።';
+
+  @override
+  String get voiceBrowserRestricted => 'ይህ አሳሽ የማይክሮፎን መዳረሻን ያግዳል።';
+
+  @override
+  String get voicePermissionDenied =>
+      'ለመቅዳት የማይክሮፎን ፈቃድ ያስፈልጋል። ለመስጠት እንደገና ይሞክሩ።';
+
+  @override
+  String get voicePermissionPermanentlyDenied =>
+      'የማይክሮፎን መዳረሻ ተከልክሏል። ለመፍቀድ የመሣሪያዎን ቅንብሮች ይክፈቱ።';
+
+  @override
+  String get voiceOpenSettings => 'ቅንብሮችን ይክፈቱ';
+
+  @override
+  String get voiceEmptyAudio => 'ምንም ድምጽ አልተቀረጸም። እንደገና ይቅዳ።';
+
+  @override
+  String get voiceTranscriptionFailed => 'ድምፁን ወደ ጽሑፍ መቀየር አልተቻለም።';
+
+  @override
+  String get voiceRetryTranscription => 'ግልባጩን እንደገና ይሞክሩ';
+
+  @override
+  String get voiceAuthOrConfig => 'የድምጽ AI አልተዋቀረም። በቅንብሮች ውስጥ የጌሚኒ ቁልፍ ይጨምሩ።';
+
+  @override
+  String get voiceTimeout => 'ጊዜው አልበቃም። እንደገና ይሞክሩ።';
+
+  @override
+  String get voiceNetwork => 'ከመስመር ውጭ ነዎት። ሲገናኙ እንደገና ይሞክሩ።';
+
+  @override
+  String get voiceUnknown => 'ከድምጽ ጋር የሆነ ችግር ተከስቷል። እንደገና ይሞክሩ።';
+
+  @override
+  String get voiceTranslate => 'ተርጉም';
+
+  @override
+  String get voiceTranslationCaption => 'ትርጉም';
+
+  @override
+  String get voiceTranslationUnavailable => 'ትርጉም በአሁኑ ጊዜ አይገኝም።';
+
+  @override
+  String get voiceRetryTranslation => 'ትርጉሙን እንደገና ይሞክሩ';
+
+  @override
+  String get voiceYouSaid => 'እርስዎ ያሉት፡-';
+
+  @override
+  String get voiceDetectedLanguage => 'ቋንቋ';
+
+  @override
+  String get voiceDiagnosticsTitle => 'የድምጽ ምርመራ';
+
+  @override
+  String get voiceDiagnosticsEmpty => 'እስካሁን የድምጽ እንቅስቃሴ አልተመዘገበም።';
+
+  @override
+  String get voiceDiagnosticsCopy => 'ቅዳ';
+
+  @override
+  String get voiceDiagnosticsCopied => 'ተቀድቷል';
 }

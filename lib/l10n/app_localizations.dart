@@ -3451,6 +3451,186 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Organizing needs the internet. Save your words as a draft now and organize them later.'**
   String get voiceJournalOfflineBody;
+
+  /// No description provided for @voicePermissionRequesting.
+  ///
+  /// In en, this message translates to:
+  /// **'Requesting microphone access...'**
+  String get voicePermissionRequesting;
+
+  /// No description provided for @voiceTranscribing.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcribing...'**
+  String get voiceTranscribing;
+
+  /// No description provided for @voiceTranslating.
+  ///
+  /// In en, this message translates to:
+  /// **'Translating...'**
+  String get voiceTranslating;
+
+  /// No description provided for @voiceStopRecording.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get voiceStopRecording;
+
+  /// No description provided for @voiceCancelRecording.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get voiceCancelRecording;
+
+  /// No description provided for @voiceRecordingUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording couldn\'t start here.'**
+  String get voiceRecordingUnavailable;
+
+  /// No description provided for @voiceMicrophoneUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No microphone was detected on this device.'**
+  String get voiceMicrophoneUnavailable;
+
+  /// No description provided for @voiceMicrophoneInUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Another app is using the microphone. Close it and try again.'**
+  String get voiceMicrophoneInUse;
+
+  /// No description provided for @voiceInsecureContext.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice needs a secure connection to work here.'**
+  String get voiceInsecureContext;
+
+  /// No description provided for @voiceBrowserRestricted.
+  ///
+  /// In en, this message translates to:
+  /// **'This browser blocks microphone access.'**
+  String get voiceBrowserRestricted;
+
+  /// No description provided for @voicePermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Microphone permission is needed to record. Tap Retry to allow it.'**
+  String get voicePermissionDenied;
+
+  /// No description provided for @voicePermissionPermanentlyDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Microphone access is blocked. Open your device settings to allow it.'**
+  String get voicePermissionPermanentlyDenied;
+
+  /// No description provided for @voiceOpenSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get voiceOpenSettings;
+
+  /// No description provided for @voiceEmptyAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'No audio was captured. Record again.'**
+  String get voiceEmptyAudio;
+
+  /// No description provided for @voiceTranscriptionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t turn the audio into text.'**
+  String get voiceTranscriptionFailed;
+
+  /// No description provided for @voiceRetryTranscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry transcription'**
+  String get voiceRetryTranscription;
+
+  /// No description provided for @voiceAuthOrConfig.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice AI isn\'t configured. Add a Gemini API key in Settings.'**
+  String get voiceAuthOrConfig;
+
+  /// No description provided for @voiceTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'That took too long. Retry.'**
+  String get voiceTimeout;
+
+  /// No description provided for @voiceNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re offline. Retry when you\'re connected.'**
+  String get voiceNetwork;
+
+  /// No description provided for @voiceUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong with voice. Try again.'**
+  String get voiceUnknown;
+
+  /// No description provided for @voiceTranslate.
+  ///
+  /// In en, this message translates to:
+  /// **'Translate'**
+  String get voiceTranslate;
+
+  /// No description provided for @voiceTranslationCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation'**
+  String get voiceTranslationCaption;
+
+  /// No description provided for @voiceTranslationUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation is temporarily unavailable.'**
+  String get voiceTranslationUnavailable;
+
+  /// No description provided for @voiceRetryTranslation.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry translation'**
+  String get voiceRetryTranslation;
+
+  /// No description provided for @voiceYouSaid.
+  ///
+  /// In en, this message translates to:
+  /// **'You said:'**
+  String get voiceYouSaid;
+
+  /// No description provided for @voiceDetectedLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get voiceDetectedLanguage;
+
+  /// No description provided for @voiceDiagnosticsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice diagnostics'**
+  String get voiceDiagnosticsTitle;
+
+  /// No description provided for @voiceDiagnosticsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No voice activity recorded yet.'**
+  String get voiceDiagnosticsEmpty;
+
+  /// No description provided for @voiceDiagnosticsCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get voiceDiagnosticsCopy;
+
+  /// No description provided for @voiceDiagnosticsCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied to clipboard'**
+  String get voiceDiagnosticsCopied;
 }
 
 class _AppLocalizationsDelegate

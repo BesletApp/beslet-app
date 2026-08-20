@@ -12,12 +12,19 @@ import '../../../core/speech/speech_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/voice/recording_adapter.dart';
+import '../../../core/voice/transcription_service.dart';
+import '../../../core/voice/translation_service.dart';
+import '../../../core/voice/voice_ai_transports.dart';
+import '../../../core/voice/voice_capability_probe.dart';
+import '../../../core/voice/voice_controller.dart';
+import '../../../core/voice/voice_models.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../settings/widgets/gemini_key_dialog.dart';
 
 /// Opens the Voice Journal sheet from Today's Journal. The sheet is the whole
-/// flow: record → live transcript → (editable) transcript → AI organize →
-/// editable organized sections → save to today's journal.
+/// flow: record → transcribe → (editable) transcript → optional translate →
+/// AI organize → editable organized sections → save to today's journal.
 Future<void> showVoiceJournalSheet(BuildContext context) {
   return showModalBottomSheet<void>(
     context: context,
@@ -36,29 +43,41 @@ enum _VjStep { record, transcript, organizing, review }
 /// The AI-organized voice journal sheet.
 ///
 /// The AI is an editor, not an author: it only organizes the reader's own
-/// spoken words. The final organized journal is fully editable before it is
-/// saved through the existing Today's Journal path — nothing in the existing
-/// journal screen changes.
+/// spoken words. Recording is real audio captured to a temp file, transcribed
+/// by the AI backend (Gemini), and optionally translated — everything is
+/// retryable without re-recording.
 class VoiceJournalSheet extends ConsumerStatefulWidget {
-  /// Optional injection for tests; production uses the real plugin gateway.
+  /// Optional injection for tests; production uses the real recorder + Gemini.
   final SpeechGateway? speechGateway;
+  final RecordingAdapter? recordingAdapter;
+  final TranscriptionService? transcriptionService;
+  final TranslationService? translationService;
 
-  const VoiceJournalSheet({super.key, this.speechGateway});
+  const VoiceJournalSheet({
+    super.key,
+    this.speechGateway,
+    this.recordingAdapter,
+    this.transcriptionService,
+    this.translationService,
+  });
 
   @override
   ConsumerState<VoiceJournalSheet> createState() => _VoiceJournalSheetState();
 }
 
 class _VoiceJournalSheetState extends ConsumerState<VoiceJournalSheet> {
-  late final SpeechService _speech =
-      SpeechService(widget.speechGateway ?? PluginSpeechGateway());
+  late final RecordingAdapter _adapter =
+      widget.recordingAdapter ?? RecordRecorderAdapter();
+  late final VoiceController _voice = VoiceController(
+    recorder: _adapter,
+    transcription: widget.transcriptionService ?? _defaultTranscription(),
+    translator: widget.translationService ??
+        GeminiTranslationService(transport: buildGeminiTextTransport()),
+    probe: VoiceCapabilityProbe(adapter: _adapter),
+  );
 
   _VjStep _step = _VjStep.record;
-  bool _listening = false;
-  bool _fallbackToEnglish = false;
-  String _livePartial = '';
   String _transcript = '';
-  SpeechFailure? _dictationFailure;
   bool _organizing = false;
   VoiceJournalUnavailability? _organizeFailure;
   bool _limitReached = false;
@@ -66,7 +85,7 @@ class _VoiceJournalSheetState extends ConsumerState<VoiceJournalSheet> {
   bool _rawShown = false;
   final _transcriptController = TextEditingController();
   final Map<VoiceNoteSectionKind, TextEditingController> _sectionControllers = {};
-  bool _notAvailable = false;
+  Timer? _ticker;
 
   static const List<VoiceNoteSectionKind> _canonicalOrder = [
     VoiceNoteSectionKind.whatHappened,
@@ -76,72 +95,140 @@ class _VoiceJournalSheetState extends ConsumerState<VoiceJournalSheet> {
     VoiceNoteSectionKind.sentenceToRemember,
   ];
 
+  TranscriptionService _defaultTranscription() {
+    final gateway = widget.speechGateway;
+    if (gateway != null) {
+      final speech = SpeechService(gateway);
+      return StreamingFallbackTranscriptionService(
+        dictate: () async {
+          final result = await speech.dictate(
+            localeId: _localeId,
+            listenFor: const Duration(seconds: 120),
+            pauseFor: const Duration(seconds: 20),
+          );
+          if (result.isAvailable) {
+            return VoiceTranscript(result.text, detectedLanguage: _isAm ? 'am' : 'en');
+          }
+          throw VoicePipelineException(
+            _speechFailureToVoiceError(result.failure ?? SpeechFailure.other),
+            result.failure?.name ?? 'dictation failed',
+          );
+        },
+      );
+    }
+    return GeminiTranscriptionService(transport: buildGeminiAudioTransport());
+  }
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _checkAvailability());
+    _voice.addListener(_onVoiceChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_probeOnly());
+    });
   }
 
   @override
   void dispose() {
+    _stopTicker();
     _transcriptController.dispose();
     for (final c in _sectionControllers.values) {
       c.dispose();
     }
-    _speech.stop();
+    unawaited(_voice.cancel());
+    _voice.dispose();
     super.dispose();
   }
 
   bool get _isAm =>
-      (Localizations.localeOf(context).languageCode == 'am') &&
-      !_fallbackToEnglish;
+      (Localizations.localeOf(context).languageCode == 'am');
 
   String get _localeId => _isAm ? SpeechService.amharicLocale : SpeechService.englishLocale;
 
   String _today() => DateTime.now().toIso8601String().substring(0, 10);
 
-  Future<void> _checkAvailability() async {
-    final locale = _isAm
-        ? SpeechService.amharicLocale
-        : SpeechService.englishLocale;
-    final availability = await _speech.checkAvailability(locale);
+  void _onVoiceChanged() {
     if (!mounted) return;
-    final engineDown = !availability.engineAvailable;
-    setState(() {
-      _fallbackToEnglish = availability.requestedLocaleSupported == false &&
-          _isAm &&
-          availability.engineAvailable;
-      _notAvailable = engineDown;
+    final t = _voice.transcript;
+    if (t != null) {
+      _transcript = t.text;
+      _transcriptController.text = t.text;
+      if (_step == _VjStep.record) {
+        _step = _VjStep.transcript;
+      }
+    }
+    if (_voice.isRecording) {
+      _ensureTicker();
+    } else {
+      _stopTicker();
+    }
+    setState(() {});
+  }
+
+  void _ensureTicker() {
+    if (_ticker != null) return;
+    _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) {
+        _ticker?.cancel();
+        _ticker = null;
+        return;
+      }
+      setState(() {});
     });
   }
 
-  Future<void> _startListening() async {
-    if (_listening) return;
-    setState(() {
-      _listening = true;
-      _dictationFailure = null;
-      _livePartial = '';
-    });
-    SpeechSessionResult result;
+  void _stopTicker() {
+    _ticker?.cancel();
+    _ticker = null;
+  }
+
+  Future<void> _probeOnly() async {
     try {
-      result = await _speech.dictate(
-        localeId: _localeId,
-        listenFor: const Duration(seconds: 120),
-        pauseFor: const Duration(seconds: 20),
-        onPartialText: (text, isFinal) {
-          if (mounted && _listening) setState(() => _livePartial = text);
-        },
-      );
-    } finally {
-      if (mounted) setState(() => _listening = false);
+      await _voice.probe.probe();
+    } catch (_) {}
+  }
+
+  Future<void> _startRecording() async {
+    _stopTicker();
+    if (_voice.phase != VoicePhase.idle) {
+      _voice.clear();
     }
-    if (!mounted) return;
-    if (result.isAvailable) {
-      _transcript = result.text;
-      _transcriptController.text = result.text;
-      setState(() => _step = _VjStep.transcript);
-    } else {
-      setState(() => _dictationFailure = result.failure);
+    _transcript = '';
+    _transcriptController.clear();
+    setState(() => _step = _VjStep.record);
+    await _voice.start();
+  }
+
+  Future<void> _stopRecording() async {
+    await _voice.stop();
+    _stopTicker();
+  }
+
+  Future<void> _cancelRecording() async {
+    await _voice.cancel();
+    _stopTicker();
+    setState(() {});
+  }
+
+  Future<void> _retryTranscription() async {
+    await _voice.retryTranscription();
+    setState(() {});
+  }
+
+  VoiceError _speechFailureToVoiceError(SpeechFailure failure) {
+    switch (failure) {
+      case SpeechFailure.permissionDenied:
+        return VoiceError.permissionDenied;
+      case SpeechFailure.noRecognitionEngine:
+        return VoiceError.recordingUnavailable;
+      case SpeechFailure.languageNotSupported:
+        return VoiceError.transcriptionFailed;
+      case SpeechFailure.audioUnavailable:
+        return VoiceError.microphoneUnavailable;
+      case SpeechFailure.timedOut:
+        return VoiceError.timeout;
+      case SpeechFailure.other:
+        return VoiceError.unknown;
     }
   }
 
@@ -194,15 +281,10 @@ class _VoiceJournalSheetState extends ConsumerState<VoiceJournalSheet> {
     });
     await notifier.updateSession(
       id: sessionId,
-      status: result.isAvailable
-          ? 'organized'
-          : 'failed',
-      organizedContent: result.isAvailable
-          ? _composeFinal(false)
-          : null,
-      errorReason: !result.isAvailable
-          ? result.unavailability.name
-          : null,
+      status: result.isAvailable ? 'organized' : 'failed',
+      organizedContent:
+          result.isAvailable ? _composeFinal(false) : null,
+      errorReason: !result.isAvailable ? result.unavailability.name : null,
     );
   }
 
@@ -355,22 +437,8 @@ class _VoiceJournalSheetState extends ConsumerState<VoiceJournalSheet> {
     }
   }
 
-  String _dictationFailureText(AppLocalizations l, SpeechFailure failure) {
-    switch (failure) {
-      case SpeechFailure.permissionDenied:
-        return l.voiceJournalPermissionDenied;
-      case SpeechFailure.noRecognitionEngine:
-        return l.voiceJournalNoEngine;
-      case SpeechFailure.languageNotSupported:
-        return l.voiceJournalLanguageNotSupported;
-      case SpeechFailure.audioUnavailable:
-      case SpeechFailure.timedOut:
-      case SpeechFailure.other:
-        return l.voiceJournalNothingHeard;
-    }
-  }
-
-  String _organizeFailureText(AppLocalizations l, VoiceJournalUnavailability reason) {
+  String _organizeFailureText(
+      AppLocalizations l, VoiceJournalUnavailability reason) {
     switch (reason) {
       case VoiceJournalUnavailability.offline:
         return l.studyReasonOffline;
@@ -387,15 +455,54 @@ class _VoiceJournalSheetState extends ConsumerState<VoiceJournalSheet> {
       case VoiceJournalUnavailability.tooLong:
         return l.voiceJournalTooLong;
       case VoiceJournalUnavailability.permissionDenied:
-        return l.voiceJournalPermissionDenied;
+        return l.voicePermissionDenied;
       case VoiceJournalUnavailability.noRecognitionEngine:
-        return l.voiceJournalNoEngine;
+        return l.voiceRecordingUnavailable;
       case VoiceJournalUnavailability.languageNotSupported:
-        return l.voiceJournalLanguageNotSupported;
+        return l.voiceTranscriptionFailed;
       case VoiceJournalUnavailability.capped:
       case VoiceJournalUnavailability.none:
         return l.voiceJournalUnavailableTitle;
     }
+  }
+
+  String _errorText(AppLocalizations l, VoiceError err) {
+    switch (err) {
+      case VoiceError.permissionDenied:
+        return l.voicePermissionDenied;
+      case VoiceError.permissionPermanentlyDenied:
+        return l.voicePermissionPermanentlyDenied;
+      case VoiceError.microphoneUnavailable:
+        return l.voiceMicrophoneUnavailable;
+      case VoiceError.microphoneInUse:
+        return l.voiceMicrophoneInUse;
+      case VoiceError.insecureContext:
+        return l.voiceInsecureContext;
+      case VoiceError.browserRestricted:
+        return l.voiceBrowserRestricted;
+      case VoiceError.recordingUnavailable:
+        return l.voiceRecordingUnavailable;
+      case VoiceError.emptyAudio:
+        return l.voiceEmptyAudio;
+      case VoiceError.transcriptionFailed:
+        return l.voiceTranscriptionFailed;
+      case VoiceError.network:
+        return l.voiceNetwork;
+      case VoiceError.authOrConfig:
+        return l.voiceAuthOrConfig;
+      case VoiceError.timeout:
+        return l.voiceTimeout;
+      case VoiceError.translationFailed:
+        return l.voiceTranslationUnavailable;
+      case VoiceError.unknown:
+        return l.voiceUnknown;
+    }
+  }
+
+  String _formatElapsed(Duration d) {
+    final m = d.inMinutes.toString().padLeft(2, '0');
+    final s = (d.inSeconds % 60).toString().padLeft(2, '0');
+    return '$m:$s';
   }
 
   @override
@@ -448,36 +555,19 @@ class _VoiceJournalSheetState extends ConsumerState<VoiceJournalSheet> {
   }
 
   Widget _buildRecordStep(ThemePalette c, AppLocalizations l) {
-    if (_notAvailable) {
-      return _messageWithButton(
-        c,
-        Icons.mic_off_outlined,
-        l.voiceJournalNoEngine,
-        [
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l.cancel),
-          ),
-        ],
-      );
+    final err = _voice.error;
+    if (err != null) return _buildErrorStep(c, l, err);
+    final phase = _voice.phase;
+    if (phase == VoicePhase.requestingPermission) {
+      return _buildProgressStep(c, l, l.voicePermissionRequesting);
     }
-    if (_fallbackToEnglish) {
-      return _messageWithButton(
-        c,
-        Icons.language_outlined,
-        l.voiceJournalLanguageNotSupported,
-        [
-          FilledButton.icon(
-            onPressed: () {
-              setState(() => _fallbackToEnglish = false);
-              _checkAvailability();
-            },
-            icon: const Icon(Icons.record_voice_over_outlined, size: 18),
-            label: Text(l.voiceJournalUseEnglish),
-          ),
-        ],
-      );
+    if (phase == VoicePhase.transcribing) {
+      return _buildProgressStep(c, l, l.voiceTranscribing);
     }
+    if (phase == VoicePhase.translating) {
+      return _buildProgressStep(c, l, l.voiceTranslating);
+    }
+    final recording = _voice.isRecording;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(children: [
@@ -488,115 +578,237 @@ class _VoiceJournalSheetState extends ConsumerState<VoiceJournalSheet> {
         ),
         const SizedBox(height: AppSpacing.lg),
         GestureDetector(
-          onTap: _listening ? null : _startListening,
+          onTap: recording ? null : _startRecording,
           child: Container(
             width: 96,
             height: 96,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: _listening ? AppColors.primary : c.card,
-              border: Border.all(color: AppColors.primary, width: 2),
+              color: recording ? AppColors.primary : c.card,
+              border: Border.all(
+                color: recording ? Colors.redAccent : AppColors.primary,
+                width: 2,
+              ),
             ),
             child: Icon(
-              _listening ? Icons.graphic_eq : Icons.mic,
+              recording ? Icons.stop_circle_outlined : Icons.mic,
               size: 44,
-              color: _listening ? Colors.white : AppColors.primary,
+              color: recording ? Colors.white : AppColors.primary,
             ),
           ),
         ),
         const SizedBox(height: AppSpacing.md),
         Text(
-          _listening ? l.voiceJournalListening : l.voiceJournalStartRecording,
+          recording ? _formatElapsed(_voice.elapsed) : l.voiceJournalStartRecording,
           style: AppTextStyles.labelLarge.copyWith(color: c.textPrimary),
         ),
-        if (_listening) ...[
+        if (recording) ...[
           const SizedBox(height: AppSpacing.md),
-          FilledButton.tonal(
-            onPressed: () => _speech.stop(),
-            child: Text(l.voiceJournalStop),
-          ),
-        ],
-        const SizedBox(height: AppSpacing.lg),
-        if (_listening || _livePartial.isNotEmpty) ...[
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(AppSpacing.md),
-            decoration: BoxDecoration(
-              color: c.card,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: c.border.withValues(alpha: 0.3)),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: ((_voice.level + 60).clamp(0.0, 60.0)) / 60.0,
+              minHeight: 6,
+              backgroundColor: c.surface,
             ),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(l.voiceJournalLiveCaption,
-                  style: AppTextStyles.labelSmall.copyWith(color: AppColors.primary)),
-              const SizedBox(height: 6),
-              Text(
-                _livePartial.isEmpty ? l.voiceJournalNothingHeard : _livePartial,
-                style: AppTextStyles.bodyMedium.copyWith(fontSize: 13, height: 1.5),
-              ),
-            ]),
           ),
-        ] else if (_dictationFailure != null) ...[
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(AppSpacing.md),
-            decoration: BoxDecoration(
-              color: c.card,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: c.border.withValues(alpha: 0.3)),
-            ),
-            child: Column(children: [
-              Text(
-                _dictationFailureText(l, _dictationFailure!),
-                textAlign: TextAlign.center,
-                style: TextStyle(color: c.textSecondary, fontSize: 13, height: 1.5),
+          const SizedBox(height: AppSpacing.md),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              FilledButton.icon(
+                onPressed: _stopRecording,
+                icon: const Icon(Icons.stop, size: 18),
+                label: Text(l.voiceStopRecording),
               ),
-              const SizedBox(height: AppSpacing.sm),
-              TextButton.icon(
-                onPressed: _startListening,
-                icon: const Icon(Icons.refresh, size: 18),
-                label: Text(l.voiceJournalRetry),
+              const SizedBox(width: 12),
+              OutlinedButton.icon(
+                onPressed: _cancelRecording,
+                icon: const Icon(Icons.close, size: 18),
+                label: Text(l.voiceCancelRecording),
               ),
-            ]),
+            ],
           ),
         ],
       ]),
     );
   }
 
+  Widget _buildProgressStep(ThemePalette c, AppLocalizations l, String message) {
+    return Center(
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        const SizedBox(width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 2.5)),
+        const SizedBox(height: 16),
+        Text(message, style: TextStyle(color: c.textSecondary, fontSize: 13)),
+      ]),
+    );
+  }
+
+  Widget _buildErrorStep(ThemePalette c, AppLocalizations l, VoiceError err) {
+    final icon = switch (err) {
+      VoiceError.permissionPermanentlyDenied => Icons.settings,
+      VoiceError.permissionDenied => Icons.mic_off_outlined,
+      VoiceError.microphoneUnavailable => Icons.mic_off_outlined,
+      VoiceError.microphoneInUse => Icons.headset_off_outlined,
+      VoiceError.insecureContext => Icons.lock_outline,
+      VoiceError.browserRestricted => Icons.public_off_outlined,
+      VoiceError.recordingUnavailable => Icons.record_voice_over_outlined,
+      VoiceError.emptyAudio => Icons.mic_none_outlined,
+      VoiceError.transcriptionFailed => Icons.graphic_eq,
+      VoiceError.network => Icons.wifi_off_outlined,
+      VoiceError.authOrConfig => Icons.key_off_outlined,
+      VoiceError.timeout => Icons.timer_outlined,
+      VoiceError.translationFailed => Icons.translate,
+      VoiceError.unknown => Icons.error_outline,
+    };
+    return _messageWithButton(c, icon, _errorText(l, err), _errorButtons(l, err));
+  }
+
+  List<Widget> _errorButtons(AppLocalizations l, VoiceError err) {
+    switch (err) {
+      case VoiceError.permissionPermanentlyDenied:
+        return [
+          FilledButton.icon(
+            onPressed: () async {
+              await _voice.openSettings();
+            },
+            icon: const Icon(Icons.settings, size: 18),
+            label: Text(l.voiceOpenSettings),
+          ),
+          TextButton.icon(
+            onPressed: _startRecording,
+            icon: const Icon(Icons.refresh, size: 18),
+            label: Text(l.voiceJournalRetry),
+          ),
+        ];
+      case VoiceError.transcriptionFailed:
+      case VoiceError.network:
+      case VoiceError.timeout:
+      case VoiceError.authOrConfig:
+        return [
+          FilledButton.icon(
+            onPressed: _retryTranscription,
+            icon: const Icon(Icons.refresh, size: 18),
+            label: Text(l.voiceRetryTranscription),
+          ),
+          TextButton.icon(
+            onPressed: _startRecording,
+            icon: const Icon(Icons.mic, size: 18),
+            label: Text(l.voiceJournalRecordAgain),
+          ),
+        ];
+      default:
+        return [
+          FilledButton.icon(
+            onPressed: _startRecording,
+            icon: const Icon(Icons.refresh, size: 18),
+            label: Text(l.voiceJournalRetry),
+          ),
+        ];
+    }
+  }
+
   Widget _buildTranscriptStep(ThemePalette c, AppLocalizations l) {
-    return Padding(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Expanded(
-          child: TextField(
-            controller: _transcriptController,
-            maxLines: null,
-            minLines: null,
-            expands: true,
-            textAlignVertical: TextAlignVertical.top,
-            style: AppTextStyles.bodyMedium.copyWith(fontSize: 14, height: 1.6),
-            onChanged: (v) => _transcript = v,
-            decoration: InputDecoration(
-              hintText: l.voiceJournalEmptyTranscript,
-              hintStyle: TextStyle(color: c.textMuted),
-              filled: true,
-              fillColor: c.surface,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
+    final translation = _voice.translation;
+    final transErr = _voice.translationError;
+    final translating = _voice.phase == VoicePhase.translating;
+    return Column(children: [
+      Expanded(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            TextField(
+              controller: _transcriptController,
+              maxLines: null,
+              minLines: 6,
+              style: AppTextStyles.bodyMedium.copyWith(fontSize: 14, height: 1.6),
+              onChanged: (v) => _transcript = v,
+              decoration: InputDecoration(
+                hintText: l.voiceJournalEmptyTranscript,
+                hintStyle: TextStyle(color: c.textMuted),
+                filled: true,
+                fillColor: c.surface,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
               ),
             ),
-          ),
+            const SizedBox(height: AppSpacing.md),
+            if (translating)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(
+                        width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                    const SizedBox(width: 10),
+                    Text(l.voiceTranslating,
+                        style: TextStyle(color: c.textSecondary, fontSize: 13)),
+                  ],
+                ),
+              )
+            else if (translation != null) ...[
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: c.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.4)),
+                ),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(l.voiceYouSaid,
+                      style: AppTextStyles.labelSmall.copyWith(color: AppColors.primary)),
+                  const SizedBox(height: 4),
+                  Text(_transcript.trim(),
+                      style: TextStyle(color: c.textMuted, fontSize: 13, height: 1.5)),
+                  const SizedBox(height: 12),
+                  Text(l.voiceTranslationCaption,
+                      style: AppTextStyles.labelSmall.copyWith(color: AppColors.primary)),
+                  const SizedBox(height: 4),
+                  Text(translation.text,
+                      style: AppTextStyles.bodyMedium.copyWith(fontSize: 14, height: 1.6)),
+                ]),
+              ),
+            ] else if (transErr != null) ...[
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: c.card,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: c.border.withValues(alpha: 0.3)),
+                ),
+                child: Column(children: [
+                  Text(l.voiceTranslationUnavailable,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: c.textSecondary, fontSize: 13)),
+                  const SizedBox(height: AppSpacing.sm),
+                  TextButton.icon(
+                    onPressed: () => _voice.retryTranslation(text: _transcript),
+                    icon: const Icon(Icons.refresh, size: 18),
+                    label: Text(l.voiceRetryTranslation),
+                  ),
+                ]),
+              ),
+            ] else
+              Align(
+                alignment: Alignment.centerLeft,
+                child: OutlinedButton.icon(
+                  onPressed:
+                      _transcript.trim().isEmpty ? null : () => _voice.translate(text: _transcript),
+                  icon: const Icon(Icons.translate, size: 18),
+                  label: Text(l.voiceTranslate),
+                ),
+              ),
+          ]),
         ),
-        const SizedBox(height: AppSpacing.md),
-        Row(children: [
+      ),
+      Padding(
+        padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.md),
+        child: Row(children: [
           OutlinedButton.icon(
-            onPressed: () {
-              _transcript = '';
-              _transcriptController.clear();
-              setState(() => _step = _VjStep.record);
-            },
+            onPressed: _startRecording,
             icon: const Icon(Icons.graphic_eq, size: 18),
             label: Text(l.voiceJournalRecordAgain),
           ),
@@ -606,8 +818,8 @@ class _VoiceJournalSheetState extends ConsumerState<VoiceJournalSheet> {
             child: Text(l.voiceJournalUseTranscript),
           ),
         ]),
-      ]),
-    );
+      ),
+    ]);
   }
 
   Widget _buildOrganizing(ThemePalette c, AppLocalizations l) {
@@ -755,7 +967,8 @@ class _VoiceJournalSheetState extends ConsumerState<VoiceJournalSheet> {
     ]);
   }
 
-  Widget _messageWithButton(ThemePalette c, IconData icon, String message, List<Widget> buttons) {
+  Widget _messageWithButton(
+      ThemePalette c, IconData icon, String message, List<Widget> buttons) {
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.lg),

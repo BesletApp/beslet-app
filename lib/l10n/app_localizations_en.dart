@@ -1852,4 +1852,101 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get voiceJournalOfflineBody =>
       'Organizing needs the internet. Save your words as a draft now and organize them later.';
+
+  @override
+  String get voicePermissionRequesting => 'Requesting microphone access...';
+
+  @override
+  String get voiceTranscribing => 'Transcribing...';
+
+  @override
+  String get voiceTranslating => 'Translating...';
+
+  @override
+  String get voiceStopRecording => 'Stop';
+
+  @override
+  String get voiceCancelRecording => 'Cancel';
+
+  @override
+  String get voiceRecordingUnavailable => 'Recording couldn\'t start here.';
+
+  @override
+  String get voiceMicrophoneUnavailable =>
+      'No microphone was detected on this device.';
+
+  @override
+  String get voiceMicrophoneInUse =>
+      'Another app is using the microphone. Close it and try again.';
+
+  @override
+  String get voiceInsecureContext =>
+      'Voice needs a secure connection to work here.';
+
+  @override
+  String get voiceBrowserRestricted => 'This browser blocks microphone access.';
+
+  @override
+  String get voicePermissionDenied =>
+      'Microphone permission is needed to record. Tap Retry to allow it.';
+
+  @override
+  String get voicePermissionPermanentlyDenied =>
+      'Microphone access is blocked. Open your device settings to allow it.';
+
+  @override
+  String get voiceOpenSettings => 'Open settings';
+
+  @override
+  String get voiceEmptyAudio => 'No audio was captured. Record again.';
+
+  @override
+  String get voiceTranscriptionFailed => 'Couldn\'t turn the audio into text.';
+
+  @override
+  String get voiceRetryTranscription => 'Retry transcription';
+
+  @override
+  String get voiceAuthOrConfig =>
+      'Voice AI isn\'t configured. Add a Gemini API key in Settings.';
+
+  @override
+  String get voiceTimeout => 'That took too long. Retry.';
+
+  @override
+  String get voiceNetwork => 'You\'re offline. Retry when you\'re connected.';
+
+  @override
+  String get voiceUnknown => 'Something went wrong with voice. Try again.';
+
+  @override
+  String get voiceTranslate => 'Translate';
+
+  @override
+  String get voiceTranslationCaption => 'Translation';
+
+  @override
+  String get voiceTranslationUnavailable =>
+      'Translation is temporarily unavailable.';
+
+  @override
+  String get voiceRetryTranslation => 'Retry translation';
+
+  @override
+  String get voiceYouSaid => 'You said:';
+
+  @override
+  String get voiceDetectedLanguage => 'Language';
+
+  @override
+  String get voiceDiagnosticsTitle => 'Voice diagnostics';
+
+  @override
+  String get voiceDiagnosticsEmpty => 'No voice activity recorded yet.';
+
+  @override
+  String get voiceDiagnosticsCopy => 'Copy';
+
+  @override
+  String get voiceDiagnosticsCopied => 'Copied to clipboard';
 }

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../l10n/app_localizations.dart';
 import 'widgets/gemini_key_dialog.dart';
+import 'widgets/voice_diagnostics_screen.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/providers/theme_provider.dart';
@@ -547,6 +548,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
           ]),
           anchor: Column(children: [
+            Container(
+              decoration: BoxDecoration(
+                color: AppColors.of(context).card,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: AppColors.of(context).border, width: 0.5),
+              ),
+              child: ListTile(
+                leading: const Icon(Icons.mic_none_outlined, color: AppColors.primary, size: 20),
+                title: Text(l.voiceDiagnosticsTitle, style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: AppColors.of(context).textPrimary)),
+                trailing: Icon(Icons.chevron_right, color: AppColors.of(context).textMuted, size: 18),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(builder: (_) => const VoiceDiagnosticsScreen()),
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                dense: true,
+              ),
+            ),
+            const SizedBox(height: 8),
             Container(
               decoration: BoxDecoration(
                 color: AppColors.of(context).card,
