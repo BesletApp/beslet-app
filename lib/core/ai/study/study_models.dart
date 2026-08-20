@@ -19,7 +19,7 @@ import 'study_intro.dart';
 
 /// Bump when the prompt, schema, or generation rules change so cached notes
 /// from an older version are never served.
-const int studyPromptVersion = 11;
+const int studyPromptVersion = 12;
 
 /// The version of the serialized cache payload.
 const int _cacheVersion = 8;

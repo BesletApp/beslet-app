@@ -183,105 +183,17 @@ Future<String> Function(String prompt) buildGeminiTransport({
     developer.log('study: request with $source key (${key.length} chars)',
         name: 'study');
     final model = GenerativeModel(model: modelName, apiKey: key);
-    final schema = Schema.object(
-      properties: {
-        'passageOverview': Schema.object(properties: {
-          'text': Schema.string(
-              description: 'Three to five bullet facts (kind of writing, place in the book, place in the larger story, key images), each on its own "• " line.'),
-        }),
-        'historicalBackground': Schema.object(properties: {
-          'text': Schema.string(
-              description: 'Short prose weaving the background of the passage.'),
-          'entries': Schema.array(
-            items: Schema.object(properties: {
-              'label': Schema.string(
-                  description: 'author | audience | date | place | occasion | culturalSetting'),
-              'category': Schema.string(
-                  description: 'established | probable | debated'),
-              'text': Schema.string(
-                  description: 'The evidence-labeled historical statement.'),
-            }),
-          ),
-        }),
-        'literaryContext': Schema.object(properties: {
-          'text': Schema.string(
-              description: 'What comes before and after, why the passage sits here, what the passage itself communicates, with "Step N — " lines for its movement.'),
-        }),
-        'verseByVerse': Schema.object(properties: {
-          'observations': Schema.array(
-            items: Schema.object(properties: {
-              'startVerse': Schema.integer(),
-              'endVerse': Schema.integer(),
-              'text': Schema.string(
-                  description: 'What the verse or small group says — wording, imagery, repetition, structure.'),
-            }),
-          ),
-        }),
-        'originalLanguage': Schema.object(properties: {
-          'text': Schema.string(
-              description: 'Meaning, key terms, and textual observations, with the reader\'s language.'),
-          'terms': Schema.array(
-            items: Schema.object(properties: {
-              'term': Schema.string(
-                  description: 'The important term or original-language word in its own script.'),
-              'language': Schema.string(
-                  description: 'e.g. hebrew, aramaic, greek, amharic, english.'),
-              'transliteration': Schema.string(
-                  description: 'Pronunciation guide, when useful.'),
-              'verseNumber': Schema.integer(
-                  description: 'The verse in the studied passage where the term appears.'),
-              'meaning': Schema.string(
-                  description: 'Short meaning in the reader\'s language, anchored in this passage.'),
-            }),
-          ),
-        }),
-        'scriptureInterconnections': Schema.object(properties: {
-          'items': Schema.array(
-            items: Schema.object(properties: {
-              'bookId': Schema.string(
-                  description: 'Exact canonical book id from the prompt list (e.g. "psalms", "1corinthians") — never a USFM code such as JHN or ROM.'),
-              'chapter': Schema.integer(),
-              'startVerse': Schema.integer(),
-              'endVerse': Schema.integer(),
-              'priority': Schema.integer(description: '0 = essential, 1 = helpful, 2 = supporting.'),
-              'reason': Schema.string(description: 'One-clause reason.'),
-            }),
-          ),
-        }),
-        'explicitTeachings': Schema.object(properties: {
-          'blocks': Schema.array(
-            items: Schema.object(properties: {
-              'tier': Schema.string(description: 'clearlyStated | supportedUnderstanding | disputed'),
-              'text': Schema.string(description: 'One careful interpretive observation.'),
-            }),
-          ),
-        }),
-        'questionsToCarry': Schema.object(properties: {
-          'text': Schema.string(
-              description: 'One or two open-ended questions ending with "?".'),
-          'threads': Schema.string(
-              description: 'Optional. A single, quiet, neutral line gathering what the passage itself said. Never a directive, never "you", never a question, under 40 words. Omit if nothing honest belongs.'),
-        }),
-        'anchor': Schema.object(properties: {
-          'image': Schema.string(
-              description: 'A concrete image from the passage, a few words.'),
-          'keyword': Schema.string(
-              description: 'A single powerful keyword, one or two words.'),
-          'sentence': Schema.string(
-              description: 'One sentence stating the passage\'s central movement, under 40 words.'),
-        }),
-      },
-    );
     final startedAt = DateTime.now();
     var status = '';
     try {
+      developer.log('study: transport: sending to $modelName', name: 'study');
       final response = await model.generateContent(
         [Content.text(prompt)],
         generationConfig: GenerationConfig(
           responseMimeType: 'application/json',
-          responseSchema: schema,
         ),
       ).timeout(timeout);
+      developer.log('study: transport: HTTP 200 received', name: 'study');
       final text = response.text;
       if (text == null || text.trim().isEmpty) {
         throw StateError('empty model response');

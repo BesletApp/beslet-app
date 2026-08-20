@@ -10534,6 +10534,634 @@ class AiMomentsCompanion extends UpdateCompanion<AiMoment> {
   }
 }
 
+class $VoiceJournalTable extends VoiceJournal
+    with TableInfo<$VoiceJournalTable, VoiceJournalData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $VoiceJournalTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _dateMeta = const VerificationMeta('date');
+  @override
+  late final GeneratedColumn<String> date = GeneratedColumn<String>(
+    'date',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _localeMeta = const VerificationMeta('locale');
+  @override
+  late final GeneratedColumn<String> locale = GeneratedColumn<String>(
+    'locale',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _rawTranscriptMeta = const VerificationMeta(
+    'rawTranscript',
+  );
+  @override
+  late final GeneratedColumn<String> rawTranscript = GeneratedColumn<String>(
+    'raw_transcript',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _organizedContentMeta = const VerificationMeta(
+    'organizedContent',
+  );
+  @override
+  late final GeneratedColumn<String> organizedContent = GeneratedColumn<String>(
+    'organized_content',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _errorReasonMeta = const VerificationMeta(
+    'errorReason',
+  );
+  @override
+  late final GeneratedColumn<String> errorReason = GeneratedColumn<String>(
+    'error_reason',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _savedToJournalMeta = const VerificationMeta(
+    'savedToJournal',
+  );
+  @override
+  late final GeneratedColumn<bool> savedToJournal = GeneratedColumn<bool>(
+    'saved_to_journal',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("saved_to_journal" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<String> updatedAt = GeneratedColumn<String>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    date,
+    locale,
+    rawTranscript,
+    organizedContent,
+    status,
+    errorReason,
+    savedToJournal,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'voice_journal';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<VoiceJournalData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('date')) {
+      context.handle(
+        _dateMeta,
+        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dateMeta);
+    }
+    if (data.containsKey('locale')) {
+      context.handle(
+        _localeMeta,
+        locale.isAcceptableOrUnknown(data['locale']!, _localeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_localeMeta);
+    }
+    if (data.containsKey('raw_transcript')) {
+      context.handle(
+        _rawTranscriptMeta,
+        rawTranscript.isAcceptableOrUnknown(
+          data['raw_transcript']!,
+          _rawTranscriptMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_rawTranscriptMeta);
+    }
+    if (data.containsKey('organized_content')) {
+      context.handle(
+        _organizedContentMeta,
+        organizedContent.isAcceptableOrUnknown(
+          data['organized_content']!,
+          _organizedContentMeta,
+        ),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('error_reason')) {
+      context.handle(
+        _errorReasonMeta,
+        errorReason.isAcceptableOrUnknown(
+          data['error_reason']!,
+          _errorReasonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('saved_to_journal')) {
+      context.handle(
+        _savedToJournalMeta,
+        savedToJournal.isAcceptableOrUnknown(
+          data['saved_to_journal']!,
+          _savedToJournalMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  VoiceJournalData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return VoiceJournalData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      date: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}date'],
+      )!,
+      locale: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}locale'],
+      )!,
+      rawTranscript: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}raw_transcript'],
+      )!,
+      organizedContent: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}organized_content'],
+      ),
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      errorReason: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}error_reason'],
+      ),
+      savedToJournal: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}saved_to_journal'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $VoiceJournalTable createAlias(String alias) {
+    return $VoiceJournalTable(attachedDatabase, alias);
+  }
+}
+
+class VoiceJournalData extends DataClass
+    implements Insertable<VoiceJournalData> {
+  final String id;
+  final String date;
+  final String locale;
+  final String rawTranscript;
+  final String? organizedContent;
+  final String status;
+  final String? errorReason;
+  final bool savedToJournal;
+  final String createdAt;
+  final String updatedAt;
+  const VoiceJournalData({
+    required this.id,
+    required this.date,
+    required this.locale,
+    required this.rawTranscript,
+    this.organizedContent,
+    required this.status,
+    this.errorReason,
+    required this.savedToJournal,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['date'] = Variable<String>(date);
+    map['locale'] = Variable<String>(locale);
+    map['raw_transcript'] = Variable<String>(rawTranscript);
+    if (!nullToAbsent || organizedContent != null) {
+      map['organized_content'] = Variable<String>(organizedContent);
+    }
+    map['status'] = Variable<String>(status);
+    if (!nullToAbsent || errorReason != null) {
+      map['error_reason'] = Variable<String>(errorReason);
+    }
+    map['saved_to_journal'] = Variable<bool>(savedToJournal);
+    map['created_at'] = Variable<String>(createdAt);
+    map['updated_at'] = Variable<String>(updatedAt);
+    return map;
+  }
+
+  VoiceJournalCompanion toCompanion(bool nullToAbsent) {
+    return VoiceJournalCompanion(
+      id: Value(id),
+      date: Value(date),
+      locale: Value(locale),
+      rawTranscript: Value(rawTranscript),
+      organizedContent: organizedContent == null && nullToAbsent
+          ? const Value.absent()
+          : Value(organizedContent),
+      status: Value(status),
+      errorReason: errorReason == null && nullToAbsent
+          ? const Value.absent()
+          : Value(errorReason),
+      savedToJournal: Value(savedToJournal),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory VoiceJournalData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return VoiceJournalData(
+      id: serializer.fromJson<String>(json['id']),
+      date: serializer.fromJson<String>(json['date']),
+      locale: serializer.fromJson<String>(json['locale']),
+      rawTranscript: serializer.fromJson<String>(json['rawTranscript']),
+      organizedContent: serializer.fromJson<String?>(json['organizedContent']),
+      status: serializer.fromJson<String>(json['status']),
+      errorReason: serializer.fromJson<String?>(json['errorReason']),
+      savedToJournal: serializer.fromJson<bool>(json['savedToJournal']),
+      createdAt: serializer.fromJson<String>(json['createdAt']),
+      updatedAt: serializer.fromJson<String>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'date': serializer.toJson<String>(date),
+      'locale': serializer.toJson<String>(locale),
+      'rawTranscript': serializer.toJson<String>(rawTranscript),
+      'organizedContent': serializer.toJson<String?>(organizedContent),
+      'status': serializer.toJson<String>(status),
+      'errorReason': serializer.toJson<String?>(errorReason),
+      'savedToJournal': serializer.toJson<bool>(savedToJournal),
+      'createdAt': serializer.toJson<String>(createdAt),
+      'updatedAt': serializer.toJson<String>(updatedAt),
+    };
+  }
+
+  VoiceJournalData copyWith({
+    String? id,
+    String? date,
+    String? locale,
+    String? rawTranscript,
+    Value<String?> organizedContent = const Value.absent(),
+    String? status,
+    Value<String?> errorReason = const Value.absent(),
+    bool? savedToJournal,
+    String? createdAt,
+    String? updatedAt,
+  }) => VoiceJournalData(
+    id: id ?? this.id,
+    date: date ?? this.date,
+    locale: locale ?? this.locale,
+    rawTranscript: rawTranscript ?? this.rawTranscript,
+    organizedContent: organizedContent.present
+        ? organizedContent.value
+        : this.organizedContent,
+    status: status ?? this.status,
+    errorReason: errorReason.present ? errorReason.value : this.errorReason,
+    savedToJournal: savedToJournal ?? this.savedToJournal,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  VoiceJournalData copyWithCompanion(VoiceJournalCompanion data) {
+    return VoiceJournalData(
+      id: data.id.present ? data.id.value : this.id,
+      date: data.date.present ? data.date.value : this.date,
+      locale: data.locale.present ? data.locale.value : this.locale,
+      rawTranscript: data.rawTranscript.present
+          ? data.rawTranscript.value
+          : this.rawTranscript,
+      organizedContent: data.organizedContent.present
+          ? data.organizedContent.value
+          : this.organizedContent,
+      status: data.status.present ? data.status.value : this.status,
+      errorReason: data.errorReason.present
+          ? data.errorReason.value
+          : this.errorReason,
+      savedToJournal: data.savedToJournal.present
+          ? data.savedToJournal.value
+          : this.savedToJournal,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('VoiceJournalData(')
+          ..write('id: $id, ')
+          ..write('date: $date, ')
+          ..write('locale: $locale, ')
+          ..write('rawTranscript: $rawTranscript, ')
+          ..write('organizedContent: $organizedContent, ')
+          ..write('status: $status, ')
+          ..write('errorReason: $errorReason, ')
+          ..write('savedToJournal: $savedToJournal, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    date,
+    locale,
+    rawTranscript,
+    organizedContent,
+    status,
+    errorReason,
+    savedToJournal,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is VoiceJournalData &&
+          other.id == this.id &&
+          other.date == this.date &&
+          other.locale == this.locale &&
+          other.rawTranscript == this.rawTranscript &&
+          other.organizedContent == this.organizedContent &&
+          other.status == this.status &&
+          other.errorReason == this.errorReason &&
+          other.savedToJournal == this.savedToJournal &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class VoiceJournalCompanion extends UpdateCompanion<VoiceJournalData> {
+  final Value<String> id;
+  final Value<String> date;
+  final Value<String> locale;
+  final Value<String> rawTranscript;
+  final Value<String?> organizedContent;
+  final Value<String> status;
+  final Value<String?> errorReason;
+  final Value<bool> savedToJournal;
+  final Value<String> createdAt;
+  final Value<String> updatedAt;
+  final Value<int> rowid;
+  const VoiceJournalCompanion({
+    this.id = const Value.absent(),
+    this.date = const Value.absent(),
+    this.locale = const Value.absent(),
+    this.rawTranscript = const Value.absent(),
+    this.organizedContent = const Value.absent(),
+    this.status = const Value.absent(),
+    this.errorReason = const Value.absent(),
+    this.savedToJournal = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  VoiceJournalCompanion.insert({
+    required String id,
+    required String date,
+    required String locale,
+    required String rawTranscript,
+    this.organizedContent = const Value.absent(),
+    required String status,
+    this.errorReason = const Value.absent(),
+    this.savedToJournal = const Value.absent(),
+    required String createdAt,
+    required String updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       date = Value(date),
+       locale = Value(locale),
+       rawTranscript = Value(rawTranscript),
+       status = Value(status),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<VoiceJournalData> custom({
+    Expression<String>? id,
+    Expression<String>? date,
+    Expression<String>? locale,
+    Expression<String>? rawTranscript,
+    Expression<String>? organizedContent,
+    Expression<String>? status,
+    Expression<String>? errorReason,
+    Expression<bool>? savedToJournal,
+    Expression<String>? createdAt,
+    Expression<String>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (date != null) 'date': date,
+      if (locale != null) 'locale': locale,
+      if (rawTranscript != null) 'raw_transcript': rawTranscript,
+      if (organizedContent != null) 'organized_content': organizedContent,
+      if (status != null) 'status': status,
+      if (errorReason != null) 'error_reason': errorReason,
+      if (savedToJournal != null) 'saved_to_journal': savedToJournal,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  VoiceJournalCompanion copyWith({
+    Value<String>? id,
+    Value<String>? date,
+    Value<String>? locale,
+    Value<String>? rawTranscript,
+    Value<String?>? organizedContent,
+    Value<String>? status,
+    Value<String?>? errorReason,
+    Value<bool>? savedToJournal,
+    Value<String>? createdAt,
+    Value<String>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return VoiceJournalCompanion(
+      id: id ?? this.id,
+      date: date ?? this.date,
+      locale: locale ?? this.locale,
+      rawTranscript: rawTranscript ?? this.rawTranscript,
+      organizedContent: organizedContent ?? this.organizedContent,
+      status: status ?? this.status,
+      errorReason: errorReason ?? this.errorReason,
+      savedToJournal: savedToJournal ?? this.savedToJournal,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (date.present) {
+      map['date'] = Variable<String>(date.value);
+    }
+    if (locale.present) {
+      map['locale'] = Variable<String>(locale.value);
+    }
+    if (rawTranscript.present) {
+      map['raw_transcript'] = Variable<String>(rawTranscript.value);
+    }
+    if (organizedContent.present) {
+      map['organized_content'] = Variable<String>(organizedContent.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (errorReason.present) {
+      map['error_reason'] = Variable<String>(errorReason.value);
+    }
+    if (savedToJournal.present) {
+      map['saved_to_journal'] = Variable<bool>(savedToJournal.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<String>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<String>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('VoiceJournalCompanion(')
+          ..write('id: $id, ')
+          ..write('date: $date, ')
+          ..write('locale: $locale, ')
+          ..write('rawTranscript: $rawTranscript, ')
+          ..write('organizedContent: $organizedContent, ')
+          ..write('status: $status, ')
+          ..write('errorReason: $errorReason, ')
+          ..write('savedToJournal: $savedToJournal, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -10568,6 +11196,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     this,
   );
   late final $AiMomentsTable aiMoments = $AiMomentsTable(this);
+  late final $VoiceJournalTable voiceJournal = $VoiceJournalTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -10597,6 +11226,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     vineDay,
     verseChallenges,
     aiMoments,
+    voiceJournal,
   ];
 }
 
@@ -16813,6 +17443,309 @@ typedef $$AiMomentsTableProcessedTableManager =
       AiMoment,
       PrefetchHooks Function()
     >;
+typedef $$VoiceJournalTableCreateCompanionBuilder =
+    VoiceJournalCompanion Function({
+      required String id,
+      required String date,
+      required String locale,
+      required String rawTranscript,
+      Value<String?> organizedContent,
+      required String status,
+      Value<String?> errorReason,
+      Value<bool> savedToJournal,
+      required String createdAt,
+      required String updatedAt,
+      Value<int> rowid,
+    });
+typedef $$VoiceJournalTableUpdateCompanionBuilder =
+    VoiceJournalCompanion Function({
+      Value<String> id,
+      Value<String> date,
+      Value<String> locale,
+      Value<String> rawTranscript,
+      Value<String?> organizedContent,
+      Value<String> status,
+      Value<String?> errorReason,
+      Value<bool> savedToJournal,
+      Value<String> createdAt,
+      Value<String> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$VoiceJournalTableFilterComposer
+    extends Composer<_$AppDatabase, $VoiceJournalTable> {
+  $$VoiceJournalTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get locale => $composableBuilder(
+    column: $table.locale,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get rawTranscript => $composableBuilder(
+    column: $table.rawTranscript,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get organizedContent => $composableBuilder(
+    column: $table.organizedContent,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get errorReason => $composableBuilder(
+    column: $table.errorReason,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get savedToJournal => $composableBuilder(
+    column: $table.savedToJournal,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$VoiceJournalTableOrderingComposer
+    extends Composer<_$AppDatabase, $VoiceJournalTable> {
+  $$VoiceJournalTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get locale => $composableBuilder(
+    column: $table.locale,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get rawTranscript => $composableBuilder(
+    column: $table.rawTranscript,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get organizedContent => $composableBuilder(
+    column: $table.organizedContent,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get errorReason => $composableBuilder(
+    column: $table.errorReason,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get savedToJournal => $composableBuilder(
+    column: $table.savedToJournal,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$VoiceJournalTableAnnotationComposer
+    extends Composer<_$AppDatabase, $VoiceJournalTable> {
+  $$VoiceJournalTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<String> get locale =>
+      $composableBuilder(column: $table.locale, builder: (column) => column);
+
+  GeneratedColumn<String> get rawTranscript => $composableBuilder(
+    column: $table.rawTranscript,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get organizedContent => $composableBuilder(
+    column: $table.organizedContent,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get errorReason => $composableBuilder(
+    column: $table.errorReason,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get savedToJournal => $composableBuilder(
+    column: $table.savedToJournal,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$VoiceJournalTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $VoiceJournalTable,
+          VoiceJournalData,
+          $$VoiceJournalTableFilterComposer,
+          $$VoiceJournalTableOrderingComposer,
+          $$VoiceJournalTableAnnotationComposer,
+          $$VoiceJournalTableCreateCompanionBuilder,
+          $$VoiceJournalTableUpdateCompanionBuilder,
+          (
+            VoiceJournalData,
+            BaseReferences<_$AppDatabase, $VoiceJournalTable, VoiceJournalData>,
+          ),
+          VoiceJournalData,
+          PrefetchHooks Function()
+        > {
+  $$VoiceJournalTableTableManager(_$AppDatabase db, $VoiceJournalTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$VoiceJournalTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$VoiceJournalTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$VoiceJournalTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> date = const Value.absent(),
+                Value<String> locale = const Value.absent(),
+                Value<String> rawTranscript = const Value.absent(),
+                Value<String?> organizedContent = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String?> errorReason = const Value.absent(),
+                Value<bool> savedToJournal = const Value.absent(),
+                Value<String> createdAt = const Value.absent(),
+                Value<String> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => VoiceJournalCompanion(
+                id: id,
+                date: date,
+                locale: locale,
+                rawTranscript: rawTranscript,
+                organizedContent: organizedContent,
+                status: status,
+                errorReason: errorReason,
+                savedToJournal: savedToJournal,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String date,
+                required String locale,
+                required String rawTranscript,
+                Value<String?> organizedContent = const Value.absent(),
+                required String status,
+                Value<String?> errorReason = const Value.absent(),
+                Value<bool> savedToJournal = const Value.absent(),
+                required String createdAt,
+                required String updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => VoiceJournalCompanion.insert(
+                id: id,
+                date: date,
+                locale: locale,
+                rawTranscript: rawTranscript,
+                organizedContent: organizedContent,
+                status: status,
+                errorReason: errorReason,
+                savedToJournal: savedToJournal,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$VoiceJournalTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $VoiceJournalTable,
+      VoiceJournalData,
+      $$VoiceJournalTableFilterComposer,
+      $$VoiceJournalTableOrderingComposer,
+      $$VoiceJournalTableAnnotationComposer,
+      $$VoiceJournalTableCreateCompanionBuilder,
+      $$VoiceJournalTableUpdateCompanionBuilder,
+      (
+        VoiceJournalData,
+        BaseReferences<_$AppDatabase, $VoiceJournalTable, VoiceJournalData>,
+      ),
+      VoiceJournalData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -16865,4 +17798,6 @@ class $AppDatabaseManager {
       $$VerseChallengesTableTableManager(_db, _db.verseChallenges);
   $$AiMomentsTableTableManager get aiMoments =>
       $$AiMomentsTableTableManager(_db, _db.aiMoments);
+  $$VoiceJournalTableTableManager get voiceJournal =>
+      $$VoiceJournalTableTableManager(_db, _db.voiceJournal);
 }

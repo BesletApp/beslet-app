@@ -3104,6 +3104,90 @@ abstract class AppLocalizations {
   /// **'This passage isn\'t available right now.'**
   String get studyReferenceUnavailable;
 
+  /// No description provided for @delveEntryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delve Deeper'**
+  String get delveEntryTitle;
+
+  /// No description provided for @delveEntrySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A deeper second pass: history, literature, language, cross-references, and documented interpretations.'**
+  String get delveEntrySubtitle;
+
+  /// No description provided for @delveLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing your deeper study…'**
+  String get delveLoading;
+
+  /// No description provided for @delveSourceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'AI deep study'**
+  String get delveSourceLabel;
+
+  /// No description provided for @delveSectionHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Expanded Historical Background'**
+  String get delveSectionHistory;
+
+  /// No description provided for @delveSectionLiterary.
+  ///
+  /// In en, this message translates to:
+  /// **'Literary Analysis'**
+  String get delveSectionLiterary;
+
+  /// No description provided for @delveSectionLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Original-Language Analysis'**
+  String get delveSectionLanguage;
+
+  /// No description provided for @delveSectionCrossRefs.
+  ///
+  /// In en, this message translates to:
+  /// **'Expanded Cross-Reference Study'**
+  String get delveSectionCrossRefs;
+
+  /// No description provided for @delveSectionInterpretations.
+  ///
+  /// In en, this message translates to:
+  /// **'Documented Interpretations'**
+  String get delveSectionInterpretations;
+
+  /// No description provided for @delveSectionObservations.
+  ///
+  /// In en, this message translates to:
+  /// **'Structured Observations'**
+  String get delveSectionObservations;
+
+  /// No description provided for @delveUnavailableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Deeper study is unavailable right now'**
+  String get delveUnavailableTitle;
+
+  /// No description provided for @delveLimitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve used today\'s free deep-study sessions.'**
+  String get delveLimitTitle;
+
+  /// No description provided for @delveLimitBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Delve Deeper runs on AI. Add your own Gemini key to continue without a daily limit, or close this and return to the study note.'**
+  String get delveLimitBody;
+
+  /// No description provided for @delveInterpretationAttribution.
+  ///
+  /// In en, this message translates to:
+  /// **'Attributed:'**
+  String get delveInterpretationAttribution;
+
   /// No description provided for @doorSignal.
   ///
   /// In en, this message translates to:
@@ -3133,6 +3217,240 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'READ · PRAY · PLAN · GROW'**
   String get doorWhisper;
+
+  /// No description provided for @voiceJournalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice Journal'**
+  String get voiceJournalTitle;
+
+  /// No description provided for @voiceJournalRecordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the microphone and speak — your words become text. You can edit the text before organizing.'**
+  String get voiceJournalRecordHint;
+
+  /// No description provided for @voiceJournalStartRecording.
+  ///
+  /// In en, this message translates to:
+  /// **'Start recording'**
+  String get voiceJournalStartRecording;
+
+  /// No description provided for @voiceJournalStop.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get voiceJournalStop;
+
+  /// No description provided for @voiceJournalListening.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening…'**
+  String get voiceJournalListening;
+
+  /// No description provided for @voiceJournalLiveCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Your words as you speak'**
+  String get voiceJournalLiveCaption;
+
+  /// No description provided for @voiceJournalNothingHeard.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing heard yet — speak clearly and a little closer.'**
+  String get voiceJournalNothingHeard;
+
+  /// No description provided for @voiceJournalUseTranscript.
+  ///
+  /// In en, this message translates to:
+  /// **'Use this text'**
+  String get voiceJournalUseTranscript;
+
+  /// No description provided for @voiceJournalRecordAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Record again'**
+  String get voiceJournalRecordAgain;
+
+  /// No description provided for @voiceJournalOrganizing.
+  ///
+  /// In en, this message translates to:
+  /// **'Organizing your words into today\'s journal…'**
+  String get voiceJournalOrganizing;
+
+  /// No description provided for @voiceJournalReviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your journal, organized'**
+  String get voiceJournalReviewTitle;
+
+  /// No description provided for @voiceJournalEditHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI only organized your own words. Edit freely.'**
+  String get voiceJournalEditHint;
+
+  /// No description provided for @voiceJournalShowRaw.
+  ///
+  /// In en, this message translates to:
+  /// **'Show my words'**
+  String get voiceJournalShowRaw;
+
+  /// No description provided for @voiceJournalHideRaw.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide my words'**
+  String get voiceJournalHideRaw;
+
+  /// No description provided for @voiceJournalSaveEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to today\'s journal'**
+  String get voiceJournalSaveEntry;
+
+  /// No description provided for @voiceJournalReplaceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace today\'s entry?'**
+  String get voiceJournalReplaceTitle;
+
+  /// No description provided for @voiceJournalReplaceBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You already wrote in today\'s journal. Replace it with this organized voice journal? Your spoken words are always kept either way.'**
+  String get voiceJournalReplaceBody;
+
+  /// No description provided for @voiceJournalReplace.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace'**
+  String get voiceJournalReplace;
+
+  /// No description provided for @voiceJournalSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice journal saved'**
+  String get voiceJournalSaved;
+
+  /// No description provided for @voiceJournalUnavailableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice journal unavailable'**
+  String get voiceJournalUnavailableTitle;
+
+  /// No description provided for @voiceJournalNoEngine.
+  ///
+  /// In en, this message translates to:
+  /// **'No speech engine was found on this device. You can still type in the journal.'**
+  String get voiceJournalNoEngine;
+
+  /// No description provided for @voiceJournalPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Microphone permission is needed to record. Please allow it in your phone\'s app settings.'**
+  String get voiceJournalPermissionDenied;
+
+  /// No description provided for @voiceJournalLanguageNotSupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Speech recognition for Amharic is not available on this device. Switch to English, or type in the journal.'**
+  String get voiceJournalLanguageNotSupported;
+
+  /// No description provided for @voiceJournalUseEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'Use English instead'**
+  String get voiceJournalUseEnglish;
+
+  /// No description provided for @voiceJournalTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'This voice note is longer than the app can organize, so only the beginning was kept. Delete a little, or save it as it is.'**
+  String get voiceJournalTooLong;
+
+  /// No description provided for @voiceJournalRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get voiceJournalRetry;
+
+  /// No description provided for @voiceJournalSaveDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Save my words as a draft'**
+  String get voiceJournalSaveDraft;
+
+  /// No description provided for @voiceJournalDraftSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Draft saved to today\'s journal'**
+  String get voiceJournalDraftSaved;
+
+  /// No description provided for @voiceJournalLimitBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve reached the free voice-journal allowance for today. Add your own Gemini key to continue, or come back tomorrow.'**
+  String get voiceJournalLimitBody;
+
+  /// No description provided for @voiceJournalLimitAddKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Add my Gemini API key'**
+  String get voiceJournalLimitAddKey;
+
+  /// No description provided for @voiceJournalWhatHappened.
+  ///
+  /// In en, this message translates to:
+  /// **'What happened'**
+  String get voiceJournalWhatHappened;
+
+  /// No description provided for @voiceJournalEmotions.
+  ///
+  /// In en, this message translates to:
+  /// **'Emotions'**
+  String get voiceJournalEmotions;
+
+  /// No description provided for @voiceJournalSpiritualMoments.
+  ///
+  /// In en, this message translates to:
+  /// **'Spiritual moments'**
+  String get voiceJournalSpiritualMoments;
+
+  /// No description provided for @voiceJournalInsights.
+  ///
+  /// In en, this message translates to:
+  /// **'Insights'**
+  String get voiceJournalInsights;
+
+  /// No description provided for @voiceJournalSentenceToRemember.
+  ///
+  /// In en, this message translates to:
+  /// **'One sentence to remember'**
+  String get voiceJournalSentenceToRemember;
+
+  /// No description provided for @voiceJournalRawLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Your words'**
+  String get voiceJournalRawLabel;
+
+  /// No description provided for @voiceJournalOrganizeNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Organized by AI from your own words — never new content.'**
+  String get voiceJournalOrganizeNote;
+
+  /// No description provided for @voiceJournalEmptyTranscript.
+  ///
+  /// In en, this message translates to:
+  /// **'No words were captured. Record again or type in the journal.'**
+  String get voiceJournalEmptyTranscript;
+
+  /// No description provided for @voiceJournalOfflineBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Organizing needs the internet. Save your words as a draft now and organize them later.'**
+  String get voiceJournalOfflineBody;
 }
 
 class _AppLocalizationsDelegate

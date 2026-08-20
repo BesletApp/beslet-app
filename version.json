@@ -1,6 +1,6 @@
 {
-  "version": "1.35.2",
-  "versionCode": 62,
-  "downloadUrl": "https://github.com/BesletApp/beslet-app/releases/download/v1.35.2/app-release.apk",
-  "releaseNotes": "AI Study personal-key flow hardening: your Gemini key is now verified before it is ever saved, and a failed secure-store save no longer causes a confusing invalid-key loop (the key still works, and the app says so honestly). The 'Add my Gemini API key' button hides itself once a key is connected and never appears for content-refused answers where a key cannot help. Under the hood: upgraded secure-key storage and clearer AI diagnostics."
+  "version": "1.36.0",
+  "versionCode": 63,
+  "downloadUrl": "https://github.com/BesletApp/beslet-app/releases/download/v1.36.0/app-release.apk",
+  "releaseNotes": "v1.36.0 — Voice Journal + Delve Deeper. Voice Journal: record a spoken diary entry in English or Amharic and let AI organize your own words into a tidy daily journal — an editor, never an author; the raw transcript is always preserved and you can edit before saving. Delve Deeper: a one-tap deep study note for any passage with its own prompt, cache, and daily allowance, plus AI Study reliability hardening. Build is slimmed (unused resources removed) and the universal APK supports every Android model."
 }

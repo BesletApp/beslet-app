@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -11,6 +13,8 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../features/settings/widgets/gemini_key_dialog.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../core/ai/delve/delve_models.dart';
+import 'delve_panel.dart';
 
 /// The near-full-screen study note. Opens on a verse (from the action sheet)
 /// or a selected passage (from the selection bar). Renders the passage text,
@@ -126,6 +130,13 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
                 if (result == null) {
                   return _buildOffline(c, l);
                 }
+                developer.log(
+                    'study: panel render: source=${result.source.name} '
+                    'sections=${result.sections.length} '
+                    'isAvailable=${result.isAvailable} '
+                    'unavail=${result.unavailability.name} '
+                    'limitReached=${result.limitReached}',
+                    name: 'study');
                 if (result.limitReached ||
                     result.unavailability == StudyUnavailability.capped) {
                   return _buildLimited(c, l, result, sources);
@@ -291,9 +302,91 @@ class _StudyPanelState extends ConsumerState<StudyPanel> {
           ],
           const SizedBox(height: AppSpacing.lg),
         ],
+        _buildDelveEntry(c, l),
+        const SizedBox(height: AppSpacing.lg),
         _buildAuthorityFooter(c, l),
         const SizedBox(height: AppSpacing.lg),
       ],
+    );
+  }
+
+  /// The small "🔎 Delve Deeper" action at the very bottom of the study note —
+  /// after the questions to carry and before the quiet authority footer. It is
+  /// an on-demand, separate second pass (its own prompt, cache, and daily
+  /// allowance) and never changes the study note itself.
+  Widget _buildDelveEntry(ThemePalette c, AppLocalizations l) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Divider(height: 24, color: c.border.withValues(alpha: 0.4)),
+        Material(
+          color: c.card,
+          borderRadius: BorderRadius.circular(12),
+          child: InkWell(
+            onTap: _openDelve,
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: c.border.withValues(alpha: 0.3)),
+              ),
+              child: Row(
+                children: [
+                  const Text('🔎', style: TextStyle(fontSize: 16)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l.delveEntryTitle,
+                          style: AppTextStyles.labelLarge.copyWith(
+                              color: c.primary, fontSize: 13),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          l.delveEntrySubtitle,
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 11,
+                            height: 1.4,
+                            color: c.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(Icons.chevron_right, size: 18, color: c.textMuted),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Opens the "Delve Deeper" sheet for the same passage. The request carries
+  /// the same reference, language, verse texts, and — when the panel knows it —
+  /// the book's genre, so the deep note speaks about the same text.
+  void _openDelve() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      sheetAnimationStyle: AnimationStyle(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      ),
+      builder: (_) => DelvePanel(
+        request: DelveRequest(
+          reference: widget.request.reference,
+          isAmharic: widget.isAm,
+          verseTexts: widget.request.verseTexts,
+          genre: widget.request.genre,
+        ),
+      ),
     );
   }
 

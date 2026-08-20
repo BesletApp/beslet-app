@@ -25,11 +25,11 @@ bool _canOpenSqlite() {
 
 void main() {
   group('schema', () {
-    test('schema version is 28 (ai_moments added)', () {
+    test('schema version is 29 (ai_moments added)', () {
       final db = AppDatabase.forTesting(LazyDatabase(() async {
         throw StateError('should not open');
       }));
-      expect(db.schemaVersion, 28);
+      expect(db.schemaVersion, 29);
     });
   });
 

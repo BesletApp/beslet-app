@@ -1663,6 +1663,51 @@ class AppLocalizationsEn extends AppLocalizations {
       'This passage isn\'t available right now.';
 
   @override
+  String get delveEntryTitle => 'Delve Deeper';
+
+  @override
+  String get delveEntrySubtitle =>
+      'A deeper second pass: history, literature, language, cross-references, and documented interpretations.';
+
+  @override
+  String get delveLoading => 'Preparing your deeper study…';
+
+  @override
+  String get delveSourceLabel => 'AI deep study';
+
+  @override
+  String get delveSectionHistory => 'Expanded Historical Background';
+
+  @override
+  String get delveSectionLiterary => 'Literary Analysis';
+
+  @override
+  String get delveSectionLanguage => 'Original-Language Analysis';
+
+  @override
+  String get delveSectionCrossRefs => 'Expanded Cross-Reference Study';
+
+  @override
+  String get delveSectionInterpretations => 'Documented Interpretations';
+
+  @override
+  String get delveSectionObservations => 'Structured Observations';
+
+  @override
+  String get delveUnavailableTitle => 'Deeper study is unavailable right now';
+
+  @override
+  String get delveLimitTitle =>
+      'You\'ve used today\'s free deep-study sessions.';
+
+  @override
+  String get delveLimitBody =>
+      'Delve Deeper runs on AI. Add your own Gemini key to continue without a daily limit, or close this and return to the study note.';
+
+  @override
+  String get delveInterpretationAttribution => 'Attributed:';
+
+  @override
   String get doorSignal => 'ብስለት · MATURITY';
 
   @override
@@ -1677,4 +1722,134 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get doorWhisper => 'READ · PRAY · PLAN · GROW';
+
+  @override
+  String get voiceJournalTitle => 'Voice Journal';
+
+  @override
+  String get voiceJournalRecordHint =>
+      'Tap the microphone and speak — your words become text. You can edit the text before organizing.';
+
+  @override
+  String get voiceJournalStartRecording => 'Start recording';
+
+  @override
+  String get voiceJournalStop => 'Stop';
+
+  @override
+  String get voiceJournalListening => 'Listening…';
+
+  @override
+  String get voiceJournalLiveCaption => 'Your words as you speak';
+
+  @override
+  String get voiceJournalNothingHeard =>
+      'Nothing heard yet — speak clearly and a little closer.';
+
+  @override
+  String get voiceJournalUseTranscript => 'Use this text';
+
+  @override
+  String get voiceJournalRecordAgain => 'Record again';
+
+  @override
+  String get voiceJournalOrganizing =>
+      'Organizing your words into today\'s journal…';
+
+  @override
+  String get voiceJournalReviewTitle => 'Your journal, organized';
+
+  @override
+  String get voiceJournalEditHint =>
+      'The AI only organized your own words. Edit freely.';
+
+  @override
+  String get voiceJournalShowRaw => 'Show my words';
+
+  @override
+  String get voiceJournalHideRaw => 'Hide my words';
+
+  @override
+  String get voiceJournalSaveEntry => 'Save to today\'s journal';
+
+  @override
+  String get voiceJournalReplaceTitle => 'Replace today\'s entry?';
+
+  @override
+  String get voiceJournalReplaceBody =>
+      'You already wrote in today\'s journal. Replace it with this organized voice journal? Your spoken words are always kept either way.';
+
+  @override
+  String get voiceJournalReplace => 'Replace';
+
+  @override
+  String get voiceJournalSaved => 'Voice journal saved';
+
+  @override
+  String get voiceJournalUnavailableTitle => 'Voice journal unavailable';
+
+  @override
+  String get voiceJournalNoEngine =>
+      'No speech engine was found on this device. You can still type in the journal.';
+
+  @override
+  String get voiceJournalPermissionDenied =>
+      'Microphone permission is needed to record. Please allow it in your phone\'s app settings.';
+
+  @override
+  String get voiceJournalLanguageNotSupported =>
+      'Speech recognition for Amharic is not available on this device. Switch to English, or type in the journal.';
+
+  @override
+  String get voiceJournalUseEnglish => 'Use English instead';
+
+  @override
+  String get voiceJournalTooLong =>
+      'This voice note is longer than the app can organize, so only the beginning was kept. Delete a little, or save it as it is.';
+
+  @override
+  String get voiceJournalRetry => 'Try again';
+
+  @override
+  String get voiceJournalSaveDraft => 'Save my words as a draft';
+
+  @override
+  String get voiceJournalDraftSaved => 'Draft saved to today\'s journal';
+
+  @override
+  String get voiceJournalLimitBody =>
+      'You\'ve reached the free voice-journal allowance for today. Add your own Gemini key to continue, or come back tomorrow.';
+
+  @override
+  String get voiceJournalLimitAddKey => 'Add my Gemini API key';
+
+  @override
+  String get voiceJournalWhatHappened => 'What happened';
+
+  @override
+  String get voiceJournalEmotions => 'Emotions';
+
+  @override
+  String get voiceJournalSpiritualMoments => 'Spiritual moments';
+
+  @override
+  String get voiceJournalInsights => 'Insights';
+
+  @override
+  String get voiceJournalSentenceToRemember => 'One sentence to remember';
+
+  @override
+  String get voiceJournalRawLabel => 'Your words';
+
+  @override
+  String get voiceJournalOrganizeNote =>
+      'Organized by AI from your own words — never new content.';
+
+  @override
+  String get voiceJournalEmptyTranscript =>
+      'No words were captured. Record again or type in the journal.';
+
+  @override
+  String get voiceJournalOfflineBody =>
+      'Organizing needs the internet. Save your words as a draft now and organize them later.';
 }

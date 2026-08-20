@@ -56,6 +56,7 @@ class StudyFallbackBackend implements StudyBackend {
     }
 
     final online = await isOnline();
+    developer.log('study: connectivity gate: online=$online', name: 'study');
     if (!online) {
       developer.log('study: offline, no network interface', name: 'study');
       StudyDiagnostics.instance.record(
@@ -63,7 +64,9 @@ class StudyFallbackBackend implements StudyBackend {
       return const StudyAttempt.unavailable(StudyUnavailability.offline);
     }
 
-    if (!await mayUseAi()) {
+    final allowed = await mayUseAi();
+    developer.log('study: allowance gate: mayUseAi=$allowed', name: 'study');
+    if (!allowed) {
       developer.log('study: free daily AI cap reached', name: 'study');
       StudyDiagnostics.instance.record(
           failureReason: StudyUnavailability.capped);
@@ -73,6 +76,7 @@ class StudyFallbackBackend implements StudyBackend {
 
     StudyUnavailability lastReason = StudyUnavailability.none;
     for (var attemptNo = 0; attemptNo < 2; attemptNo++) {
+      developer.log('study: AI attempt ${attemptNo + 1}/2', name: 'study');
       final attempt = await _safeAi(request, aiBackend);
       final result = attempt.result;
       if (result != null) {

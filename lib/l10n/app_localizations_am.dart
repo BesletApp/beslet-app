@@ -1641,6 +1641,50 @@ class AppLocalizationsAm extends AppLocalizations {
   String get studyReferenceUnavailable => 'ይህ ጥቅስ አሁን አይገኝም።';
 
   @override
+  String get delveEntryTitle => 'የበለጠ ጥልቅ ጥናት';
+
+  @override
+  String get delveEntrySubtitle =>
+      'ሁለተኛ ደረጃ ጥናት፡ ታሪክ፣ ሥነ-ጽሑፍ፣ ቋንቋ፣ ተያያዥ ጥቅሶች እና የተመዘገቡ ትርጓሜዎች።';
+
+  @override
+  String get delveLoading => 'የጥልቅ ጥናትዎን በማዘጋጀት ላይ…';
+
+  @override
+  String get delveSourceLabel => 'በAI የተዘጋጀ ጥልቅ ጥናት';
+
+  @override
+  String get delveSectionHistory => 'የተስፋፋ ታሪካዊ ዐውድ';
+
+  @override
+  String get delveSectionLiterary => 'ሥነ-ጽሑፋዊ ትንተና';
+
+  @override
+  String get delveSectionLanguage => 'የመጀመሪያ ቋንቋ ትንተና';
+
+  @override
+  String get delveSectionCrossRefs => 'የተስፋፋ ተያያዥ ጥቅሶች ጥናት';
+
+  @override
+  String get delveSectionInterpretations => 'የተመዘገቡ ትርጓሜዎች';
+
+  @override
+  String get delveSectionObservations => 'የተደራጁ ምልከታዎች';
+
+  @override
+  String get delveUnavailableTitle => 'ጥልቅ ጥናት ለጊዜው አይገኝም';
+
+  @override
+  String get delveLimitTitle => 'የዛሬውን ነጻ ጥልቅ ጥናት ገደብ ደርሰዋል።';
+
+  @override
+  String get delveLimitBody =>
+      'ጥልቅ ጥናት በAI ይሠራል። የራስዎን Gemini API ቁልፍ በማከል ያለ ዕለታዊ ገደብ ይቀጥሉ፣ ወይም ዝግተው ወደ ጥናቱ ማስታወሻ ይመለሱ።';
+
+  @override
+  String get delveInterpretationAttribution => 'የተመዘገበው፡';
+
+  @override
   String get doorSignal => 'ብስለት · MATURITY';
 
   @override
@@ -1655,4 +1699,131 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get doorWhisper => 'አንብብ · ጸልይ · ዕቀድ · አድግ';
+
+  @override
+  String get voiceJournalTitle => 'የድምጽ ማስታወሻ';
+
+  @override
+  String get voiceJournalRecordHint =>
+      'ማይክሮፎኑን ነካ ብለህ ተናገር — ቃላትህ ወደ ጽሑፍ ይቀየራሉ። ከማደራጀቱ በፊት ጽሑፉን ማስተካከል ትችላለህ።';
+
+  @override
+  String get voiceJournalStartRecording => 'መቅዳት ጀምር';
+
+  @override
+  String get voiceJournalStop => 'አቁም';
+
+  @override
+  String get voiceJournalListening => 'በማዳመጥ ላይ…';
+
+  @override
+  String get voiceJournalLiveCaption => 'እየተናገርክ ያለህ ቃላት';
+
+  @override
+  String get voiceJournalNothingHeard =>
+      'ገና ምንም አልተሰማም — በግልጽና ወደ ማይክሮፎኑ ተጠግተህ ተናገር።';
+
+  @override
+  String get voiceJournalUseTranscript => 'ይህን ጽሑፍ ተጠቀም';
+
+  @override
+  String get voiceJournalRecordAgain => 'በድጋሚ ቅዳ';
+
+  @override
+  String get voiceJournalOrganizing => 'ቃላትህን ወደ ዛሬው ማስታወሻ በማደራጀት ላይ…';
+
+  @override
+  String get voiceJournalReviewTitle => 'ማስታወሻህ፣ የተደራጀ';
+
+  @override
+  String get voiceJournalEditHint => 'AI ቃላትህን ብቻ አደራጅቷል። ነፃ አርትዕ አድርግ።';
+
+  @override
+  String get voiceJournalShowRaw => 'ቃላቴን አሳይ';
+
+  @override
+  String get voiceJournalHideRaw => 'ቃላቴን ደብቅ';
+
+  @override
+  String get voiceJournalSaveEntry => 'ወደ ዛሬው ማስታወሻ አስቀምጥ';
+
+  @override
+  String get voiceJournalReplaceTitle => 'የዛሬን ማስታወሻ መተካት?';
+
+  @override
+  String get voiceJournalReplaceBody =>
+      'በዛሬው ማስታወሻ ውስጥ አስቀድመህ ጻፍተሃል። በዚህ የድምጽ ማስታወሻ መተካት ትፈልጋለህ? የተናገርከው ቃላት በማንኛውም ሁኔታ ይቀመጣሉ።';
+
+  @override
+  String get voiceJournalReplace => 'ተክት';
+
+  @override
+  String get voiceJournalSaved => 'የድምጽ ማስታወሻ ተቀምጧል';
+
+  @override
+  String get voiceJournalUnavailableTitle => 'የድምጽ ማስታወሻ አይገኝም';
+
+  @override
+  String get voiceJournalNoEngine =>
+      'በዚህ መሳሪያ ላይ የንግግር ግንዛቤ ፕሮግራም አልተገኘም። አሁንም በማስታወሻው ውስጥ መጻፍ ትችላለህ።';
+
+  @override
+  String get voiceJournalPermissionDenied =>
+      'መቅዳት የማይክሮፎን ፍቃድ ይጠይቃል። እባክህ በስልክህ መቼቶች ውስጥ ፍቀድ።';
+
+  @override
+  String get voiceJournalLanguageNotSupported =>
+      'የአማርኛ የንግግር ግንዛቤ በዚህ መሳሪያ አይገኝም። ወደ እንግሊዝኛ ተለውጥ፣ ወይም በማስታወሻው ውስጥ ጻፍ።';
+
+  @override
+  String get voiceJournalUseEnglish => 'በእንግሊዝኛ ተጠቀም';
+
+  @override
+  String get voiceJournalTooLong =>
+      'ይህ የድምጽ ማስታወሻ ከማደራጀት አቅም በላይ ረጅም ነው፤ ስለዚህ መጀመሪያው የተያዘው ብቻ ቀርቷል። ትንሽ አስቀር ወይም እንዳለ አስቀምጥ።';
+
+  @override
+  String get voiceJournalRetry => 'እንደገና ሞክር';
+
+  @override
+  String get voiceJournalSaveDraft => 'ቃላቴን እንደ ረቂቅ አስቀምጥ';
+
+  @override
+  String get voiceJournalDraftSaved => 'ረቂቅ በዛሬው ማስታወሻ ተቀምጧል';
+
+  @override
+  String get voiceJournalLimitBody =>
+      'የዛሬውን ነፃ የድምጽ ማስታወሻ አቅም ደርሰሃል። የራስህን Gemini API ቁልፍ ጨምር ወይም ነገ ተመለስ።';
+
+  @override
+  String get voiceJournalLimitAddKey => 'የእኔን Gemini API ቁልፍ ጨምር';
+
+  @override
+  String get voiceJournalWhatHappened => 'የሆነው ነገር';
+
+  @override
+  String get voiceJournalEmotions => 'ስሜቶች';
+
+  @override
+  String get voiceJournalSpiritualMoments => 'መንፈሳዊ ጊዜያት';
+
+  @override
+  String get voiceJournalInsights => 'ግንዛቤዎች';
+
+  @override
+  String get voiceJournalSentenceToRemember => 'የሚታወስ አንድ ዓረፍተ ነገር';
+
+  @override
+  String get voiceJournalRawLabel => 'ቃላትህ';
+
+  @override
+  String get voiceJournalOrganizeNote => 'በAI ከራስህ ቃላት የተደራጀ — አዲስ ይዘት አይደለም።';
+
+  @override
+  String get voiceJournalEmptyTranscript =>
+      'ምንም ቃላት አልተያዙም። በድጋሚ ቅዳ ወይም በማስታወሻው ውስጥ ጻፍ።';
+
+  @override
+  String get voiceJournalOfflineBody =>
+      'ማደራጀት ኢንተርኔት ይፈልጋል። ቃላትህን አሁን እንደ ረቂቅ አስቀምጥ፣ በኋላ ማደራጀት ትችላለህ።';
 }
