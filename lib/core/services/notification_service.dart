@@ -1,5 +1,7 @@
 import 'dart:math';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tzdata;
@@ -339,17 +341,59 @@ const iosSettings = DarwinInitializationSettings(
   }
 
   // ── Permissions ────────────────────────────────────────────
-  static const _startupPermissionAskedKey = 'startup_notif_permission_asked';
+  static const _startupPermissionAskedBuildKey = 'startup_notif_permission_asked_build';
 
-  /// One-time startup ask so users upgrading to a version that needs the
-  /// runtime prompt on Android 13+ actually receive it (a system upgrade never
-  /// re-prompts on its own). Records the ask in prefs so it never re-nags
-  /// after the first decision, and stays a no-op once granted.
+  /// Whether the runtime notification prompt should be shown right now.
+  ///
+  /// Returns true when notifications are not enabled AND this build has not
+  /// already asked. Tracking the build that last asked is what makes an
+  /// upgrade re-open the door: a user who denied in an older installed
+  /// version gets a fresh prompt after updating, so notifications can appear
+  /// on devices that already had the app installed. Once granted (or denied
+  /// at the current build) it goes quiet until the next release.
+  @visibleForTesting
+  static bool shouldAskForNotificationPermission({
+    required bool notificationsEnabled,
+    required String? lastAskedBuildNumber,
+    required String currentBuildNumber,
+  }) {
+    if (notificationsEnabled) return false;
+    return lastAskedBuildNumber != currentBuildNumber;
+  }
+
+  /// One-time-per-build startup ask so users upgrading to a version that needs
+  /// the runtime prompt on Android 13+ actually receive it (a system upgrade
+  /// never re-prompts on its own). Re-asks after an app upgrade until the
+  /// user grants the permission, then stays a no-op.
   static Future<void> requestPermissionsAtStartup() async {
     final prefs = await SharedPreferences.getInstance();
-    if (prefs.getBool(_startupPermissionAskedKey) ?? false) return;
-    await prefs.setBool(_startupPermissionAskedKey, true);
+    final buildNumber = await _currentBuildNumber();
+    final android =
+        plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    final notificationsEnabled =
+        android == null ? true : (await android.areNotificationsEnabled() ?? false);
+    final lastAsked = prefs.getString(_startupPermissionAskedBuildKey);
+    if (!shouldAskForNotificationPermission(
+      notificationsEnabled: notificationsEnabled,
+      lastAskedBuildNumber: lastAsked,
+      currentBuildNumber: buildNumber,
+    )) {
+      if (notificationsEnabled) {
+        await prefs.setString(_startupPermissionAskedBuildKey, buildNumber);
+      }
+      return;
+    }
+    await prefs.setString(_startupPermissionAskedBuildKey, buildNumber);
     await requestPermissions();
+  }
+
+  static Future<String> _currentBuildNumber() async {
+    try {
+      final info = await PackageInfo.fromPlatform();
+      return info.buildNumber;
+    } catch (_) {
+      return '';
+    }
   }
 
   /// Requests the notification permission at the moment a notification-based
