@@ -7,6 +7,24 @@ import 'package:google_generative_ai/google_generative_ai.dart';
 import '../secrets.dart';
 import 'voice_diagnostics.dart';
 
+/// A single model call, separated from the transport so tests can stub the
+/// network. The default returns a real [GenerativeModel] backed request.
+typedef GeminiModelRequest = Future<GenerateContentResponse> Function(
+  List<Content> contents, {
+  GenerationConfig? generationConfig,
+});
+
+/// Builds a [GeminiModelRequest] for the given model name and API key.
+/// Injectable so tests can assert the key and payload without a network call.
+typedef GeminiModelFactory =
+    GeminiModelRequest Function(String modelName, String apiKey);
+
+GeminiModelRequest _defaultModelFactory(String modelName, String apiKey) {
+  final model = GenerativeModel(model: modelName, apiKey: apiKey);
+  return (contents, {generationConfig}) =>
+      model.generateContent(contents, generationConfig: generationConfig);
+}
+
 /// Builds the production audio-transcription transport: an API key
 /// (user-provided, else the bundled free-tier key) with the Flash model, the
 /// audio bytes sent inline as a data part, and a JSON response. Mirrors the
@@ -20,6 +38,7 @@ Future<String> Function(
   Future<String?> Function() userKeyProvider = _noUserKey,
   String modelName = aiModelName,
   Duration timeout = const Duration(seconds: 45),
+  GeminiModelFactory? modelFactory,
 }) {
   return (prompt, {required bytes, required mimeType}) async {
     final key = await _effectiveKey(bundledKey, userKeyProvider);
@@ -40,11 +59,10 @@ Future<String> Function(
     developer.log(
         'voice: audio transcription with $source key (${key.length} chars)',
         name: 'voice');
-    final model = GenerativeModel(model: modelName, apiKey: key);
+    final request = (modelFactory ?? _defaultModelFactory)(modelName, key);
     final startedAt = DateTime.now();
     try {
-      final response = await model
-          .generateContent(
+      final response = await request(
         [
           Content('user', [
             DataPart(mimeType, Uint8List.fromList(bytes)),
@@ -54,8 +72,7 @@ Future<String> Function(
         generationConfig: GenerationConfig(
           responseMimeType: 'application/json',
         ),
-      )
-          .timeout(timeout);
+      ).timeout(timeout);
       final text = response.text;
       if (text == null || text.trim().isEmpty) {
         throw StateError('empty model response');
@@ -89,6 +106,7 @@ Future<String> Function(String prompt) buildGeminiTextTransport({
   Future<String?> Function() userKeyProvider = _noUserKey,
   String modelName = aiModelName,
   Duration timeout = const Duration(seconds: 30),
+  GeminiModelFactory? modelFactory,
 }) {
   return (prompt) async {
     final key = await _effectiveKey(bundledKey, userKeyProvider);
@@ -97,17 +115,15 @@ Future<String> Function(String prompt) buildGeminiTextTransport({
       phase: 'translating',
       lastTechnicalError: null,
     );
-    final model = GenerativeModel(model: modelName, apiKey: key);
+    final request = (modelFactory ?? _defaultModelFactory)(modelName, key);
     final startedAt = DateTime.now();
     try {
-      final response = await model
-          .generateContent(
-            [Content.text(prompt)],
-            generationConfig: GenerationConfig(
-              responseMimeType: 'application/json',
-            ),
-          )
-          .timeout(timeout);
+      final response = await request(
+        [Content.text(prompt)],
+        generationConfig: GenerationConfig(
+          responseMimeType: 'application/json',
+        ),
+      ).timeout(timeout);
       final text = response.text;
       if (text == null || text.trim().isEmpty) {
         throw StateError('empty model response');

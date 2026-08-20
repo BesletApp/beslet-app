@@ -8,6 +8,7 @@ import '../../../core/ai/voice_journal/voice_journal_provider.dart';
 import '../../../core/providers/ai_provider.dart';
 import '../../../core/providers/journal_provider.dart';
 import '../../../core/providers/voice_journal_provider.dart';
+import '../../../core/secrets.dart';
 import '../../../core/speech/speech_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -16,6 +17,7 @@ import '../../../core/voice/recording_adapter.dart';
 import '../../../core/voice/transcription_service.dart';
 import '../../../core/voice/translation_service.dart';
 import '../../../core/voice/voice_ai_transports.dart';
+import '../../../core/voice/voice_diagnostics.dart';
 import '../../../core/voice/voice_capability_probe.dart';
 import '../../../core/voice/voice_controller.dart';
 import '../../../core/voice/voice_models.dart';
@@ -53,12 +55,16 @@ class VoiceJournalSheet extends ConsumerStatefulWidget {
   final TranscriptionService? transcriptionService;
   final TranslationService? translationService;
 
+  /// Injectable model seam for tests; production uses the real Gemini model.
+  final GeminiModelFactory? modelFactory;
+
   const VoiceJournalSheet({
     super.key,
     this.speechGateway,
     this.recordingAdapter,
     this.transcriptionService,
     this.translationService,
+    this.modelFactory,
   });
 
   @override
@@ -72,7 +78,12 @@ class _VoiceJournalSheetState extends ConsumerState<VoiceJournalSheet> {
     recorder: _adapter,
     transcription: widget.transcriptionService ?? _defaultTranscription(),
     translator: widget.translationService ??
-        GeminiTranslationService(transport: buildGeminiTextTransport()),
+        GeminiTranslationService(
+          transport: buildGeminiTextTransport(
+            bundledKey: defaultGeminiKey,
+            modelFactory: widget.modelFactory,
+          ),
+        ),
     probe: VoiceCapabilityProbe(adapter: _adapter),
   );
 
@@ -116,12 +127,18 @@ class _VoiceJournalSheetState extends ConsumerState<VoiceJournalSheet> {
         },
       );
     }
-    return GeminiTranscriptionService(transport: buildGeminiAudioTransport());
+    return GeminiTranscriptionService(
+      transport: buildGeminiAudioTransport(
+        bundledKey: defaultGeminiKey,
+        modelFactory: widget.modelFactory,
+      ),
+    );
   }
 
   @override
   void initState() {
     super.initState();
+    VoiceDiagnostics.instance.reset();
     _voice.addListener(_onVoiceChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       unawaited(_probeOnly());
