@@ -6,7 +6,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
 import '../database/app_database.dart';
+import '../services/bible_journey_service.dart';
 import '../services/growth_streams.dart';
+import '../services/scripture_service.dart';
 import 'database_provider.dart';
 import 'fellowship_provider.dart';
 import 'habits_provider.dart';
@@ -14,6 +16,7 @@ import 'prayer_provider.dart';
 import 'soul_log_provider.dart';
 import 'streak_provider.dart';
 import 'tracking_provider.dart';
+import 'scripture_provider.dart';
 
 /// Whether the user spent time in the Word today (a gentle memory, never a
 /// score — a quiet day is simply not counted).
@@ -90,6 +93,28 @@ class ReadingNotifier extends AsyncNotifier<void> {
     ref.invalidate(streakStateProvider);
     ref.invalidate(streakLogsProvider);
     ref.invalidate(streakWeekDataProvider);
+
+    // Advance Bible reading journey if the completed chapter matches today's assignment
+    final journey = ref.read(bibleJourneyProvider);
+    if (journey != null && !journey.paused && !journey.completed) {
+      final chapters = ScriptureService.generatePlanChapters(journey.type, journey.bookId);
+      final assignment = ScriptureService.getTodayAssignment(chapters, journey.pace, journey.currentDayIndex);
+      if (assignment != null && assignment.bookId == bookId) {
+        final matches = journey.pace == 1
+            ? assignment.startChapter == chapter
+            : chapter == assignment.endChapter;
+        if (matches) {
+          final newDayIndex = journey.currentDayIndex + 1;
+          final totalDays = ScriptureService.totalDays(chapters, journey.pace);
+          final updated = journey.copyWith(
+            currentDayIndex: newDayIndex,
+            completed: newDayIndex >= totalDays,
+          );
+          await BibleJourneyService.save(updated);
+          ref.read(bibleJourneyProvider.notifier).state = updated;
+        }
+      }
+    }
   }
 }
 

@@ -1,7 +1,34 @@
-class Scripture {  final String reference;
+class Scripture {
+  final String reference;
   final String text;
   final String? textAm;
   const Scripture({required this.reference, required this.text, this.textAm});
+}
+
+/// A single chapter entry in a reading plan.
+class PlanChapter {
+  final String bookId;
+  final int chapter;
+  final BibleBook book;
+  const PlanChapter({
+    required this.bookId,
+    required this.chapter,
+    required this.book,
+  });
+}
+
+/// Today's assigned reading from a plan (can span multiple chapters for pace > 1).
+class PlanAssignment {
+  final String bookId;
+  final int startChapter;
+  final int endChapter;
+  final BibleBook book;
+  const PlanAssignment({
+    required this.bookId,
+    required this.startChapter,
+    required this.endChapter,
+    required this.book,
+  });
 }
 
 class BibleSection {
@@ -124,6 +151,7 @@ class ScriptureService {
 
   static List<BibleBook> get otBooks => sections.where((s) => ['torah', 'history', 'poetry', 'majorProphets', 'minorProphets'].contains(s.id)).expand((s) => s.books).toList();
   static List<BibleBook> get ntBooks => sections.where((s) => ['gospels', 'acts', 'paulsLetters', 'generalEpistles', 'revelation'].contains(s.id)).expand((s) => s.books).toList();
+  static List<BibleBook> get gospelsBooks => sections.where((s) => s.id == 'gospels').expand((s) => s.books).toList();
 
   /// The Day's Thread canon: one fixed reference per calendar day, cycling
   /// this finite loop. Only the REFERENCES live here; the wording is resolved
@@ -272,5 +300,62 @@ class ScriptureService {
     final book = bookMap[bookId];
     final name = book != null ? (isAm ? book.nameAm : book.nameEn) : bookId;
     return '$name $chapter:$verse';
+  }
+
+  /// Generate the full ordered chapter list for a reading plan type.
+  static List<PlanChapter> generatePlanChapters(String type, String? bookId) {
+    List<BibleBook> books;
+    switch (type) {
+      case 'whole':
+        books = allBooks;
+        break;
+      case 'ot':
+        books = otBooks;
+        break;
+      case 'nt':
+        books = ntBooks;
+        break;
+      case 'gospels':
+        books = gospelsBooks;
+        break;
+      case 'book':
+        if (bookId == null) return [];
+        final book = bookMap[bookId];
+        books = book != null ? [book] : [];
+        break;
+      default:
+        return [];
+    }
+    return [
+      for (final book in books)
+        for (var c = 1; c <= book.chapters; c++)
+          PlanChapter(bookId: book.id, chapter: c, book: book),
+    ];
+  }
+
+  /// Get today's assigned reading for a plan at the given day index and pace.
+  static PlanAssignment? getTodayAssignment(
+    List<PlanChapter> chapters,
+    int pace,
+    int dayIndex,
+  ) {
+    if (chapters.isEmpty || pace <= 0) return null;
+    final startIdx = dayIndex * pace;
+    if (startIdx >= chapters.length) return null;
+    final endIdx = (startIdx + pace - 1).clamp(0, chapters.length - 1);
+    final first = chapters[startIdx];
+    final last = chapters[endIdx];
+    return PlanAssignment(
+      bookId: first.bookId,
+      startChapter: first.chapter,
+      endChapter: last.chapter,
+      book: first.book,
+    );
+  }
+
+  /// Total number of days to complete the plan at the given pace.
+  static int totalDays(List<PlanChapter> chapters, int pace) {
+    if (chapters.isEmpty || pace <= 0) return 0;
+    return (chapters.length + pace - 1) ~/ pace;
   }
 }

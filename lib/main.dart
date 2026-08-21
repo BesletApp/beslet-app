@@ -12,6 +12,7 @@ import 'core/services/widget_service.dart';
 import 'core/services/prayer_reminder_service.dart';
 import 'core/services/prayer_alarm_sound_service.dart';
 import 'core/services/vineyard_reminder_service.dart';
+import 'core/services/bible_journey_service.dart';
 import 'core/services/bible_seed_service.dart';
 import 'core/personalization/personalization_engine.dart';
 import 'core/personalization/personalization_providers.dart';
@@ -62,6 +63,7 @@ void main() async {
 }
 
 Future<void> _warmStart(ProviderContainer container) async {
+  await _attempt(() => BibleJourneyService.initialize(container));
   await _attempt(() => NotificationService.init());
   NotificationService.navigateTo = (route) => AppRouter.router.go(route);
   await _attempt(() => NotificationService.requestPermissionsAtStartup());

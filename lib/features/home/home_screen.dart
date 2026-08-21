@@ -14,6 +14,7 @@ import '../../core/emotional/experience_profile.dart';
 import '../../core/services/summer_service.dart';
 import '../../core/services/widget_service.dart';
 import '../../core/services/scripture_service.dart';
+import '../../core/services/bible_journey_service.dart';
 import '../../core/database/app_database.dart';
 import '../../core/providers/user_provider.dart';
 import '../../core/providers/tracking_provider.dart';
@@ -582,6 +583,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
     final c = AppColors.of(context);
     final acc = profile.colors.accent;
 
+    final journey = ref.watch(bibleJourneyProvider);
+    final journeySubtitle = _journeySubtitle(plan, journey);
+
     final verseText = _isAm && todayWord.textAm != null && todayWord.textAm!.isNotEmpty
         ? todayWord.textAm!
         : todayWord.textEn;
@@ -593,7 +597,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
       _FlowStep(
         emoji: '📖',
         title: _isAm ? 'መጽሐፍ ቅዱስ' : 'Bible',
-        subtitle: '${_isAm ? 'የዛሬ ንባብ' : "Today's reading"}: ${_isAm ? plan.labelAm : plan.labelEn}',
+        subtitle: journeySubtitle,
         done: flow.bibleDone,
         current: flow.currentStep == 0,
         locked: flow.currentStep > 0,
@@ -753,11 +757,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
     final c = AppColors.of(context);
     final acc = profile.colors.accent;
     final complete = profile.colors.stepComplete;
+
+    final journey = ref.watch(bibleJourneyProvider);
+    final journeySubtitle = _journeySubtitle(plan, journey);
+
     final steps = <_FlowStep>[
       _FlowStep(
         emoji: '📖',
         title: _isAm ? 'መጽሐፍ ቅዱስ' : 'Bible',
-        subtitle: '${_isAm ? 'የዛሬ ንባብ' : "Today's reading"}: ${_isAm ? plan.labelAm : plan.labelEn}',
+        subtitle: journeySubtitle,
         done: flow.bibleDone,
         current: flow.currentStep == 0,
         locked: flow.currentStep > 0,
@@ -1190,6 +1198,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
         ),
       ),
     );
+  }
+
+  String _journeySubtitle(TodayReadingPlan plan, BibleJourneyPlan? journey) {
+    if (journey != null && !journey.paused && !journey.completed) {
+      final chapters = ScriptureService.generatePlanChapters(journey.type, journey.bookId);
+      final assignment = ScriptureService.getTodayAssignment(chapters, journey.pace, journey.currentDayIndex);
+      if (assignment != null) {
+        final bookName = _isAm ? assignment.book.nameAm : assignment.book.nameEn;
+        if (assignment.startChapter == assignment.endChapter) {
+          return '${_isAm ? 'የዛሬ ንባብ' : "Today\'s Reading"} · $bookName ${assignment.startChapter}';
+        } else {
+          return '${_isAm ? 'የዛሬ ንባብ' : "Today\'s Reading"} · $bookName ${assignment.startChapter}–${assignment.endChapter}';
+        }
+      }
+    }
+    return '${_isAm ? 'የዛሬ ንባብ' : "Today\'s Reading"}: ${_isAm ? plan.labelAm : plan.labelEn}';
   }
 }
 

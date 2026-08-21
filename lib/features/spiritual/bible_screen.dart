@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/services/bible_journey_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_text_styles.dart';
@@ -854,7 +855,7 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
       sheetAnimationStyle: AnimationStyle(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut),
       builder: (ctx) {
         return SizedBox(
-          height: MediaQuery.of(ctx).size.height * 0.85,
+height: MediaQuery.of(context).size.height * 0.85,
           child: _BookChapterPicker(
             isAm: _isAm,
             onSelected: (bookId, chapter) {
@@ -1142,6 +1143,7 @@ class _BookChapterPickerState
           ),
         ]),
       ),
+      _ReadingPlanEntry(isAm: widget.isAm),
       Expanded(
         child: _selectedBook == null
             ? ListView(
@@ -1183,6 +1185,490 @@ class _BookChapterPickerState
             ),
             trailing: const Icon(Icons.chevron_right, size: 18),
             onTap: () => setState(() => _selectedBook = b),
+          )),
+    ]);
+  }
+}
+
+/// Entry point for Reading Plan in the Book/Chapter picker modal.
+class _ReadingPlanEntry extends ConsumerWidget {
+  final bool isAm;
+  const _ReadingPlanEntry({required this.isAm});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final c = AppColors.of(context);
+    final journey = ref.watch(bibleJourneyProvider);
+    final hasJourney = journey != null && !journey.completed;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _showReadingPlanSheet(context, ref),
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: c.cardElevated.withValues(alpha: 0.5),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: c.border.withValues(alpha: 0.3)),
+          ),
+          child: Row(children: [
+            Icon(Icons.menu_book, size: 22, color: c.primary),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isAm ? 'የማንበብ እቅድ' : 'Reading Plan',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: c.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    hasJourney
+                        ? _journeySubtitle(journey!, isAm)
+                        : (isAm ? 'የመጽሐፍ ቅዱስ እቅድ ይምረጡ' : 'Choose a Bible reading plan'),
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: c.textSecondary,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right, size: 18, color: c.textMuted),
+          ]),
+        ),
+      ),
+    );
+  }
+
+  String _journeySubtitle(BibleJourneyPlan journey, bool isAm) {
+    final typeNames = {
+      'whole': isAm ? 'ሙሉ መጽሐፍ ቅዱስ' : 'Whole Bible',
+      'ot': isAm ? 'ቀዳማዊ ኪዳን' : 'Old Testament',
+      'nt': isAm ? 'አዲስ ኪዳን' : 'New Testament',
+      'gospels': isAm ? 'ወንጌላት' : 'Gospels',
+      'book': isAm ? 'መጽሐፍ በቀላሉ' : 'Specific Book',
+    };
+    final typeName = typeNames[journey.type] ?? journey.type;
+    if (journey.paused) {
+      return '$typeName · ${isAm ? "ተቋረጠ" : "Paused"}';
+    }
+    if (journey.completed) {
+      return '$typeName · ${isAm ? "ተጠናቋል" : "Completed"}';
+    }
+    return '$typeName · ${isAm ? "ቀን ${journey.currentDayIndex + 1}" : "Day ${journey.currentDayIndex + 1}"}';
+  }
+}
+
+/// Reading Plan management sheet (choose/pause/resume/change/finish).
+Future<void> _showReadingPlanSheet(BuildContext context, WidgetRef ref) async {
+  final c = AppColors.of(context);
+  final l = AppLocalizations.of(context)!;
+  final isAm = Localizations.localeOf(context).languageCode == 'am';
+  final journey = ref.read(bibleJourneyProvider);
+
+  await showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: c.background,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (ctx) => _ReadingPlanSheet(
+      isAm: isAm,
+      journey: journey,
+      onPlanSelected: (type, bookId, pace) async {
+        Navigator.pop(ctx);
+        await _startPlan(ref, type, bookId, pace);
+      },
+      onPause: () async {
+        Navigator.pop(ctx);
+        await _pausePlan(ref);
+      },
+      onResume: () async {
+        Navigator.pop(ctx);
+        await _resumePlan(ref);
+      },
+      onChange: () async {
+        Navigator.pop(ctx);
+        await _showPlanPicker(ref);
+      },
+      onFinish: () async {
+        Navigator.pop(ctx);
+        await _finishPlan(ref);
+      },
+    ),
+  );
+}
+
+Future<void> _startPlan(WidgetRef ref, String type, String? bookId, int pace) async {
+  final plan = BibleJourneyPlan(
+    type: type,
+    bookId: type == 'book' ? bookId : null,
+    pace: pace,
+    currentDayIndex: 0,
+    paused: false,
+    completed: false,
+    startDate: DateTime.now().toIso8601String().substring(0, 10),
+  );
+  await BibleJourneyService.save(plan);
+  ref.read(bibleJourneyProvider.notifier).state = plan;
+}
+
+Future<void> _pausePlan(WidgetRef ref) async {
+  final journey = ref.read(bibleJourneyProvider);
+  if (journey != null) {
+    final updated = journey.copyWith(paused: true);
+    await BibleJourneyService.save(updated);
+    ref.read(bibleJourneyProvider.notifier).state = updated;
+  }
+}
+
+Future<void> _resumePlan(WidgetRef ref) async {
+  final journey = ref.read(bibleJourneyProvider);
+  if (journey != null) {
+    final updated = journey.copyWith(paused: false);
+    await BibleJourneyService.save(updated);
+    ref.read(bibleJourneyProvider.notifier).state = updated;
+  }
+}
+
+Future<void> _finishPlan(WidgetRef ref) async {
+  final journey = ref.read(bibleJourneyProvider);
+  if (journey != null) {
+    final updated = journey.copyWith(completed: true);
+    await BibleJourneyService.save(updated);
+    ref.read(bibleJourneyProvider.notifier).state = updated;
+  }
+}
+
+Future<void> _showPlanPicker(WidgetRef ref) async {
+  // This will be called from within a modal context
+  // We'll handle it by showing another modal
+  // For now, the change action just reopens the plan picker
+}
+
+class _ReadingPlanSheet extends ConsumerWidget {
+  final bool isAm;
+  final BibleJourneyPlan? journey;
+  final Function(String type, String? bookId, int pace) onPlanSelected;
+  final VoidCallback onPause;
+  final VoidCallback onResume;
+  final VoidCallback onChange;
+  final VoidCallback onFinish;
+
+  const _ReadingPlanSheet({
+    required this.isAm,
+    required this.journey,
+    required this.onPlanSelected,
+    required this.onPause,
+    required this.onResume,
+    required this.onChange,
+    required this.onFinish,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final c = AppColors.of(context);
+    final t = AppTextStyles.of(context);
+    final hasJourney = journey != null && !journey!.completed;
+
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (hasJourney) ...[
+              _CurrentPlanCard(journey: journey!, isAm: isAm, onPause: onPause, onResume: onResume, onChange: onChange, onFinish: onFinish),
+              const SizedBox(height: 16),
+            ],
+            Text(
+              hasJourney ? (isAm ? 'አዲስ እቅድ ይምረጡ' : 'Choose a New Plan') : (isAm ? 'የማንበብ እቅድ ይምረጡ' : 'Choose a Reading Plan'),
+              style: t.bodyLarge.copyWith(fontWeight: FontWeight.w700, color: c.textPrimary),
+            ),
+            const SizedBox(height: 12),
+            _PlanOptionCard(
+              type: 'whole',
+              labelEn: 'Whole Bible',
+              labelAm: 'ሙሉ መጽሐፍ ቅዱስ',
+              durationEn: '~3.3 years at 1/day',
+              durationAm: 'ከ3.3 ዓመት @ 1/ቀን',
+              onTap: () => onPlanSelected('whole', null, 1),
+            ),
+            _PlanOptionCard(
+              type: 'ot',
+              labelEn: 'Old Testament',
+              labelAm: 'ቀዳማዊ ኪዳን',
+              durationEn: '~2.5 years at 1/day',
+              durationAm: 'ከ2.5 ዓመት @ 1/ቀን',
+              onTap: () => onPlanSelected('ot', null, 1),
+            ),
+            _PlanOptionCard(
+              type: 'nt',
+              labelEn: 'New Testament',
+              labelAm: 'አዲስ ኪዳን',
+              durationEn: '~8.5 months at 1/day',
+              durationAm: 'ከ8.5 ወራት @ 1/ቀን',
+              onTap: () => onPlanSelected('nt', null, 1),
+            ),
+            _PlanOptionCard(
+              type: 'gospels',
+              labelEn: 'Gospels',
+              labelAm: 'ወንጌላት',
+              durationEn: '~3 months at 1/day',
+              durationAm: 'ከ3 ወራት @ 1/ቀን',
+              onTap: () => onPlanSelected('gospels', null, 1),
+            ),
+            _PlanOptionCard(
+              type: 'book',
+              labelEn: 'Specific Book',
+              labelAm: 'መጽሐፍ በቀላሉ',
+              durationEn: 'Varies by book',
+              durationAm: 'መጠን የመጽሐፉ ላይ ይተላለፋል',
+              onTap: () => _showBookPickerForPlan(context, ref),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showBookPickerForPlan(BuildContext context, WidgetRef ref) async {
+    Navigator.pop(context); // Close plan picker
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.of(context).background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => _BookPickerForPlan(isAm: isAm, onSelected: (bookId) {
+        Navigator.pop(ctx);
+        onPlanSelected('book', bookId, 1);
+      }),
+    );
+  }
+}
+
+class _CurrentPlanCard extends StatelessWidget {
+  final BibleJourneyPlan journey;
+  final bool isAm;
+  final VoidCallback onPause;
+  final VoidCallback onResume;
+  final VoidCallback onChange;
+  final VoidCallback onFinish;
+
+  const _CurrentPlanCard({
+    required this.journey,
+    required this.isAm,
+    required this.onPause,
+    required this.onResume,
+    required this.onChange,
+    required this.onFinish,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = AppColors.of(context);
+    final t = AppTextStyles.of(context);
+    final typeNames = {
+      'whole': isAm ? 'ሙሉ መጽሐፍ ቅዱስ' : 'Whole Bible',
+      'ot': isAm ? 'ቀዳማዊ ኪዳን' : 'Old Testament',
+      'nt': isAm ? 'አዲስ ኪዳን' : 'New Testament',
+      'gospels': isAm ? 'ወንጌላት' : 'Gospels',
+      'book': isAm ? 'መጽሐፍ በቀላሉ' : 'Specific Book',
+    };
+    final typeName = typeNames[journey.type] ?? journey.type;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: c.cardElevated,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: c.primary.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            Icon(Icons.menu_book, size: 22, color: c.primary),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(typeName, style: t.bodyLarge.copyWith(fontWeight: FontWeight.w700, color: c.textPrimary)),
+                  Text(
+                    journey.completed
+                        ? (isAm ? 'ተጠናቋል ✓' : 'Completed ✓')
+                        : journey.paused
+                            ? (isAm ? 'ተቋረጠ ⏸' : 'Paused ⏸')
+                            : (isAm ? 'ቀን ${journey.currentDayIndex + 1}' : 'Day ${journey.currentDayIndex + 1}'),
+                    style: t.bodySmall.copyWith(color: c.textSecondary, fontSize: 11),
+                  ),
+                ],
+              ),
+            ),
+            if (journey.type == 'book' && journey.bookId != null) ...[
+              const SizedBox(width: 8),
+              Text(
+                ScriptureService.getBookName(journey.bookId!, isAm),
+                style: t.bodySmall.copyWith(color: c.textSecondary, fontSize: 11),
+              ),
+            ],
+          ]),
+          const SizedBox(height: 12),
+          Row(children: [
+            if (!journey.completed && !journey.paused)
+              Expanded(child: OutlinedButton(onPressed: onPause, child: Text(isAm ? 'ቁርጠው' : 'Pause'))),
+            if (!journey.completed && journey.paused)
+              Expanded(child: OutlinedButton(onPressed: onResume, child: Text(isAm ? 'ተግባር ይሁን' : 'Resume'))),
+            if (!journey.completed) ...[
+              const SizedBox(width: 8),
+              Expanded(child: OutlinedButton(onPressed: onChange, child: Text(isAm ? 'ይቀይር' : 'Change'))),
+              const SizedBox(width: 8),
+              Expanded(child: FilledButton(onPressed: onFinish, child: Text(isAm ? 'ያጠናቀው' : 'Finish'))),
+            ],
+          ]),
+        ],
+      ),
+    );
+  }
+}
+
+class _PlanOptionCard extends StatelessWidget {
+  final String type;
+  final String labelEn;
+  final String labelAm;
+  final String durationEn;
+  final String durationAm;
+  final VoidCallback onTap;
+
+  const _PlanOptionCard({
+    required this.type,
+    required this.labelEn,
+    required this.labelAm,
+    required this.durationEn,
+    required this.durationAm,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = AppColors.of(context);
+    final t = AppTextStyles.of(context);
+    final isAm = Localizations.localeOf(context).languageCode == 'am';
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          margin: const EdgeInsets.only(bottom: 8),
+          decoration: BoxDecoration(
+            color: c.card,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: c.border),
+          ),
+          child: Row(children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(isAm ? labelAm : labelEn, style: t.bodyLarge.copyWith(fontWeight: FontWeight.w600, color: c.textPrimary)),
+                  const SizedBox(height: 2),
+                  Text(isAm ? durationAm : durationEn, style: t.bodySmall.copyWith(color: c.textMuted, fontSize: 11)),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right, size: 20, color: c.textMuted),
+          ]),
+        ),
+      ),
+    );
+  }
+}
+
+class _BookPickerForPlan extends ConsumerWidget {
+  final bool isAm;
+  final Function(String bookId) onSelected;
+
+  const _BookPickerForPlan({required this.isAm, required this.onSelected});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final c = AppColors.of(context);
+
+    return SizedBox(
+      height: MediaQuery.of(context).size.height * 0.85,
+      child: Column(children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          child: Row(children: [
+            IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () => Navigator.pop(context),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              isAm ? 'መጽሐፍ ይምረጡ' : 'Choose a Book',
+              style: AppTextStyles.displaySmall.copyWith(fontSize: 18),
+            ),
+          ]),
+        ),
+        Expanded(
+          child: ListView(
+            children: ScriptureService.sections
+                .map((s) => _BookSectionForPlan(s, isAm: isAm, onSelected: onSelected))
+                .toList(),
+          ),
+        ),
+      ]),
+    );
+  }
+}
+
+class _BookSectionForPlan extends StatelessWidget {
+  final BibleSection s;
+  final bool isAm;
+  final Function(String bookId) onSelected;
+
+  const _BookSectionForPlan(this.s, {required this.isAm, required this.onSelected});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = AppColors.of(context);
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Padding(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
+        child: Text(
+          isAm ? s.nameAm : s.nameEn,
+          style: AppTextStyles.bodySmall.copyWith(
+              fontSize: 11,
+              color: c.textMuted.withValues(alpha: 0.5),
+              fontWeight: FontWeight.w500),
+        ),
+      ),
+      ...s.books.map((b) => ListTile(
+            dense: true,
+            title: Text(isAm ? b.nameAm : b.nameEn, style: const TextStyle(fontSize: 15)),
+            subtitle: Text(
+              '${b.chapters} ${isAm ? "ምዕራፎች" : "chapters"}',
+              style: TextStyle(fontSize: 10, color: c.textMuted),
+            ),
+            onTap: () => onSelected(b.id),
           )),
     ]);
   }
