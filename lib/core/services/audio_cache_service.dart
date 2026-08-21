@@ -3,6 +3,7 @@ import 'package:drift/drift.dart';
 import 'package:path_provider/path_provider.dart';
 import '../database/app_database.dart';
 import 'wordproject_bible_service.dart';
+import 'ebible_web_audio_service.dart';
 import 'scripture_service.dart';
 
 const maxCacheMB = 300;
@@ -78,10 +79,7 @@ class AudioCacheService {
     final book = ScriptureService.bookMap[bookId];
     if (book == null) return null;
 
-    final langCode = language == 'am' ? '17' : '01';
-    final file = await WordProjectBibleService.getAudio(
-        book.wordprojectId, chapter,
-        languageCode: langCode);
+    final file = await _downloadAudio(book, chapter, language);
     if (file == null) return null;
 
     final now = DateTime.now();
@@ -191,7 +189,6 @@ class AudioCacheService {
     final book = ScriptureService.bookMap[bookId];
     if (book == null) return;
 
-    final langCode = language == 'am' ? '17' : '01';
     final now = DateTime.now();
 
     for (int ch = 1; ch <= book.chapters; ch++) {
@@ -209,9 +206,7 @@ class AudioCacheService {
         continue;
       }
 
-      final file = await WordProjectBibleService.getAudio(
-          book.wordprojectId, ch,
-          languageCode: langCode);
+      final file = await _downloadAudio(book, ch, language);
       if (file == null) continue;
 
       await _db.into(_db.audioCache).insert(AudioCacheCompanion.insert(
@@ -225,6 +220,21 @@ class AudioCacheService {
             isPinned: Value(true),
             status: 'ready',
           ));
+    }
+  }
+
+  /// Downloads the recorded narration for a chapter from the provider that
+  /// serves the given language: Amharic from WordProject (code `17`), English
+  /// from the public-domain WEB recording on eBible.org.
+  Future<File?> _downloadAudio(BibleBook book, int chapter, String language) async {
+    try {
+      return language == 'am'
+          ? await WordProjectBibleService.getAudio(
+              book.wordprojectId, chapter,
+              languageCode: '17')
+          : await EbibleWebAudioService.getAudio(book.id, chapter);
+    } catch (_) {
+      return null;
     }
   }
 

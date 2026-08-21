@@ -3,6 +3,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'scripture_service.dart';
 import 'wordproject_bible_service.dart';
+import 'ebible_web_audio_service.dart';
 import 'bible_text_service.dart';
 
 enum AudioSourceType { tts, recorded }
@@ -206,14 +207,7 @@ class AudioBibleService {
       await _tts.stop();
       await _audioPlayer.stop();
       naturallyCompleted = false;
-      final book = ScriptureService.bookMap[info.bookId];
-      if (book != null) {
-        try {
-          final langCode = info.isAmharic ? '17' : '01';
-          final audioFile = await WordProjectBibleService.getAudio(book.wordprojectId, info.chapter, languageCode: langCode);
-          if (audioFile != null) { await _playRecordedAudio(audioFile.path); return; }
-        } catch (_) {}
-      }
+      if (await _tryPlayRecorded(info)) return;
       if (info.isAmharic) {
         _errorMessage = 'Amharic audio not available for this chapter';
         _state = AudioState.error;
@@ -244,14 +238,7 @@ class AudioBibleService {
         onStateChanged?.call();
         return;
       }
-      final book = ScriptureService.bookMap[info.bookId];
-      if (book != null) {
-        try {
-          final langCode = info.isAmharic ? '17' : '01';
-          final audioFile = await WordProjectBibleService.getAudio(book.wordprojectId, info.chapter, languageCode: langCode);
-          if (audioFile != null) { await _playRecordedAudio(audioFile.path); return; }
-        } catch (_) {}
-      }
+      if (await _tryPlayRecorded(info)) return;
       if (info.isAmharic) {
         _errorMessage = 'Amharic audio not available for this chapter';
         _state = AudioState.error;
@@ -271,6 +258,44 @@ class AudioBibleService {
         _state = AudioState.error;
         onStateChanged?.call();
       }
+    }
+  }
+
+  /// Tries to play the recorded narration for [info]. Returns `true` when the
+  /// chapter was either played or a distinct error was surfaced; returns
+  /// `false` when the backend has no recording for this chapter (caller falls
+  /// back to TTS for English, or reports the absence for Amharic).
+  Future<bool> _tryPlayRecorded(AudioChapterInfo info) async {
+    final book = ScriptureService.bookMap[info.bookId];
+    if (book == null) return false;
+    try {
+      // English narration is the public-domain World English Bible recording
+      // hosted by eBible.org; Amharic uses the WordProject 1962 recording.
+      final audioFile = info.isAmharic
+          ? await WordProjectBibleService.getAudio(
+              book.wordprojectId, info.chapter,
+              languageCode: '17')
+          : await EbibleWebAudioService.getAudio(info.bookId, info.chapter);
+      if (audioFile == null) return false;
+      await _playRecordedAudio(audioFile.path);
+      return true;
+    } on WordProjectAudioDownloadException {
+      _errorMessage = 'Amharic audio download failed — check your connection';
+      _state = AudioState.error;
+      onStateChanged?.call();
+      return true;
+    } on EbibleWebAudioDownloadException {
+      _errorMessage = 'Audio download failed — check your connection';
+      _state = AudioState.error;
+      onStateChanged?.call();
+      return true;
+    } catch (_) {
+      _errorMessage = info.isAmharic
+          ? 'Amharic audio could not be played'
+          : 'Audio could not be played';
+      _state = AudioState.error;
+      onStateChanged?.call();
+      return true;
     }
   }
 

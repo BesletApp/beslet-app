@@ -144,6 +144,19 @@ class _BibleScreenState extends ConsumerState<BibleScreen> {
       chapter: _pickedChapter,
     );
     ref.read(sceneEventBusProvider).emit(SceneEventType.leafLight);
+    _stopAudioForNewChapter();
+  }
+
+  /// If the audio player still holds a different chapter (from an earlier
+  /// navigation), reset it so the play button starts the chapter now on
+  /// screen instead of toggling a stale chapter.
+  void _stopAudioForNewChapter() {
+    final loaded = ref.read(audioPlayerProvider).chapter;
+    if (loaded == null) return;
+    if (loaded.bookId == _pickedBookId && loaded.chapter == _pickedChapter) {
+      return;
+    }
+    ref.read(audioPlayerProvider.notifier).stop();
   }
 
   /// The reader must reach the end of the chapter before the "I have read"

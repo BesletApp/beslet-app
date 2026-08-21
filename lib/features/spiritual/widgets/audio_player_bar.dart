@@ -49,19 +49,23 @@ class AudioPlayerBar extends ConsumerWidget {
   void _toggleOrStart(WidgetRef ref) {
     final notifier = ref.read(audioPlayerProvider.notifier);
     final playerState = ref.read(audioPlayerProvider);
-    if (playerState.chapter != null && playerState.verseTexts.isNotEmpty) {
+    final screenBookId = bookId;
+    final screenChapter = chapterNum;
+    final loaded = playerState.chapter;
+    final loadedMatchesScreen = loaded != null &&
+        loaded.bookId == screenBookId &&
+        loaded.chapter == screenChapter;
+    if (loadedMatchesScreen && playerState.verseTexts.isNotEmpty) {
       notifier.togglePlayPause();
       return;
     }
-    final bookId = this.bookId;
-    final chapterNum = this.chapterNum;
-    if (bookId == null || chapterNum == null) return;
-    final book = ScriptureService.bookMap[bookId];
+    if (screenBookId == null || screenChapter == null) return;
+    final book = ScriptureService.bookMap[screenBookId];
     final info = AudioChapterInfo(
-      bookId: bookId,
-      chapter: chapterNum,
-      reference: '${book?.nameEn ?? bookId} $chapterNum',
-      bookName: book?.nameEn ?? bookId,
+      bookId: screenBookId,
+      chapter: screenChapter,
+      reference: '${book?.nameEn ?? screenBookId} $screenChapter',
+      bookName: book?.nameEn ?? screenBookId,
       isAmharic: isAm,
     );
     notifier.play(info);

@@ -1,6 +1,6 @@
 {
-  "version": "1.37.0",
-  "versionCode": 64,
-  "downloadUrl": "https://github.com/BesletApp/beslet-app/releases/download/v1.37.0/app-release.apk",
-  "releaseNotes": "v1.37.0 — Real voice recording for Voice Journal. Voice Journal now records actual audio through the microphone and transcribes it with Gemini — no dependence on the device speech engine. Speak in English or Amharic, edit the transcript, optionally translate it, then let AI organize your own words. Failures are real and recoverable: retry transcription or translation without re-recording, and a permanent microphone block opens device settings directly. A new Voice diagnostics screen in Settings lets support pinpoint the exact cause of any issue. The flow is whisper-simple: tap the mic, speak, stop, and your words appear."
+  "version": "1.38.0",
+  "versionCode": 67,
+  "downloadUrl": "https://github.com/BesletApp/beslet-app/releases/download/v1.38.0/app-release.apk",
+  "releaseNotes": "v1.38.0 — Listen to the Bible in English, spoken aloud. English Bible audio now uses the public-domain World English Bible (WEB) recording from eBible.org, matching the app's own English text verse for verse — so the audio reads exactly what you see. Amharic chapters keep the WordProject recording. Requires a connection to download the chapter audio once, then it's cached for offline listening. Also fixes a stale-player bug where tapping play after switching chapters could act on the previous chapter instead of the one you're reading."
 }
